@@ -77,6 +77,7 @@ from api.routes.monte_carlo import router as monte_carlo_router
 from api.routes.model_validation import router as model_validation_router
 from api.routes.tactical_allocation import router as tactical_allocation_router
 from api.routes.ux_tracking import router as ux_tracking_router
+from api.routes.reddit import router as reddit_router
 
 # WebSocket support per audit document
 from api.websocket_chat import sio
@@ -244,6 +245,7 @@ app.include_router(monte_carlo_router)  # Legacy: Use /api/portfolio/monte-carlo
 app.include_router(model_validation_router)  # Legacy: Use /api/validation instead
 app.include_router(tactical_allocation_router)  # Legacy: Use /api/portfolio/tactical instead
 app.include_router(ux_tracking_router)  # UX tracking: user journeys, onboarding metrics (per audit 4.2)
+app.include_router(reddit_router)  # Social sentiment: Reddit hot stocks tracking
 
 # Mount SocketIO app for WebSocket support per audit document
 # This combines FastAPI with SocketIO to handle both HTTP and WebSocket connections

@@ -12,6 +12,8 @@ import { CommunityIdeas } from './widgets/CommunityIdeas';
 import { MonteCarloSimulation } from './widgets/MonteCarloSimulation';
 import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { OnboardingTour } from './OnboardingTour';
+import { Resources } from './widgets/Resources';
+import { RedditSentiment } from './widgets/RedditSentiment';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
 const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; id?: string }> = ({ onStartAnalysis, id }) => (
@@ -136,6 +138,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
                     <HoldingsManager />
                     <StartAnalysisCTA onStartAnalysis={onStartAnalysis} id="analysis-cta-widget" />
+                    <RedditSentiment />
+                    <Resources />
                     <ValuationTool />
                     <MonteCarloSimulation />
                     <CommunityIdeas />

@@ -97,14 +97,14 @@ async def register(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
-        ) from e
+        )
     except Exception as e:
         LOGGER.exception("Registration error: %s", e)
         error_detail = str(e) if str(e) else "Registration failed"
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=error_detail
-        ) from e
+        )
 
 
 # ============================================================================
@@ -140,7 +140,7 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Authentication service error"
-        ) from e
+        )
 
     if not user:
         # Log failed login attempt (no fallar si el logging falla)
@@ -171,7 +171,7 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error generating authentication tokens"
-        ) from e
+        )
 
     # Store refresh token (no fallar si esto falla)
     try:
@@ -242,7 +242,7 @@ async def refresh_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token",
             headers={"WWW-Authenticate": "Bearer"},
-        ) from e
+        )
 
     # Verify token type
     if token_payload.type != "refresh":

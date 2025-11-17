@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -192,16 +193,23 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# Configurar CORS (normalizar a lowercase para evitar problemas case-sensitive)
+# Configurar CORS
+# Accept specific origins from env + all Vercel deployments via regex
 cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
 cors_origins = [origin.strip().lower() for origin in cors_origins_env.split(",") if origin.strip()]
 
+# Allow all Vercel deployments (*.vercel.app) using regex
+# This matches both preview and production deployments
+vercel_regex = r"https://.*\.vercel\.app"
+
 # Logging para debugging
 LOGGER.info(f"CORS configured with origins: {cors_origins}")
+LOGGER.info(f"CORS regex pattern for Vercel: {vercel_regex}")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
+    allow_origin_regex=vercel_regex,  # Accept all *.vercel.app domains
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
     allow_headers=["*"],
@@ -242,6 +250,20 @@ app.include_router(ux_tracking_router)  # UX tracking: user journeys, onboarding
 socketio_app = ASGIApp(sio, other_asgi_app=app)
 
 
+# Helper function to check if origin is allowed (including regex patterns)
+def is_origin_allowed(origin: str) -> bool:
+    """Check if origin is allowed by CORS configuration."""
+    if not origin:
+        return False
+    # Check exact match
+    if origin.lower() in cors_origins:
+        return True
+    # Check regex pattern for Vercel
+    if re.match(vercel_regex, origin):
+        return True
+    return False
+
+
 # Exception handlers para asegurar que CORS headers se envíen incluso en errores
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
@@ -252,7 +274,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     )
     # Agregar headers CORS manualmente si no están presentes
     origin = request.headers.get("origin")
-    if origin and origin.lower() in cors_origins:
+    if origin and is_origin_allowed(origin):
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
@@ -299,7 +321,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
     # Agregar headers CORS manualmente
     origin = request.headers.get("origin")
-    if origin and origin.lower() in cors_origins:
+    if origin and is_origin_allowed(origin):
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
@@ -317,7 +339,7 @@ async def general_exception_handler(request: Request, exc: Exception):
     )
     # Agregar headers CORS manualmente
     origin = request.headers.get("origin")
-    if origin and origin.lower() in cors_origins:
+    if origin and is_origin_allowed(origin):
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
     return response

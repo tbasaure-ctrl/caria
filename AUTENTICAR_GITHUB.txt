@@ -1,0 +1,41 @@
+═══════════════════════════════════════════════════════════════
+  CÓMO AUTENTICARTE EN GITHUB
+═══════════════════════════════════════════════════════════════
+
+GitHub ya NO acepta contraseñas. Necesitas un Personal Access Token.
+
+PASO 1: Crear Personal Access Token
+────────────────────────────────────
+1. Ve a: https://github.com/settings/tokens
+2. Click "Generate new token" → "Generate new token (classic)"
+3. Dale un nombre: "Caria Project"
+4. Selecciona estos permisos:
+   ✅ repo (todo)
+   ✅ workflow (si usas GitHub Actions)
+5. Click "Generate token"
+6. ⚠️ COPIA EL TOKEN INMEDIATAMENTE (solo lo verás una vez)
+
+
+PASO 2: Usar el Token
+──────────────────────
+Opción A - Usar el token directamente:
+  git push -u origin main
+  (Cuando pida usuario: tu-usuario)
+  (Cuando pida contraseña: PEGA EL TOKEN)
+
+Opción B - Guardar el token en Git Credential Manager:
+  git config --global credential.helper manager-core
+  git push -u origin main
+  (Pega el token cuando pida contraseña)
+
+Opción C - Usar SSH (más seguro a largo plazo):
+  1. Genera clave SSH: ssh-keygen -t ed25519 -C "tu@email.com"
+  2. Copia la clave pública: cat ~/.ssh/id_ed25519.pub
+  3. Agrégala en: https://github.com/settings/keys
+  4. Cambia remote a SSH:
+     git remote set-url origin git@github.com:tbasaure-ctrl/caria.git
+  5. git push -u origin main
+
+
+RECOMENDACIÓN: Usa la Opción A primero (más rápido)
+

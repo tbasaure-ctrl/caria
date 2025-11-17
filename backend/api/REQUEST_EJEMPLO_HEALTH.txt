@@ -1,0 +1,34 @@
+REQUEST: Health Check
+=====================
+
+Método: GET
+URL: http://localhost:8000/health
+
+Headers: (ninguno necesario)
+Body: (ninguno necesario)
+
+Pasos en Insomnia:
+1. Click en "+" → "HTTP Request"
+2. Name: "Health Check"
+3. Method: GET
+4. URL: http://localhost:8000/health
+5. Click "Send"
+
+Respuesta esperada:
+{
+  "status": "ok",
+  "database": "available",
+  ...
+}
+
+
+
+
+
+
+
+
+
+
+
+

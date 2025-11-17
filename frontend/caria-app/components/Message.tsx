@@ -1,0 +1,145 @@
+import React, { useState, useEffect, useRef } from 'react';
+import type { Feature } from '../types';
+import { PortfolioIcon, ChartIcon, CommunityIcon } from './Icons';
+
+/**
+ * Custom hook to detect when an element is visible on the screen.
+ * @param ref - A React ref attached to the element to observe.
+ * @param threshold - The percentage of the element that must be visible to trigger the hook.
+ * @returns {boolean} - True if the element is on screen, false otherwise.
+ */
+const useOnScreen = (ref: React.RefObject<HTMLElement>, threshold: number = 0.1): boolean => {
+  const [isIntersecting, setIntersecting] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Update state when the element's intersection status changes.
+        if (entry.isIntersecting) {
+          setIntersecting(true);
+          // Stop observing the element once it has become visible.
+          observer.unobserve(entry.target);
+        }
+      },
+      {
+        threshold,
+      }
+    );
+
+    const currentRef = ref.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [ref, threshold]);
+
+  return isIntersecting;
+};
+
+
+const MarketVisual: React.FC = () => (
+    <div className="space-y-2 mt-4 text-sm font-mono">
+        <div className="flex justify-between items-center bg-gray-800/60 p-2 rounded">
+            <span>S&P 500</span>
+            <span className="font-bold text-blue-300">+0.78% ▲</span>
+        </div>
+        <div className="flex justify-between items-center bg-gray-800/60 p-2 rounded">
+            <span>NASDAQ</span>
+            <span className="font-bold text-slate-400">-0.21% ▼</span>
+        </div>
+        <div className="flex justify-between items-center bg-gray-800/60 p-2 rounded">
+            <span>BTC/USD</span>
+            <span className="font-bold text-blue-300">+2.50% ▲</span>
+        </div>
+    </div>
+);
+
+
+const featuresData: Feature[] = [
+  {
+    icon: PortfolioIcon,
+    title: 'Advanced Portfolio Tracking',
+    description: 'Connect your accounts and gain unparalleled insights with advanced metrics, performance analysis, and risk assessment.',
+  },
+  {
+    icon: ChartIcon,
+    title: 'Live Economic Data',
+    description: 'Stay ahead of the market with real-time index prices, economic indicators, and financial news, all in one place.',
+    visual: <MarketVisual />,
+  },
+  {
+    icon: CommunityIcon,
+    title: 'Collaborative Insights',
+    description: 'Explore investment ideas, share your analysis, and learn from a community of driven investors in our exclusive forum.',
+  },
+];
+
+const FeatureCard: React.FC<{ feature: Feature, index: number }> = ({ feature, index }) => {
+    const cardRef = useRef<HTMLDivElement>(null);
+    const isVisible = useOnScreen(cardRef, 0.2);
+
+    return (
+        <div
+            ref={cardRef}
+            className={`
+                rounded-lg p-6 flex flex-col
+                transition-all ease-out duration-700
+                ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}
+            `}
+            style={{
+                backgroundColor: 'var(--color-bg-secondary)',
+                border: '1px solid var(--color-bg-tertiary)',
+                transitionDelay: `${index * 150}ms`
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--color-blue-dark)';
+                e.currentTarget.style.transform = 'translateY(-4px)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--color-bg-tertiary)';
+                e.currentTarget.style.transform = 'translateY(0)';
+            }}
+        >
+            <feature.icon className="w-10 h-10 mb-4" style={{color: 'var(--color-blue-light)'}} />
+            <h3 className="text-2xl font-bold mb-2"
+                style={{fontFamily: 'var(--font-display)', color: 'var(--color-cream)'}}>
+                {feature.title}
+            </h3>
+            <p className="flex-grow"
+               style={{fontFamily: 'var(--font-body)', color: 'var(--color-text-secondary)'}}>
+                {feature.description}
+            </p>
+            {feature.visual && <div className="mt-auto pt-4">{feature.visual}</div>}
+        </div>
+    );
+};
+
+
+export const Features: React.FC = () => {
+  return (
+    <section className="py-20 md:py-28" style={{backgroundColor: 'var(--color-bg-primary)'}}>
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold fade-in"
+                style={{fontFamily: 'var(--font-display)', color: 'var(--color-cream)'}}>
+              Everything You Need to Succeed
+            </h2>
+            <p className="mt-4 max-w-xl mx-auto fade-in delay-200"
+               style={{fontFamily: 'var(--font-body)', color: 'var(--color-text-secondary)'}}>
+                Powerful tools and a vibrant community to elevate your investing journey.
+            </p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-8">
+          {featuresData.map((feature, index) => (
+            <FeatureCard key={feature.title} feature={feature} index={index} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};

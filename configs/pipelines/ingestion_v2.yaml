@@ -1,0 +1,170 @@
+# Ingestion config V2 - Optimizado para quality scoring + outlier detection
+
+# Cargar universo de tickers
+ticker_universe:
+  source: configs/universes/sp500_top100.yaml
+  flatten_sectors: true  # Extraer todos los tickers a lista plana
+
+sources:
+  # ===== MACRO DATA (Context analysis) =====
+  - name: fred_macro_core
+    type: fred
+    params:
+      series_ids:
+        - FEDFUNDS      # Fed Funds Rate (critical for valuation)
+        - GS10          # 10Y Treasury
+        - T10Y2Y        # Yield curve (recession indicator)
+        - CPIAUCSL      # Inflation
+        - UNRATE        # Unemployment
+        - GDP           # GDP Growth
+        - USREC         # Recession indicator
+        - VIXCLS        # VIX (fear gauge)
+      start_date: "1950-01-01"
+
+  # ===== FX / CURRENCIES (Global context) =====
+  - name: fx_majors
+    type: fmp
+    params:
+      endpoint: forex/historical
+      pairs:
+        - EURUSD        # Euro vs Dollar
+        - GBPUSD        # Pound vs Dollar
+        - USDJPY        # Dollar vs Yen
+        - USDCNY        # Dollar vs Yuan (China exposure)
+        - USDCHF        # Dollar vs Swiss Franc (safe haven)
+        - AUDUSD        # Aussie (commodity proxy)
+        - USDCAD        # Canadian Dollar (oil proxy)
+      interval: daily
+      start_date: "1990-01-01"
+
+  - name: dxy_index
+    type: fmp
+    params:
+      endpoint: quote/DX-Y.NYB  # Dollar Index
+      interval: daily
+      start_date: "1970-01-01"
+
+  # ===== COMMODITIES (Inflation + sector signals) =====
+  - name: commodities_energy
+    type: fmp
+    params:
+      endpoint: quote
+      symbols:
+        - WTOUSD        # WTI Crude Oil
+        - BCOUSD        # Brent Crude
+        - NGUSD         # Natural Gas
+      interval: daily
+      start_date: "1990-01-01"
+
+  - name: commodities_metals
+    type: fmp
+    params:
+      endpoint: quote
+      symbols:
+        - GCUSD         # Gold (safe haven)
+        - SIUSD         # Silver
+        - CLUSD         # Copper (economic proxy)
+        - PDUSD         # Palladium
+      interval: daily
+      start_date: "1990-01-01"
+
+  - name: commodities_agriculture
+    type: fmp
+    params:
+      endpoint: quote
+      symbols:
+        - ZWUSD         # Wheat
+        - ZCUSD         # Corn
+        - ZSUSD         # Soybeans
+      interval: daily
+      start_date: "1990-01-01"
+
+  - name: fred_macro_credit
+    type: fred
+    params:
+      series_ids:
+        - BAMLH0A0HYM2  # High Yield spread
+        - BAMLC0A0CM    # Investment Grade spread
+        - DEXCHUS       # USD/CNY (China exposure)
+      start_date: "1990-01-01"
+
+  # ===== EQUITY DATA (Quality + Valuation) =====
+  - name: fmp_fundamentals
+    type: fmp
+    params:
+      tickers: ${ticker_universe}
+      endpoints:
+        - income-statement
+        - balance-sheet
+        - cash-flow-statement
+        - key-metrics
+        - financial-ratios
+        - enterprise-values
+        - rating  # Quality ratings
+      period: quarterly
+      limit: 100  # 25 years de historia
+      start_date: "1985-01-01"
+
+  - name: fmp_price_history
+    type: fmp
+    params:
+      tickers: ${ticker_universe}
+      interval: daily
+      start_date: "1985-01-01"
+
+  # ===== SENTIMENT & NEWS (Per-ticker) =====
+  - name: fmp_news_sentiment
+    type: fmp
+    params:
+      tickers: ${ticker_universe}
+      endpoint: stock_news
+      limit: 50  # Last 50 articles per ticker
+      from_date: "2020-01-01"  # 5 years de news
+
+  - name: fiscalai_earnings_sentiment
+    type: fiscalai
+    enabled: true
+    params:
+      api_key: 9b67346a-28ca-497f-a3d5-2e1f915f10d8
+      tickers: ${ticker_universe}
+      endpoints:
+        - earnings-call-transcripts
+        - insider-trades
+        - sec-filings
+      start_date: "2020-01-01"
+
+  # ===== ALTERNATIVE DATA =====
+  - name: reddit_sentiment_stocks
+    type: reddit
+    enabled: false  # Optional, enable if needed
+    params:
+      subreddits: ["stocks", "investing", "ValueInvesting"]
+      tickers: ${ticker_universe}
+      limit: 100
+
+  # ===== HISTORICAL OUTLIERS (Especial dataset) =====
+  - name: historical_greats
+    type: manual_csv
+    description: "Empresas excepcionales desde 1900 (Ford, GM, GE, IBM, etc)"
+    params:
+      path: data/manual/historical_outliers.csv
+      columns:
+        - ticker
+        - founded_year
+        - peak_market_cap
+        - key_innovations
+        - moat_type
+        - founder_characteristics
+
+output:
+  format: parquet
+  partition: by_source  # Separar por tipo de dato
+  compression: snappy
+  version: "v2"
+
+validation:
+  min_rows_per_ticker: 20  # Al menos 5 años de data
+  required_columns:
+    fundamentals: ["revenue", "netIncome", "totalAssets", "totalDebt"]
+    prices: ["open", "high", "low", "close", "volume"]
+    sentiment: ["sentiment_score", "source", "date"]

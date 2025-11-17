@@ -1,0 +1,54 @@
+REQUEST: Get Prices (Batch)
+============================
+
+Método: POST
+URL: http://localhost:8000/api/prices/realtime
+
+Headers:
+  Authorization: Bearer TU_TOKEN_AQUI
+  Content-Type: application/json
+
+Body (JSON):
+{
+  "tickers": ["AAPL", "MSFT", "GOOGL", "NVDA"]
+}
+
+Pasos en Insomnia:
+1. Click en "+" → "HTTP Request"
+2. Name: "Get Prices"
+3. Method: POST
+4. URL: http://localhost:8000/api/prices/realtime
+5. Click tab "Header"
+6. Agrega header:
+   - Name: Authorization
+   - Value: Bearer TU_TOKEN_AQUI (reemplaza con tu token real)
+7. Agrega header:
+   - Name: Content-Type
+   - Value: application/json
+8. Click tab "Body"
+9. Selecciona "JSON"
+10. Pega el JSON de arriba
+11. Click "Send"
+
+Respuesta esperada:
+{
+  "AAPL": {
+    "price": 150.25,
+    "change": 2.5,
+    "change_percent": 1.69
+  },
+  "MSFT": { ... },
+  ...
+}
+
+
+
+
+
+
+
+
+
+
+
+

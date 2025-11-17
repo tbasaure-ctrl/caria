@@ -1,0 +1,25 @@
+# Configuración anti-overfitting para entrenamiento de modelos
+# Usar con: settings = Settings.from_yaml("configs/training/anti_overfit.yaml")
+
+model:
+  fusion:
+    latent_dim: 512
+
+training:
+  batch_size: 64
+  max_epochs: 50
+  precision: 16
+  gradient_clip_val: 1.0
+  learning_rate: 1e-4
+  dropout: 0.4
+  weight_decay: 1e-3
+  monitor_metric: val_loss
+  monitor_mode: min
+  early_stopping_patience: 7
+  early_stopping_min_delta: 1e-5
+  checkpoint_save_top_k: 3
+
+
+
+
+

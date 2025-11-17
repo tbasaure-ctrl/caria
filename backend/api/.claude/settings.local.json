@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(nul)",
+      "Bash(python:*)",
+      "Bash(timeout /t 5)",
+      "Bash(ping:*)",
+      "Bash(timeout /t 8)",
+      "Bash(curl:*)",
+      "Bash(findstr:*)",
+      "Bash(psql:*)",
+      "Bash(timeout /t 3)",
+      "Bash(echo:*)",
+      "Bash(C:keytemp_register.json)",
+      "Bash(timeout /t 10)",
+      "Bash(powershell:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

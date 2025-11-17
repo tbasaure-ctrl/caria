@@ -1,0 +1,36 @@
+defaults:
+  - environments: local
+
+logging:
+  level: INFO
+  format: "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+
+storage:
+  data_root: data
+  raw_path: ${storage.data_root}/raw
+  bronze_path: ${storage.data_root}/bronze
+  silver_path: ${storage.data_root}/silver
+  gold_path: ${storage.data_root}/gold
+
+database:
+  host: ${oc.env:POSTGRES_HOST,localhost}
+  port: ${oc.env:POSTGRES_PORT,5432}
+  db: ${oc.env:POSTGRES_DB,caria}
+  user: ${oc.env:POSTGRES_USER,caria_user}
+  password: ${oc.env:POSTGRES_PASSWORD,changeme}
+  schema: ${oc.env:PGVECTOR_SCHEMA,rag}
+
+feature_store:
+  project: ${oc.env:FEAST_PROJECT,caria}
+  registry_path: ${storage.data_root}/registry.db
+
+mlflow:
+  tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,http://localhost:5000}
+
+retrieval:
+  provider: ${oc.env:RETRIEVAL_PROVIDER,openai}
+  embedding_model: ${oc.env:RETRIEVAL_EMBEDDING_MODEL,text-embedding-3-small}
+  embedding_dim: ${oc.env:RETRIEVAL_EMBEDDING_DIM,1536}
+  top_k: 5
+  similarity_threshold: 0.75
+

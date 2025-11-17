@@ -1,0 +1,70 @@
+FROM python:3.11-slim
+
+# Build-time configuration
+ENV PIP_DEFAULT_TIMEOUT=1800 \
+    PIP_RETRIES=5 \
+    PYTHONUNBUFFERED=1
+
+ARG API_DIR=services
+ARG CARIA_DIR=caria_data
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install API requirements
+COPY ${API_DIR}/requirements.txt /tmp/api_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/api_requirements.txt \
+    && rm -f /tmp/api_requirements.txt
+
+# Install caria_data requirements once during build
+COPY ${CARIA_DIR}/requirements.txt /tmp/caria_data_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/caria_data_requirements.txt \
+    && rm -f /tmp/caria_data_requirements.txt
+
+# Copy application source
+COPY ${API_DIR}/ /app/services/
+# Copy caria_data source code - copy src directory explicitly
+COPY ${CARIA_DIR}/src/ /app/caria_data/src/
+# Verify models directory exists after copy and list its contents
+RUN echo "=== Verifying caria directory structure ===" && \
+    ls -la /app/caria_data/src/caria/ && \
+    echo "=== Checking for models directory ===" && \
+    test -d /app/caria_data/src/caria/models && \
+    echo "✓ models directory exists" && \
+    ls -la /app/caria_data/src/caria/models/ && \
+    test -f /app/caria_data/src/caria/models/auth.py && \
+    echo "✓ auth.py exists" || \
+    (echo "✗ ERROR: models directory or auth.py missing!" && \
+     echo "Contents of /app/caria_data/src/caria/:" && \
+     ls -la /app/caria_data/src/caria/ && \
+     exit 1)
+
+# Copy and make startup script executable
+COPY ${API_DIR}/start.sh /app/services/start.sh
+RUN chmod +x /app/services/start.sh
+
+# Set PYTHONPATH to include both caria_data/src and services directory
+ENV PYTHONPATH=/app/caria_data/src:/app/services:$PYTHONPATH
+
+# Set working directory to services for the API
+WORKDIR /app/services
+
+# Expose port (Cloud Run uses PORT env var, default 8080)
+# But we expose 8000 for compatibility with other platforms
+EXPOSE 8000
+
+# Healthcheck (Cloud Run handles health checks, but this is useful for local testing)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8000}/health/live || exit 1
+
+# Run application with SocketIO support per audit document
+# Use startup script that sets PYTHONPATH before importing
+# Cloud Run sets PORT automatically (usually 8080)
+CMD ["/app/services/start.sh"]
+

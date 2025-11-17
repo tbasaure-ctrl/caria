@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # Postgres con pgvector
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: wise_adviser_db
+    environment:
+      POSTGRES_USER: wise_user
+      POSTGRES_PASSWORD: secure_password_change_me
+      POSTGRES_DB: wise_adviser_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wise_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wise_network
+
+  # MCP Server (RAG)
+  mcp_server:
+    build:
+      context: ./mcp_server
+      dockerfile: Dockerfile
+    container_name: wise_adviser_mcp
+    environment:
+      POSTGRES_CONNECTION: postgresql://wise_user:secure_password_change_me@postgres:5432/wise_adviser_db
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      MCP_PORT: 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./mcp_server:/app
+    command: python app.py
+    networks:
+      - wise_network
+
+  # MLflow (opcional - tracking de experimentos)
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: wise_adviser_mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      BACKEND_STORE_URI: postgresql://wise_user:secure_password_change_me@postgres:5432/mlflow_db
+      ARTIFACT_ROOT: /mlflow/artifacts
+    volumes:
+      - mlflow_artifacts:/mlflow/artifacts
+    depends_on:
+      - postgres
+    command: >
+      mlflow server
+      --backend-store-uri postgresql://wise_user:secure_password_change_me@postgres:5432/mlflow_db
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+      --port 5000
+    networks:
+      - wise_network
+
+volumes:
+  pgdata:
+  mlflow_artifacts:
+
+networks:
+  wise_network:
+    driver: bridge

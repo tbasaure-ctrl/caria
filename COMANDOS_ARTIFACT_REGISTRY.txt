@@ -1,0 +1,72 @@
+===========================================
+COMANDOS PARA EJECUTAR MANUALMENTE
+===========================================
+
+Ejecuta estos comandos desde PowerShell donde tengas gcloud disponible
+(o desde C:\Users\tomas\AppData\Local\Google\Cloud SDK)
+
+===========================================
+PASO 0: Obtener PROJECT_ID correcto
+===========================================
+
+gcloud projects list
+
+# Busca el proyecto "caria-backend" y usa su PROJECT_ID (no el número)
+# Debería ser algo como: caria-backend
+
+# O simplemente usa:
+gcloud config get-value project
+
+===========================================
+PASO 1: Crear repositorio Artifact Registry
+===========================================
+
+# Usa el PROJECT_ID (no el número 418525923468)
+gcloud artifacts repositories create caria-api-repo --repository-format=docker --location=us-central1 --description="Caria API Docker images" --project=caria-backend
+
+# O si ya tienes el proyecto configurado, simplemente:
+gcloud artifacts repositories create caria-api-repo --repository-format=docker --location=us-central1 --description="Caria API Docker images"
+
+===========================================
+PASO 2: Configurar autenticacion Docker
+===========================================
+
+gcloud auth configure-docker us-central1-docker.pkg.dev
+
+===========================================
+PASO 3: Construir y subir imagen
+===========================================
+
+# Primero obtén el PROJECT_ID correcto
+$PROJECT_ID = gcloud config get-value project
+
+cd C:\key\wise_adviser_cursor_context\notebooks
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/caria-api-repo/caria-api:latest
+
+===========================================
+PASO 4: Desplegar a Cloud Run
+===========================================
+
+# Obtener PROJECT_ID
+$PROJECT_ID = gcloud config get-value project
+
+# Reemplaza TU_PASSWORD con la password que pusiste al crear Cloud SQL
+$DB_PASSWORD = "TU_PASSWORD"
+$DATABASE_URL = "postgresql://postgres:$DB_PASSWORD@/caria?host=/cloudsql/$PROJECT_ID:us-central1:caria-db"
+
+gcloud run deploy caria-api --image us-central1-docker.pkg.dev/$PROJECT_ID/caria-api-repo/caria-api:latest --platform managed --region us-central1 --allow-unauthenticated --memory 2Gi --cpu 2 --timeout 300 --max-instances 10 --set-env-vars "PORT=8080,RETRIEVAL_PROVIDER=gemini,RETRIEVAL_EMBEDDING_DIM=768" --set-secrets "GEMINI_API_KEY=gemini-api-key:latest" --add-cloudsql-instances $PROJECT_ID:us-central1:caria-db --set-env-vars "DATABASE_URL=$DATABASE_URL,CORS_ORIGINS=https://caria-git-main-tomas-projects-70a0592d.vercel.app"
+
+===========================================
+PASO 5: Obtener URL del servicio
+===========================================
+
+gcloud run services describe caria-api --region=us-central1 --format="value(status.url)"
+
+===========================================
+NOTAS:
+===========================================
+
+- PROJECT_ID es "caria-backend" (no el número 418525923468)
+- Guarda la URL que te devuelva el Paso 5
+- Actualiza Vercel con: VITE_API_URL=<URL_QUE_OBTUVISTE>
+- Prueba el endpoint: curl <URL>/health

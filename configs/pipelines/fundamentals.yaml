@@ -1,0 +1,27 @@
+start_date: "1950-01-01"
+max_tickers: 120
+
+universe:
+  top_performers:
+    tickers:
+      - AAPL
+      - MSFT
+      - NVDA
+      - AMZN
+      - GOOGL
+      - V
+      - MA
+      - LLY
+      - COST
+      - AVGO
+  distressed:
+    tickers:
+      - ENRONQ
+      - LEHMQ
+      - WCOM
+      - GM
+      - BSC
+  sp500:
+    include: false
+
+

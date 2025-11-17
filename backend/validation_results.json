@@ -1,0 +1,69 @@
+﻿{
+    "start_date":  "2025-05-17",
+    "end_date":  "2025-08-24",
+    "validation_date":  "2025-11-13T23:52:14.650593",
+    "n_predictions":  100,
+    "n_actuals":  100,
+    "backtesting":  {
+                        "accuracy":  0.74,
+                        "total_predictions":  100,
+                        "correct_predictions":  74,
+                        "confusion_matrix":  [
+                                                 [
+                                                     15,
+                                                     3,
+                                                     1,
+                                                     0
+                                                 ],
+                                                 [
+                                                     2,
+                                                     21,
+                                                     1,
+                                                     0
+                                                 ],
+                                                 [
+                                                     4,
+                                                     8,
+                                                     26,
+                                                     0
+                                                 ],
+                                                 [
+                                                     2,
+                                                     3,
+                                                     2,
+                                                     12
+                                                 ]
+                                             ],
+                        "regime_labels":  [
+                                              "expansion",
+                                              "slowdown",
+                                              "recession",
+                                              "stress"
+                                          ]
+                    },
+    "statistical_metrics":  {
+                                "r_squared":  0.9613394035705624,
+                                "p_value":  4.8951413019898553E-71,
+                                "slope":  0.9150425461361017,
+                                "intercept":  -0.0005688614690451269,
+                                "std_error":  0.018536347086020467,
+                                "n_observations":  100,
+                                "is_significant":  true,
+                                "is_strong_relationship":  true,
+                                "interpretation":  "Strong and significant relationship (RÂ² = 0.961, p = 0.0000). Model predictions are reliable."
+                            },
+    "benchmarking":  {
+                         "buy_and_hold":  {
+                                              "model_return":  -0.18664200157751865,
+                                              "benchmark_return":  0.08803521495281497,
+                                              "excess_return":  -0.2746772165303336,
+                                              "outperformed":  false
+                                          },
+                         "moving_average":  {
+                                                "strategy_return":  -0.1217183652585101,
+                                                "model_return":  0.05210925520607845,
+                                                "excess_return":  0.17382762046458855,
+                                                "outperformed":  true
+                                            }
+                     }
+}

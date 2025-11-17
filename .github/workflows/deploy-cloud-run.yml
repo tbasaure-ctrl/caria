@@ -1,0 +1,68 @@
+name: 'Build and Deploy to Cloud Run'
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: 'caria-backend'
+  REGION: 'us-central1'
+  SERVICE: 'caria-api'
+  ARTIFACT_REPO: 'caria-api-repo'
+  WORKLOAD_IDENTITY_PROVIDER: 'projects/418525923468/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+
+jobs:
+  deploy:
+    runs-on: 'ubuntu-latest'
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@v4'
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
+          service_account: 'github-actions@caria-backend.iam.gserviceaccount.com'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Docker Auth'
+        uses: 'docker/login-action@v3'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.auth_token }}'
+          registry: '${{ env.REGION }}-docker.pkg.dev'
+
+      - name: 'Build and Push Container'
+        run: |-
+          # Si el repositorio tiene la estructura notebooks/, trabajar desde ahí
+          if [ -d "notebooks" ]; then
+            cd notebooks
+          fi
+          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:${{ github.sha }}"
+          docker build -f backend/Dockerfile --tag "${DOCKER_TAG}" .
+          docker push "${DOCKER_TAG}"
+          docker tag "${DOCKER_TAG}" "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:latest"
+          docker push "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:latest"
+
+      - name: 'Deploy to Cloud Run'
+        id: deploy
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          service: '${{ env.SERVICE }}'
+          region: '${{ env.REGION }}'
+          image: '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:${{ github.sha }}'
+          flags: '--allow-unauthenticated --memory=2Gi --cpu=2 --timeout=300 --max-instances=10 --set-env-vars=RETRIEVAL_PROVIDER=gemini,RETRIEVAL_EMBEDDING_DIM=768,CORS_ORIGINS=https://caria-git-main-tomas-projects-70a0592d.vercel.app,DATABASE_URL=postgresql://postgres:Theolucas7@/caria?host=/cloudsql/caria-backend:us-central1:caria-db --set-secrets=GEMINI_API_KEY=gemini-api-key:latest,POSTGRES_PASSWORD=postgres-password:latest,JWT_SECRET_KEY=jwt-secret-key:latest --add-cloudsql-instances=caria-backend:us-central1:caria-db'
+
+      - name: 'Show output'
+        run: |-
+          echo "Service deployed at: ${{ steps.deploy.outputs.url }}"
+

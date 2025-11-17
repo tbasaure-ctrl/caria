@@ -1,0 +1,35 @@
+datasets:
+  # Core stock features - these have ticker and will be the base
+  - path: fundamentals/quality_signals.parquet
+    join_keys: ["date", "period", "ticker"]
+  - path: fundamentals/value_signals.parquet
+    join_keys: ["date", "period", "ticker"]
+  - path: technicals/momentum_signals.parquet
+    join_keys: ["date", "ticker"]
+  - path: technicals/risk_signals.parquet
+    join_keys: ["date", "ticker"]
+
+  # Market-level features - broadcast to all tickers on same date
+  # NOTE: These will be merged by date only, creating duplicates if not handled
+  # The gold_builder should aggregate or forward-fill these across tickers
+  # For now, commenting out to fix the join issue
+  # - path: commodities/commodities.parquet
+  #   join_keys: ["date"]
+  # - path: fx/fx_rates.parquet
+  #   join_keys: ["date"]
+
+  # Events - handled separately by _label_regimes
+  - path: events/regime_context.parquet
+    join_keys: ["start_date", "end_date"]
+    type: events
+
+  # Sentiment - currently has ticker=None, needs fixing upstream
+  # - path: news_sentiment/daily_scores.parquet
+  #   join_keys: ["date", "ticker"]
+
+splits:
+  # With 4-quarter (1 year) forward target, we can extend splits closer to present
+  # Data available until ~2025-09, minus 1 year for target = usable until ~2024-09
+  train: ["1985-01-01", "2019-12-31"]  # 35 years
+  val: ["2020-01-01", "2022-12-31"]    # 3 years
+  test: ["2023-01-01", "2024-09-30"]   # 21 months

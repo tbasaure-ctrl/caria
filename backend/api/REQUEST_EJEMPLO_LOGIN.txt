@@ -1,0 +1,36 @@
+REQUEST: Login
+==============
+
+Método: POST
+URL: http://localhost:8000/api/auth/login
+
+Headers: (ninguno necesario)
+
+Body (Form URL Encoded):
+  username: testuser
+  password: Test123!
+
+Pasos en Insomnia:
+1. Click en "+" → "HTTP Request"
+2. Name: "Login"
+3. Method: POST
+4. URL: http://localhost:8000/api/auth/login
+5. Click tab "Body"
+6. Selecciona "Form URL Encoded"
+7. Agrega campo:
+   - Name: username
+   - Value: testuser
+8. Agrega campo:
+   - Name: password
+   - Value: Test123!
+9. Click "Send"
+
+IMPORTANTE: Copia el access_token de la respuesta
+
+Respuesta esperada:
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  ...
+}
+

@@ -1,0 +1,41 @@
+# Dependencias principales de Caria
+# prefect>=2.14.0  # Commented temporarily - too heavy for initial build
+pandas>=2.0.0
+numpy>=1.24.0
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Sistema I - HMM Régimen
+hmmlearn>=0.3.0
+scipy>=1.10.0
+
+# Sistema II - RAG
+# sentence-transformers>=2.2.0  # Commented temporarily - pulls torch (~900MB)
+pgvector>=0.2.0
+psycopg2-binary>=2.9.0
+sqlalchemy>=2.0.0
+
+# Sistema III y IV - Factores y Valuación
+scikit-learn>=1.3.0
+
+# API
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.0.0
+
+# Portfolio Analysis (from audit document)
+quantstats>=0.0.62
+yfinance>=0.2.0
+ipython>=8.0.0
+
+# Plotting for Monte Carlo
+plotly>=5.0.0
+
+# Opcional - LLM local para RAG
+# ollama>=0.1.0  # Descomentar si usas Ollama
+# transformers>=4.35.0  # Descomentar si usas transformers
+
+# Opcional - Modelos legacy (deprecated)
+# pytorch-lightning>=2.0.0
+# torch>=2.0.0
+

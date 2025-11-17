@@ -1,0 +1,19 @@
+═══════════════════════════════════════════════════════════════
+  COMANDO FINAL PARA SUBIR A GITHUB
+═══════════════════════════════════════════════════════════════
+
+✅ Todo está listo:
+   - Commit creado: 91ebb51
+   - Rama: main
+   - Remote: https://github.com/tbasaure-ctrl/caria.git
+
+EJECUTA ESTE COMANDO:
+─────────────────────
+
+git push -u origin main
+
+
+Si te pide credenciales:
+- Usa tu Personal Access Token de GitHub (no tu contraseña)
+- Si no tienes token, créalo en: https://github.com/settings/tokens
+

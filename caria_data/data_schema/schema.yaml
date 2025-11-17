@@ -1,0 +1,139 @@
+# Schema de base de datos - Wise Adviser
+# Este archivo define la estructura completa de datos del proyecto
+
+version: "1.0"
+last_updated: "2025-01-07"
+
+tables:
+  # ===== DATOS RAW =====
+  
+  prices:
+    description: "Precios históricos OHLCV diarios"
+    columns:
+      - {name: ticker, type: VARCHAR(10), constraints: [NOT NULL], description: "Símbolo bursátil"}
+      - {name: date, type: DATE, constraints: [NOT NULL], description: "Fecha negociación (ISO 8601)"}
+      - {name: open, type: FLOAT, description: "Precio apertura"}
+      - {name: high, type: FLOAT, description: "Precio máximo del día"}
+      - {name: low, type: FLOAT, description: "Precio mínimo del día"}
+      - {name: close, type: FLOAT, description: "Precio cierre"}
+      - {name: volume, type: BIGINT, description: "Volumen negociado"}
+      - {name: adjusted_close, type: FLOAT, description: "Precio ajustado por splits/dividendos"}
+    primary_key: [ticker, date]
+    indexes:
+      - {columns: [date]}
+      - {columns: [ticker, date DESC]}
+
+  fundamentals:
+    description: "Datos fundamentales as-reported (point-in-time correct)"
+    columns:
+      - {name: ticker, type: VARCHAR(10), constraints: [NOT NULL]}
+      - {name: date, type: DATE, constraints: [NOT NULL], description: "Fecha reporte (as-reported)"}
+      - {name: period_end, type: DATE, description: "Fin período fiscal"}
+      - {name: revenue, type: FLOAT, description: "Ingresos (millions USD)"}
+      - {name: operating_income, type: FLOAT}
+      - {name: net_income, type: FLOAT}
+      - {name: free_cash_flow, type: FLOAT}
+      - {name: total_assets, type: FLOAT}
+      - {name: total_debt, type: FLOAT}
+      - {name: shareholders_equity, type: FLOAT}
+      - {name: roic, type: FLOAT, description: "Return on Invested Capital"}
+      - {name: reinvestment_rate, type: FLOAT, description: "(CapEx - Depreciation) / OpIncome"}
+    primary_key: [ticker, date]
+    indexes:
+      - {columns: [ticker, period_end]}
+
+  macro_indicators:
+    description: "Indicadores macroeconómicos (FRED, BLS, etc.)"
+    columns:
+      - {name: indicator, type: VARCHAR(50), constraints: [NOT NULL], description: "Código (DGS10, T10Y2Y, M2SL)"}
+      - {name: date, type: DATE, constraints: [NOT NULL]}
+      - {name: value, type: FLOAT}
+      - {name: source, type: VARCHAR(20), description: "FRED, BLS, etc."}
+    primary_key: [indicator, date]
+    indexes:
+      - {columns: [date]}
+
+  # ===== WISDOM & EMBEDDINGS =====
+  
+  wisdom_chunks:
+    description: "Chunks de sabiduría con embeddings vectoriales"
+    columns:
+      - {name: id, type: UUID, constraints: [PRIMARY KEY]}
+      - {name: text, type: TEXT, constraints: [NOT NULL], description: "Contenido 200-800 tokens"}
+      - {name: source, type: VARCHAR(100), description: "Autor/libro (Graham, Buffett, etc.)"}
+      - {name: themes, type: TEXT[], description: "Temas (valuation, risk, psychology)"}
+      - {name: context, type: TEXT, description: "Contexto histórico (2008 crisis, etc.)"}
+      - {name: embedding, type: vector(1536), description: "Embedding OpenAI ada-002"}
+      - {name: embedding_model, type: VARCHAR(50), description: "text-embedding-ada-002"}
+      - {name: created_at, type: TIMESTAMP, description: "Timestamp creación"}
+      - {name: index_version, type: VARCHAR(20), description: "v1, v2, etc."}
+    indexes:
+      - {name: idx_embedding, type: ivfflat, columns: [embedding], options: "lists = 100"}
+      - {name: idx_themes, type: gin, columns: [themes]}
+      - {columns: [index_version]}
+
+  # ===== FEATURES PROCESADOS =====
+  
+  processed_features:
+    description: "Features engineered listos para modelo"
+    columns:
+      - {name: ticker, type: VARCHAR(10), constraints: [NOT NULL]}
+      - {name: date, type: DATE, constraints: [NOT NULL]}
+      - {name: macro_regime, type: VARCHAR(20), description: "normal|crisis|mania|tightening|easing|QE"}
+      - {name: yield_curve_slope, type: FLOAT, description: "10Y-2Y spread (basis points)"}
+      - {name: vix, type: FLOAT, description: "Volatility index"}
+      - {name: market_breadth, type: FLOAT, description: "% stocks above MA200"}
+      - {name: sentiment_score, type: FLOAT, description: "Social sentiment [-1, 1]"}
+      - {name: roic_trend, type: FLOAT, description: "Pendiente regresión ROIC 8Q"}
+      - {name: reinvestment_quality, type: FLOAT, description: "Score reinversión [0, 1]"}
+      - {name: feature_version, type: VARCHAR(20)}
+    primary_key: [ticker, date]
+    indexes:
+      - {columns: [date]}
+      - {columns: [macro_regime]}
+      - {columns: [feature_version]}
+
+  # ===== PREDICTIONS =====
+  
+  predictions:
+    description: "Predicciones del modelo"
+    columns:
+      - {name: ticker, type: VARCHAR(10), constraints: [NOT NULL]}
+      - {name: prediction_date, type: DATE, constraints: [NOT NULL]}
+      - {name: target_date, type: DATE, description: "Fecha objetivo (20 días)"}
+      - {name: predicted_regime, type: VARCHAR(20)}
+      - {name: regime_probabilities, type: JSONB, description: '{"normal": 0.6, "crash": 0.1}'}
+      - {name: predicted_return, type: FLOAT, description: "Retorno esperado 20d"}
+      - {name: drawdown_probability, type: FLOAT, description: "P(drawdown >10%)"}
+      - {name: model_version, type: VARCHAR(50)}
+      - {name: created_at, type: TIMESTAMP}
+    primary_key: [ticker, prediction_date, model_version]
+    indexes:
+      - {columns: [prediction_date]}
+      - {columns: [ticker, target_date]}
+
+# ===== METADATA SPEC =====
+
+metadata_spec:
+  description: "Campos obligatorios/opcionales para RAG"
+  required_fields:
+    - {name: id, type: UUID, description: "Identificador único"}
+    - {name: source, type: VARCHAR, description: "macro|micro|report|news|tweet|book"}
+    - {name: date, type: DATE, description: "ISO 8601"}
+  optional_fields:
+    - {name: ticker, type: VARCHAR, description: "Si aplica"}
+    - {name: industry, type: VARCHAR, description: "tech|finance|energy|..."}
+    - {name: country, type: VARCHAR(2), description: "ISO 3166-1 (US, CL, ...)"}
+    - {name: author, type: VARCHAR}
+    - {name: sentiment_score, type: FLOAT, description: "[-1, 1]"}
+    - {name: confidence, type: FLOAT, description: "[0, 1]"}
+    - {name: themes, type: TEXT[], description: "Array de tags"}
+  
+  example_filter:
+    query: "Análisis valuación fintech Chile 2018-2024 sentiment positivo"
+    filters:
+      industry: "fintech"
+      country: "CL"
+      date_range: ["2018-01-01", "2024-12-31"]
+      sentiment_score_min: 0.2
+      source: ["report", "news"]

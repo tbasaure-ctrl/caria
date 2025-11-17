@@ -1,0 +1,93 @@
+sources:
+  - name: fred_macro_core
+    type: fred
+    params:
+      series_ids:
+        - CPIAUCSL
+        - PCEPI
+        - GDPC1
+        - UNRATE
+        - INDPRO
+        - T10Y2Y
+        - GS10
+        - M2SL
+        - USREC
+      start_date: "1900-01-01"
+  - name: fred_macro_additional
+    type: fred
+    params:
+      series_ids:
+        - CPALTT01USM657N
+        - PAYEMS
+        - FEDFUNDS
+        - HOUST
+      start_date: "1950-01-01"
+  - name: commodities_energy_metals
+    type: commodities
+    params:
+      symbols:
+        - WTI
+        - BRENT
+        - GOLD
+        - SILVER
+        - COPPER
+      start_date: "1900-01-01"
+  - name: commodities_agriculture
+    type: commodities
+    params:
+      symbols:
+        - WHEAT
+        - CORN
+        - SOYBEAN
+      start_date: "1900-01-01"
+  - name: fx_major_pairs
+    type: fx
+    params:
+      pairs:
+        - DXY
+        - EURUSD
+        - GBPUSD
+        - USDJPY
+        - USDCNY
+      start_date: "1950-01-01"
+  - name: indices_price_action
+    type: indices
+    params:
+      tickers:
+        - ^DJI
+        - ^GSPC
+        - ^IXIC
+      start_date: "1900-01-01"
+  - name: fmp_equities_top_performers
+    type: fmp
+    params:
+      universe_strategy: top_performers
+      selection_count: 50
+      start_date: "1950-01-01"
+  - name: fmp_equities_bankrupt
+    type: fmp
+    params:
+      universe_strategy: bankrupt
+      selection_count: 50
+      start_date: "1950-01-01"
+  - name: news_sentiment
+    type: newsapi
+    params:
+      query: "(bubble OR crisis OR recession OR depression) AND (markets OR economy)"
+      page_size: 100
+      language: en
+  - name: reddit_sentiment
+    type: reddit
+    params:
+      subreddits: ["investing", "stocks", "wallstreetbets", "economics"]
+      limit: 200
+  - name: twitter_sentiment
+    type: twitter
+    params:
+      query: "(market crash) OR (mania) OR (recession risk)"
+      max_results: 100
+
+output:
+  format: parquet
+  partition: daily
+

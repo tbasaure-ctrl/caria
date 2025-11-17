@@ -1,0 +1,16 @@
+# Local development overrides
+
+orchestration:
+  executor: local
+  storage:
+    type: filesystem
+    base_path: data/prefect
+
+vector_store:
+  connection: postgresql://${oc.env:POSTGRES_USER,caria_user}:${oc.env:POSTGRES_PASSWORD,changeme}@${oc.env:POSTGRES_HOST,localhost}:${oc.env:POSTGRES_PORT,5432}/${oc.env:POSTGRES_DB,caria}
+  embedding_table: wisdom_embeddings
+
+retrieval:
+  top_k: 5
+  similarity_threshold: 0.75
+

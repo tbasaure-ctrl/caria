@@ -1,0 +1,303 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-01-08T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_health",
+      "parentId": null,
+      "modified": 1704672000000,
+      "created": 1704672000000,
+      "url": "http://localhost:8000/health",
+      "name": "1. Health Check",
+      "description": "Verificar estado de la API",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1704672000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_register",
+      "parentId": null,
+      "modified": 1704672001000,
+      "created": 1704672001000,
+      "url": "http://localhost:8000/api/auth/register",
+      "name": "2. Register",
+      "description": "Registrar nuevo usuario",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"test@example.com\",\n  \"username\": \"testuser\",\n  \"password\": \"TestPassword123!\",\n  \"full_name\": \"Test User\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672001000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_login",
+      "parentId": null,
+      "modified": 1704672002000,
+      "created": 1704672002000,
+      "url": "http://localhost:8000/api/auth/login",
+      "name": "3. Login (COPIA EL TOKEN)",
+      "description": "Iniciar sesión - IMPORTANTE: Copia el access_token de la respuesta",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/x-www-form-urlencoded",
+        "params": [
+          {
+            "name": "username",
+            "value": "testuser"
+          },
+          {
+            "name": "password",
+            "value": "TestPassword123!"
+          }
+        ]
+      },
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1704672002000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_prices_batch",
+      "parentId": null,
+      "modified": 1704672003000,
+      "created": 1704672003000,
+      "url": "http://localhost:8000/api/prices/realtime",
+      "name": "4. Prices - Batch (AGREGA TOKEN)",
+      "description": "Obtener precios en tiempo real - AGREGA Authorization header con tu token",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"tickers\": [\"AAPL\", \"MSFT\", \"GOOGL\", \"NVDA\"]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer PEGA_TU_TOKEN_AQUI"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672003000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_holdings_list",
+      "parentId": null,
+      "modified": 1704672004000,
+      "created": 1704672004000,
+      "url": "http://localhost:8000/api/holdings",
+      "name": "5. Holdings - List (AGREGA TOKEN)",
+      "description": "Listar holdings - AGREGA Authorization header",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer PEGA_TU_TOKEN_AQUI"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672004000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_holdings_create",
+      "parentId": null,
+      "modified": 1704672005000,
+      "created": 1704672005000,
+      "url": "http://localhost:8000/api/holdings",
+      "name": "6. Holdings - Create (AGREGA TOKEN)",
+      "description": "Crear holding - AGREGA Authorization header",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"ticker\": \"AAPL\",\n  \"quantity\": 10,\n  \"average_cost\": 150.0,\n  \"notes\": \"Apple Inc.\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer PEGA_TU_TOKEN_AQUI"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672005000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_holdings_with_prices",
+      "parentId": null,
+      "modified": 1704672006000,
+      "created": 1704672006000,
+      "url": "http://localhost:8000/api/holdings/with-prices",
+      "name": "7. Holdings - With Prices (AGREGA TOKEN)",
+      "description": "Holdings con precios - AGREGA Authorization header",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer PEGA_TU_TOKEN_AQUI"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672006000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_valuation_quick",
+      "parentId": null,
+      "modified": 1704672007000,
+      "created": 1704672007000,
+      "url": "http://localhost:8000/api/valuation/AAPL",
+      "name": "8. Valuation - Quick (AGREGA TOKEN)",
+      "description": "Valuación rápida - AGREGA Authorization header",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"ticker\": \"AAPL\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer PEGA_TU_TOKEN_AQUI"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672007000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_regime_current",
+      "parentId": null,
+      "modified": 1704672008000,
+      "created": 1704672008000,
+      "url": "http://localhost:8000/api/regime/current",
+      "name": "9. Regime - Current (SIN TOKEN)",
+      "description": "Régimen macro actual - NO requiere autenticación",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1704672008000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "wrk_caria_simple",
+      "parentId": null,
+      "modified": 1704672000000,
+      "created": 1704672000000,
+      "name": "CARIA API - Simple",
+      "description": "Versión simple sin environments - Solo reemplaza PEGA_TU_TOKEN_AQUI con tu token",
+      "scope": "collection",
+      "_type": "export"
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+

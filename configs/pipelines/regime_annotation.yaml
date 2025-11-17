@@ -1,0 +1,5 @@
+start_date: "1900-01-01"
+fred_api_key: null
+
+news:
+  aggregate: true

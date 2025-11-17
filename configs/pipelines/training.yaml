@@ -1,0 +1,46 @@
+model:
+  name: caria_multi_modal
+  modules:
+    macro_encoder:
+      hidden_size: 256
+      num_layers: 2
+    market_encoder:
+      num_heads: 4
+      embed_dim: 256
+    behavioral_encoder:
+      hidden_dims: [128, 64]
+    micro_encoder:
+      hidden_dims: [256, 128]
+    wisdom_encoder:
+      transformer_model: sentence-transformers/all-mpnet-base-v2
+  fusion:
+    latent_dim: 512
+    dropout: 0.2
+    heads:
+      regime_classification:
+        num_classes: 5
+      return_prediction:
+        horizon_days: 20
+      drawdown_probability:
+        threshold: 0.1
+
+training:
+  batch_size: 64
+  num_workers: 8
+  max_epochs: 50
+  precision: 16
+  gradient_clip_val: 0.5
+  learning_rate: 1e-4
+  warmup_steps: 500
+  weight_decay: 1e-5
+
+data:
+  train_split: 0.7
+  val_split: 0.2
+  test_split: 0.1
+  lookback_windows:
+    macro_days: 90
+    micro_quarters: 8
+    sentiment_days: 30
+  target_horizon_days: 20
+

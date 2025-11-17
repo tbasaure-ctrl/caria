@@ -1,0 +1,112 @@
+services:
+  # PostgreSQL with pgvector
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: caria_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-caria_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-caria}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../caria_data/infrastructure/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-caria_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - caria_network
+
+  # FastAPI Backend
+  api:
+    build:
+      context: ..
+      dockerfile: services/Dockerfile
+    container_name: caria_api
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-caria_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-caria}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-in-production-use-secrets-min-32-chars}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:80}
+      CARIA_SETTINGS_PATH: /app/../caria_data/configs/base.yaml
+      FMP_API_KEY: "79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq"
+      FRED_API_KEY: "4b90ca15ff28cfec137179c22fd8246d"
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_API_URL: ${GEMINI_API_URL:-https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent}
+      LLAMA_API_URL: ${LLAMA_API_URL}
+      LLAMA_API_KEY: ${LLAMA_API_KEY}
+      LLAMA_MODEL_NAME: ${LLAMA_MODEL_NAME:-llama-3.1-70b-instruct}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ../caria_data:/app/../caria_data:ro
+      - ../caria_data/models:/app/../caria_data/models:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - caria_network
+
+  # Redis (optional, for caching)
+  redis:
+    image: redis:7-alpine
+    container_name: caria_redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - caria_network
+    profiles:
+      - cache
+
+  # MLflow (optional, for experiment tracking)
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: caria_mlflow
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    environment:
+      BACKEND_STORE_URI: postgresql://${POSTGRES_USER:-caria_user}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/mlflow_db
+      ARTIFACT_ROOT: /mlflow/artifacts
+    volumes:
+      - mlflow_artifacts:/mlflow/artifacts
+    depends_on:
+      - postgres
+    command: >
+      mlflow server
+      --backend-store-uri postgresql://${POSTGRES_USER:-caria_user}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/mlflow_db
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+      --port 5000
+    networks:
+      - caria_network
+    profiles:
+      - mlflow
+
+volumes:
+  pgdata:
+  redisdata:
+  mlflow_artifacts:
+
+networks:
+  caria_network:
+    driver: bridge
+

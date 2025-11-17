@@ -1,0 +1,69 @@
+===========================================
+COMANDOS PARA EJECUTAR EN CLOUD SHELL
+===========================================
+
+Copia y pega estos comandos UNO POR UNO en Cloud Shell:
+
+===========================================
+PASO 1: Configurar proyecto
+===========================================
+
+gcloud config set project caria-backend
+
+===========================================
+PASO 2: Crear Service Account
+===========================================
+
+gcloud iam service-accounts create github-actions --project=caria-backend --display-name="GitHub Actions Service Account"
+
+===========================================
+PASO 3: Dar permisos
+===========================================
+
+gcloud projects add-iam-policy-binding caria-backend --member="serviceAccount:github-actions@caria-backend.iam.gserviceaccount.com" --role="roles/artifactregistry.admin"
+
+gcloud projects add-iam-policy-binding caria-backend --member="serviceAccount:github-actions@caria-backend.iam.gserviceaccount.com" --role="roles/run.admin"
+
+gcloud projects add-iam-policy-binding caria-backend --member="serviceAccount:github-actions@caria-backend.iam.gserviceaccount.com" --role="roles/iam.serviceAccountUser"
+
+gcloud projects add-iam-policy-binding caria-backend --member="serviceAccount:github-actions@caria-backend.iam.gserviceaccount.com" --role="roles/secretmanager.secretAccessor"
+
+===========================================
+PASO 4: Crear Workload Identity Pool
+===========================================
+
+gcloud iam workload-identity-pools create github-pool --project=caria-backend --location="global" --display-name="GitHub Actions Pool"
+
+===========================================
+PASO 5: Crear Provider
+===========================================
+
+gcloud iam workload-identity-pools providers create-oidc github-provider --project=caria-backend --location="global" --workload-identity-pool=github-pool --display-name="GitHub Provider" --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" --issuer-uri="https://token.actions.githubusercontent.com"
+
+===========================================
+PASO 6: Obtener PROJECT_NUMBER y vincular
+===========================================
+
+PROJECT_NUMBER=$(gcloud projects describe caria-backend --format="value(projectNumber)")
+echo "Project Number: $PROJECT_NUMBER"
+
+gcloud iam service-accounts add-iam-policy-binding github-actions@caria-backend.iam.gserviceaccount.com --project=caria-backend --role="roles/iam.workloadIdentityUser" --member="principalSet://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/attribute.repository/tbasaure-ctrl/caria"
+
+===========================================
+PASO 7: Obtener Provider Name completo
+===========================================
+
+gcloud iam workload-identity-pools providers describe github-provider --project=caria-backend --location="global" --workload-identity-pool=github-pool --format="value(name)"
+
+===========================================
+NOTA:
+===========================================
+
+El workflow .github/workflows/deploy-cloud-run.yml ya está configurado con:
+- PROJECT_ID: caria-backend
+- WORKLOAD_IDENTITY_PROVIDER: projects/418525923468/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+
+Después de ejecutar estos comandos, solo necesitas hacer push del workflow a GitHub.
+
+
+

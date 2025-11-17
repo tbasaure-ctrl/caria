@@ -1,0 +1,29 @@
+===========================================
+DEPLOY CON TIMEOUT AUMENTADO
+===========================================
+
+El contenedor tarda en iniciar. Usa este comando con timeout mas largo:
+
+===========================================
+COMANDO: Desplegar con timeout aumentado
+===========================================
+
+gcloud run deploy caria-api --image us-central1-docker.pkg.dev/caria-backend/caria-api-repo/caria-api:latest --platform managed --region us-central1 --allow-unauthenticated --memory 2Gi --cpu 2 --timeout 300 --max-instances 10 --startup-cpu-boost --cpu-boost --set-env-vars "RETRIEVAL_PROVIDER=gemini,RETRIEVAL_EMBEDDING_DIM=768" --set-secrets "GEMINI_API_KEY=gemini-api-key:latest" --add-cloudsql-instances caria-backend:us-central1:caria-db --set-env-vars "DATABASE_URL=postgresql://postgres:Theolucas7@/caria?host=/cloudsql/caria-backend:us-central1:caria-db,CORS_ORIGINS=https://caria-git-main-tomas-projects-70a0592d.vercel.app"
+
+===========================================
+VER LOGS SI FALLA:
+===========================================
+
+gcloud run services logs read caria-api --region=us-central1 --limit=100
+
+===========================================
+NOTA:
+===========================================
+
+Si sigue fallando, puede ser que:
+1. El código tenga un error al iniciar
+2. La conexion a Cloud SQL este fallando
+3. Falte alguna dependencia
+
+Revisa los logs para ver el error exacto.
+

@@ -1,0 +1,19 @@
+===========================================
+COMANDO COMPLETO EN UNA SOLA LÍNEA
+===========================================
+
+Copia y pega este comando completo (sin saltos de línea):
+
+gcloud run deploy caria-api --image us-central1-docker.pkg.dev/caria-backend/caria-api-repo/caria-api:latest --platform managed --region us-central1 --allow-unauthenticated --memory 2Gi --cpu 2 --timeout 300 --max-instances 10 --set-env-vars "RETRIEVAL_PROVIDER=gemini,RETRIEVAL_EMBEDDING_DIM=768" --set-secrets "GEMINI_API_KEY=gemini-api-key:latest" --add-cloudsql-instances caria-backend:us-central1:caria-db --set-env-vars "DATABASE_URL=postgresql://postgres:Theolucas7@/caria?host=/cloudsql/caria-backend:us-central1:caria-db,CORS_ORIGINS=https://caria-git-main-tomas-projects-70a0592d.vercel.app"
+
+===========================================
+O MEJOR: USA EL SCRIPT AUTOMATICO
+===========================================
+
+Ejecuta: DEPLOY_FINAL.bat
+
+Este script hace todo automáticamente:
+1. Reconstruye la imagen
+2. Despliega el servicio
+3. Obtiene la URL
+

@@ -1,0 +1,20 @@
+# Configuración para entrenamiento del detector HMM de régimen macro
+
+# Archivo de features macro procesadas
+# Si macro_features.parquet no existe, usar fred_data.parquet (el HMM calculará las features necesarias)
+macro_features_file: macro/fred_data.parquet
+
+# Parámetros del modelo HMM
+n_states: 4  # Número de estados latentes (expansion, slowdown, recession, stress)
+n_iter: 100  # Iteraciones máximas para algoritmo EM
+
+# Rangos de fechas para entrenamiento
+# ACTUALIZADO 2025-11-11: Alineado con período de train/test data (1990-2024)
+train_start_date: "1990-01-01"  # Inicio de datos de entrenamiento (alineado con train data)
+train_end_date: "2024-11-30"    # Fin de datos de entrenamiento (hasta presente)
+
+# Rangos de fechas para evaluación (opcional)
+# NO USADO: HMM es no supervisado, no requiere test set
+test_start_date: "2023-01-01"   # Inicio de datos de test
+test_end_date: "2024-11-30"     # Fin de datos de test
+

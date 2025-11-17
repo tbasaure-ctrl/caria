@@ -1,0 +1,23 @@
+datasets:
+  - path: fundamentals/quality_signals.parquet
+    join_keys: ["date", "period", "ticker"]
+  - path: fundamentals/value_signals.parquet
+    join_keys: ["date", "period", "ticker"]
+  - path: technicals/momentum_signals.parquet
+    join_keys: ["date", "ticker"]
+  - path: technicals/risk_signals.parquet
+    join_keys: ["date", "ticker"]
+  - path: commodities/commodities.parquet
+    join_keys: ["date"]
+  - path: fx/fx_rates.parquet
+    join_keys: ["date", "pair"]
+  - path: events/regime_context.parquet
+    join_keys: ["start_date", "end_date"]
+    type: events
+  - path: news_sentiment/daily_scores.parquet
+    join_keys: ["date", "ticker"]
+
+splits:
+  train: ["1950-01-01", "2005-12-31"]
+  val: ["2006-01-01", "2014-12-31"]
+  test: ["2015-01-01", "2025-12-31"]

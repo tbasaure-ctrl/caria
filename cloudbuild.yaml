@@ -1,0 +1,70 @@
+# Cloud Build configuration for automatic CI/CD
+# This builds and deploys to Cloud Run automatically
+
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPO}/caria-api:$SHORT_SHA'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPO}/caria-api:latest'
+      - '-f'
+      - 'backend/Dockerfile'
+      - '.'
+
+  # Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPO}/caria-api:$SHORT_SHA']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPO}/caria-api:latest']
+
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'caria-api'
+      - '--image'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPO}/caria-api:$SHORT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '2Gi'
+      - '--cpu'
+      - '2'
+      - '--timeout'
+      - '300'
+      - '--max-instances'
+      - '10'
+      - '--set-env-vars'
+      - 'PORT=8080,RETRIEVAL_PROVIDER=gemini,RETRIEVAL_EMBEDDING_DIM=768'
+      - '--set-secrets'
+      - 'GEMINI_API_KEY=gemini-api-key:latest'
+      - '--add-cloudsql-instances'
+      - '${_CLOUDSQL_INSTANCE}'
+      - '--set-env-vars'
+      - 'DATABASE_URL=${_DATABASE_URL},CORS_ORIGINS=${_CORS_ORIGINS}'
+
+# Substitution variables (set these in Cloud Build triggers)
+# _ARTIFACT_REPO: caria-api-repo (nombre del repositorio en Artifact Registry)
+# _CLOUDSQL_INSTANCE: proyecto:region:caria-db
+# _DATABASE_URL: postgresql://user:password@/caria?host=/cloudsql/proyecto:region:caria-db
+# _CORS_ORIGINS: https://caria-git-main-tomas-projects-70a0592d.vercel.app
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPO}/caria-api:$SHORT_SHA'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPO}/caria-api:latest'
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '1200s'
+

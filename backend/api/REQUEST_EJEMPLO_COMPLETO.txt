@@ -1,0 +1,171 @@
+# 📋 Requests Completos para Insomnia - Listos para Copiar
+
+## ✅ Request 1: Health Check (Sin Token)
+
+**Method**: GET
+**URL**: http://localhost:8000/health
+
+**Headers**: (ninguno)
+**Body**: (ninguno)
+
+---
+
+## ✅ Request 2: Register (Sin Token)
+
+**Method**: POST
+**URL**: http://localhost:8000/api/auth/register
+
+**Headers**:
+- Content-Type: application/json
+
+**Body** (JSON):
+```json
+{
+  "email": "test@caria.com",
+  "username": "testuser",
+  "password": "Test123!",
+  "full_name": "Test User"
+}
+```
+
+---
+
+## ✅ Request 3: Login (Sin Token) - IMPORTANTE: Copia el access_token
+
+**Method**: POST
+**URL**: http://localhost:8000/api/auth/login
+
+**Headers**: (ninguno necesario)
+
+**Body** (Form URL Encoded):
+- username: testuser
+- password: Test123!
+
+**Respuesta esperada**:
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}
+```
+
+**⚠️ COPIA EL access_token COMPLETO**
+
+---
+
+## ✅ Request 4: Get Prices (Requiere Token)
+
+**Method**: POST
+**URL**: http://localhost:8000/api/prices/realtime
+
+**Headers**:
+- Authorization: Bearer TU_TOKEN_AQUI (reemplaza con tu token)
+- Content-Type: application/json
+
+**Body** (JSON):
+```json
+{
+  "tickers": ["AAPL", "MSFT", "GOOGL", "NVDA"]
+}
+```
+
+---
+
+## ✅ Request 5: Get Holdings (Requiere Token)
+
+**Method**: GET
+**URL**: http://localhost:8000/api/holdings
+
+**Headers**:
+- Authorization: Bearer TU_TOKEN_AQUI
+
+**Body**: (ninguno)
+
+---
+
+## ✅ Request 6: Create Holding (Requiere Token)
+
+**Method**: POST
+**URL**: http://localhost:8000/api/holdings
+
+**Headers**:
+- Authorization: Bearer TU_TOKEN_AQUI
+- Content-Type: application/json
+
+**Body** (JSON):
+```json
+{
+  "ticker": "AAPL",
+  "quantity": 10,
+  "average_cost": 150.0,
+  "notes": "Apple Inc."
+}
+```
+
+---
+
+## ✅ Request 7: Get Holdings with Prices (Requiere Token)
+
+**Method**: GET
+**URL**: http://localhost:8000/api/holdings/with-prices
+
+**Headers**:
+- Authorization: Bearer TU_TOKEN_AQUI
+
+**Body**: (ninguno)
+
+---
+
+## ✅ Request 8: Get Regime (Sin Token)
+
+**Method**: GET
+**URL**: http://localhost:8000/api/regime/current
+
+**Headers**: (ninguno)
+**Body**: (ninguno)
+
+---
+
+## ✅ Request 9: Quick Valuation (Requiere Token)
+
+**Method**: POST
+**URL**: http://localhost:8000/api/valuation/AAPL
+
+**Headers**:
+- Authorization: Bearer TU_TOKEN_AQUI
+- Content-Type: application/json
+
+**Body** (JSON):
+```json
+{
+  "ticker": "AAPL"
+}
+```
+
+---
+
+## 📝 Notas Importantes
+
+1. **Token**: Después del Login (Request 3), copia el `access_token` completo
+2. **Reemplazar**: En todos los requests que dicen "TU_TOKEN_AQUI", pega tu token real
+3. **Formato del token**: Debe ser `Bearer ` seguido del token (con espacio)
+4. **Contraseña**: Usa `Test123!` (8 caracteres)
+
+## 🐛 Si Algo No Funciona
+
+1. Verifica que la API esté corriendo: `python start_api.py`
+2. Prueba primero el Health Check (Request 1)
+3. Si Health Check funciona pero Login no, revisa los logs de la API
+4. Si el usuario ya existe, puedes saltar el Register y hacer Login directamente
+
+
+
+
+
+
+
+
+
+
+
+

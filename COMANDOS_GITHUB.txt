@@ -1,0 +1,33 @@
+COMANDOS PARA SUBIR A GITHUB
+=============================
+
+1. Crear repositorio en GitHub:
+   - Ve a: https://github.com/new
+   - Nombre: wise-adviser (o el que prefieras)
+   - NO marques "Initialize with README"
+   - Click "Create repository"
+   - Copia la URL (ej: https://github.com/tu-usuario/wise-adviser.git)
+
+2. Ejecutar estos comandos en PowerShell:
+
+cd C:\key\wise_adviser_cursor_context\notebooks
+
+git init
+git add .
+git commit -m "Initial commit: Wise Adviser with Firebase Functions and Vercel config"
+
+git remote add origin https://github.com/TU-USUARIO/TU-REPO.git
+git branch -M main
+git push -u origin main
+
+3. Si es la primera vez con Git, configura primero:
+
+git config --global user.name "Tu Nombre"
+git config --global user.email "tu@email.com"
+
+4. Después de subir, ve a Vercel:
+   - https://vercel.com/new
+   - Importa tu repo
+   - Root Directory: caria_data/caria-app
+   - Deploy!
+

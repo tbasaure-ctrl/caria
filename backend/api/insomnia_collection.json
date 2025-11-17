@@ -1,0 +1,596 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-01-08T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_auth_register",
+      "parentId": "fld_auth",
+      "modified": 1704672000000,
+      "created": 1704672000000,
+      "url": "{{ _.base_url }}/api/auth/register",
+      "name": "Register User",
+      "description": "Registrar un nuevo usuario",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"test@example.com\",\n  \"username\": \"testuser\",\n  \"password\": \"TestPassword123!\",\n  \"full_name\": \"Test User\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672000000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_auth_login",
+      "parentId": "fld_auth",
+      "modified": 1704672001000,
+      "created": 1704672001000,
+      "url": "{{ _.base_url }}/api/auth/login",
+      "name": "Login",
+      "description": "Iniciar sesión y obtener token",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/x-www-form-urlencoded",
+        "params": [
+          {
+            "name": "username",
+            "value": "testuser"
+          },
+          {
+            "name": "password",
+            "value": "TestPassword123!"
+          }
+        ]
+      },
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1704672001000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_auth_me",
+      "parentId": "fld_auth",
+      "modified": 1704672002000,
+      "created": 1704672002000,
+      "url": "{{ _.base_url }}/api/auth/me",
+      "name": "Get Current User",
+      "description": "Obtener información del usuario actual",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.access_token }}"
+      },
+      "metaSortKey": -1704672002000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_health",
+      "parentId": "fld_health",
+      "modified": 1704672003000,
+      "created": 1704672003000,
+      "url": "{{ _.base_url }}/health",
+      "name": "Health Check",
+      "description": "Verificar estado de la API",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1704672003000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_prices_realtime_batch",
+      "parentId": "fld_prices",
+      "modified": 1704672004000,
+      "created": 1704672004000,
+      "url": "{{ _.base_url }}/api/prices/realtime",
+      "name": "Get Realtime Prices (Batch)",
+      "description": "Obtener precios en tiempo real de múltiples tickers",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"tickers\": [\"AAPL\", \"MSFT\", \"GOOGL\", \"NVDA\"]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672004000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_prices_realtime_single",
+      "parentId": "fld_prices",
+      "modified": 1704672005000,
+      "created": 1704672005000,
+      "url": "{{ _.base_url }}/api/prices/realtime/AAPL",
+      "name": "Get Realtime Price (Single)",
+      "description": "Obtener precio en tiempo real de un ticker",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672005000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_holdings_list",
+      "parentId": "fld_holdings",
+      "modified": 1704672006000,
+      "created": 1704672006000,
+      "url": "{{ _.base_url }}/api/holdings",
+      "name": "List Holdings",
+      "description": "Listar todos los holdings del usuario",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672006000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_holdings_create",
+      "parentId": "fld_holdings",
+      "modified": 1704672007000,
+      "created": 1704672007000,
+      "url": "{{ _.base_url }}/api/holdings",
+      "name": "Create Holding",
+      "description": "Crear o actualizar un holding",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"ticker\": \"AAPL\",\n  \"quantity\": 10,\n  \"average_cost\": 150.0,\n  \"notes\": \"Apple Inc. - Long term hold\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672007000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_holdings_with_prices",
+      "parentId": "fld_holdings",
+      "modified": 1704672008000,
+      "created": 1704672008000,
+      "url": "{{ _.base_url }}/api/holdings/with-prices",
+      "name": "Get Holdings with Prices",
+      "description": "Obtener holdings con precios en tiempo real y métricas",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672008000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_holdings_delete",
+      "parentId": "fld_holdings",
+      "modified": 1704672009000,
+      "created": 1704672009000,
+      "url": "{{ _.base_url }}/api/holdings/{{ _.holding_id }}",
+      "name": "Delete Holding",
+      "description": "Eliminar un holding por ID",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672009000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_valuation_quick",
+      "parentId": "fld_valuation",
+      "modified": 1704672010000,
+      "created": 1704672010000,
+      "url": "{{ _.base_url }}/api/valuation/AAPL",
+      "name": "Quick Valuation",
+      "description": "Valuación rápida de una empresa",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"ticker\": \"AAPL\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672010000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_valuation_monte_carlo",
+      "parentId": "fld_valuation",
+      "modified": 1704672011000,
+      "created": 1704672011000,
+      "url": "{{ _.base_url }}/api/valuation/AAPL/monte-carlo",
+      "name": "Monte Carlo Valuation",
+      "description": "Valuación con simulación Monte Carlo",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"ticker\": \"AAPL\",\n  \"n_paths\": 10000,\n  \"country_risk\": \"low\",\n  \"industry\": null,\n  \"stage\": null\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672011000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_regime_current",
+      "parentId": "fld_regime",
+      "modified": 1704672012000,
+      "created": 1704672012000,
+      "url": "{{ _.base_url }}/api/regime/current",
+      "name": "Get Current Regime",
+      "description": "Obtener régimen macroeconómico actual",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1704672012000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_factors_screen",
+      "parentId": "fld_factors",
+      "modified": 1704672013000,
+      "created": 1704672013000,
+      "url": "{{ _.base_url }}/api/factors/screen",
+      "name": "Factor Screen",
+      "description": "Screener de empresas por factores cuantitativos",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"top_n\": 10,\n  \"regime\": null,\n  \"date\": null,\n  \"page\": 1,\n  \"page_size\": 10\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672013000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_analysis_challenge",
+      "parentId": "fld_analysis",
+      "modified": 1704672014000,
+      "created": 1704672014000,
+      "url": "{{ _.base_url }}/api/analysis/challenge",
+      "name": "Challenge Thesis",
+      "description": "Analizar y desafiar una tesis de inversión",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"thesis\": \"Creo que NVIDIA va a seguir subiendo porque la IA está en auge\",\n  \"ticker\": \"NVDA\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1704672014000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_auth",
+      "parentId": "wrk_caria",
+      "modified": 1704672000000,
+      "created": 1704672000000,
+      "name": "Authentication",
+      "description": "Endpoints de autenticación",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1704672000000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_health",
+      "parentId": "wrk_caria",
+      "modified": 1704672003000,
+      "created": 1704672003000,
+      "name": "Health",
+      "description": "Health checks",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1704672003000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_prices",
+      "parentId": "wrk_caria",
+      "modified": 1704672004000,
+      "created": 1704672004000,
+      "name": "Prices",
+      "description": "Precios en tiempo real",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1704672004000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_holdings",
+      "parentId": "wrk_caria",
+      "modified": 1704672006000,
+      "created": 1704672006000,
+      "name": "Holdings",
+      "description": "Gestión de holdings",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1704672006000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_valuation",
+      "parentId": "wrk_caria",
+      "modified": 1704672010000,
+      "created": 1704672010000,
+      "name": "Valuation",
+      "description": "Valuación de empresas",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1704672010000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_regime",
+      "parentId": "wrk_caria",
+      "modified": 1704672012000,
+      "created": 1704672012000,
+      "name": "Regime",
+      "description": "Detección de régimen macro",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1704672012000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_factors",
+      "parentId": "wrk_caria",
+      "modified": 1704672013000,
+      "created": 1704672013000,
+      "name": "Factors",
+      "description": "Factor screening",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1704672013000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_analysis",
+      "parentId": "wrk_caria",
+      "modified": 1704672014000,
+      "created": 1704672014000,
+      "name": "Analysis",
+      "description": "Análisis y RAG",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1704672014000,
+      "_type": "request_group"
+    },
+    {
+      "_id": "wrk_caria",
+      "parentId": null,
+      "modified": 1704672000000,
+      "created": 1704672000000,
+      "name": "CARIA API",
+      "description": "Colección completa de endpoints de CARIA",
+      "scope": "collection",
+      "_type": "export"
+    },
+    {
+      "_id": "env_base",
+      "parentId": "wrk_caria",
+      "modified": 1704672000000,
+      "created": 1704672000000,
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8000",
+        "access_token": "",
+        "holding_id": "1"
+      },
+      "dataPropertyOrder": {
+        "base_url": 1,
+        "access_token": 2,
+        "holding_id": 3
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1704672000000,
+      "_type": "environment"
+    }
+  ]
+}
+

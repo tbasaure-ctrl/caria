@@ -1,0 +1,52 @@
+services:
+  - type: web
+    name: caria-api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    region: oregon
+    healthCheckPath: /health/live
+    envVars:
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: caria-db
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: caria-db
+          property: port
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: caria-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: caria-db
+          property: password
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: caria-db
+          property: database
+      - key: CORS_ORIGINS
+        value: https://tu-proyecto.vercel.app
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FMP_API_KEY
+        value: 79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
+      - key: FRED_API_KEY
+        value: 4b90ca15ff28cfec137179c22fd8246d
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: CARIA_SETTINGS_PATH
+        value: /app/caria_data/configs/base.yaml
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+databases:
+  - name: caria-db
+    plan: starter
+    databaseName: caria
+    user: caria_user
+
+

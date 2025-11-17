@@ -1,0 +1,58 @@
+defaults:
+  - environments: local
+
+logging:
+  level: INFO
+  format: "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+
+storage:
+  data_root: data
+  raw_path: ${storage.data_root}/raw
+  bronze_path: ${storage.data_root}/bronze
+  silver_path: ${storage.data_root}/silver
+  gold_path: ${storage.data_root}/gold
+  models_path: ${oc.env:MODELS_PATH,models}
+
+database:
+  host: ${oc.env:POSTGRES_HOST,localhost}
+  port: ${oc.env:POSTGRES_PORT,5432}
+  db: ${oc.env:POSTGRES_DB,caria}
+  user: ${oc.env:POSTGRES_USER,caria_user}
+  password: ${oc.env:POSTGRES_PASSWORD,changeme}
+  schema: ${oc.env:PGVECTOR_SCHEMA,rag}
+
+feature_store:
+  project: ${oc.env:FEAST_PROJECT,caria}
+  registry_path: ${storage.data_root}/registry.db
+
+mlflow:
+  tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,http://localhost:5000}
+
+retrieval:
+  # Provider: local (recomendado), openai, gemini
+  # Modelos locales recomendados:
+  # - mixedbread-ai/mxbai-embed-large-v1 (1024 dims, mejor calidad)
+  # - nomic-embed-text-v1 (768 dims, más rápido)
+  provider: ${oc.env:RETRIEVAL_PROVIDER,local}
+  embedding_model: ${oc.env:RETRIEVAL_EMBEDDING_MODEL,mixedbread-ai/mxbai-embed-large-v1}
+  embedding_dim: ${oc.env:RETRIEVAL_EMBEDDING_DIM,1024}
+  top_k: 5
+  similarity_threshold: 0.75
+
+rag:
+  # Configuración para generación con LLM
+  # Opciones: ollama (recomendado), transformers
+  llm_provider: ${oc.env:RAG_LLM_PROVIDER,ollama}
+  # Modelo LLM local (para Ollama: "llama3", para transformers: "meta-llama/Meta-Llama-3-8B-Instruct")
+  llm_model: ${oc.env:RAG_LLM_MODEL,llama3}
+  max_tokens: 512
+  temperature: 0.7
+  # Orden de fallback para LLM: intenta en este orden si el anterior falla
+  # Opciones: ["gemini", "llama", "openai"] o cualquier combinación
+  llm_fallback_order: ${oc.env:RAG_LLM_FALLBACK_ORDER,["gemini", "llama", "openai"]}
+
+vector_store:
+  connection: postgresql://${database.user}:${database.password}@${database.host}:${database.port}/${database.db}
+  embedding_table: ${oc.env:PGVECTOR_TABLE,embeddings}
+  schema: ${database.schema}
+

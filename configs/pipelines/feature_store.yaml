@@ -1,0 +1,64 @@
+entities:
+  - name: equity
+    join_keys: [ticker]
+    description: "Identificador de ticker para entidades microeconómicas"
+  - name: macro_day
+    join_keys: [date]
+    description: "Fecha punto-en-tiempo para variables macro y eventos"
+
+features:
+  - name: macro_regime_indicators
+    source: silver/macro/regime_features.parquet
+    ttl_days: 7
+    tags: [macro, regime]
+  - name: macro_growth_inflation
+    source: silver/macro/growth_inflation.parquet
+    ttl_days: 30
+    tags: [macro, inflation, growth]
+  - name: commodity_factor_bundle
+    source: silver/commodities/factor_bundle.parquet
+    ttl_days: 14
+    tags: [commodities, risk]
+  - name: fx_strength_bundle
+    source: silver/fx/strength_bundle.parquet
+    ttl_days: 7
+    tags: [fx, currency]
+  - name: equity_quality_signals
+    source: silver/fundamentals/quality_signals.parquet
+    ttl_days: 90
+    tags: [micro, quality]
+  - name: equity_value_signals
+    source: silver/fundamentals/value_signals.parquet
+    ttl_days: 90
+    tags: [micro, value]
+  - name: technical_momentum_signals
+    source: silver/technicals/momentum_signals.parquet
+    ttl_days: 7
+    tags: [technicals, momentum]
+  - name: technical_risk_signals
+    source: silver/technicals/risk_signals.parquet
+    ttl_days: 7
+    tags: [technicals, risk]
+  - name: event_regime_context
+    source: silver/events/regime_context.parquet
+    ttl_days: 30
+    tags: [events, regime]
+  - name: news_sentiment_signals
+    source: silver/news_sentiment/daily_scores.parquet
+    ttl_days: 1
+    tags: [behavioral, sentiment]
+
+feature_services:
+  - name: multi_modal_inputs
+    features:
+      - macro_regime_indicators
+      - macro_growth_inflation
+      - commodity_factor_bundle
+      - fx_strength_bundle
+      - equity_quality_signals
+      - equity_value_signals
+      - technical_momentum_signals
+      - technical_risk_signals
+      - event_regime_context
+      - news_sentiment_signals
+

@@ -1,0 +1,46 @@
+FROM python:3.11-slim
+
+ENV PIP_DEFAULT_TIMEOUT=1800 \
+    PIP_RETRIES=5 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install API requirements
+COPY services/requirements.txt /tmp/api_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/api_requirements.txt && rm -f /tmp/api_requirements.txt
+
+# Install caria_data requirements
+COPY caria_data/requirements.txt /tmp/caria_data_requirements.txt
+RUN pip install --no-cache-dir -r /tmp/caria_data_requirements.txt && rm -f /tmp/caria_data_requirements.txt
+
+# Copy EVERYTHING - no exclusions, no filtering
+COPY services/ /app/services/
+COPY caria_data/src/ /app/caria_data/src/
+
+# Verify models directory exists
+RUN ls -la /app/caria_data/src/caria/models/ && \
+    test -f /app/caria_data/src/caria/models/auth.py && \
+    echo "✓ models directory and auth.py verified" || \
+    (echo "✗ ERROR: models directory missing!" && exit 1)
+
+# Copy startup script
+COPY services/start.sh /app/services/start.sh
+RUN chmod +x /app/services/start.sh
+
+# Set PYTHONPATH
+ENV PYTHONPATH=/app/caria_data/src:/app/services:$PYTHONPATH
+
+WORKDIR /app/services
+
+EXPOSE 8000
+
+CMD ["/app/services/start.sh"]
+

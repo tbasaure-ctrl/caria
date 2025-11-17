@@ -1,0 +1,16 @@
+# Staging configuration overrides
+
+orchestration:
+  executor: prefect_cloud
+  storage:
+    type: s3
+    bucket: s3://caria-staging-artifacts
+
+vector_store:
+  connection: postgresql://${oc.env:POSTGRES_USER,caria_stg}:${oc.env:POSTGRES_PASSWORD,changeme}@${oc.env:POSTGRES_HOST,staging-db}:${oc.env:POSTGRES_PORT,5432}/${oc.env:POSTGRES_DB,caria_staging}
+  embedding_table: wisdom_embeddings_v2
+
+retrieval:
+  top_k: 8
+  similarity_threshold: 0.78
+

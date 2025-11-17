@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(poetry add:*)",
+      "Bash(poetry install:*)",
+      "Bash(.venv/Scripts/python.exe -m pip:*)",
+      "Bash(dir \"C:\\key\\wise_adviser_cursor_context\\notebooks\\data\\gold\" /b)",
+      "Bash(poetry run uvicorn:*)",
+      "Bash(curl:*)",
+      "Bash(timeout /t 3)",
+      "Bash(timeout /t 2)",
+      "Bash(timeout /t 5)",
+      "Bash(dir:*)",
+      "Bash(poetry run python:*)",
+      "Bash(docker logs:*)",
+      "Skill(frontend-design:frontend-design)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git reset:*)",
+      "Bash(git push:*)",
+      "Bash(timeout 60 sleep:*)",
+      "Bash(git checkout:*)",
+      "Bash(timeout 30 sleep:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

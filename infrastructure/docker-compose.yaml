@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  postgres:
+    image: pgvector/pgvector:pg
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-caria}
+      POSTGRES_USER: ${POSTGRES_USER:-caria_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:Theolucas7}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  mcp:
+    build: ../services/mcp
+    env_file: ../.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata: {}
+

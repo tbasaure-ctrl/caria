@@ -1,0 +1,122 @@
+# Top 100 S&P 500 stocks por market cap (2024)
+# Diversificado por sectores para identificar outliers
+
+technology:
+  # Mega caps
+  - AAPL   # Apple
+  - MSFT   # Microsoft
+  - NVDA   # NVIDIA
+  - GOOGL  # Alphabet
+  - META   # Meta
+  - TSLA   # Tesla
+  - AVGO   # Broadcom
+  - AMD    # AMD
+  - ORCL   # Oracle
+  - ADBE   # Adobe
+  - CRM    # Salesforce
+  - INTC   # Intel
+  - CSCO   # Cisco
+  - QCOM   # Qualcomm
+  - TXN    # Texas Instruments
+
+financials:
+  - JPM    # JPMorgan
+  - BAC    # Bank of America
+  - WFC    # Wells Fargo
+  - GS     # Goldman Sachs
+  - MS     # Morgan Stanley
+  - BLK    # BlackRock
+  - C      # Citigroup
+  - SCHW   # Charles Schwab
+  - AXP    # American Express
+  - SPGI   # S&P Global
+
+healthcare:
+  - LLY    # Eli Lilly
+  - UNH    # UnitedHealth
+  - JNJ    # Johnson & Johnson
+  - ABBV   # AbbVie
+  - MRK    # Merck
+  - TMO    # Thermo Fisher
+  - ABT    # Abbott
+  - PFE    # Pfizer
+  - DHR    # Danaher
+  - BMY    # Bristol Myers
+
+consumer_discretionary:
+  - AMZN   # Amazon
+  - TSLA   # Tesla (también en tech)
+  - HD     # Home Depot
+  - MCD    # McDonald's
+  - NKE    # Nike
+  - SBUX   # Starbucks
+  - LOW    # Lowe's
+  - TJX    # TJX Companies
+  - BKNG   # Booking Holdings
+
+consumer_staples:
+  - WMT    # Walmart
+  - COST   # Costco
+  - PG     # Procter & Gamble
+  - KO     # Coca-Cola
+  - PEP    # PepsiCo
+  - PM     # Philip Morris
+  - MO     # Altria
+  - CL     # Colgate-Palmolive
+
+communication:
+  - META   # Meta (también en tech)
+  - GOOGL  # Alphabet (también en tech)
+  - NFLX   # Netflix
+  - DIS    # Disney
+  - CMCSA  # Comcast
+  - T      # AT&T
+  - VZ     # Verizon
+
+industrials:
+  - CAT    # Caterpillar
+  - BA     # Boeing
+  - GE     # General Electric
+  - UNP    # Union Pacific
+  - RTX    # Raytheon
+  - HON    # Honeywell
+  - UPS    # UPS
+  - LMT    # Lockheed Martin
+  - DE     # Deere
+
+energy:
+  - XOM    # Exxon Mobil
+  - CVX    # Chevron
+  - COP    # ConocoPhillips
+  - SLB    # Schlumberger
+  - EOG    # EOG Resources
+  - MPC    # Marathon Petroleum
+  - PSX    # Phillips 66
+
+utilities:
+  - NEE    # NextEra Energy
+  - DUK    # Duke Energy
+  - SO     # Southern Company
+  - D      # Dominion
+
+real_estate:
+  - PLD    # Prologis
+  - AMT    # American Tower
+  - EQIX   # Equinix
+  - SPG    # Simon Property
+
+materials:
+  - LIN    # Linde
+  - APD    # Air Products
+  - SHW    # Sherwin-Williams
+  - FCX    # Freeport-McMoRan
+
+# Outliers históricos (empresas excepcionales desde 1900)
+historical_outliers:
+  - BRK.B  # Berkshire Hathaway
+  - V      # Visa
+  - MA     # Mastercard
+
+# Total: ~100 tickers únicos
+# Cobertura: 11 sectores
+# Market cap total: ~$35T (70% de S&P 500)

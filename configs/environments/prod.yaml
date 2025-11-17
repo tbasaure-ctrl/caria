@@ -1,0 +1,20 @@
+# Production configuration overrides
+
+orchestration:
+  executor: prefect_cloud
+  storage:
+    type: s3
+    bucket: s3://caria-prod-artifacts
+    encryption: kms
+
+vector_store:
+  connection: postgresql://${oc.env:POSTGRES_USER,caria_prod}:${oc.env:POSTGRES_PASSWORD,changeme}@${oc.env:POSTGRES_HOST,prod-db}:${oc.env:POSTGRES_PORT,5432}/${oc.env:POSTGRES_DB,caria_prod}
+  embedding_table: wisdom_embeddings_prod
+
+retrieval:
+  provider: openai
+  embedding_model: text-embedding-3-large
+  embedding_dim: 3072
+  top_k: 10
+  similarity_threshold: 0.8
+

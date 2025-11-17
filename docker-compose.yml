@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: caria-postgres
+    environment:
+      POSTGRES_USER: caria_user
+      POSTGRES_PASSWORD: Theolucas7
+      POSTGRES_DB: caria
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./caria_data/migrations/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U caria_user -d caria"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ..
+      dockerfile: notebooks/Dockerfile
+    container_name: caria-api
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=caria_user
+      - POSTGRES_PASSWORD=Theolucas7
+      - POSTGRES_DB=caria
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me-in-production}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CARIA_SETTINGS_PATH=/app/notebooks/caria_data/configs/base.yaml
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ../notebooks/caria_data:/app/notebooks/caria_data
+      - ../notebooks/services:/app/notebooks/services
+    working_dir: /app/notebooks/services
+    command: ["sh", "-c", "poetry install --no-interaction && poetry run uvicorn api.app:app --host 0.0.0.0 --port 8000"]
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local

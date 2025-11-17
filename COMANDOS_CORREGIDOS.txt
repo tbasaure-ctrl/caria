@@ -1,0 +1,48 @@
+═══════════════════════════════════════════════════════════════
+  COMANDOS CORREGIDOS - SIN ARCHIVOS GRANDES
+═══════════════════════════════════════════════════════════════
+
+PROBLEMA RESUELTO:
+- ✅ Remote ya configurado: https://github.com/tbasaure-ctrl/caria.git
+- ✅ .gitignore actualizado para excluir archivos grandes
+- ✅ Archivos grandes excluidos (data/raw/, *.parquet, notebooks con outputs)
+
+EJECUTA ESTOS COMANDOS:
+───────────────────────
+
+cd C:\key\wise_adviser_cursor_context\notebooks
+
+# Ver qué archivos están listos para commit
+git status
+
+# Si todo se ve bien, hacer commit
+git commit -m "Initial commit: Wise Adviser with Firebase Functions and Vercel config"
+
+# Cambiar a branch main (si no está ya)
+git branch -M main
+
+# Subir a GitHub
+git push -u origin main
+
+
+SI AÚN HAY PROBLEMAS DE MEMORIA:
+─────────────────────────────────
+Ejecuta esto para excluir notebooks grandes manualmente:
+
+git reset
+git add .gitignore
+git add services/
+git add caria_data/caria-app/
+git add *.md
+git add *.txt
+git add *.ps1
+git add *.sh
+git add *.yml
+git add *.yaml
+git add *.py
+git add *.ts
+git add *.tsx
+git add *.json
+git commit -m "Initial commit: Wise Adviser (sin archivos grandes)"
+git push -u origin main
+

@@ -1,0 +1,34 @@
+table,column,type,description,example_value,notes
+prices,ticker,VARCHAR(10),Símbolo bursátil,AAPL,Uppercase
+prices,date,DATE,Fecha negociación,2024-01-15,ISO 8601
+prices,close,FLOAT,Precio cierre,180.25,USD
+prices,volume,BIGINT,Volumen negociado,95000000,Shares
+fundamentals,ticker,VARCHAR(10),Símbolo bursátil,MSFT,
+fundamentals,date,DATE,Fecha reporte (as-reported),2024-01-25,Point-in-time critical
+fundamentals,period_end,DATE,Fin período fiscal,2023-12-31,Different from report date
+fundamentals,free_cash_flow,FLOAT,FCF,12500000000,USD millions
+fundamentals,roic,FLOAT,Return on Invested Capital,0.18,18% = 0.18
+macro_indicators,indicator,VARCHAR(50),Código FRED,DGS10,10Y Treasury yield
+macro_indicators,value,FLOAT,Valor del indicador,4.25,Depende del indicador
+wisdom_chunks,id,UUID,ID único,550e8400-e29b-41d4-a716-446655440000,
+wisdom_chunks,text,TEXT,Contenido chunk,Price is what you pay...,200-800 tokens
+wisdom_chunks,source,VARCHAR(100),Autor/libro,Warren Buffett - Letters,
+wisdom_chunks,themes,TEXT[],Temas,"{valuation,discipline}",PostgreSQL array
+wisdom_chunks,embedding,vector(1536),Embedding OpenAI,[0.023 -0.015 ...],1536 dims
+wisdom_chunks,embedding_model,VARCHAR(50),Modelo usado,text-embedding-ada-002,
+wisdom_chunks,index_version,VARCHAR(20),Versión índice,v1,Versionado
+processed_features,ticker,VARCHAR(10),Símbolo bursátil,GOOGL,
+processed_features,date,DATE,Fecha features,2024-01-15,
+processed_features,macro_regime,VARCHAR(20),Régimen detectado,normal,normal|crisis|mania|tightening|easing|QE
+processed_features,yield_curve_slope,FLOAT,10Y-2Y spread,0.45,Basis points / 100
+processed_features,vix,FLOAT,VIX index,18.5,Volatility index
+processed_features,sentiment_score,FLOAT,Sentiment redes,0.65,"[-1 1]"
+processed_features,roic_trend,FLOAT,Tendencia ROIC,0.02,Pendiente regresión
+predictions,ticker,VARCHAR(10),Símbolo bursátil,TSLA,
+predictions,prediction_date,DATE,Fecha predicción,2024-01-15,
+predictions,target_date,DATE,Fecha objetivo,2024-02-04,20 days ahead
+predictions,predicted_regime,VARCHAR(20),Régimen predicho,normal,
+predictions,regime_probabilities,JSONB,Probabilidades,"{""normal"": 0.6 ""crash"": 0.1}",JSON object
+predictions,predicted_return,FLOAT,Retorno predicho,0.05,5% = 0.05
+predictions,drawdown_probability,FLOAT,P(drawdown >10%),0.12,12% = 0.12
+predictions,model_version,VARCHAR(50),Versión modelo,wise_adviser_v1.2.0,

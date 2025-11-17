@@ -1,0 +1,263 @@
+"""Rutas para holdings (posiciones) de usuarios."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+# Configurar paths para encontrar caria
+CURRENT_FILE = Path(__file__).resolve()
+CARIA_DATA_SRC = CURRENT_FILE.parent.parent.parent.parent / "caria_data" / "src"
+if CARIA_DATA_SRC.exists() and str(CARIA_DATA_SRC) not in sys.path:
+    sys.path.insert(0, str(CARIA_DATA_SRC))
+
+from typing import Any
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
+
+from api.dependencies import get_current_user, get_db_connection
+from caria.models.auth import UserInDB
+
+router = APIRouter(prefix="/api/holdings", tags=["holdings"])
+
+
+class HoldingCreate(BaseModel):
+    """Request para crear/actualizar holding."""
+    ticker: str = Field(..., min_length=1, max_length=10, description="Símbolo del ticker")
+    quantity: float = Field(..., ge=0, description="Cantidad de acciones")
+    average_cost: float = Field(..., ge=0, description="Costo promedio por acción")
+    notes: str | None = Field(None, description="Notas adicionales")
+
+
+class HoldingResponse(BaseModel):
+    """Respuesta con datos de holding."""
+    id: UUID
+    ticker: str
+    quantity: float
+    average_cost: float
+    notes: str | None
+    created_at: str
+    updated_at: str
+
+
+class HoldingsWithPricesResponse(BaseModel):
+    """Respuesta con holdings y precios en tiempo real."""
+    holdings: list[dict[str, Any]]
+    total_value: float
+    total_cost: float
+    total_gain_loss: float
+    total_gain_loss_pct: float
+
+
+
+
+@router.get("", response_model=list[HoldingResponse])
+def get_holdings(
+    current_user: UserInDB = Depends(get_current_user),
+    conn = Depends(get_db_connection),
+) -> list[HoldingResponse]:
+    """Obtiene todos los holdings del usuario actual."""
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, ticker, quantity, average_cost, notes, 
+                       created_at, updated_at
+                FROM holdings
+                WHERE user_id = %s
+                ORDER BY ticker
+                """,
+                (str(current_user.id),),
+            )
+            rows = cur.fetchall()
+            
+            holdings = []
+            for row in rows:
+                holdings.append(HoldingResponse(
+                    id=row[0],
+                    ticker=row[1],
+                    quantity=float(row[2]),
+                    average_cost=float(row[3]),
+                    notes=row[4],
+                    created_at=row[5].isoformat() if row[5] else "",
+                    updated_at=row[6].isoformat() if row[6] else "",
+                ))
+            
+            return holdings
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error obteniendo holdings: {str(exc)}",
+        ) from exc
+
+
+@router.post("", response_model=HoldingResponse, status_code=status.HTTP_201_CREATED)
+def create_holding(
+    holding: HoldingCreate,
+    current_user: UserInDB = Depends(get_current_user),
+    conn = Depends(get_db_connection),
+) -> HoldingResponse:
+    """Crea o actualiza un holding del usuario."""
+    try:
+        with conn.cursor() as cur:
+            # Intentar insertar o actualizar (UPSERT)
+            cur.execute(
+                """
+                INSERT INTO holdings (user_id, ticker, quantity, average_cost, notes)
+                VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (user_id, ticker) 
+                DO UPDATE SET 
+                    quantity = EXCLUDED.quantity,
+                    average_cost = EXCLUDED.average_cost,
+                    notes = EXCLUDED.notes,
+                    updated_at = CURRENT_TIMESTAMP
+                RETURNING id, ticker, quantity, average_cost, notes, created_at, updated_at
+                """,
+                (
+                    str(current_user.id),
+                    holding.ticker.upper(),
+                    holding.quantity,
+                    holding.average_cost,
+                    holding.notes,
+                ),
+            )
+            row = cur.fetchone()
+            conn.commit()
+            
+            return HoldingResponse(
+                id=row[0],
+                ticker=row[1],
+                quantity=float(row[2]),
+                average_cost=float(row[3]),
+                notes=row[4],
+                created_at=row[5].isoformat() if row[5] else "",
+                updated_at=row[6].isoformat() if row[6] else "",
+            )
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creando holding: {str(exc)}",
+        ) from exc
+
+
+@router.delete("/{holding_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
+def delete_holding(
+    holding_id: UUID,
+    current_user: UserInDB = Depends(get_current_user),
+    conn = Depends(get_db_connection),
+) -> None:
+    """Elimina un holding del usuario."""
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                DELETE FROM holdings
+                WHERE id = %s AND user_id = %s
+                """,
+                (str(holding_id), str(current_user.id)),
+            )
+            if cur.rowcount == 0:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Holding no encontrado",
+                )
+            conn.commit()
+    except HTTPException:
+        raise
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error eliminando holding: {str(exc)}",
+        ) from exc
+
+
+@router.get("/with-prices", response_model=HoldingsWithPricesResponse)
+def get_holdings_with_prices(
+    current_user: UserInDB = Depends(get_current_user),
+    conn = Depends(get_db_connection),
+) -> HoldingsWithPricesResponse:
+    """Obtiene holdings del usuario con precios en tiempo real.
+    
+    Calcula valor total, ganancia/pérdida y porcentajes.
+    """
+    from caria.ingestion.clients.fmp_client import FMPClient
+    try:
+        # Obtener holdings
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT ticker, quantity, average_cost
+                FROM holdings
+                WHERE user_id = %s
+                """,
+                (str(current_user.id),),
+            )
+            rows = cur.fetchall()
+        
+        if not rows:
+            return HoldingsWithPricesResponse(
+                holdings=[],
+                total_value=0.0,
+                total_cost=0.0,
+                total_gain_loss=0.0,
+                total_gain_loss_pct=0.0,
+            )
+        
+        # Obtener tickers únicos
+        tickers = [row[0] for row in rows]
+        
+        # Obtener precios en tiempo real
+        fmp_client = FMPClient()
+        prices = fmp_client.get_realtime_prices_batch(tickers)
+        
+        # Calcular valores
+        holdings_data = []
+        total_value = 0.0
+        total_cost = 0.0
+        
+        for row in rows:
+            ticker, quantity, avg_cost = row[0], float(row[1]), float(row[2])
+            cost_basis = quantity * avg_cost
+            total_cost += cost_basis
+            
+            price_data = prices.get(ticker, {})
+            current_price = price_data.get("price", 0.0) or price_data.get("previousClose", 0.0)
+            current_value = quantity * current_price
+            total_value += current_value
+            
+            gain_loss = current_value - cost_basis
+            gain_loss_pct = (gain_loss / cost_basis * 100) if cost_basis > 0 else 0.0
+            
+            holdings_data.append({
+                "ticker": ticker,
+                "quantity": quantity,
+                "average_cost": avg_cost,
+                "current_price": current_price,
+                "cost_basis": cost_basis,
+                "current_value": current_value,
+                "gain_loss": gain_loss,
+                "gain_loss_pct": gain_loss_pct,
+                "price_change": price_data.get("change", 0.0),
+                "price_change_pct": price_data.get("changesPercentage", 0.0),
+            })
+        
+        total_gain_loss = total_value - total_cost
+        total_gain_loss_pct = (total_gain_loss / total_cost * 100) if total_cost > 0 else 0.0
+        
+        return HoldingsWithPricesResponse(
+            holdings=holdings_data,
+            total_value=total_value,
+            total_cost=total_cost,
+            total_gain_loss=total_gain_loss,
+            total_gain_loss_pct=total_gain_loss_pct,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error obteniendo holdings con precios: {str(exc)}",
+        ) from exc
+

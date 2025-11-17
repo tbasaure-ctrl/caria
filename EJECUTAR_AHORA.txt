@@ -1,0 +1,58 @@
+═══════════════════════════════════════════════════════════════
+  COMANDOS PARA SUBIR TU PROYECTO A GITHUB
+═══════════════════════════════════════════════════════════════
+
+PASO 1: Crear repositorio en GitHub
+─────────────────────────────────────
+1. Ve a: https://github.com/new
+2. Nombre del repo: wise-adviser (o el que prefieras)
+3. NO marques "Initialize with README"
+4. Click "Create repository"
+5. COPIA la URL que te da (ejemplo: https://github.com/tu-usuario/wise-adviser.git)
+
+
+PASO 2: Ejecutar estos comandos en PowerShell
+───────────────────────────────────────────────
+
+cd C:\key\wise_adviser_cursor_context\notebooks
+
+# Eliminar archivo problemático si existe
+if (Test-Path nul) { Remove-Item nul -Force }
+
+# Agregar todos los archivos
+git add .
+
+# Crear commit inicial
+git commit -m "Initial commit: Wise Adviser with Firebase Functions and Vercel config"
+
+# Agregar el repositorio remoto (REEMPLAZA CON TU URL)
+git remote add origin https://github.com/TU-USUARIO/TU-REPO.git
+
+# Cambiar a branch main
+git branch -M main
+
+# Subir a GitHub
+git push -u origin main
+
+
+NOTAS IMPORTANTES:
+──────────────────
+- Si ya tienes Git configurado, puedes saltar el paso 3
+- Si es la primera vez, ejecuta primero:
+  git config --global user.name "Tu Nombre"
+  git config --global user.email "tu@email.com"
+
+- Si el remote ya existe y quieres cambiarlo:
+  git remote set-url origin https://github.com/TU-USUARIO/TU-REPO.git
+
+- Si te pide credenciales, usa un Personal Access Token de GitHub
+
+
+DESPUÉS DE SUBIR:
+─────────────────
+1. Ve a: https://vercel.com/new
+2. Importa tu repositorio de GitHub
+3. Configura Root Directory: caria_data/caria-app
+4. Agrega variable de entorno: VITE_API_URL
+5. Click "Deploy"
+

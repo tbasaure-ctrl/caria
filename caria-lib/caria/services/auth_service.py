@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 from datetime import datetime, timedelta
@@ -67,6 +68,18 @@ class AuthService:
         password_bytes = plain_password.encode('utf-8')
         hashed_bytes = hashed_password.encode('utf-8')
         return bcrypt.checkpw(password_bytes, hashed_bytes)
+
+    @staticmethod
+    def hash_token(token: str) -> str:
+        """Hash a token using SHA256 (for long tokens like JWTs that exceed bcrypt's 72-byte limit)."""
+        token_bytes = token.encode('utf-8')
+        return hashlib.sha256(token_bytes).hexdigest()
+
+    @staticmethod
+    def verify_token_hash(token: str, token_hash: str) -> bool:
+        """Verify a token against its SHA256 hash."""
+        computed_hash = AuthService.hash_token(token)
+        return computed_hash == token_hash
 
     # ========================================================================
     # JWT TOKEN MANAGEMENT
@@ -281,7 +294,7 @@ class AuthService:
 
     def store_refresh_token(self, user_id: UUID, token: str) -> None:
         """Store refresh token in database."""
-        token_hash = self.hash_password(token)  # Reuse bcrypt for hashing
+        token_hash = self.hash_token(token)  # Use SHA256 for long tokens (JWTs)
         expires_at = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
 
         with self.db.cursor() as cursor:
@@ -310,8 +323,8 @@ class AuthService:
             rows = cursor.fetchall()
 
             for row in rows:
-                # Check if token matches
-                if self.verify_password(token, row['token_hash']):
+                # Check if token matches (using SHA256)
+                if self.verify_token_hash(token, row['token_hash']):
                     # Check if not expired
                     if row['expires_at'] > datetime.utcnow():
                         return True
@@ -320,7 +333,7 @@ class AuthService:
 
     def revoke_refresh_token(self, user_id: UUID, token: str) -> None:
         """Revoke a refresh token."""
-        token_hash = self.hash_password(token)
+        token_hash = self.hash_token(token)
 
         with self.db.cursor() as cursor:
             cursor.execute(

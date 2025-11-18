@@ -12,7 +12,7 @@ from typing import Dict, List, Literal, Optional
 
 import pandas as pd
 
-from caria.clients.fmp_client import FMPClient
+from caria.ingestion.clients.fmp_client import FMPClient
 from caria.models.regime.hmm_regime_detector import RegimeState
 
 LOGGER = logging.getLogger("caria.services.portfolio_selection")
@@ -185,7 +185,7 @@ class PortfolioSelectionService:
 
 def get_portfolio_selection_service() -> PortfolioSelectionService:
     """Get PortfolioSelectionService instance."""
-    from caria.clients.fmp_client import FMPClient
+    from caria.ingestion.clients.fmp_client import FMPClient
     
     api_key = os.getenv("FMP_API_KEY")
     if not api_key:

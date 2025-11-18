@@ -1,0 +1,17 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'backend/Dockerfile'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/caria-backend/caria-api-repo/caria-api:latest'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/caria-backend/caria-api-repo/caria-api:$COMMIT_SHA'
+      - '.'
+
+images:
+  - 'us-central1-docker.pkg.dev/caria-backend/caria-api-repo/caria-api:latest'
+  - 'us-central1-docker.pkg.dev/caria-backend/caria-api-repo/caria-api:$COMMIT_SHA'
+
+timeout: 1200s

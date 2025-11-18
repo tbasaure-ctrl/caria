@@ -71,11 +71,15 @@ gcloud run services update caria-api --region=us-central1 \
 - **Region**: us-central1
 - **Service**: caria-api
 
-### Current Status
-- ✅ Code pushed to GitHub (commit: fe5e724)
-- 🔄 GitHub Actions workflow triggered
-- 🔄 Manual gcloud update running in background
-- ⏳ Waiting for deployment to complete
+### Deployment Timeline
+- ✅ First fix: Added praw to backend/api/requirements.txt (commit: d945886)
+- ✅ Force rebuild triggered (commit: fe5e724)
+- ✅ Manual deployment completed (revision: caria-api-00067-tw7)
+- ❌ Reddit endpoint still returned 401 error
+- 🔍 Investigation revealed: praw needs `check_for_async=False` for FastAPI
+- ✅ Applied async fix (commit: 9fc852c)
+- 🔄 Manual Cloud Build triggered (build ID: 78c460)
+- ⏳ Waiting for build and deployment to complete
 
 ---
 

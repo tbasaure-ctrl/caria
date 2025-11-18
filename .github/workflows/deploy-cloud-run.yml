@@ -11,8 +11,6 @@ env:
   SERVICE: 'caria-api'
   ARTIFACT_REPO: 'caria-api-repo'
   WORKLOAD_IDENTITY_PROVIDER: 'projects/418525923468/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
-  # NOTE: I removed the GAR_LOCATION env var because you used REGION in some places and GAR_LOCATION in others. 
-  # I standardized everything to use REGION (us-central1) to prevent mismatch errors.
 
 jobs:
   deploy:
@@ -25,6 +23,8 @@ jobs:
     steps:
       - name: 'Checkout'
         uses: 'actions/checkout@v4'
+        with:
+          fetch-depth: 0
 
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
@@ -33,15 +33,66 @@ jobs:
           workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
           service_account: 'github-actions@caria-backend.iam.gserviceaccount.com'
 
-      # Use gcloud builds submit with cloudbuild-backend.yaml
-      # This explicitly specifies backend/Dockerfile and works with Workload Identity
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Configure Docker for Artifact Registry'
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
       - name: 'Build and Push Container'
         run: |-
-          gcloud builds submit \
-            --config=cloudbuild-backend.yaml \
-            --substitutions=COMMIT_SHA=${{ github.sha }} \
-            --timeout=20m \
-            .
+          echo "Current directory: $(pwd)"
+          echo "Git HEAD: $(git rev-parse --short HEAD 2>/dev/null || echo 'no git')"
+          echo "Listing top-level directory:"
+          ls -la
+          echo ""
+          
+          # Use git to detect Dockerfile location (more reliable)
+          if git ls-files --error-unmatch backend/Dockerfile >/dev/null 2>&1; then
+            DOCKERFILE_PATH="backend/Dockerfile"
+            BUILD_CONTEXT="."
+            echo "Found Dockerfile at: ${DOCKERFILE_PATH}"
+          elif git ls-files --error-unmatch notebooks/backend/Dockerfile >/dev/null 2>&1; then
+            DOCKERFILE_PATH="notebooks/backend/Dockerfile"
+            BUILD_CONTEXT="notebooks"
+            echo "Found Dockerfile at: ${DOCKERFILE_PATH}"
+          else
+            echo "Error: No Dockerfile found in repo (checked backend/Dockerfile and notebooks/backend/Dockerfile)."
+            echo "Tracked files (first 200 lines):"
+            git ls-files | head -200
+            exit 1
+          fi
+          
+          # Extra verification: file present in FS as well
+          if [ ! -f "${DOCKERFILE_PATH}" ]; then
+            echo "Error: Dockerfile not found at ${DOCKERFILE_PATH} in workspace (pwd=$(pwd))"
+            echo "Workspace tree (top-level):"
+            ls -la
+            exit 1
+          fi
+          
+          echo "Using Dockerfile: ${DOCKERFILE_PATH}"
+          echo "Build context: ${BUILD_CONTEXT}"
+          
+          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:${{ github.sha }}"
+          
+          echo "Building image: ${DOCKER_TAG}"
+          docker build -f "${DOCKERFILE_PATH}" --tag "${DOCKER_TAG}" "${BUILD_CONTEXT}" || { echo "docker build failed"; exit 1; }
+          
+          echo "Pushing image: ${DOCKER_TAG}"
+          docker push "${DOCKER_TAG}" || { echo "docker push failed"; exit 1; }
+          
+          echo "Tagging as latest..."
+          docker tag "${DOCKER_TAG}" "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:latest"
+          
+          echo "Pushing latest tag..."
+          docker push "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:latest" || { echo "docker push latest failed"; exit 1; }
+          
+          echo "✅ Image built and pushed successfully"
+          
+          # Verify image exists
+          docker images --no-trunc | grep "${{ env.SERVICE }}" || echo "Warning: image not found locally"
 
       - name: 'Deploy to Cloud Run'
         id: deploy
@@ -50,25 +101,7 @@ jobs:
           service: '${{ env.SERVICE }}'
           region: '${{ env.REGION }}'
           image: '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:${{ github.sha }}'
-          # I MOVED DATABASE_URL into 'secrets' to hide your password.
-          # Ensure you add DB_CONNECTION_STRING to your GitHub Secrets!
-          secrets: |
-            GEMINI_API_KEY=gemini-api-key:latest
-            POSTGRES_PASSWORD=postgres-password:latest
-            JWT_SECRET_KEY=jwt-secret-key:latest
-            FMP_API_KEY=fmp-api-key:latest
-            REDDIT_CLIENT_ID=reddit-client-id:latest
-            REDDIT_CLIENT_SECRET=reddit-client-secret:latest
-          # I removed DATABASE_URL from env_vars below. 
-          # Instead, the app should build the URL using the POSTGRES_PASSWORD secret inside the code,
-          # OR you should add the full connection string as a secret in GitHub settings.
-          env_vars: |-
-            RETRIEVAL_PROVIDER=gemini
-            RETRIEVAL_EMBEDDING_DIM=768
-            CORS_ORIGINS=https://caria-way.com;https://caria-git-main-tomas-projects-70a0592d.vercel.app
-            REDDIT_USER_AGENT=Caria-Investment-App-v1.0
-            DATABASE_URL=postgresql://postgres:SimplePass123@/caria?host=/cloudsql/caria-backend:us-central1:caria-db
-          flags: '--allow-unauthenticated --memory=2Gi --cpu=2 --timeout=300 --max-instances=10 --add-cloudsql-instances=caria-backend:us-central1:caria-db'
+          flags: '--allow-unauthenticated --memory=2Gi --cpu=2 --timeout=300 --max-instances=10 --set-env-vars=RETRIEVAL_PROVIDER=gemini,RETRIEVAL_EMBEDDING_DIM=768,CORS_ORIGINS=https://caria-way.com;https://caria-git-main-tomas-projects-70a0592d.vercel.app,DATABASE_URL=postgresql://postgres:SimplePass123@/caria?host=/cloudsql/caria-backend:us-central1:caria-db,REDDIT_USER_AGENT=Caria-Investment-App-v1.0 --set-secrets=GEMINI_API_KEY=gemini-api-key:latest,POSTGRES_PASSWORD=postgres-password:latest,JWT_SECRET_KEY=jwt-secret-key:latest,FMP_API_KEY=fmp-api-key:latest,REDDIT_CLIENT_ID=reddit-client-id:latest,REDDIT_CLIENT_SECRET=reddit-client-secret:latest --add-cloudsql-instances=caria-backend:us-central1:caria-db'
 
       - name: 'Show output'
         run: |-

@@ -78,11 +78,12 @@ async def get_reddit_sentiment(
         }
 
     try:
-        # Initialize Reddit API
+        # Initialize Reddit API (read-only mode for public data)
         reddit = praw.Reddit(
             client_id=os.getenv("REDDIT_CLIENT_ID"),
             client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
-            user_agent=os.getenv("REDDIT_USER_AGENT", "Caria Investment App v1.0")
+            user_agent=os.getenv("REDDIT_USER_AGENT", "Caria Investment App v1.0"),
+            check_for_async=False  # Disable async check for FastAPI compatibility
         )
 
         # Subreddits to monitor

@@ -57,7 +57,12 @@
       "Bash(gcloud storage cp:*)",
       "Bash(gcloud storage buckets add-iam-policy-binding:*)",
       "Bash(gh run list:*)",
-      "Bash(timeout /t 10)"
+      "Bash(timeout /t 10)",
+      "Bash(npm run dev:*)",
+      "Bash(cat:*)",
+      "Bash(gcloud run services:*)",
+      "Bash(python test_api_endpoints.py:*)",
+      "Bash(timeout 60 bash -c \"while true; do gcloud run services describe caria-api --region=us-central1 --format=''get(status.conditions[0].status)'' 2>/dev/null | grep -q ''True'' && break; sleep 5; done\")"
     ],
     "deny": [],
     "ask": []

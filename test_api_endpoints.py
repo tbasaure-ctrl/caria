@@ -10,7 +10,7 @@ from dataclasses import dataclass
 import os
 
 # Configuration
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+API_BASE_URL = os.getenv("API_BASE_URL", "https://caria-api-418525923468.us-central1.run.app")
 TEST_USER_EMAIL = "test@caria.com"
 TEST_USER_PASSWORD = "testpassword123"
 

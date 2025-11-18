@@ -78,6 +78,8 @@ models/
 !caria_data/src/caria/models/**
 !caria_data/models/
 !caria_data/models/.gitkeep
+!caria-lib/caria/models/
+!caria-lib/caria/models/**
 artifacts/
 lightning_logs/
 

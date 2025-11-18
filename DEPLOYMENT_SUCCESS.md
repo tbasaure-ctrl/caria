@@ -112,3 +112,5 @@ gcloud run services logs tail caria-api --region=us-central1
 ```
 
 
+
+

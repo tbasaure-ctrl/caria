@@ -78,6 +78,7 @@ from api.routes.model_validation import router as model_validation_router
 from api.routes.tactical_allocation import router as tactical_allocation_router
 from api.routes.ux_tracking import router as ux_tracking_router
 from api.routes.reddit import router as reddit_router
+from api.routes.cors_test import router as cors_test_router
 
 # WebSocket support per audit document
 from api.websocket_chat import sio
@@ -207,6 +208,43 @@ vercel_regex = r"https://.*\.vercel\.app"
 LOGGER.info(f"CORS configured with origins: {cors_origins}")
 LOGGER.info(f"CORS regex pattern for Vercel: {vercel_regex}")
 
+# Custom middleware to log CORS requests before CORSMiddleware processes them
+@app.middleware("http")
+async def cors_logging_middleware(request: Request, call_next):
+    """Log CORS-related requests for debugging."""
+    origin = request.headers.get("origin")
+    method = request.method
+    path = request.url.path
+    
+    if method == "OPTIONS":
+        LOGGER.info(
+            f"CORS preflight request: {method} {path} | Origin: {origin} | "
+            f"Access-Control-Request-Method: {request.headers.get('access-control-request-method', 'N/A')} | "
+            f"Access-Control-Request-Headers: {request.headers.get('access-control-request-headers', 'N/A')}"
+        )
+        # Check if origin is allowed
+        if origin:
+            origin_lower = origin.lower()
+            is_exact_match = origin_lower in cors_origins
+            is_regex_match = bool(re.match(vercel_regex, origin))
+            LOGGER.info(
+                f"Origin '{origin}' - Exact match: {is_exact_match}, Regex match: {is_regex_match}"
+            )
+    
+    response = await call_next(request)
+    
+    # Log response headers for OPTIONS requests
+    if method == "OPTIONS":
+        cors_origin = response.headers.get("access-control-allow-origin", "NOT SET")
+        cors_methods = response.headers.get("access-control-allow-methods", "NOT SET")
+        LOGGER.info(
+            f"CORS preflight response: {response.status_code} | "
+            f"Access-Control-Allow-Origin: {cors_origin} | "
+            f"Access-Control-Allow-Methods: {cors_methods}"
+        )
+    
+    return response
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
@@ -246,6 +284,7 @@ app.include_router(model_validation_router)  # Legacy: Use /api/validation inste
 app.include_router(tactical_allocation_router)  # Legacy: Use /api/portfolio/tactical instead
 app.include_router(ux_tracking_router)  # UX tracking: user journeys, onboarding metrics (per audit 4.2)
 app.include_router(reddit_router)  # Social sentiment: Reddit hot stocks tracking
+app.include_router(cors_test_router)  # CORS test endpoint for debugging
 
 # Mount SocketIO app for WebSocket support per audit document
 # This combines FastAPI with SocketIO to handle both HTTP and WebSocket connections

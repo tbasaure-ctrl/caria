@@ -48,20 +48,34 @@ jobs:
       - name: 'Build and Push Container'
         run: |-
           # Verificar estructura del repositorio
-          if [ -d "notebooks/backend" ]; then
+          # El build context debe ser la raíz del repo para que COPY backend/ funcione
+          if [ -f "backend/Dockerfile" ]; then
+            # Estructura: backend/Dockerfile (raíz del repo)
+            DOCKERFILE_PATH="backend/Dockerfile"
+            BUILD_CONTEXT="."
+          elif [ -f "notebooks/backend/Dockerfile" ]; then
             # Estructura: notebooks/backend/Dockerfile
-            cd notebooks
-            DOCKERFILE_PATH="backend/Dockerfile"
-          elif [ -f "backend/Dockerfile" ]; then
-            # Estructura: backend/Dockerfile (raíz)
-            DOCKERFILE_PATH="backend/Dockerfile"
+            # Necesitamos ajustar el Dockerfile o el contexto
+            DOCKERFILE_PATH="notebooks/backend/Dockerfile"
+            BUILD_CONTEXT="."
           else
             echo "Error: No se encontró backend/Dockerfile"
+            echo "Estructura del directorio:"
             ls -la
+            if [ -d "backend" ]; then
+              echo "Directorio backend existe"
+              ls -la backend/ | head -20
+            fi
+            if [ -d "notebooks" ]; then
+              echo "Directorio notebooks existe"
+              ls -la notebooks/ | head -20
+            fi
             exit 1
           fi
+          echo "Using Dockerfile: ${DOCKERFILE_PATH}"
+          echo "Using build context: ${BUILD_CONTEXT}"
           DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:${{ github.sha }}"
-          docker build -f "${DOCKERFILE_PATH}" --tag "${DOCKER_TAG}" .
+          docker build -f "${DOCKERFILE_PATH}" --tag "${DOCKER_TAG}" "${BUILD_CONTEXT}"
           docker push "${DOCKER_TAG}"
           docker tag "${DOCKER_TAG}" "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:latest"
           docker push "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:latest"

@@ -1,0 +1,4 @@
+_ARTIFACT_REPO: 'caria-api-repo'
+_CLOUDSQL_INSTANCE: 'proven-practice-442619-s3:us-central1:caria-db'
+_DATABASE_URL: 'postgresql://caria_user:Theolucas7@/caria?host=/cloudsql/proven-practice-442619-s3:us-central1:caria-db'
+_CORS_ORIGINS: 'http://localhost:3000,http://localhost:5173'

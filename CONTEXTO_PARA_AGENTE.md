@@ -262,3 +262,5 @@ docker build -t caria-api-test -f backend/Dockerfile .
 **Última actualización:** 17 Nov 2025
 **Estado:** Build fallando, necesita investigación y corrección
 
+
+

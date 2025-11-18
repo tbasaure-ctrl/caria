@@ -111,9 +111,22 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
         try {
             // Use centralized API_BASE_URL per audit document (must be absolute URL)
             const { API_BASE_URL } = await import('../services/apiService');
-            const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+            const registerUrl = `${API_BASE_URL}/api/auth/register`;
+            
+            // Detailed diagnostic logging
+            console.group('🔍 Registration Request Diagnostics');
+            console.log('API_BASE_URL:', API_BASE_URL);
+            console.log('VITE_API_URL from env:', import.meta.env.VITE_API_URL);
+            console.log('Register URL:', registerUrl);
+            console.log('Current origin:', window.location.origin);
+            console.log('Request will be sent from:', window.location.href);
+            console.groupEnd();
+            
+            const response = await fetch(registerUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({ 
                     email, 
                     username, 
@@ -121,6 +134,9 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
                     full_name: fullName || undefined,
                 }),
             });
+            
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
             if (!response.ok) {
                 let errorMessage = 'Registration failed';
@@ -144,14 +160,52 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
                 throw new Error('Registration response did not include a token.');
             }
         } catch (err: any) {
-            // Manejar diferentes tipos de errores per audit document
-            if (err.message === 'Failed to fetch' || err.name === 'TypeError' || err.message.includes('Failed to connect')) {
-                const { API_BASE_URL } = await import('../services/apiService');
-                setError(`Unable to connect to the server. Please check that the API is running at ${API_BASE_URL}`);
+            // Enhanced error logging with CORS diagnostics
+            console.group('❌ Registration Error Details');
+            console.error('Error message:', err.message);
+            console.error('Error name:', err.name);
+            console.error('Error stack:', err.stack);
+            console.error('Error cause:', err.cause);
+            
+            const { API_BASE_URL } = await import('../services/apiService');
+            console.error('API_BASE_URL:', API_BASE_URL);
+            console.error('Current origin:', window.location.origin);
+            console.error('Full error object:', err);
+            
+            // Check for CORS-specific errors
+            const isCorsError = err.message.includes('CORS') || 
+                               err.message.includes('cross-origin') ||
+                               err.message.includes('Access-Control') ||
+                               err.name === 'TypeError' && err.message.includes('Failed to fetch');
+            
+            if (isCorsError) {
+                console.error('🚨 CORS Error Detected');
+                console.error('This usually means:');
+                console.error('1. The backend CORS configuration does not allow this origin');
+                console.error('2. The VITE_API_URL might be incorrect');
+                console.error('3. The backend might not be responding to OPTIONS requests');
+                console.error('Origin:', window.location.origin);
+                console.error('Expected backend:', API_BASE_URL);
+            }
+            console.groupEnd();
+
+            if (err.message === 'Failed to fetch' || err.name === 'TypeError' || err.message.includes('Failed to connect') || err.message.includes('NetworkError')) {
+                // Check if it's a CORS error specifically
+                if (isCorsError) {
+                    setError(
+                        `CORS Error: The API at ${API_BASE_URL} is not allowing requests from ${window.location.origin}. ` +
+                        `Please check CORS configuration. Open browser console for details.`
+                    );
+                } else {
+                    setError(
+                        `Unable to connect to the server at ${API_BASE_URL}. ` +
+                        `Please check that the API is running. Error: ${err.message}. ` +
+                        `Open browser console for details.`
+                    );
+                }
             } else {
                 setError(err.message || 'Registration failed. Please try again.');
             }
-            console.error('Registration error:', err);
         } finally {
             setIsLoading(false);
         }

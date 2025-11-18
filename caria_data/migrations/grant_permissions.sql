@@ -1,0 +1,6 @@
+-- Grant all permissions to postgres user on all tables in caria database
+GRANT ALL PRIVILEGES ON DATABASE caria TO postgres;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres;

@@ -10,6 +10,9 @@ sentence-transformers>=3.0.0
 google-generativeai>=0.8.0
 requests>=2.31.0
 
+# Social media APIs
+praw>=7.7.0
+
 
 # WebSocket support (per audit document - 3-part solution)
 python-socketio>=5.10.0

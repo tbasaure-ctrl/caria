@@ -123,3 +123,5 @@ notebooks/
 ⚠️ Requiere actualizar rutas en Dockerfile
 ⚠️ Requiere probar deployment después
 
+
+

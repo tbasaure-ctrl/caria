@@ -11,8 +11,7 @@
    ```
 3. Ejecuta el script de configuración:
    ```bash
-   chmod +x CONFIGURAR_TODO.sh
-   ./CONFIGURAR_TODO.sh
+   
    ```
 
 Este script configura automáticamente:
@@ -55,4 +54,8 @@ Puedes ver el progreso en:
 ## ✅ Listo!
 
 Después del primer despliegue exitoso, cada vez que hagas `git push origin main`, se desplegará automáticamente.
+
+
+
+
 

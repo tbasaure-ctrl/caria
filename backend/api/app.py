@@ -276,6 +276,7 @@ app.include_router(portfolio_router)  # Portfolio domain: holdings, analytics, T
 app.include_router(regime_testing_router)  # Regime testing: test portfolio against regimes
 app.include_router(thesis_arena_router)  # Thesis Arena: challenge thesis with communities
 app.include_router(model_portfolio_router)  # Model portfolio selection and tracking
+app.include_router(fear_greed_router)  # Fear and Greed Index
 app.include_router(social_router)  # Social domain: community, chat
 app.include_router(analysis_domain_router)  # Analysis domain: regime, factors, valuation, validation
 app.include_router(market_data_router)  # Market Data domain: prices, indicators

@@ -76,6 +76,8 @@ docker-compose.override.yml
 models/
 !caria_data/src/caria/models/
 !caria_data/src/caria/models/**
+!caria_data/models/
+!caria_data/models/.gitkeep
 artifacts/
 lightning_logs/
 

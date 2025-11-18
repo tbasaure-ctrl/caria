@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Portfolio } from './widgets/Portfolio';
 import { TopMovers } from './widgets/TopMovers';
 import { ModelOutlook } from './widgets/ModelOutlook';
-import { IdealPortfolio } from './widgets/IdealPortfolio';
+import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
+import { ModelValidationDashboard } from './widgets/ModelValidationDashboard';
 import { ThesisIcon } from './Icons';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
 import { HoldingsManager } from './widgets/HoldingsManager';
-import { CommunityIdeas } from './widgets/CommunityIdeas';
+import { CommunityFeed } from './widgets/CommunityFeed';
+import { RankingsWidget } from './widgets/RankingsWidget';
 import { MonteCarloSimulation } from './widgets/MonteCarloSimulation';
 import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
@@ -156,7 +158,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     <GlobalMarketBar id="market-bar-widget" />
                     <Portfolio id="portfolio-widget" />
                     <PortfolioAnalytics />
-                    <IdealPortfolio regime={regimeData?.regime} isLoading={isLoadingRegime} />
+                    <ModelPortfolioWidget />
+                    <ModelValidationDashboard />
                 </div>
 
                 {/* Column 2 - Sidebar Widgets */}
@@ -171,7 +174,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     <ResearchSection />
                     <RegimeTestWidget />
                     <MonteCarloSimulation />
-                    <CommunityIdeas />
+                    <RankingsWidget /> {/* New widget */}
+                    <CommunityFeed /> {/* Enhanced CommunityIdeas */}
                     <TopMovers />
                 </div>
             </div>

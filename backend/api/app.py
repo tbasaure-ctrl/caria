@@ -273,6 +273,7 @@ app.include_router(identity_router)  # Identity domain: auth, users, sessions
 app.include_router(portfolio_router)  # Portfolio domain: holdings, analytics, TAA, Monte Carlo
 app.include_router(regime_testing_router)  # Regime testing: test portfolio against regimes
 app.include_router(thesis_arena_router)  # Thesis Arena: challenge thesis with communities
+app.include_router(model_portfolio_router)  # Model portfolio selection and tracking
 app.include_router(social_router)  # Social domain: community, chat
 app.include_router(analysis_domain_router)  # Analysis domain: regime, factors, valuation, validation
 app.include_router(market_data_router)  # Market Data domain: prices, indicators

@@ -4,6 +4,7 @@ import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
 import { CommunityCard } from './CommunityCard';
 import { CommunityTooltip } from './CommunityTooltip';
 import { ArenaThreadModal } from './ArenaThreadModal';
+import { ThesisEditorModal } from './ThesisEditorModal';
 
 interface CommunityResponse {
     community: string;
@@ -62,6 +63,7 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
     const [error, setError] = useState<string | null>(null);
     const [hoveredCommunity, setHoveredCommunity] = useState<string | null>(null);
     const [showThreadModal, setShowThreadModal] = useState(false);
+    const [showEditorModal, setShowEditorModal] = useState(false);
 
     const handleChallenge = async () => {
         if (!thesis.trim() || thesis.length < 10) {
@@ -283,21 +285,56 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
                         })}
                     </div>
 
-                    {/* Continue Conversation Button */}
-                    {results.arena_id && (
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 mt-4">
+                        {results.arena_id && (
+                            <button
+                                onClick={() => setShowThreadModal(true)}
+                                className="flex-1 px-6 py-3 rounded-lg font-medium transition-all"
+                                style={{
+                                    backgroundColor: 'var(--color-bg-secondary)',
+                                    color: 'var(--color-text-primary)',
+                                    border: '1px solid var(--color-bg-tertiary)',
+                                    fontFamily: 'var(--font-display)',
+                                }}
+                            >
+                                Continuar Conversación →
+                            </button>
+                        )}
                         <button
-                            onClick={() => setShowThreadModal(true)}
-                            className="w-full px-6 py-3 rounded-lg font-medium transition-all mt-4"
+                            onClick={() => setShowEditorModal(true)}
+                            className="flex-1 px-6 py-3 rounded-lg font-medium transition-all"
                             style={{
                                 backgroundColor: 'var(--color-primary)',
                                 color: 'var(--color-cream)',
                                 fontFamily: 'var(--font-display)',
                             }}
                         >
-                            Continuar Conversación →
+                            Publicar en Feed →
                         </button>
-                    )}
+                    </div>
                 </div>
+            )}
+
+            {/* Thesis Editor Modal */}
+            {showEditorModal && results && (
+                <ThesisEditorModal
+                    isOpen={showEditorModal}
+                    onClose={() => setShowEditorModal(false)}
+                    onSuccess={() => {
+                        setShowEditorModal(false);
+                        // Optionally reload community feed or show success message
+                    }}
+                    prefillData={{
+                        title: `${results.ticker ? `${results.ticker}: ` : ''}Investment Thesis`,
+                        thesis_preview: results.thesis.substring(0, 500),
+                        full_thesis: results.thesis,
+                        ticker: results.ticker,
+                        arena_thread_id: results.arena_id || null,
+                        arena_round_id: results.round_number ? String(results.round_number) : null,
+                        arena_community: results.community_responses[0]?.community || null,
+                    }}
+                />
             )}
         </div>
     );

@@ -74,6 +74,9 @@ class CommunityPostCreate(BaseModel):
     full_thesis: Optional[str] = Field(None, max_length=5000)
     ticker: Optional[str] = Field(None, max_length=10)
     analysis_merit_score: Optional[float] = Field(None, ge=0.0, le=1.0)
+    arena_thread_id: Optional[str] = Field(None, description="Optional arena thread ID")
+    arena_round_id: Optional[str] = Field(None, description="Optional arena round ID")
+    arena_community: Optional[str] = Field(None, description="Optional community name")
 
 
 class CommunityPostResponse(BaseModel):
@@ -89,6 +92,10 @@ class CommunityPostResponse(BaseModel):
     user_has_voted: bool = False
     created_at: datetime
     updated_at: datetime
+    is_arena_post: bool = False
+    arena_thread_id: Optional[str] = None
+    arena_round_id: Optional[str] = None
+    arena_community: Optional[str] = None
 
 
 class VoteRequest(BaseModel):
@@ -101,6 +108,7 @@ async def get_community_posts(
     offset: int = Query(0, ge=0),
     sort_by: str = Query("upvotes", pattern="^(upvotes|created_at|analysis_merit_score)$"),
     ticker: Optional[str] = Query(None, max_length=10),
+    search: Optional[str] = Query(None, max_length=100, description="Search query for title/preview/ticker"),
     current_user: Optional[UserInDB] = Depends(get_current_user),
 ) -> list[CommunityPostResponse]:
     """
@@ -127,6 +135,10 @@ async def get_community_posts(
                     cp.upvotes,
                     cp.created_at,
                     cp.updated_at,
+                    cp.is_arena_post,
+                    cp.arena_thread_id,
+                    cp.arena_round_id,
+                    cp.arena_community,
                     CASE WHEN cv.id IS NOT NULL THEN TRUE ELSE FALSE END as user_has_voted
                 FROM community_posts cp
                 LEFT JOIN users u ON cp.user_id = u.id
@@ -138,6 +150,11 @@ async def get_community_posts(
             if ticker:
                 query += " AND cp.ticker = %s"
                 params.append(ticker.upper())
+
+            if search:
+                query += " AND (cp.title ILIKE %s OR cp.thesis_preview ILIKE %s OR cp.ticker ILIKE %s)"
+                search_pattern = f"%{search}%"
+                params.extend([search_pattern, search_pattern, search_pattern])
 
             # Order by
             if sort_by == "upvotes":
@@ -167,6 +184,10 @@ async def get_community_posts(
                     user_has_voted=row.get("user_has_voted", False),
                     created_at=row["created_at"],
                     updated_at=row["updated_at"],
+                    is_arena_post=row.get("is_arena_post", False),
+                    arena_thread_id=str(row["arena_thread_id"]) if row.get("arena_thread_id") else None,
+                    arena_round_id=str(row["arena_round_id"]) if row.get("arena_round_id") else None,
+                    arena_community=row.get("arena_community"),
                 )
                 for row in rows
             ]
@@ -197,7 +218,8 @@ async def create_community_post(
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id, user_id, title, thesis_preview, full_thesis, ticker,
-                          analysis_merit_score, upvotes, created_at, updated_at
+                          analysis_merit_score, upvotes, created_at, updated_at,
+                          is_arena_post, arena_thread_id, arena_round_id, arena_community
                 """,
                 (
                     str(current_user.id),
@@ -228,6 +250,10 @@ async def create_community_post(
                 user_has_voted=False,
                 created_at=row["created_at"],
                 updated_at=row["updated_at"],
+                is_arena_post=row.get("is_arena_post", False),
+                arena_thread_id=str(row["arena_thread_id"]) if row.get("arena_thread_id") else None,
+                arena_round_id=str(row["arena_round_id"]) if row.get("arena_round_id") else None,
+                arena_community=row.get("arena_community"),
             )
     finally:
         conn.close()

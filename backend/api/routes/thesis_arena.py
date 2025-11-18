@@ -10,7 +10,7 @@ import logging
 import os
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID, uuid4
 
 import psycopg2
@@ -234,7 +234,7 @@ class ThesisArenaChallengeResponse(BaseModel):
     ticker: Optional[str]
     initial_conviction: float
     community_responses: List[CommunityResponse]
-    conviction_impact: Dict[str, any]
+    conviction_impact: Dict[str, Any]
     arena_id: Optional[str] = Field(None, description="Arena thread ID for multi-round conversations")
     round_number: int = Field(1, description="Current round number")
 
@@ -251,7 +251,7 @@ class ArenaRespondResponse(BaseModel):
     round_number: int
     user_message: str
     community_responses: List[CommunityResponse]
-    conviction_impact: Dict[str, any]
+    conviction_impact: Dict[str, Any]
     current_conviction: float
 
 

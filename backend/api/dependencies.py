@@ -72,18 +72,19 @@ def get_db_connection():
     # Cloud SQL usa formato: postgresql://user:password@/dbname?host=/cloudsql/instance
     database_url = os.getenv("DATABASE_URL")
     if database_url:
+        conn = None
         try:
             # Parsear DATABASE_URL
             parsed = urlparse(database_url)
-            
+
             # Extraer parámetros de query string
             query_params = parse_qs(parsed.query)
-            
+
             # Verificar si hay un socket Unix de Cloud SQL en el query string
             unix_socket_host = None
             if 'host' in query_params:
                 unix_socket_host = query_params['host'][0]
-            
+
             # Si hay socket Unix (Cloud SQL), usarlo
             if unix_socket_host:
                 conn = psycopg2.connect(
@@ -112,6 +113,13 @@ def get_db_connection():
                     password=parsed.password,
                     database=parsed.path.lstrip('/'),
                 )
+        except (psycopg2.Error, ValueError, KeyError) as e:
+            # Only catch database connection setup errors
+            logger.warning(f"Error conectando con DATABASE_URL: {e}. Intentando variables individuales...")
+            conn = None  # Signal to use fallback
+
+        # If connection was successful, yield it
+        if conn is not None:
             try:
                 yield conn
             except Exception:
@@ -120,8 +128,6 @@ def get_db_connection():
             finally:
                 conn.close()
             return
-        except Exception as e:
-            logger.warning(f"Error usando DATABASE_URL: {e}. Intentando variables individuales...")
 
     # Fallback a variables individuales
     postgres_password = os.getenv("POSTGRES_PASSWORD")

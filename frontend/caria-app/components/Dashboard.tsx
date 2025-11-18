@@ -10,11 +10,13 @@ import { HoldingsManager } from './widgets/HoldingsManager';
 import { CommunityIdeas } from './widgets/CommunityIdeas';
 import { MonteCarloSimulation } from './widgets/MonteCarloSimulation';
 import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
+import { RegimeTestWidget } from './widgets/RegimeTestWidget';
+import { ThesisArena } from './widgets/ThesisArena';
 import { OnboardingTour } from './OnboardingTour';
 import { ResearchSection } from './ResearchSection';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
-const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; id?: string }> = ({ onStartAnalysis, id }) => (
+const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void; id?: string }> = ({ onStartAnalysis, onEnterArena, id }) => (
     <div id={id}
          className="rounded-lg p-8 flex flex-col items-center justify-center text-center relative overflow-hidden group cursor-pointer transition-all duration-300"
          style={{
@@ -48,25 +50,50 @@ const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; id?: string }> =
            }}>
             Challenge your investment thesis against Caria. Uncover cognitive biases and strengthen your rationale before you invest.
         </p>
-        <button
-            onClick={onStartAnalysis}
-            className="py-3 px-8 rounded-lg font-semibold transition-all duration-200"
-            style={{
-              backgroundColor: 'var(--color-primary)',
-              color: 'var(--color-cream)',
-              fontFamily: 'var(--font-body)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-primary-light)';
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-primary)';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-        >
-            Let's Break It Down
-        </button>
+        <div className="flex flex-col gap-3 w-full max-w-sm">
+            <button
+                onClick={onStartAnalysis}
+                className="py-3 px-8 rounded-lg font-semibold transition-all duration-200"
+                style={{
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'var(--color-cream)',
+                  fontFamily: 'var(--font-body)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-light)';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary)';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+            >
+                Let's Break It Down
+            </button>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onEnterArena();
+                }}
+                className="py-2 px-6 rounded-lg text-sm font-medium transition-all duration-200"
+                style={{
+                  backgroundColor: 'transparent',
+                  color: 'var(--color-text-secondary)',
+                  border: '1px solid var(--color-bg-tertiary)',
+                  fontFamily: 'var(--font-body)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--color-primary)';
+                  e.currentTarget.style.color = 'var(--color-primary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--color-bg-tertiary)';
+                  e.currentTarget.style.color = 'var(--color-text-secondary)';
+                }}
+            >
+                Want deeper analysis? Enter Arena →
+            </button>
+        </div>
     </div>
 );
 
@@ -83,6 +110,7 @@ interface RegimeData {
 export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     const [regimeData, setRegimeData] = useState<RegimeData | null>(null);
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
+    const [showArena, setShowArena] = useState(false);
 
     useEffect(() => {
         const fetchRegimeData = async () => {
@@ -135,13 +163,56 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 <div className="space-y-7 fade-in delay-300">
                     <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
                     <HoldingsManager />
-                    <StartAnalysisCTA onStartAnalysis={onStartAnalysis} id="analysis-cta-widget" />
+                    <StartAnalysisCTA 
+                        onStartAnalysis={onStartAnalysis} 
+                        onEnterArena={() => setShowArena(true)}
+                        id="analysis-cta-widget" 
+                    />
                     <ResearchSection />
+                    <RegimeTestWidget />
                     <MonteCarloSimulation />
                     <CommunityIdeas />
                     <TopMovers />
                 </div>
             </div>
+
+            {/* Thesis Arena Modal */}
+            {showArena && (
+                <div 
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+                    onClick={() => setShowArena(false)}
+                >
+                    <div 
+                        className="bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            backgroundColor: 'var(--color-bg-primary)',
+                            border: '1px solid var(--color-bg-tertiary)',
+                        }}
+                    >
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 
+                                className="text-2xl font-bold"
+                                style={{ 
+                                    fontFamily: 'var(--font-display)',
+                                    color: 'var(--color-cream)',
+                                }}
+                            >
+                                Thesis Arena
+                            </h2>
+                            <button
+                                onClick={() => setShowArena(false)}
+                                className="text-2xl font-bold"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <ThesisArena onClose={() => setShowArena(false)} />
+                    </div>
+                </div>
+            )}
         </main>
     );
 };

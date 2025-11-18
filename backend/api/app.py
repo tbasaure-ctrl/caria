@@ -66,12 +66,15 @@ from api.domains.market_data import market_data_router
 from api.routes.analysis import router as analysis_router
 from api.routes.auth import router as auth_router
 from api.routes.regime import router as regime_router
+from api.routes.regime_testing import router as regime_testing_router
+from api.routes.thesis_arena import router as thesis_arena_router
 from api.routes.factors import router as factors_router
 from api.routes.valuation import router as valuation_router
 from api.routes.prices import router as prices_router
 from api.routes.holdings import router as holdings_router
 from api.routes.chat import router as chat_router
 from api.routes.community import router as community_router
+from api.routes.community_rankings import router as community_rankings_router
 from api.routes.portfolio_analytics import router as portfolio_analytics_router
 from api.routes.monte_carlo import router as monte_carlo_router
 from api.routes.model_validation import router as model_validation_router
@@ -268,6 +271,8 @@ _init_state(app)
 # Note: Individual routes already have /api/* prefixes, so domain routers include them as-is
 app.include_router(identity_router)  # Identity domain: auth, users, sessions
 app.include_router(portfolio_router)  # Portfolio domain: holdings, analytics, TAA, Monte Carlo
+app.include_router(regime_testing_router)  # Regime testing: test portfolio against regimes
+app.include_router(thesis_arena_router)  # Thesis Arena: challenge thesis with communities
 app.include_router(social_router)  # Social domain: community, chat
 app.include_router(analysis_domain_router)  # Analysis domain: regime, factors, valuation, validation
 app.include_router(market_data_router)  # Market Data domain: prices, indicators
@@ -283,6 +288,7 @@ app.include_router(prices_router)  # Legacy: Use /api/prices instead
 app.include_router(holdings_router)  # Legacy: Use /api/portfolio/holdings instead
 app.include_router(chat_router)  # Legacy: Use /api/chat instead
 app.include_router(community_router)  # Legacy: Use /api/community instead
+app.include_router(community_rankings_router)  # Community rankings and validation
 app.include_router(portfolio_analytics_router)  # Legacy: Use /api/portfolio/analytics instead
 app.include_router(monte_carlo_router)  # Legacy: Use /api/portfolio/monte-carlo instead
 app.include_router(model_validation_router)  # Legacy: Use /api/validation instead

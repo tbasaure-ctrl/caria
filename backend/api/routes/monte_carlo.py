@@ -24,6 +24,7 @@ class MonteCarloRequest(BaseModel):
     simulations: int = Field(10000, ge=1000, le=50000, description="Number of simulations")
     contributions_per_year: float = Field(0.0, ge=0, description="Annual contributions")
     annual_fee: float = Field(0.0, ge=0, le=0.1, description="Annual fee rate")
+    regime: str = Field(None, description="Optional: Economic regime (expansion, recession, slowdown, stress) to adjust parameters")
 
 
 class StockForecastRequest(BaseModel):
@@ -44,18 +45,47 @@ async def run_monte_carlo_simulation(
     Per audit document (3.1): Returns optimized Plotly data using technique
     of concatenating all simulations with np.nan separators for efficient rendering.
     Frontend should use Scattergl (WebGL) for visualization.
+    
+    If regime is specified, adjusts mu and sigma based on regime characteristics.
     """
     try:
         service = get_monte_carlo_service()
+        
+        # Adjust parameters based on regime if provided
+        mu = request.mu
+        sigma = request.sigma
+        
+        if request.regime:
+            regime_adjustments = {
+                "expansion": {"mu_mult": 1.2, "sigma_mult": 0.9},  # Higher returns, lower vol
+                "recession": {"mu_mult": -0.5, "sigma_mult": 1.5},  # Negative returns, high vol
+                "slowdown": {"mu_mult": 0.6, "sigma_mult": 1.1},  # Lower returns, moderate vol
+                "stress": {"mu_mult": -1.0, "sigma_mult": 1.8},  # Very negative, very high vol
+            }
+            
+            adjustment = regime_adjustments.get(request.regime.lower())
+            if adjustment:
+                mu = request.mu * adjustment["mu_mult"]
+                sigma = request.sigma * adjustment["sigma_mult"]
+                # Ensure sigma stays positive
+                sigma = max(0.01, sigma)
+        
         result = service.run_portfolio_simulation(
             initial_value=request.initial_value,
-            mu=request.mu,
-            sigma=request.sigma,
+            mu=mu,
+            sigma=sigma,
             years=request.years,
             simulations=request.simulations,
             contributions_per_year=request.contributions_per_year,
             annual_fee=request.annual_fee,
         )
+        
+        # Add regime info if provided
+        if request.regime:
+            result["regime"] = request.regime.lower()
+            result["adjusted_mu"] = mu
+            result["adjusted_sigma"] = sigma
+        
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Simulation error: {str(e)}") from e

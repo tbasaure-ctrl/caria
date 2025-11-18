@@ -18,6 +18,55 @@ from caria.models.auth import UserInDB
 router = APIRouter(prefix="/api/community", tags=["Community"])
 
 
+def _get_db_connection():
+    """Get database connection using DATABASE_URL or fallback."""
+    import psycopg2
+    import os
+    from urllib.parse import urlparse, parse_qs
+
+    database_url = os.getenv("DATABASE_URL")
+    conn = None
+    
+    if database_url:
+        try:
+            parsed = urlparse(database_url)
+            query_params = parse_qs(parsed.query)
+            unix_socket_host = query_params.get('host', [None])[0]
+            
+            if unix_socket_host:
+                conn = psycopg2.connect(
+                    host=unix_socket_host,
+                    user=parsed.username,
+                    password=parsed.password,
+                    database=parsed.path.lstrip('/'),
+                )
+            elif parsed.hostname:
+                conn = psycopg2.connect(
+                    host=parsed.hostname,
+                    port=parsed.port or 5432,
+                    user=parsed.username,
+                    password=parsed.password,
+                    database=parsed.path.lstrip('/'),
+                )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Error using DATABASE_URL: {e}")
+    
+    if conn is None:
+        password = os.getenv("POSTGRES_PASSWORD")
+        if not password:
+            raise HTTPException(status_code=500, detail="Database password not configured")
+        conn = psycopg2.connect(
+            host=os.getenv("POSTGRES_HOST", "localhost"),
+            port=int(os.getenv("POSTGRES_PORT", "5432")),
+            user=os.getenv("POSTGRES_USER", "caria_user"),
+            password=password,
+            database=os.getenv("POSTGRES_DB", "caria"),
+        )
+    
+    return conn
+
+
 # Request/Response Models
 class CommunityPostCreate(BaseModel):
     title: str = Field(..., min_length=5, max_length=255)
@@ -58,17 +107,9 @@ async def get_community_posts(
     Get community posts (top ideas).
     Shows title and preview only per user requirements.
     """
-    import psycopg2
-    import os
     from psycopg2.extras import RealDictCursor
 
-    conn = psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "localhost"),
-        port=int(os.getenv("POSTGRES_PORT", "5432")),
-        user=os.getenv("POSTGRES_USER", "caria_user"),
-        password=os.getenv("POSTGRES_PASSWORD"),
-        database=os.getenv("POSTGRES_DB", "caria"),
-    )
+    conn = _get_db_connection()
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
@@ -142,26 +183,19 @@ async def create_community_post(
     Create a new community post (share investment thesis).
     Per user requirements: chat can offer to share thesis based on analysis merit.
     """
-    import psycopg2
-    import os
     from psycopg2.extras import RealDictCursor
 
-    conn = psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "localhost"),
-        port=int(os.getenv("POSTGRES_PORT", "5432")),
-        user=os.getenv("POSTGRES_USER", "caria_user"),
-        password=os.getenv("POSTGRES_PASSWORD"),
-        database=os.getenv("POSTGRES_DB", "caria"),
-    )
+    conn = _get_db_connection()
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(
                 """
                 INSERT INTO community_posts (
-                    user_id, title, thesis_preview, full_thesis, ticker, analysis_merit_score
+                    user_id, title, thesis_preview, full_thesis, ticker, analysis_merit_score,
+                    arena_thread_id, arena_round_id, arena_community, is_arena_post
                 )
-                VALUES (%s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id, user_id, title, thesis_preview, full_thesis, ticker,
                           analysis_merit_score, upvotes, created_at, updated_at
                 """,
@@ -172,6 +206,10 @@ async def create_community_post(
                     post_data.full_thesis,
                     post_data.ticker.upper() if post_data.ticker else None,
                     post_data.analysis_merit_score or 0.0,
+                    post_data.arena_thread_id,
+                    post_data.arena_round_id,
+                    post_data.arena_community,
+                    bool(post_data.arena_thread_id),  # is_arena_post = True if linked to arena
                 ),
             )
             row = cursor.fetchone()
@@ -207,14 +245,48 @@ async def vote_on_post(
     """
     import psycopg2
     import os
+    from urllib.parse import urlparse, parse_qs
 
-    conn = psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "localhost"),
-        port=int(os.getenv("POSTGRES_PORT", "5432")),
-        user=os.getenv("POSTGRES_USER", "caria_user"),
-        password=os.getenv("POSTGRES_PASSWORD"),
-        database=os.getenv("POSTGRES_DB", "caria"),
-    )
+    # Use DATABASE_URL first (Cloud SQL format)
+    database_url = os.getenv("DATABASE_URL")
+    conn = None
+    
+    if database_url:
+        try:
+            parsed = urlparse(database_url)
+            query_params = parse_qs(parsed.query)
+            unix_socket_host = query_params.get('host', [None])[0]
+            
+            if unix_socket_host:
+                conn = psycopg2.connect(
+                    host=unix_socket_host,
+                    user=parsed.username,
+                    password=parsed.password,
+                    database=parsed.path.lstrip('/'),
+                )
+            elif parsed.hostname:
+                conn = psycopg2.connect(
+                    host=parsed.hostname,
+                    port=parsed.port or 5432,
+                    user=parsed.username,
+                    password=parsed.password,
+                    database=parsed.path.lstrip('/'),
+                )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Error using DATABASE_URL: {e}")
+    
+    if conn is None:
+        password = os.getenv("POSTGRES_PASSWORD")
+        if not password:
+            raise HTTPException(status_code=500, detail="Database password not configured")
+        conn = psycopg2.connect(
+            host=os.getenv("POSTGRES_HOST", "localhost"),
+            port=int(os.getenv("POSTGRES_PORT", "5432")),
+            user=os.getenv("POSTGRES_USER", "caria_user"),
+            password=password,
+            database=os.getenv("POSTGRES_DB", "caria"),
+        )
 
     try:
         with conn.cursor() as cursor:

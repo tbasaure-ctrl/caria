@@ -48,7 +48,7 @@ export const GlobalMarketBar: React.FC<{id?: string}> = ({id}) => {
             >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {GLOBAL_INDICES.map(index => (
-                        <div key={index.name} style={{ backgroundColor: 'var(--color-bg-tertiary)' }} className="border rounded-lg p-4" style={{ borderColor: 'var(--color-bg-tertiary)' }}>
+                        <div key={index.name} className="border rounded-lg p-4" style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-bg-tertiary)' }}>
                             <div style={{ color: 'var(--color-text-secondary)' }} className="text-sm">Cargando...</div>
                         </div>
                     ))}

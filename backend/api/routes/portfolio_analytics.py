@@ -4,6 +4,7 @@ Portfolio Analytics endpoints using quantstats per audit document (3.2).
 
 from __future__ import annotations
 
+import logging
 import os
 from datetime import datetime
 
@@ -15,6 +16,7 @@ from api.dependencies import get_current_user
 from api.services.portfolio_analytics import get_portfolio_analytics_service
 from caria.models.auth import UserInDB
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/portfolio", tags=["Portfolio Analytics"])
 
 

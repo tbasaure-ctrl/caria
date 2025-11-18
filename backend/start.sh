@@ -22,8 +22,11 @@ cd /app/backend
 # The PYTHONPATH must be set before Python starts, which is why we use export above
 # Cloud Run sets PORT automatically (usually 8080)
 # Railway and other platforms also use PORT env var
-PORT=${PORT:-8000}
+# Cloud Run sets PORT=8080 automatically
+PORT=${PORT:-8080}
 echo "Starting server on port $PORT"
 echo "PYTHONPATH: $PYTHONPATH"
+echo "Environment variables:"
+env | grep -E "(PORT|PYTHON|DATABASE)" || true
 exec python3 -m uvicorn api.app:socketio_app --host 0.0.0.0 --port $PORT
 

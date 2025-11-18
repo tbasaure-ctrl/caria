@@ -47,48 +47,39 @@ jobs:
 
       - name: 'Build and Push Container'
         run: |-
-          # Verificar estructura del repositorio
-          # El build context debe ser la raíz del repo para que COPY backend/ funcione
-          echo "Current directory: $(pwd)"
-          echo "Directory structure:"
-          ls -la
-          echo ""
-          echo "Checking for Dockerfile..."
-          if [ -f "backend/Dockerfile" ]; then
-            # Estructura: backend/Dockerfile (raíz del repo)
-            echo "Found: backend/Dockerfile"
-            DOCKERFILE_PATH="backend/Dockerfile"
-            BUILD_CONTEXT="."
-          elif [ -f "notebooks/backend/Dockerfile" ]; then
-            # Estructura: notebooks/backend/Dockerfile
-            echo "Found: notebooks/backend/Dockerfile"
-            DOCKERFILE_PATH="notebooks/backend/Dockerfile"
-            BUILD_CONTEXT="notebooks"
-          else
-            echo "Error: No se encontró backend/Dockerfile"
-            echo "Estructura del directorio:"
+          # Dockerfile está siempre en notebooks/backend/Dockerfile
+          # Build context debe ser notebooks/ para que COPY backend/ funcione correctamente
+          DOCKERFILE_PATH="notebooks/backend/Dockerfile"
+          BUILD_CONTEXT="notebooks"
+          
+          echo "Building Docker image..."
+          echo "Dockerfile: ${DOCKERFILE_PATH}"
+          echo "Build context: ${BUILD_CONTEXT}"
+          
+          # Verify Dockerfile exists
+          if [ ! -f "${DOCKERFILE_PATH}" ]; then
+            echo "Error: Dockerfile not found at ${DOCKERFILE_PATH}"
+            echo "Current directory: $(pwd)"
+            echo "Directory structure:"
             ls -la
-            if [ -d "backend" ]; then
-              echo "Directorio backend existe"
-              ls -la backend/ | head -20
-            fi
-            if [ -d "notebooks" ]; then
-              echo "Directorio notebooks existe"
-              ls -la notebooks/ | head -20
-              if [ -d "notebooks/backend" ]; then
-                echo "Directorio notebooks/backend existe"
-                ls -la notebooks/backend/ | head -20
-              fi
-            fi
             exit 1
           fi
-          echo "Using Dockerfile: ${DOCKERFILE_PATH}"
-          echo "Using build context: ${BUILD_CONTEXT}"
+          
           DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:${{ github.sha }}"
+          
+          echo "Building image: ${DOCKER_TAG}"
           docker build -f "${DOCKERFILE_PATH}" --tag "${DOCKER_TAG}" "${BUILD_CONTEXT}"
+          
+          echo "Pushing image: ${DOCKER_TAG}"
           docker push "${DOCKER_TAG}"
+          
+          echo "Tagging as latest..."
           docker tag "${DOCKER_TAG}" "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:latest"
+          
+          echo "Pushing latest tag..."
           docker push "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:latest"
+          
+          echo "✅ Image built and pushed successfully"
 
       - name: 'Deploy to Cloud Run'
         id: deploy

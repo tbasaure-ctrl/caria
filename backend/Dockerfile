@@ -64,7 +64,7 @@ ENV PYTHONPATH=/app/caria-lib:/app/backend:${PYTHONPATH:-}
 
 WORKDIR /app/backend
 
-EXPOSE 8000
+EXPOSE 8080
 
 CMD ["/app/backend/start.sh"]
 

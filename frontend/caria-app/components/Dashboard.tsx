@@ -5,6 +5,7 @@ import { TopMovers } from './widgets/TopMovers';
 import { ModelOutlook } from './widgets/ModelOutlook';
 import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
 import { ModelValidationDashboard } from './widgets/ModelValidationDashboard';
+import { FearGreedIndex } from './widgets/FearGreedIndex';
 import { ThesisIcon } from './Icons';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
 import { HoldingsManager } from './widgets/HoldingsManager';
@@ -165,6 +166,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {/* Column 2 - Sidebar Widgets */}
                 <div className="space-y-7 fade-in delay-300">
                     <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                    <FearGreedIndex />
                     <HoldingsManager />
                     <StartAnalysisCTA 
                         onStartAnalysis={onStartAnalysis} 

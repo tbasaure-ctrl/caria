@@ -153,11 +153,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 </p>
              </div>
 
+            {/* Top Row: Model Outlook & Fear/Greed Index (Compact) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-7 fade-in delay-100">
+                <div className="transform scale-95">
+                    <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                </div>
+                <div className="transform scale-95">
+                    <FearGreedIndex />
+                </div>
+            </div>
+
+            {/* Global Market Bar */}
+            <div className="mb-7 fade-in delay-150">
+                <GlobalMarketBar id="market-bar-widget" />
+            </div>
+
+            {/* Portfolio & Holdings Manager Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-7 mb-7 fade-in delay-200">
+                <Portfolio id="portfolio-widget" />
+                <HoldingsManager />
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
                 {/* Column 1 - Main Content */}
-                <div className="lg:col-span-2 space-y-7 fade-in delay-200">
-                    <GlobalMarketBar id="market-bar-widget" />
-                    <Portfolio id="portfolio-widget" />
+                <div className="lg:col-span-2 space-y-7 fade-in delay-250">
                     <PortfolioAnalytics />
                     <ModelPortfolioWidget />
                     <RegimeTestWidget />
@@ -167,9 +186,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* Column 2 - Sidebar Widgets */}
                 <div className="space-y-7 fade-in delay-300">
-                    <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
-                    <FearGreedIndex />
-                    <HoldingsManager />
                     <StartAnalysisCTA
                         onStartAnalysis={onStartAnalysis}
                         onEnterArena={() => setShowArena(true)}

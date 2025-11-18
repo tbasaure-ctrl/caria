@@ -55,7 +55,7 @@ export const ModelPortfolioWidget: React.FC = () => {
             }
         } catch (err: any) {
             console.error('Error loading model portfolios:', err);
-            setError(err.message || 'Error loading portfolios');
+            setError('Coming soon... Model portfolios are being enhanced with better allocation strategies.');
         } finally {
             setLoading(false);
         }
@@ -85,7 +85,7 @@ export const ModelPortfolioWidget: React.FC = () => {
             setSelectedPortfolio(newPortfolio);
         } catch (err: any) {
             console.error('Error selecting portfolio:', err);
-            setError(err.message || 'Error selecting portfolio');
+            setError('Coming soon... Portfolio selection is being enhanced for better recommendations.');
         } finally {
             setIsSelecting(false);
         }

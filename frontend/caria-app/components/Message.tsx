@@ -69,7 +69,7 @@ const featuresData: Feature[] = [
   {
     icon: ChartIcon,
     title: 'Market Intelligence & Regime Detection',
-    description: 'Stay ahead with live market data, Fear & Greed Index, and our proprietary macroeconomic regime detection that adapts your strategy to market conditions.',
+    description: 'Stay ahead with live market data and our proprietary macroeconomic regime detection that adapts your strategy to market conditions in real-time.',
     visual: <MarketVisual />,
   },
   {

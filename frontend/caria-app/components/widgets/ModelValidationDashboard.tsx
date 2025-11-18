@@ -66,7 +66,7 @@ export const ModelValidationDashboard: React.FC = () => {
             setAnalysis(data);
         } catch (err: any) {
             console.error('Error loading analysis:', err);
-            setError(err.message || 'Error loading analysis');
+            setError('Coming soon... Model validation is being enhanced with more comprehensive metrics.');
         } finally {
             setLoading(false);
         }

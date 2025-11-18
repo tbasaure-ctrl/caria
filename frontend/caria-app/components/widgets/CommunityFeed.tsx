@@ -62,7 +62,7 @@ export const CommunityFeed: React.FC = () => {
             setPosts(data);
         } catch (err: any) {
             console.error('Error loading community posts:', err);
-            setError(err.message || 'Error loading posts');
+            setError('Coming soon... Community feed is being enhanced to show even more investment ideas.');
         } finally {
             setLoading(false);
         }

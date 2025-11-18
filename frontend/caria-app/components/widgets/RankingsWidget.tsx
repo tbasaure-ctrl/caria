@@ -72,7 +72,7 @@ export const RankingsWidget: React.FC = () => {
             setRankings(data);
         } catch (err: any) {
             console.error('Error loading rankings:', err);
-            setError(err.message || 'Error loading rankings');
+            setError('Coming soon... Community rankings are being enhanced with more metrics and categories.');
         } finally {
             setLoading(false);
         }

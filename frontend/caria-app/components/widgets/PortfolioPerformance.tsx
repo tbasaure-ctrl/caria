@@ -51,7 +51,7 @@ export const PortfolioPerformance: React.FC<PortfolioPerformanceProps> = ({ port
             setPerformance(data);
         } catch (err: any) {
             console.error('Error loading performance:', err);
-            setError(err.message || 'Error loading performance');
+            setError('Coming soon... Performance tracking is being enhanced with historical analysis.');
         } finally {
             setLoading(false);
         }

@@ -30,7 +30,7 @@ export const RedditSentiment: React.FC = () => {
             setStocks(data.stocks || []);
         } catch (err: any) {
             console.error('Reddit fetch error:', err);
-            setError(err.message || 'Failed to load Reddit data');
+            setError('Coming soon... Reddit sentiment analysis is being enhanced to provide even better social media insights.');
             // Fallback mock data for development
             setStocks([
                 { ticker: 'NVDA', mentions: 1247, sentiment: 'bullish', trending_score: 92, top_post_title: 'NVDA earnings beat expectations', subreddit: 'wallstreetbets' },

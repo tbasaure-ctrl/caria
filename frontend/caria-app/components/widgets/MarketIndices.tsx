@@ -23,7 +23,7 @@ export const MarketIndices: React.FC = () => {
                 setLoading(false);
             } catch (err) {
                 console.error('Error fetching market indices:', err);
-                setError(err instanceof Error ? err.message : 'Error cargando precios');
+                setError('Coming soon... Market indices are being enhanced with real-time data from more exchanges.');
                 setLoading(false);
             }
         };

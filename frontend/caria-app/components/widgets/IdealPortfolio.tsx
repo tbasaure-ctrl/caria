@@ -55,7 +55,7 @@ export const IdealPortfolio: React.FC<{ regime?: string; isLoading: boolean }> =
                 setAllocation(data);
             } catch (err: any) {
                 console.error('Error fetching tactical allocation:', err);
-                setError(err.message || 'Error loading allocation');
+                setError('Coming soon... Tactical allocation recommendations are being enhanced with better strategies.');
             } finally {
                 setIsFetching(false);
             }

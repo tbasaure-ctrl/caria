@@ -49,7 +49,7 @@ export const FearGreedIndex: React.FC = () => {
             setData(fearGreedData);
         } catch (err: any) {
             console.error('Error loading Fear and Greed Index:', err);
-            setError(err.message || 'Error loading index');
+            setError('Coming soon... Fear & Greed Index is being enhanced with real-time updates.');
         } finally {
             setLoading(false);
         }

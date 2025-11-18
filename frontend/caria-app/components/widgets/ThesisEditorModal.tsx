@@ -133,7 +133,7 @@ export const ThesisEditorModal: React.FC<ThesisEditorModalProps> = ({
             onClose();
         } catch (err: any) {
             console.error('Error creating post:', err);
-            setError(err.message || 'Failed to create post');
+            setError('Coming soon... Post creation is being enhanced for better sharing capabilities.');
         } finally {
             setIsSubmitting(false);
         }

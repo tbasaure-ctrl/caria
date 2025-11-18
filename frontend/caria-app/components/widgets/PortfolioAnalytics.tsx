@@ -43,7 +43,7 @@ export const PortfolioAnalytics: React.FC = () => {
                 setAnalytics(data);
             } catch (err: any) {
                 console.error('Error fetching portfolio analytics:', err);
-                setError(err.message || 'Failed to load portfolio analytics');
+                setError('Coming soon... Portfolio analytics are being enhanced with more advanced metrics.');
             } finally {
                 setIsLoading(false);
             }

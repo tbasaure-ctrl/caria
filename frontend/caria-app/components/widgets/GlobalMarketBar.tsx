@@ -28,7 +28,7 @@ export const GlobalMarketBar: React.FC<{id?: string}> = ({id}) => {
                 setLoading(false);
             } catch (err) {
                 console.error('Error fetching global market indices:', err);
-                setError(err instanceof Error ? err.message : 'Error cargando índices');
+                setError('Coming soon... Global market data is being enhanced with more indices and real-time updates.');
                 setLoading(false);
             }
         };

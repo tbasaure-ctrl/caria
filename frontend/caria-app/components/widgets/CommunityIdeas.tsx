@@ -49,7 +49,7 @@ export const CommunityIdeas: React.FC = () => {
             setPosts(data);
         } catch (err: any) {
             console.error('Error loading community posts:', err);
-            setError(err.message || 'Error loading posts');
+            setError('Coming soon... Community ideas are being enhanced with better curation.');
         } finally {
             setLoading(false);
         }

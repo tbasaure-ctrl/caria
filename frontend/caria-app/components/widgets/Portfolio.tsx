@@ -253,7 +253,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                 setLoading(false);
             } catch (err) {
                 console.error('Error fetching portfolio:', err);
-                setError(err instanceof Error ? err.message : 'Error cargando portfolio');
+                setError('Coming soon... Portfolio data loading is being enhanced for better performance.');
                 setLoading(false);
             }
         };

@@ -27,7 +27,7 @@ export const HoldingsManager: React.FC = () => {
             setLoading(false);
         } catch (err) {
             console.error('Error loading holdings:', err);
-            setError(err instanceof Error ? err.message : 'Error cargando holdings');
+            setError('Coming soon... Holdings management is being enhanced for a better experience.');
             setLoading(false);
         }
     };
@@ -52,7 +52,7 @@ export const HoldingsManager: React.FC = () => {
             setShowForm(false);
             loadHoldings();
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Error creando holding');
+            setError('Coming soon... Holdings creation is being enhanced for better reliability.');
         }
     };
 
@@ -62,7 +62,7 @@ export const HoldingsManager: React.FC = () => {
             await deleteHolding(id);
             loadHoldings();
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Error eliminando holding');
+            setError('Coming soon... Holdings deletion is being enhanced for better reliability.');
         }
     };
 

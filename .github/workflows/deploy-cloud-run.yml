@@ -43,12 +43,21 @@ jobs:
 
       - name: 'Build and Push Container'
         run: |-
-          # Si el repositorio tiene la estructura notebooks/, trabajar desde ahí
-          if [ -d "notebooks" ]; then
+          # Verificar estructura del repositorio
+          if [ -d "notebooks/backend" ]; then
+            # Estructura: notebooks/backend/Dockerfile
             cd notebooks
+            DOCKERFILE_PATH="backend/Dockerfile"
+          elif [ -f "backend/Dockerfile" ]; then
+            # Estructura: backend/Dockerfile (raíz)
+            DOCKERFILE_PATH="backend/Dockerfile"
+          else
+            echo "Error: No se encontró backend/Dockerfile"
+            ls -la
+            exit 1
           fi
           DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:${{ github.sha }}"
-          docker build -f backend/Dockerfile --tag "${DOCKER_TAG}" .
+          docker build -f "${DOCKERFILE_PATH}" --tag "${DOCKER_TAG}" .
           docker push "${DOCKER_TAG}"
           docker tag "${DOCKER_TAG}" "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:latest"
           docker push "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:latest"

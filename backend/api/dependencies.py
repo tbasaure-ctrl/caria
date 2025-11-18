@@ -114,6 +114,9 @@ def get_db_connection():
                 )
             try:
                 yield conn
+            except Exception:
+                conn.rollback()
+                raise
             finally:
                 conn.close()
             return
@@ -135,6 +138,9 @@ def get_db_connection():
     )
     try:
         yield conn
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
 

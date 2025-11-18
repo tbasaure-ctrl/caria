@@ -75,6 +75,7 @@ from api.routes.holdings import router as holdings_router
 from api.routes.chat import router as chat_router
 from api.routes.community import router as community_router
 from api.routes.community_rankings import router as community_rankings_router
+from api.routes.model_portfolio import router as model_portfolio_router
 from api.routes.portfolio_analytics import router as portfolio_analytics_router
 from api.routes.monte_carlo import router as monte_carlo_router
 from api.routes.model_validation import router as model_validation_router

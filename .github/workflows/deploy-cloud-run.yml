@@ -33,26 +33,15 @@ jobs:
           workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
           service_account: 'github-actions@caria-backend.iam.gserviceaccount.com'
 
-      - name: 'Docker Auth'
-        uses: 'docker/login-action@v3'
-        with:
-          username: 'oauth2accesstoken'
-          password: '${{ steps.auth.outputs.auth_token }}'
-          registry: '${{ env.REGION }}-docker.pkg.dev'
-
-      # --- THE FIX STARTS HERE ---
-      # We replaced the complex shell script with this standard action.
-      # This explicitly tells Docker: "Look in root (.) for context, but use backend/Dockerfile for the build."
+      # Use gcloud builds submit with cloudbuild-backend.yaml
+      # This explicitly specifies backend/Dockerfile and works with Workload Identity
       - name: 'Build and Push Container'
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./backend/Dockerfile
-          push: true
-          tags: |
-            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:${{ github.sha }}
-            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:latest
-      # --- THE FIX ENDS HERE ---
+        run: |-
+          gcloud builds submit \
+            --config=cloudbuild-backend.yaml \
+            --substitutions=COMMIT_SHA=${{ github.sha }} \
+            --timeout=20m \
+            .
 
       - name: 'Deploy to Cloud Run'
         id: deploy

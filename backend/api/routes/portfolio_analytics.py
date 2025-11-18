@@ -20,11 +20,47 @@ router = APIRouter(prefix="/api/portfolio", tags=["Portfolio Analytics"])
 
 def get_db_connection() -> psycopg2.extensions.connection:
     """Get database connection."""
+    from urllib.parse import urlparse, parse_qs
+    
+    # Try DATABASE_URL first (Cloud SQL format)
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        try:
+            parsed = urlparse(database_url)
+            query_params = parse_qs(parsed.query)
+            
+            # Check for Unix socket (Cloud SQL)
+            unix_socket_host = query_params.get('host', [None])[0]
+            
+            if unix_socket_host:
+                # Use Cloud SQL Unix socket
+                return psycopg2.connect(
+                    host=unix_socket_host,
+                    user=parsed.username,
+                    password=parsed.password,
+                    database=parsed.path.lstrip('/'),
+                )
+            elif parsed.hostname:
+                # Use normal TCP connection
+                return psycopg2.connect(
+                    host=parsed.hostname,
+                    port=parsed.port or 5432,
+                    user=parsed.username,
+                    password=parsed.password,
+                    database=parsed.path.lstrip('/'),
+                )
+        except Exception as e:
+            logger.warning(f"Error using DATABASE_URL: {e}. Falling back to individual vars...")
+    
+    # Fallback to individual environment variables
+    password = os.getenv("POSTGRES_PASSWORD")
+    if not password:
+        raise RuntimeError("POSTGRES_PASSWORD environment variable is required")
     return psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "postgres"),  # 'postgres' en la red interna de Docker
+        host=os.getenv("POSTGRES_HOST", "localhost"),
         port=int(os.getenv("POSTGRES_PORT", "5432")),
         user=os.getenv("POSTGRES_USER", "caria_user"),
-        password=os.getenv("POSTGRES_PASSWORD"),
+        password=password,
         database=os.getenv("POSTGRES_DB", "caria"),
     )
 

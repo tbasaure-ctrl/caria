@@ -42,14 +42,52 @@ async def get_tactical_allocation(
             from caria.services.regime_service import RegimeService
             import os
             import psycopg2
+            from urllib.parse import urlparse, parse_qs
             
-            db_conn = psycopg2.connect(
-                host=os.getenv("POSTGRES_HOST", "localhost"),
-                port=int(os.getenv("POSTGRES_PORT", "5432")),
-                user=os.getenv("POSTGRES_USER", "caria_user"),
-                password=os.getenv("POSTGRES_PASSWORD"),
-                database=os.getenv("POSTGRES_DB", "caria"),
-            )
+            # Try DATABASE_URL first (Cloud SQL format)
+            database_url = os.getenv("DATABASE_URL")
+            db_conn = None
+            
+            if database_url:
+                try:
+                    parsed = urlparse(database_url)
+                    query_params = parse_qs(parsed.query)
+                    
+                    # Check for Unix socket (Cloud SQL)
+                    unix_socket_host = query_params.get('host', [None])[0]
+                    
+                    if unix_socket_host:
+                        # Use Cloud SQL Unix socket
+                        db_conn = psycopg2.connect(
+                            host=unix_socket_host,
+                            user=parsed.username,
+                            password=parsed.password,
+                            database=parsed.path.lstrip('/'),
+                        )
+                    elif parsed.hostname:
+                        # Use normal TCP connection
+                        db_conn = psycopg2.connect(
+                            host=parsed.hostname,
+                            port=parsed.port or 5432,
+                            user=parsed.username,
+                            password=parsed.password,
+                            database=parsed.path.lstrip('/'),
+                        )
+                except Exception as e:
+                    LOGGER.warning(f"Error using DATABASE_URL: {e}. Falling back to individual vars...")
+            
+            # Fallback to individual environment variables
+            if db_conn is None:
+                password = os.getenv("POSTGRES_PASSWORD")
+                if not password:
+                    raise HTTPException(status_code=500, detail="Database password not configured")
+                db_conn = psycopg2.connect(
+                    host=os.getenv("POSTGRES_HOST", "localhost"),
+                    port=int(os.getenv("POSTGRES_PORT", "5432")),
+                    user=os.getenv("POSTGRES_USER", "caria_user"),
+                    password=password,
+                    database=os.getenv("POSTGRES_DB", "caria"),
+                )
             
             try:
                 regime_service = RegimeService(db_conn)

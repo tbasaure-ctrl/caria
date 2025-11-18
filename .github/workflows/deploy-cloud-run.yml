@@ -87,7 +87,7 @@ jobs:
           service: '${{ env.SERVICE }}'
           region: '${{ env.REGION }}'
           image: '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE }}:${{ github.sha }}'
-          flags: '--allow-unauthenticated --memory=2Gi --cpu=2 --timeout=300 --max-instances=10 --set-env-vars=RETRIEVAL_PROVIDER=gemini,RETRIEVAL_EMBEDDING_DIM=768,CORS_ORIGINS=https://caria-way.com;https://caria-git-main-tomas-projects-70a0592d.vercel.app,DATABASE_URL=postgresql://postgres:SimplePass123@/caria?host=/cloudsql/caria-backend:us-central1:caria-db --set-secrets=GEMINI_API_KEY=gemini-api-key:latest,POSTGRES_PASSWORD=postgres-password:latest,JWT_SECRET_KEY=jwt-secret-key:latest --add-cloudsql-instances=caria-backend:us-central1:caria-db'
+          flags: '--allow-unauthenticated --memory=2Gi --cpu=2 --timeout=300 --max-instances=10 --set-env-vars=RETRIEVAL_PROVIDER=gemini,RETRIEVAL_EMBEDDING_DIM=768,CORS_ORIGINS=https://caria-way.com;https://caria-git-main-tomas-projects-70a0592d.vercel.app,DATABASE_URL=postgresql://postgres:SimplePass123@/caria?host=/cloudsql/caria-backend:us-central1:caria-db,REDDIT_USER_AGENT=Caria Investment App v1.0 --set-secrets=GEMINI_API_KEY=gemini-api-key:latest,POSTGRES_PASSWORD=postgres-password:latest,JWT_SECRET_KEY=jwt-secret-key:latest,FMP_API_KEY=fmp-api-key:latest,REDDIT_CLIENT_ID=reddit-client-id:latest,REDDIT_CLIENT_SECRET=reddit-client-secret:latest --add-cloudsql-instances=caria-backend:us-central1:caria-db'
 
       - name: 'Show output'
         run: |-

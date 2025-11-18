@@ -78,7 +78,7 @@ jobs:
             RETRIEVAL_EMBEDDING_DIM=768
             CORS_ORIGINS=https://caria-way.com;https://caria-git-main-tomas-projects-70a0592d.vercel.app
             REDDIT_USER_AGENT=Caria-Investment-App-v1.0
-            DATABASE_URL=postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@/caria?host=/cloudsql/caria-backend:us-central1:caria-db
+            DATABASE_URL=postgresql://postgres:SimplePass123@/caria?host=/cloudsql/caria-backend:us-central1:caria-db
           flags: '--allow-unauthenticated --memory=2Gi --cpu=2 --timeout=300 --max-instances=10 --add-cloudsql-instances=caria-backend:us-central1:caria-db'
 
       - name: 'Show output'

@@ -49,15 +49,21 @@ jobs:
         run: |-
           # Verificar estructura del repositorio
           # El build context debe ser la raíz del repo para que COPY backend/ funcione
+          echo "Current directory: $(pwd)"
+          echo "Directory structure:"
+          ls -la
+          echo ""
+          echo "Checking for Dockerfile..."
           if [ -f "backend/Dockerfile" ]; then
             # Estructura: backend/Dockerfile (raíz del repo)
+            echo "Found: backend/Dockerfile"
             DOCKERFILE_PATH="backend/Dockerfile"
             BUILD_CONTEXT="."
           elif [ -f "notebooks/backend/Dockerfile" ]; then
             # Estructura: notebooks/backend/Dockerfile
-            # Necesitamos ajustar el Dockerfile o el contexto
+            echo "Found: notebooks/backend/Dockerfile"
             DOCKERFILE_PATH="notebooks/backend/Dockerfile"
-            BUILD_CONTEXT="."
+            BUILD_CONTEXT="notebooks"
           else
             echo "Error: No se encontró backend/Dockerfile"
             echo "Estructura del directorio:"
@@ -69,6 +75,10 @@ jobs:
             if [ -d "notebooks" ]; then
               echo "Directorio notebooks existe"
               ls -la notebooks/ | head -20
+              if [ -d "notebooks/backend" ]; then
+                echo "Directorio notebooks/backend existe"
+                ls -la notebooks/backend/ | head -20
+              fi
             fi
             exit 1
           fi

@@ -27,12 +27,20 @@ COPY caria-lib/ /app/caria-lib/
 COPY configs/ /app/configs/
 COPY caria_data/infrastructure/migrations/ /app/caria_data/infrastructure/migrations/
 COPY caria_data/migrations/init.sql /app/caria_data/migrations/init.sql
-COPY caria_data/models/regime_hmm_model.pkl /app/caria_data/models/regime_hmm_model.pkl
 
-# Create models directory and copy regime model where RegimeService expects it
-RUN mkdir -p /app/models && \
-    cp /app/caria_data/models/regime_hmm_model.pkl /app/models/regime_hmm_model.pkl && \
-    echo "✓ Regime HMM model copied to /app/models/"
+# Copy models directory (may only contain .gitkeep if .pkl files are gitignored)
+COPY caria_data/models/ /app/caria_data/models/
+
+# Create models directory for runtime
+RUN mkdir -p /app/models
+
+# Copy regime model if it exists, otherwise warn (model may be gitignored)
+RUN if [ -f /app/caria_data/models/regime_hmm_model.pkl ]; then \
+        cp /app/caria_data/models/regime_hmm_model.pkl /app/models/regime_hmm_model.pkl && \
+        echo "✓ Regime HMM model copied to /app/models/"; \
+    else \
+        echo "⚠ Warning: regime_hmm_model.pkl not found - regime detection may use defaults"; \
+    fi
 
 # Verify models directory exists
 RUN ls -la /app/caria-lib/caria/models/ && \

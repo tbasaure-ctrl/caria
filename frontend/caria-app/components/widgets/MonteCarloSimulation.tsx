@@ -91,7 +91,7 @@ export const MonteCarloSimulation: React.FC = () => {
             const data: MonteCarloResult = await response.json();
             setResult(data);
         } catch (err: any) {
-            setError(err.message || 'Error running simulation');
+            setError('Coming soon... Monte Carlo simulations are being enhanced for more accurate predictions.');
             console.error('Monte Carlo error:', err);
         } finally {
             setIsLoading(false);
@@ -143,7 +143,10 @@ export const MonteCarloSimulation: React.FC = () => {
     };
 
     return (
-        <WidgetCard title="MONTE CARLO SIMULATION">
+        <WidgetCard
+            title="MONTE CARLO SIMULATION"
+            tooltip="Simulación de miles de escenarios futuros para tu cartera. Visualiza probabilidades, riesgo (VaR/CVaR) y distribución de resultados."
+        >
             <div className="space-y-4">
                 {/* Input Form */}
                 <div className="grid grid-cols-2 gap-3 text-sm">

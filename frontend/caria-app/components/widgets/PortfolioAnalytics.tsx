@@ -69,7 +69,10 @@ export const PortfolioAnalytics: React.FC = () => {
     };
 
     return (
-        <WidgetCard title="PORTFOLIO ANALYTICS">
+        <WidgetCard
+            title="PORTFOLIO ANALYTICS"
+            tooltip="Métricas avanzadas de tu cartera: Sharpe Ratio, Alpha, Beta, volatilidad, y comparación con benchmarks como S&P 500."
+        >
             <div className="space-y-4">
                 {/* Benchmark Selector */}
                 <div className="flex items-center gap-2">

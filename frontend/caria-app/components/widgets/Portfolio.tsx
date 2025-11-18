@@ -266,7 +266,11 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
 
     if (loading) {
         return (
-            <WidgetCard id={id} title="PORTFOLIO SNAPSHOT">
+            <WidgetCard
+                id={id}
+                title="PORTFOLIO SNAPSHOT"
+                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
+            >
                 <div className="text-slate-400 text-sm">Cargando portfolio...</div>
             </WidgetCard>
         );
@@ -274,7 +278,11 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
 
     if (error) {
         return (
-            <WidgetCard id={id} title="PORTFOLIO SNAPSHOT">
+            <WidgetCard
+                id={id}
+                title="PORTFOLIO SNAPSHOT"
+                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
+            >
                 <div className="text-red-400 text-sm">{error}</div>
                 <div className="text-slate-500 text-xs mt-1">Inicia sesión para ver tu portfolio</div>
             </WidgetCard>
@@ -283,7 +291,11 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
 
     if (!portfolioData || portfolioData.holdings.length === 0) {
         return (
-            <WidgetCard id={id} title="PORTFOLIO SNAPSHOT">
+            <WidgetCard
+                id={id}
+                title="PORTFOLIO SNAPSHOT"
+                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
+            >
                 <div className="space-y-4">
                     <div className="text-slate-400 text-sm">
                         No hay holdings. Agrega posiciones para ver tu portfolio.
@@ -372,7 +384,11 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
     });
 
     return (
-        <WidgetCard id={id} title="PORTFOLIO SNAPSHOT">
+        <WidgetCard
+            id={id}
+            title="PORTFOLIO SNAPSHOT"
+            tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
+        >
             <div className="space-y-6">
                 {/* Resumen */}
                 <div>

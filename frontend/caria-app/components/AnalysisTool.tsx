@@ -177,7 +177,11 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             setMessages(prev => [...prev, modelMessage]);
 
         } catch (err: any) {
-            const errorMsg: ChatMessage = { role: 'error', content: err.message || 'Unknown error' };
+            console.error('Chat error:', err);
+            const errorMsg: ChatMessage = {
+                role: 'error',
+                content: 'Coming soon... This feature is currently being enhanced to provide you with the best analysis experience.'
+            };
             setMessages(prev => [...prev, errorMsg]);
         } finally {
             setIsLoading(false);

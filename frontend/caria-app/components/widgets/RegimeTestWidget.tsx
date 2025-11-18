@@ -56,7 +56,7 @@ export const RegimeTestWidget: React.FC = () => {
             setResults(data);
         } catch (err: any) {
             console.error('Error testing regime:', err);
-            setError(err.message || 'Error al probar régimen');
+            setError('Coming soon... Regime testing features are being enhanced to provide better portfolio stress analysis.');
         } finally {
             setIsLoading(false);
         }
@@ -65,8 +65,8 @@ export const RegimeTestWidget: React.FC = () => {
     return (
         <WidgetCard
             title="Test según Régimen"
-            icon="🛡️"
             className="fade-in"
+            tooltip="Prueba cómo se comportaría tu cartera en diferentes escenarios macroeconómicos: expansión, recesión, o crisis."
         >
             <div className="space-y-4">
                 {/* Regime Selection */}

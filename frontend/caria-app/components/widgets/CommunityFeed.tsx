@@ -155,7 +155,11 @@ export const CommunityFeed: React.FC = () => {
 
     if (loading) {
         return (
-            <WidgetCard title="Community Feed" id="community-feed-widget">
+            <WidgetCard
+                title="Community Feed"
+                id="community-feed-widget"
+                tooltip="Feed de tesis e ideas de inversión de la comunidad. Busca, vota y descubre insights compartidos por otros usuarios."
+            >
                 <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     Loading community posts...
                 </div>
@@ -165,7 +169,11 @@ export const CommunityFeed: React.FC = () => {
 
     if (error) {
         return (
-            <WidgetCard title="Community Feed" id="community-feed-widget">
+            <WidgetCard
+                title="Community Feed"
+                id="community-feed-widget"
+                tooltip="Feed de tesis e ideas de inversión de la comunidad. Busca, vota y descubre insights compartidos por otros usuarios."
+            >
                 <div className="text-sm" style={{ color: '#ef4444' }}>{error}</div>
                 <button
                     onClick={loadPosts}
@@ -179,7 +187,11 @@ export const CommunityFeed: React.FC = () => {
     }
 
     return (
-        <WidgetCard title="Community Feed" id="community-feed-widget">
+        <WidgetCard
+            title="Community Feed"
+            id="community-feed-widget"
+            tooltip="Feed de tesis e ideas de inversión de la comunidad. Busca, vota y descubre insights compartidos por otros usuarios."
+        >
             <div className="space-y-4">
                 {/* Search and Sort Controls */}
                 <div className="space-y-2">

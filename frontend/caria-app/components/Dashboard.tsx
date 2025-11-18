@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Portfolio } from './widgets/Portfolio';
-import { TopMovers } from './widgets/TopMovers';
+// import { TopMovers } from './widgets/TopMovers'; // Removed - using mock data
 import { ModelOutlook } from './widgets/ModelOutlook';
 import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
 import { ModelValidationDashboard } from './widgets/ModelValidationDashboard';
@@ -160,6 +160,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     <Portfolio id="portfolio-widget" />
                     <PortfolioAnalytics />
                     <ModelPortfolioWidget />
+                    <RegimeTestWidget />
+                    <MonteCarloSimulation />
                     <ModelValidationDashboard />
                 </div>
 
@@ -168,17 +170,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
                     <FearGreedIndex />
                     <HoldingsManager />
-                    <StartAnalysisCTA 
-                        onStartAnalysis={onStartAnalysis} 
+                    <StartAnalysisCTA
+                        onStartAnalysis={onStartAnalysis}
                         onEnterArena={() => setShowArena(true)}
-                        id="analysis-cta-widget" 
+                        id="analysis-cta-widget"
                     />
                     <ResearchSection />
-                    <RegimeTestWidget />
-                    <MonteCarloSimulation />
-                    <RankingsWidget /> {/* New widget */}
-                    <CommunityFeed /> {/* Enhanced CommunityIdeas */}
-                    <TopMovers />
+                    <RankingsWidget />
+                    <CommunityFeed />
                 </div>
             </div>
 

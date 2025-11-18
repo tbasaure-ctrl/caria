@@ -93,7 +93,11 @@ export const ModelPortfolioWidget: React.FC = () => {
 
     if (loading) {
         return (
-            <WidgetCard title="Model Portfolio" id="model-portfolio-widget">
+            <WidgetCard
+                title="Model Portfolio"
+                id="model-portfolio-widget"
+                tooltip="Portfolios seleccionados por el modelo basados en análisis cuantitativo. Elige entre balanced, outlier o random según tu estrategia."
+            >
                 <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     Loading model portfolios...
                 </div>
@@ -102,7 +106,11 @@ export const ModelPortfolioWidget: React.FC = () => {
     }
 
     return (
-        <WidgetCard title="Model Portfolio" id="model-portfolio-widget">
+        <WidgetCard
+            title="Model Portfolio"
+            id="model-portfolio-widget"
+            tooltip="Portfolios seleccionados por el modelo basados en análisis cuantitativo. Elige entre balanced, outlier o random según tu estrategia."
+        >
             <div className="space-y-4">
                 {/* Selection Controls */}
                 <div className="space-y-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)' }}>

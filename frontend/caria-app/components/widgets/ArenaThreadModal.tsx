@@ -127,7 +127,7 @@ export const ArenaThreadModal: React.FC<ArenaThreadModalProps> = ({
             setUserMessage(''); // Clear input
         } catch (err: any) {
             console.error('Error responding in arena:', err);
-            setError(err.message || 'Error al responder en arena');
+            setError('Coming soon... Arena conversations are being enhanced for better multi-round analysis.');
         } finally {
             setIsLoading(false);
         }

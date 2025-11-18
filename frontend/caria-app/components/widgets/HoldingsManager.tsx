@@ -68,14 +68,20 @@ export const HoldingsManager: React.FC = () => {
 
     if (loading) {
         return (
-            <WidgetCard title="GESTIÓN DE HOLDINGS">
+            <WidgetCard
+                title="GESTIÓN DE HOLDINGS"
+                tooltip="Administra tus posiciones de inversión. Agrega, edita o elimina holdings para mantener tu cartera actualizada."
+            >
                 <div className="text-slate-400 text-sm">Cargando...</div>
             </WidgetCard>
         );
     }
 
     return (
-        <WidgetCard title="GESTIÓN DE HOLDINGS">
+        <WidgetCard
+            title="GESTIÓN DE HOLDINGS"
+            tooltip="Administra tus posiciones de inversión. Agrega, edita o elimina holdings para mantener tu cartera actualizada."
+        >
             <div className="space-y-4">
                 {error && (
                     <div className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded p-2">

@@ -74,7 +74,11 @@ export const ModelValidationDashboard: React.FC = () => {
 
     if (loading) {
         return (
-            <WidgetCard title="Model Validation Dashboard" id="model-validation-dashboard">
+            <WidgetCard
+                title="Model Validation Dashboard"
+                id="model-validation-dashboard"
+                tooltip="Dashboard de validación del modelo. Analiza performance de portfolios modelo y determina si es necesario reentrenar."
+            >
                 <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     Loading analysis...
                 </div>
@@ -84,7 +88,11 @@ export const ModelValidationDashboard: React.FC = () => {
 
     if (error) {
         return (
-            <WidgetCard title="Model Validation Dashboard" id="model-validation-dashboard">
+            <WidgetCard
+                title="Model Validation Dashboard"
+                id="model-validation-dashboard"
+                tooltip="Dashboard de validación del modelo. Analiza performance de portfolios modelo y determina si es necesario reentrenar."
+            >
                 <div className="text-sm" style={{ color: '#ef4444' }}>{error}</div>
                 <button
                     onClick={loadAnalysis}
@@ -104,7 +112,11 @@ export const ModelValidationDashboard: React.FC = () => {
     const { analysis: perfAnalysis, retraining_history } = analysis;
 
     return (
-        <WidgetCard title="Model Validation Dashboard" id="model-validation-dashboard">
+        <WidgetCard
+            title="Model Validation Dashboard"
+            id="model-validation-dashboard"
+            tooltip="Dashboard de validación del modelo. Analiza performance de portfolios modelo y determina si es necesario reentrenar."
+        >
             <div className="space-y-4">
                 {/* Analysis Period */}
                 <div className="flex items-center gap-3">

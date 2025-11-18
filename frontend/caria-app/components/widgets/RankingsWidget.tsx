@@ -80,7 +80,11 @@ export const RankingsWidget: React.FC = () => {
 
     if (loading) {
         return (
-            <WidgetCard title="Community Rankings" id="rankings-widget">
+            <WidgetCard
+                title="Community Rankings"
+                id="rankings-widget"
+                tooltip="Rankings de la comunidad: comunidades más activas, tesis más populares, y tesis con mayor convicción sostenida."
+            >
                 <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     Loading rankings...
                 </div>
@@ -90,7 +94,11 @@ export const RankingsWidget: React.FC = () => {
 
     if (error) {
         return (
-            <WidgetCard title="Community Rankings" id="rankings-widget">
+            <WidgetCard
+                title="Community Rankings"
+                id="rankings-widget"
+                tooltip="Rankings de la comunidad: comunidades más activas, tesis más populares, y tesis con mayor convicción sostenida."
+            >
                 <div className="text-sm" style={{ color: '#ef4444' }}>{error}</div>
                 <button
                     onClick={loadRankings}
@@ -108,7 +116,11 @@ export const RankingsWidget: React.FC = () => {
     }
 
     return (
-        <WidgetCard title="Community Rankings" id="rankings-widget">
+        <WidgetCard
+            title="Community Rankings"
+            id="rankings-widget"
+            tooltip="Rankings de la comunidad: comunidades más activas, tesis más populares, y tesis con mayor convicción sostenida."
+        >
             <div className="space-y-4">
                 {/* Tabs */}
                 <div className="flex gap-2 border-b" style={{ borderColor: 'var(--color-bg-tertiary)' }}>

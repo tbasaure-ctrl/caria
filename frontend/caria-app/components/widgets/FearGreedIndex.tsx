@@ -214,7 +214,11 @@ export const FearGreedIndex: React.FC = () => {
 
     if (loading) {
         return (
-            <WidgetCard title="Fear & Greed Index" id="fear-greed-widget">
+            <WidgetCard
+                title="Fear & Greed Index"
+                id="fear-greed-widget"
+                tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
+            >
                 <div className="text-center py-8">
                     <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                         Loading Fear & Greed Index...
@@ -226,7 +230,11 @@ export const FearGreedIndex: React.FC = () => {
 
     if (error) {
         return (
-            <WidgetCard title="Fear & Greed Index" id="fear-greed-widget">
+            <WidgetCard
+                title="Fear & Greed Index"
+                id="fear-greed-widget"
+                tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
+            >
                 <div className="text-center py-8">
                     <div className="text-sm mb-2" style={{ color: '#ef4444' }}>{error}</div>
                     <button
@@ -252,7 +260,11 @@ export const FearGreedIndex: React.FC = () => {
     };
 
     return (
-        <WidgetCard title="Fear & Greed Index" id="fear-greed-widget">
+        <WidgetCard
+            title="Fear & Greed Index"
+            id="fear-greed-widget"
+            tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
+        >
             <div className="text-center">
                 {/* Gauge */}
                 {renderGauge(data.value, config.color)}

@@ -171,7 +171,7 @@ export const ValuationTool: React.FC = () => {
       await runMonteCarlo(impliedMu, horizon);
     } catch (err: any) {
       console.error("Quick valuation error:", err);
-      setValError(err.message || "Valuation error");
+      setValError("Coming soon... Advanced valuation features are being enhanced for you.");
     } finally {
       setIsLoadingValuation(false);
     }
@@ -211,7 +211,7 @@ export const ValuationTool: React.FC = () => {
       setMcResult(data);
     } catch (err: any) {
       console.error("Monte Carlo valuation error:", err);
-      setMcError(err.message || "Monte Carlo error");
+      setMcError("Coming soon... Monte Carlo simulations are being enhanced for more accurate predictions.");
     } finally {
       setIsLoadingMC(false);
     }
@@ -267,7 +267,10 @@ export const ValuationTool: React.FC = () => {
   };
 
   return (
-    <WidgetCard title="QUICK VALUATION">
+    <WidgetCard
+      title="QUICK VALUATION"
+      tooltip="Valuación rápida con DCF y múltiplos. Analiza precio objetivo, upside potencial y simulaciones Monte Carlo para cualquier ticker."
+    >
       <div className="space-y-6">
         {/* Ticker + botón */}
         <section className="space-y-3">

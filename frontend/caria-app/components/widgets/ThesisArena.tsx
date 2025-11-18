@@ -97,8 +97,8 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
             setResults(data);
         } catch (err: any) {
             console.error('Error challenging thesis:', err);
-            setError(err.message || 'Error al desafiar tesis');
-        } finally {
+            setError('Coming soon... Thesis Arena is being enhanced to provide even better analysis from our investment communities.');
+        } finally{
             setIsLoading(false);
         }
     };
@@ -118,7 +118,11 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
 
     return (
         <div className="space-y-6">
-            <WidgetCard title="Thesis Arena" className="fade-in">
+            <WidgetCard
+                title="Thesis Arena"
+                className="fade-in"
+                tooltip="Desafía tus tesis de inversión con 4 comunidades diferentes. Recibe feedback crítico para refinar tu convicción y análisis."
+            >
                 <div className="space-y-4">
                     {/* Ticker Input */}
                     <div>
@@ -244,7 +248,11 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
             {results && (
                 <div className="space-y-4">
                     {/* Conviction Impact */}
-                    <WidgetCard title="Impacto en Conviction" className="fade-in">
+                    <WidgetCard
+                        title="Impacto en Conviction"
+                        className="fade-in"
+                        tooltip="Muestra cómo cambió tu nivel de convicción después del análisis de las comunidades."
+                    >
                         <div className="text-center">
                             <div className="text-4xl font-bold mb-2" style={{ color: 'var(--color-primary)' }}>
                                 {results.conviction_impact.new_conviction.toFixed(1)}%

@@ -95,7 +95,10 @@ export const ModelOutlook: React.FC<{ regimeData: RegimeData | null; isLoading: 
     }
 
     return (
-        <WidgetCard title="MODEL OUTLOOK">
+        <WidgetCard
+            title="MODEL OUTLOOK"
+            tooltip="Régimen macroeconómico actual detectado por el modelo. Indica si el mercado está en expansión, desaceleración, recesión o estrés."
+        >
             {renderContent()}
         </WidgetCard>
     );

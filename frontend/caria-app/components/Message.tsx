@@ -63,13 +63,13 @@ const MarketVisual: React.FC = () => (
 const featuresData: Feature[] = [
   {
     icon: PortfolioIcon,
-    title: 'Advanced Portfolio Tracking',
-    description: 'Connect your accounts and gain unparalleled insights with advanced metrics, performance analysis, and risk assessment.',
+    title: 'AI-Powered Portfolio Intelligence',
+    description: 'Track your investments with real-time analytics, advanced metrics (Sharpe, Alpha, Beta), and stress test your portfolio against different economic scenarios with Monte Carlo simulations.',
   },
   {
     icon: ChartIcon,
-    title: 'Live Economic Data',
-    description: 'Stay ahead of the market with real-time index prices, economic indicators, and financial news, all in one place.',
+    title: 'Market Intelligence & Regime Detection',
+    description: 'Stay ahead with live market data, Fear & Greed Index, and our proprietary macroeconomic regime detection that adapts your strategy to market conditions.',
     visual: <MarketVisual />,
   },
   {

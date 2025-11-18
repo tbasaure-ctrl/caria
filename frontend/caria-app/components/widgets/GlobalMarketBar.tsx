@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchPrices, RealtimePrice } from '../../services/apiService';
 import { ArrowUpIcon, ArrowDownIcon } from '../Icons';
+import { WidgetCard } from './WidgetCard';
 
 // Principales índices globales (ETFs que representan índices)
 const GLOBAL_INDICES = [
@@ -40,28 +41,39 @@ export const GlobalMarketBar: React.FC<{id?: string}> = ({id}) => {
 
     if (loading) {
         return (
-            <div id={id} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {GLOBAL_INDICES.map(index => (
-                    <div key={index.name} className="bg-gray-950/50 border border-slate-800/50 rounded-lg p-4">
-                        <div className="text-slate-400 text-sm">Cargando...</div>
-                    </div>
-                ))}
-            </div>
+            <WidgetCard
+                id={id}
+                title="GLOBAL MARKETS"
+                tooltip="Principales índices de mercado globales en tiempo real: S&P 500, STOXX 600, y mercados emergentes."
+            >
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {GLOBAL_INDICES.map(index => (
+                        <div key={index.name} style={{ backgroundColor: 'var(--color-bg-tertiary)' }} className="border rounded-lg p-4" style={{ borderColor: 'var(--color-bg-tertiary)' }}>
+                            <div style={{ color: 'var(--color-text-secondary)' }} className="text-sm">Cargando...</div>
+                        </div>
+                    ))}
+                </div>
+            </WidgetCard>
         );
     }
 
     return (
-        <div id={id} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <WidgetCard
+            id={id}
+            title="GLOBAL MARKETS"
+            tooltip="Principales índices de mercado globales en tiempo real: S&P 500, STOXX 600, y mercados emergentes."
+        >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {GLOBAL_INDICES.map(index => {
                 const priceData = prices[index.ticker];
                 if (!priceData) {
                     return (
-                        <div key={index.name} className="bg-gray-950/50 border border-slate-800/50 rounded-lg p-4">
+                        <div key={index.name} style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-bg-tertiary)' }} className="border rounded-lg p-4">
                             <div className="flex justify-between items-baseline">
-                                <h3 className="text-sm font-bold text-slate-300">{index.name}</h3>
-                                <p className="text-xs text-slate-500">{index.region}</p>
+                                <h3 className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>{index.name}</h3>
+                                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{index.region}</p>
                             </div>
-                            <div className="mt-2 text-slate-500 text-sm">No disponible</div>
+                            <div className="mt-2 text-sm" style={{ color: 'var(--color-text-muted)' }}>No disponible</div>
                         </div>
                     );
                 }
@@ -72,14 +84,23 @@ export const GlobalMarketBar: React.FC<{id?: string}> = ({id}) => {
                 const isPositive = change >= 0;
 
                 return (
-                    <div key={index.name} className="bg-gray-950/50 border border-slate-800/50 rounded-lg p-4 transition-all hover:border-slate-700 hover:bg-gray-900">
+                    <div
+                        key={index.name}
+                        className="border rounded-lg p-4 transition-all hover:bg-opacity-80"
+                        style={{
+                            backgroundColor: 'var(--color-bg-tertiary)',
+                            borderColor: 'var(--color-bg-tertiary)'
+                        }}
+                    >
                         <div className="flex justify-between items-baseline">
-                            <h3 className="text-sm font-bold text-slate-300">{index.name}</h3>
-                            <p className="text-xs text-slate-500">{index.region}</p>
+                            <h3 className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>{index.name}</h3>
+                            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{index.region}</p>
                         </div>
                         <div className="mt-2 flex justify-between items-end">
-                            <p className="text-2xl font-mono text-slate-100">{value.toFixed(2)}</p>
-                            <span className={`text-md font-semibold flex items-center ${isPositive ? 'text-blue-400' : 'text-red-400'}`}>
+                            <p className="text-2xl" style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-primary)' }}>
+                                {value.toFixed(2)}
+                            </p>
+                            <span className={`text-md font-semibold flex items-center ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
                                 {isPositive ? <ArrowUpIcon className="w-4 h-4 mr-1"/> : <ArrowDownIcon className="w-4 h-4 mr-1"/>}
                                 {changePercent >= 0 ? '+' : ''}{changePercent.toFixed(2)}%
                             </span>
@@ -87,6 +108,7 @@ export const GlobalMarketBar: React.FC<{id?: string}> = ({id}) => {
                     </div>
                 );
             })}
-        </div>
+            </div>
+        </WidgetCard>
     );
 };

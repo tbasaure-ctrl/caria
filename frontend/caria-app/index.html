@@ -304,6 +304,104 @@
         background-color: var(--color-primary);
         color: var(--color-cream);
       }
+
+      /* Responsive Design */
+      /* Mobile (320px - 768px) */
+      @media (max-width: 768px) {
+        body {
+          font-size: 14px;
+        }
+
+        h1 {
+          font-size: 2rem !important;
+        }
+
+        h2 {
+          font-size: 1.5rem !important;
+        }
+
+        h3 {
+          font-size: 1.25rem !important;
+        }
+
+        /* Reduce padding on main container */
+        main {
+          padding: 1rem !important;
+        }
+
+        /* Stack grid to single column */
+        .grid {
+          grid-template-columns: 1fr !important;
+        }
+
+        /* Adjust widget padding */
+        .rounded-lg {
+          padding: 1rem !important;
+        }
+
+        /* Smaller gaps */
+        .space-y-7 > * + * {
+          margin-top: 1.5rem !important;
+        }
+
+        .gap-7 {
+          gap: 1.5rem !important;
+        }
+
+        /* Make text more readable on mobile */
+        .text-4xl {
+          font-size: 1.875rem !important;
+        }
+
+        .text-2xl {
+          font-size: 1.5rem !important;
+        }
+
+        /* Adjust GlobalMarketBar grid */
+        .grid-cols-1.md\\:grid-cols-3 {
+          grid-template-columns: 1fr !important;
+        }
+
+        /* Make CTA smaller on mobile */
+        .p-8 {
+          padding: 1.5rem !important;
+        }
+      }
+
+      /* Tablet (768px - 1024px) */
+      @media (min-width: 768px) and (max-width: 1024px) {
+        /* Two-column layout for tablets */
+        .lg\\:col-span-2 {
+          grid-column: span 1 !important;
+        }
+
+        .lg\\:grid-cols-3 {
+          grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        /* Adjust GlobalMarketBar to 2 columns */
+        .grid-cols-1.md\\:grid-cols-3 {
+          grid-template-columns: repeat(2, 1fr) !important;
+        }
+      }
+
+      /* Desktop optimization (1024px+) */
+      @media (min-width: 1024px) {
+        /* Ensure tooltips don't overflow */
+        .absolute.left-0.top-6 {
+          left: auto;
+          right: 0;
+        }
+      }
+
+      /* Large desktop (1440px+) */
+      @media (min-width: 1440px) {
+        main {
+          max-width: 1400px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+      }
     </style>
 <link rel="stylesheet" href="/index.css">
 </head>

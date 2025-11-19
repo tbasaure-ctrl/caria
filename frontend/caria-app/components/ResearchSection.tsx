@@ -15,7 +15,7 @@ import { Resources } from './widgets/Resources';
  */
 export const ResearchSection: React.FC = () => {
     return (
-        <div className="space-y-6 fade-in">
+        <div className="fade-in">
             {/* Section Header */}
             <div className="mb-6">
                 <h2 className="text-2xl font-bold mb-2"
@@ -25,22 +25,22 @@ export const ResearchSection: React.FC = () => {
                     }}>
                     🔬 Research & Analysis
                 </h2>
-                <p className="text-sm"
+                <p className="text-sm mb-4"
                    style={{
                        fontFamily: 'var(--font-body)',
                        color: 'var(--color-text-secondary)'
                    }}>
                     Tools and insights to help you make informed investment decisions
                 </p>
-                <div className="mt-3 h-px"
+                <div className="h-px mb-6"
                      style={{
                          background: 'linear-gradient(to right, transparent, var(--color-bg-tertiary), transparent)',
                          opacity: 0.5
                      }}></div>
             </div>
 
-            {/* Research Widgets */}
-            <div className="space-y-6">
+            {/* Research Widgets - Grid Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <ValuationTool />
                 <RedditSentiment />
                 <Resources />

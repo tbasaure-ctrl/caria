@@ -137,7 +137,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     }, []);
 
     return (
-        <main className="flex-1 overflow-y-auto p-8"
+        <main className="flex-1 overflow-y-auto p-6 max-w-[1920px] mx-auto"
             style={{ backgroundColor: 'var(--color-bg-primary)' }}>
             {/* OnboardingTour removed */}
 
@@ -153,57 +153,47 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             </div>
 
             {/* Global Market Bar - Full Width */}
-            <div className="mb-8 fade-in delay-100">
+            <div className="mb-6 fade-in delay-100">
                 <GlobalMarketBar id="market-bar-widget" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* LEFT COLUMN: Portfolio Management (4 cols) */}
-                <div className="lg:col-span-4 space-y-8 fade-in delay-200 flex flex-col">
-                    {/* Portfolio Overview */}
+            {/* TOP ROW: Market Indicators - Full Width */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 fade-in delay-200">
+                <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                <FearGreedIndex />
+            </div>
+
+            {/* MAIN CONTENT: 3 Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                {/* LEFT COLUMN: Portfolio Management */}
+                <div className="space-y-6 fade-in delay-300">
                     <Portfolio id="portfolio-widget" />
-                    
-                    {/* Analytics */}
                     <PortfolioAnalytics />
-                    
-                    {/* Management Tools */}
                     <HoldingsManager />
                 </div>
 
-                {/* CENTER COLUMN: Model & Market Analysis (5 cols) */}
-                <div className="lg:col-span-5 space-y-8 fade-in delay-300 flex flex-col">
-                    {/* Market Outlook Section - Side by Side */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
-                        <FearGreedIndex />
-                    </div>
-
-                    {/* Model Portfolios */}
-                    <ModelPortfolioWidget />
-
-                    {/* Risk Analysis */}
-                    <RegimeTestWidget />
-                    <MonteCarloSimulation />
-                </div>
-
-                {/* RIGHT COLUMN: Community & Research (3 cols) */}
-                <div className="lg:col-span-3 space-y-8 fade-in delay-400 flex flex-col">
-                    {/* Primary CTA */}
+                {/* CENTER COLUMN: Analysis & Simulation */}
+                <div className="space-y-6 fade-in delay-400">
                     <StartAnalysisCTA
                         onStartAnalysis={onStartAnalysis}
                         onEnterArena={() => setShowArena(true)}
                         id="analysis-cta-widget"
                     />
+                    <ModelPortfolioWidget />
+                    <RegimeTestWidget />
+                    <MonteCarloSimulation />
+                </div>
 
-                    {/* Community Feed */}
+                {/* RIGHT COLUMN: Community & Rankings */}
+                <div className="space-y-6 fade-in delay-500">
                     <CommunityFeed />
-
-                    {/* Research Tools */}
-                    <ResearchSection />
-                    
-                    {/* Rankings */}
                     <RankingsWidget />
                 </div>
+            </div>
+
+            {/* RESEARCH SECTION: Full Width Row */}
+            <div className="mb-8 fade-in delay-600">
+                <ResearchSection />
             </div>
 
             {/* Thesis Arena Modal */}

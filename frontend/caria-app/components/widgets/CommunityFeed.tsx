@@ -62,7 +62,14 @@ export const CommunityFeed: React.FC = () => {
             setPosts(data);
         } catch (err: any) {
             console.error('Error loading community posts:', err);
-            setError('Coming soon... Community feed is being enhanced to show even more investment ideas.');
+            // Provide more specific error messages
+            if (err.message?.includes('401') || err.message?.includes('403')) {
+                setError('Please log in to view community posts');
+            } else if (err.message?.includes('Failed to connect')) {
+                setError('Unable to connect to community service');
+            } else {
+                setError('Unable to load community posts. Please try again later.');
+            }
         } finally {
             setLoading(false);
         }

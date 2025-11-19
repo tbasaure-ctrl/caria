@@ -72,7 +72,14 @@ export const RankingsWidget: React.FC = () => {
             setRankings(data);
         } catch (err: any) {
             console.error('Error loading rankings:', err);
-            setError('Coming soon... Community rankings are being enhanced with more metrics and categories.');
+            // Provide more specific error messages
+            if (err.message?.includes('401') || err.message?.includes('403')) {
+                setError('Please log in to view community rankings');
+            } else if (err.message?.includes('Failed to connect')) {
+                setError('Unable to connect to rankings service');
+            } else {
+                setError('Unable to load rankings. Please try again later.');
+            }
         } finally {
             setLoading(false);
         }

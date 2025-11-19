@@ -5,10 +5,11 @@ import { ArrowUpIcon, ArrowDownIcon } from '../Icons';
 import { WidgetCard } from './WidgetCard';
 
 // Principales índices globales (ETFs que representan índices)
+// Usando ETFs reales que se pueden obtener de FMP API
 const GLOBAL_INDICES = [
     { ticker: 'SPY', name: 'S&P 500', region: 'USA' },
-    { ticker: 'STOXX', name: 'STOXX 600', region: 'Europe' },
-    { ticker: 'EEM', name: 'S&P IPSA', region: 'Chile' }, // Usando EEM como proxy, puedes cambiarlo
+    { ticker: 'VGK', name: 'STOXX 600', region: 'Europe' }, // VGK es un ETF europeo amplio
+    { ticker: 'EEM', name: 'Emerging Markets', region: 'Chile' }, // EEM para mercados emergentes
 ];
 
 const POLLING_INTERVAL = 30000; // 30 segundos
@@ -26,9 +27,16 @@ export const GlobalMarketBar: React.FC<{id?: string}> = ({id}) => {
                 const data = await fetchPrices(tickers);
                 setPrices(data);
                 setLoading(false);
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Error fetching global market indices:', err);
-                setError('Coming soon... Global market data is being enhanced with more indices and real-time updates.');
+                // Check if it's an authentication error
+                if (err.message?.includes('401') || err.message?.includes('403')) {
+                    setError('Please log in to view market data');
+                } else if (err.message?.includes('Failed to connect')) {
+                    setError('Unable to connect to market data service');
+                } else {
+                    setError('Market data temporarily unavailable');
+                }
                 setLoading(false);
             }
         };

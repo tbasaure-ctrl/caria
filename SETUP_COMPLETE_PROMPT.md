@@ -3,6 +3,19 @@
 ## Objetivo
 Configurar todos los secrets de API, verificar deployments en Cloud Run y Vercel, y probar que todos los endpoints funcionen correctamente.
 
+## ⚠️ Si Tienes Problemas con Timeout en Cloud Run
+
+**Lee primero:** `TEST_CLOUD_RUN_BACKEND.md` - Guía completa para diagnosticar y solucionar timeouts.
+
+**Prueba rápida:**
+```bash
+# Health check simple
+curl https://caria-api-418525923468.us-central1.run.app/health
+
+# Ver logs
+gcloud run services logs read caria-api --region=us-central1 --project=caria-backend --limit=50
+```
+
 ## Tareas
 
 ### 1. Configurar Secrets en Google Cloud Secret Manager

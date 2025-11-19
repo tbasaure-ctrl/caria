@@ -12,9 +12,6 @@ import requests
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from api.dependencies import get_current_user
-from caria.models.auth import UserInDB
-
 LOGGER = logging.getLogger("caria.api.fear_greed")
 
 router = APIRouter(prefix="/api/market", tags=["Market Data"])
@@ -30,9 +27,7 @@ class FearGreedResponse(BaseModel):
 
 
 @router.get("/fear-greed", response_model=FearGreedResponse)
-async def get_fear_greed_index(
-    current_user: Optional[UserInDB] = Depends(get_current_user),
-) -> FearGreedResponse:
+async def get_fear_greed_index() -> FearGreedResponse:
     """
     Get CNN Fear and Greed Index in real-time.
     

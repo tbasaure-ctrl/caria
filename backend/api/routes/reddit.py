@@ -78,14 +78,23 @@ async def get_reddit_sentiment(
         }
 
     try:
+        # Check if credentials are available
+        client_id = os.getenv("REDDIT_CLIENT_ID")
+        client_secret = os.getenv("REDDIT_CLIENT_SECRET")
+        user_agent = os.getenv("REDDIT_USER_AGENT", "Caria-Investment-App-v1.0")
+        
+        if not client_id or not client_secret:
+            logger.warning("Reddit credentials not configured, returning mock data")
+            raise ValueError("Reddit credentials not configured")
+        
         # Initialize Reddit API (read-only mode for public data)
         reddit = praw.Reddit(
-            client_id=os.getenv("REDDIT_CLIENT_ID"),
-            client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
-            user_agent=os.getenv("REDDIT_USER_AGENT", "Caria Investment App v1.0"),
+            client_id=client_id,
+            client_secret=client_secret,
+            user_agent=user_agent,
             check_for_async=False  # Disable async check for FastAPI compatibility
         )
-
+        
         # Subreddits to monitor
         subreddits = ["wallstreetbets", "stocks", "investing"]
 
@@ -153,5 +162,60 @@ async def get_reddit_sentiment(
         }
 
     except Exception as e:
-        logger.error(f"Reddit API error: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch Reddit data: {str(e)}")
+        error_str = str(e).lower()
+        # Check for specific Reddit API errors
+        if "401" in error_str or "unauthorized" in error_str or "forbidden" in error_str:
+            logger.warning(f"Reddit API authentication failed: {e}. Returning mock data.")
+        elif "praw" in error_str or "reddit" in error_str:
+            logger.warning(f"Reddit API error: {e}. Returning mock data.")
+        else:
+            logger.error(f"Unexpected error accessing Reddit API: {e}")
+        
+        # Instead of failing, return mock data so the frontend still works
+        return {
+            "stocks": [
+                {
+                    "ticker": "NVDA",
+                    "mentions": 1247,
+                    "sentiment": "bullish",
+                    "trending_score": 92,
+                    "top_post_title": "NVDA earnings beat expectations",
+                    "subreddit": "wallstreetbets"
+                },
+                {
+                    "ticker": "TSLA",
+                    "mentions": 856,
+                    "sentiment": "neutral",
+                    "trending_score": 78,
+                    "top_post_title": "Tesla production numbers released",
+                    "subreddit": "stocks"
+                },
+                {
+                    "ticker": "AAPL",
+                    "mentions": 634,
+                    "sentiment": "bullish",
+                    "trending_score": 71,
+                    "top_post_title": "Apple Vision Pro sales surging",
+                    "subreddit": "investing"
+                },
+                {
+                    "ticker": "SPY",
+                    "mentions": 521,
+                    "sentiment": "bearish",
+                    "trending_score": 65,
+                    "top_post_title": "Market correction incoming?",
+                    "subreddit": "wallstreetbets"
+                },
+                {
+                    "ticker": "AMD",
+                    "mentions": 412,
+                    "sentiment": "bullish",
+                    "trending_score": 58,
+                    "top_post_title": "AMD new chip announcement",
+                    "subreddit": "stocks"
+                }
+            ],
+            "timeframe": timeframe,
+            "mock_data": True,
+            "error": f"Reddit API unavailable: {str(e)}"
+        }

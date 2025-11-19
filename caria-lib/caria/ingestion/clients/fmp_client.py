@@ -19,7 +19,9 @@ class FMPClient:
     def __init__(self, api_key: str | None = None) -> None:
         self.api_key = api_key or os.getenv("FMP_API_KEY")
         if not self.api_key:
+            LOGGER.error("FMP_API_KEY no configurado. Verifica que el secret esté configurado en Cloud Run.")
             raise RuntimeError("FMP_API_KEY no configurado para FMPClient")
+        LOGGER.debug(f"FMPClient inicializado con API key: {self.api_key[:4]}...")
 
     def _get(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
         params = params.copy() if params else {}

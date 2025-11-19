@@ -81,17 +81,27 @@ Provide your analysis and response as a {community.replace('_', ' ')} investor. 
         resp.raise_for_status()
         data = resp.json()
         
-        text = (
-            data.get("candidates", [{}])[0]
-            .get("content", {})
-            .get("parts", [{}])[0]
-            .get("text", "")
-        )
+        # Debug: log response structure
+        LOGGER.debug(f"Gemini response structure for {community}: {json.dumps(data, indent=2)[:500]}")
         
-        if not text:
-            LOGGER.warning(f"Gemini returned empty text for {community}")
+        candidates = data.get("candidates", [])
+        if not candidates:
+            LOGGER.warning(f"Gemini returned no candidates for {community}. Full response: {json.dumps(data)[:500]}")
             return None
         
+        content = candidates[0].get("content", {})
+        parts = content.get("parts", [])
+        if not parts:
+            LOGGER.warning(f"Gemini returned no parts for {community}. Content: {content}")
+            return None
+        
+        text = parts[0].get("text", "")
+        
+        if not text:
+            LOGGER.warning(f"Gemini returned empty text for {community}. Parts: {parts}")
+            return None
+        
+        LOGGER.info(f"Gemini successfully returned response for {community} ({len(text)} chars)")
         return text
     except Exception as e:
         LOGGER.exception(f"Error calling Gemini for {community}: {e}")

@@ -1,9 +1,13 @@
--- Migration 013: Fix missing columns and tables
+-- Migration 013 Alternative: Fix missing columns and tables
 -- Purpose: Add missing columns and ensure all required tables exist
--- NOTE: This migration should be run as the postgres superuser or a user with ALTER TABLE permissions
+-- This version uses GRANT statements to ensure permissions before ALTER TABLE
+-- Run this as postgres superuser or ensure your user has ALTER TABLE permissions
+
+-- First, ensure we have permissions on existing tables
+GRANT ALL ON TABLE refresh_tokens TO postgres;
+GRANT ALL ON TABLE community_posts TO postgres;
 
 -- Add revoked column to refresh_tokens if it doesn't exist
--- Use DO block to check if column exists first (more permissive)
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -45,7 +49,6 @@ CREATE TABLE IF NOT EXISTS arena_rounds (
 );
 
 -- Ensure community_posts has arena fields (from migration 011)
--- Use DO blocks to check if columns exist first (more permissive)
 DO $$
 BEGIN
     IF NOT EXISTS (

@@ -83,17 +83,45 @@ async def get_reddit_sentiment(
         client_secret = os.getenv("REDDIT_CLIENT_SECRET")
         user_agent = os.getenv("REDDIT_USER_AGENT", "Caria-Investment-App-v1.0")
         
+        # Log credential status (without exposing secrets)
+        logger.info(f"Reddit credentials check:")
+        logger.info(f"  REDDIT_CLIENT_ID present: {bool(client_id)}")
+        logger.info(f"  REDDIT_CLIENT_SECRET present: {bool(client_secret)}")
+        logger.info(f"  REDDIT_USER_AGENT: {user_agent}")
+        
         if not client_id or not client_secret:
-            logger.warning("Reddit credentials not configured, returning mock data")
-            raise ValueError("Reddit credentials not configured")
+            error_msg = "Reddit credentials not configured. REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET must be set."
+            logger.error(error_msg)
+            raise HTTPException(
+                status_code=500,
+                detail=error_msg
+            )
         
         # Initialize Reddit API (read-only mode for public data)
+        # Use proper User Agent format recommended by Reddit
+        # Format: <platform>:<app ID>:<version> (by /u/<reddit username>)
+        formatted_user_agent = user_agent
+        if not any(char in user_agent for char in ['/', ':', 'by']):
+            # If user agent doesn't follow Reddit format, use a simple descriptive one
+            formatted_user_agent = f"web:CariaInvestmentApp:v1.0 (by /u/caria_app)"
+        
+        logger.info(f"Initializing Reddit API with client_id: {client_id[:10]}..., user_agent: {formatted_user_agent}")
+        
         reddit = praw.Reddit(
             client_id=client_id,
             client_secret=client_secret,
-            user_agent=user_agent,
+            user_agent=formatted_user_agent,
             check_for_async=False  # Disable async check for FastAPI compatibility
         )
+        
+        # Test connection by accessing a public subreddit
+        try:
+            test_subreddit = reddit.subreddit("test")
+            _ = test_subreddit.display_name  # This will raise if auth fails
+            logger.info("Reddit API connection successful")
+        except Exception as auth_error:
+            logger.error(f"Reddit API authentication failed: {auth_error}")
+            raise
         
         # Subreddits to monitor
         subreddits = ["wallstreetbets", "stocks", "investing"]
@@ -163,15 +191,43 @@ async def get_reddit_sentiment(
 
     except Exception as e:
         error_str = str(e).lower()
+        error_msg = str(e)
+        
+        # Log detailed error information
+        logger.error(f"Reddit API error details:")
+        logger.error(f"  Error type: {type(e).__name__}")
+        logger.error(f"  Error message: {error_msg}")
+        logger.error(f"  Client ID configured: {bool(client_id)}")
+        logger.error(f"  Client Secret configured: {bool(client_secret)}")
+        logger.error(f"  User Agent: {user_agent}")
+        
         # Check for specific Reddit API errors
         if "401" in error_str or "unauthorized" in error_str or "forbidden" in error_str:
-            logger.warning(f"Reddit API authentication failed: {e}. Returning mock data.")
+            logger.error(f"Reddit API authentication failed (401/403): {e}")
+            logger.error("Possible causes:")
+            logger.error("  1. Client ID or Secret incorrect")
+            logger.error("  2. User Agent format not accepted by Reddit")
+            logger.error("  3. Reddit API rate limiting or blocking")
+            logger.error("  4. Credentials expired or revoked")
+            # Don't return mock data - raise the error so we can see it
+            raise HTTPException(
+                status_code=500,
+                detail=f"Reddit API authentication failed: {error_msg}. Check logs for details."
+            )
         elif "praw" in error_str or "reddit" in error_str:
-            logger.warning(f"Reddit API error: {e}. Returning mock data.")
+            logger.error(f"Reddit/PRAW error: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Reddit API error: {error_msg}"
+            )
         else:
             logger.error(f"Unexpected error accessing Reddit API: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Unexpected error accessing Reddit API: {error_msg}"
+            )
         
-        # Instead of failing, return mock data so the frontend still works
+        # Fallback mock data (should not reach here due to raises above)
         return {
             "stocks": [
                 {

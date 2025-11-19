@@ -1,12 +1,12 @@
 import React from 'react';
 
-interface IconProps extends React.SVGProps<SVGSVGElement> {}
+interface IconProps extends React.SVGProps<SVGSVGElement> { }
 
 export const CariaLogoIcon: React.FC<IconProps> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M17.5 15.5C17.5 18.5376 14.9376 21 11.9 21C8.86243 21 6.3 18.5376 6.3 15.5C6.3 12.4624 8.86243 10 11.9 10" />
-    <path d="M12 10V3L17.5 8.5" />
-  </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M17.5 15.5C17.5 18.5376 14.9376 21 11.9 21C8.86243 21 6.3 18.5376 6.3 15.5C6.3 12.4624 8.86243 10 11.9 10" />
+        <path d="M12 10V3L17.5 8.5" />
+    </svg>
 );
 
 
@@ -70,12 +70,12 @@ export const DashboardIcon: React.FC<IconProps> = (props) => (
 
 export const ThesisIcon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M15 4h-5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"/>
-        <path d="M15 4l-2.5 2.5L10 4"/>
-        <path d="M8 10h4"/>
-        <path d="M8 14h3"/>
-        <circle cx="17.5" cy="17.5" r="2.5"/>
-        <path d="M19.5 19.5L21 21"/>
+        <path d="M15 4h-5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5" />
+        <path d="M15 4l-2.5 2.5L10 4" />
+        <path d="M8 10h4" />
+        <path d="M8 14h3" />
+        <circle cx="17.5" cy="17.5" r="2.5" />
+        <path d="M19.5 19.5L21 21" />
     </svg>
 );
 
@@ -89,5 +89,13 @@ export const XIcon: React.FC<IconProps> = (props) => (
 export const SendIcon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
         <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+    </svg>
+);
+
+export const MoreVerticalIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <circle cx="12" cy="12" r="1"></circle>
+        <circle cx="12" cy="5" r="1"></circle>
+        <circle cx="12" cy="19" r="1"></circle>
     </svg>
 );

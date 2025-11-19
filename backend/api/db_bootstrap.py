@@ -219,6 +219,26 @@ def ensure_init_schema(conn: psycopg2.extensions.connection) -> None:
     LOGGER.info("Base schema initialized successfully")
 
 
+def ensure_schema_updates(conn: psycopg2.extensions.connection) -> None:
+    """Ensure critical schema updates are applied (e.g. missing columns)."""
+    # Migration 013 fixes missing columns in refresh_tokens, community_posts, etc.
+    fix_sql = ROOT_DIR / "caria_data" / "migrations" / "013_fix_missing_columns.sql"
+    
+    if not fix_sql.exists():
+        LOGGER.warning("Schema update file not found: %s", fix_sql)
+        return
+
+    # We can't easily check if it's already applied without a migrations table,
+    # but the SQL file uses IF NOT EXISTS / DO blocks so it's safe to run multiple times.
+    LOGGER.info("Applying schema updates from %s", fix_sql.name)
+    try:
+        _run_sql_file(conn, fix_sql)
+        LOGGER.info("Schema updates applied successfully")
+    except Exception as e:
+        LOGGER.error("Error applying schema updates: %s", e)
+        # Don't raise, so we don't block startup if this fails (e.g. permissions)
+
+
 def run_bootstrap_tasks() -> None:
     """Entry point executed on API startup."""
     conn = _connect()
@@ -232,6 +252,7 @@ def run_bootstrap_tasks() -> None:
         ensure_community_tables(conn)
         ensure_holdings_table(conn)
         ensure_model_portfolio_tables(conn)
+        ensure_schema_updates(conn)  # Run fixes for missing columns
         ensure_default_user(conn)
     except Exception as exc:  # noqa: BLE001
         conn.rollback()

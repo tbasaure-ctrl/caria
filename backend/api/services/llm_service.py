@@ -71,7 +71,7 @@ class LLMService:
         return self._call_llama(prompt, system_prompt)
 
     def _call_gemini(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("GEMINI_API_KEY", "").strip()
         api_url = os.getenv(
             "GEMINI_API_URL",
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",

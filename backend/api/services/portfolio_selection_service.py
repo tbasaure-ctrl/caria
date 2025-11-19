@@ -187,7 +187,7 @@ def get_portfolio_selection_service() -> PortfolioSelectionService:
     """Get PortfolioSelectionService instance."""
     from caria.ingestion.clients.fmp_client import FMPClient
     
-    api_key = os.getenv("FMP_API_KEY")
+    api_key = os.getenv("FMP_API_KEY", "").strip()
     if not api_key:
         LOGGER.warning("FMP_API_KEY not configured, PortfolioSelectionService may have limited functionality")
     

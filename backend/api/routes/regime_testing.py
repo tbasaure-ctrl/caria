@@ -243,21 +243,36 @@ async def _get_user_holdings(user_id: str) -> List[HoldingInput]:
     
     try:
         with conn.cursor() as cur:
+            # Get holdings with quantity and average_cost, calculate allocation percentage
             cur.execute(
                 """
-                SELECT ticker, allocation_percentage
+                SELECT ticker, quantity, average_cost
                 FROM holdings
-                WHERE user_id = %s AND allocation_percentage > 0
-                ORDER BY allocation_percentage DESC
+                WHERE user_id = %s AND quantity > 0
+                ORDER BY ticker
                 """,
                 (user_id,)
             )
             rows = cur.fetchall()
+            if not rows:
+                return []
             
-            holdings = [
-                HoldingInput(ticker=row[0], allocation=float(row[1]))
-                for row in rows
-            ]
+            # Calculate total portfolio value
+            total_value = sum(float(row[1]) * float(row[2]) for row in rows)  # quantity * average_cost
+            
+            if total_value == 0:
+                return []
+            
+            # Calculate allocation percentage for each holding
+            holdings = []
+            for row in rows:
+                ticker = row[0]
+                quantity = float(row[1])
+                average_cost = float(row[2])
+                holding_value = quantity * average_cost
+                allocation_pct = (holding_value / total_value) * 100
+                holdings.append(HoldingInput(ticker=ticker, allocation=allocation_pct))
+            
             return holdings
     except Exception as e:
         LOGGER.exception(f"Error fetching user holdings: {e}")

@@ -77,6 +77,11 @@ class QuickValuationResponse(BaseModel):
     assumptions_used: Dict[str, Any]
     explanation: str
     raw_inputs: Dict[str, Any]
+    # New fields
+    dcf_value: Optional[float] = None
+    graham_value: Optional[float] = None
+    lynch_value: Optional[float] = None
+    average_value: Optional[float] = None
 
 
 # ---------- Helpers FMP ----------
@@ -140,12 +145,13 @@ def _fetch_basic_fundamentals(ticker: str) -> Dict[str, Any]:
             capex = float(cf.get("capitalExpenditure") or 0.0)
             fcf = op_cf + capex  # capex normalmente es negativo en FMP
 
-    # Balance (deuda neta)
+    # Balance (deuda neta y equity)
     bs_data = _fmp_get(
         f"/balance-sheet-statement/{ticker.upper()}",
         params={"limit": 1},
     )
     net_debt = None
+    total_equity = None
     if bs_data:
         bs = bs_data[0]
         total_debt = float(bs.get("totalDebt") or 0.0)
@@ -155,6 +161,10 @@ def _fetch_basic_fundamentals(ticker: str) -> Dict[str, Any]:
             or 0.0
         )
         net_debt = total_debt - cash
+        total_equity = float(bs.get("totalStockholdersEquity") or 0.0)
+
+    # EPS from quote
+    eps = float(quote.get("eps") or 0.0)
 
     return {
         "price": price,
@@ -162,6 +172,8 @@ def _fetch_basic_fundamentals(ticker: str) -> Dict[str, Any]:
         "shares_outstanding": shares_out,
         "fcf": fcf,
         "net_debt": net_debt,
+        "total_equity": total_equity,
+        "eps": eps,
     }
 
 
@@ -268,18 +280,13 @@ def quick_valuation(
     fcf = fundamentals["fcf"]
     shares_outstanding = fundamentals["shares_outstanding"]
     net_debt_from_data = fundamentals["net_debt"]
+    total_equity = fundamentals["total_equity"]
+    eps = fundamentals["eps"]
 
     if price <= 0 or market_cap <= 0:
         raise HTTPException(
             status_code=502,
             detail=f"Datos de precio/market cap no válidos para {ticker}.",
-        )
-
-    if fcf is None:
-        # Sin FCF no tiene sentido forzar un DCF
-        raise HTTPException(
-            status_code=502,
-            detail=f"No se encontró Free Cash Flow reciente para {ticker}.",
         )
 
     # 2) Construir supuestos usados (mezcla de defaults y datos)
@@ -317,40 +324,68 @@ def quick_valuation(
     )
 
     # 3) Correr DCF
-    dcf_result = _run_simple_dcf(fcf_current=fcf, assumptions=assumptions)
-    enterprise_value = dcf_result["enterprise_value"]
-
-    # 4) Pasar a equity y fair value por acción
-    net_debt = assumptions.net_debt or 0.0
-    equity_value = enterprise_value - net_debt
-
-    if not assumptions.shares_outstanding or assumptions.shares_outstanding <= 0:
-        fair_value = None
-        upside_pct = None
+    dcf_fair_value = None
+    if fcf is not None:
+        dcf_result = _run_simple_dcf(fcf_current=fcf, assumptions=assumptions)
+        enterprise_value = dcf_result["enterprise_value"]
+        net_debt = assumptions.net_debt or 0.0
+        equity_value = enterprise_value - net_debt
+        
+        if assumptions.shares_outstanding and assumptions.shares_outstanding > 0:
+            dcf_fair_value = equity_value / assumptions.shares_outstanding
     else:
-        fair_value = equity_value / assumptions.shares_outstanding
-        if fair_value <= 0:
-            upside_pct = None
-        else:
-            upside_pct = (fair_value / price - 1.0) * 100.0
+        dcf_result = {"error": "No FCF data"}
 
-    # 5) Explicación (texto para el usuario)
+    # 4) Correr Multiples (Graham & Lynch)
+    graham_value = None
+    if eps > 0 and total_equity is not None and assumptions.shares_outstanding:
+        bvps = total_equity / assumptions.shares_outstanding
+        if bvps > 0:
+            # Graham Number = Sqrt(22.5 * EPS * BVPS)
+            graham_value = math.sqrt(22.5 * eps * bvps)
+
+    lynch_value = None
+    if eps > 0:
+        # Lynch Fair Value = EPS * GrowthRate * 100 (PEG=1)
+        # Usamos high_growth_rate como proxy de growth esperado
+        growth_percent = assumptions.high_growth_rate * 100
+        # Cap growth at 25% to be conservative for this formula
+        capped_growth = min(growth_percent, 25.0)
+        lynch_value = eps * capped_growth
+
+    # 5) Promedio
+    valid_values = []
+    if dcf_fair_value is not None and dcf_fair_value > 0:
+        valid_values.append(dcf_fair_value)
+    if graham_value is not None and graham_value > 0:
+        valid_values.append(graham_value)
+    if lynch_value is not None and lynch_value > 0:
+        valid_values.append(lynch_value)
+
+    average_value = None
+    if valid_values:
+        average_value = sum(valid_values) / len(valid_values)
+
+    # Usamos el promedio como "fair_value" principal, o DCF si es el único
+    final_fair_value = average_value if average_value else dcf_fair_value
+
+    upside_pct = None
+    if final_fair_value and final_fair_value > 0:
+        upside_pct = (final_fair_value / price - 1.0) * 100.0
+
+    # 6) Explicación
     explanation = (
-        f"Metodología: DCF de dos etapas + valor terminal.\n\n"
-        f"- Punto de partida: último Free Cash Flow anual reportado en FMP.\n"
-        f"- Etapa de alto crecimiento: {assumptions.high_growth_years} años al "
-        f"{assumptions.high_growth_rate*100:.1f}% anual.\n"
-        f"- Etapa de 'fade': {assumptions.fade_years} años donde el crecimiento decae "
-        f"linealmente hasta {assumptions.terminal_growth_rate*100:.1f}%.\n"
-        f"- Horizonte explícito: {dcf_result['horizon_years']} años.\n"
-        f"- Tasa de descuento: {assumptions.discount_rate*100:.1f}%.\n"
-        f"- Valor terminal: FCF del último año creciendo al {assumptions.terminal_growth_rate*100:.1f}% "
-        f"y descontado al {assumptions.discount_rate*100:.1f}%.\n"
-        f"- Enterprise value: suma de FCF descontados + valor terminal.\n"
-        f"- Equity value: enterprise value - deuda neta (deuda total - caja).\n"
-        f"- Fair value por acción: equity value / acciones en circulación.\n\n"
-        f"Esta es una aproximación educativa y simplificada; no reemplaza un análisis profundo de negocio, "
-        f"estructura de capital ni de riesgos específicos."
+        f"Metodología Combinada (Promedio de 3 Modelos):\n\n"
+        f"1. DCF (Discounted Cash Flow): ${dcf_fair_value:.2f} "
+        f"({'Calculado' if dcf_fair_value else 'N/A'})\n"
+        f"   - Basado en FCF descontado a {assumptions.discount_rate*100:.1f}%.\n\n"
+        f"2. Número de Graham: ${graham_value:.2f} "
+        f"({'Calculado' if graham_value else 'N/A'})\n"
+        f"   - Valuación clásica basada en activos y ganancias (Sqrt(22.5 * EPS * BVPS)).\n\n"
+        f"3. Peter Lynch Fair Value: ${lynch_value:.2f} "
+        f"({'Calculado' if lynch_value else 'N/A'})\n"
+        f"   - Basado en crecimiento esperado (PEG = 1). Growth usado: {min(assumptions.high_growth_rate*100, 25):.1f}%.\n\n"
+        f"Valor Justo Promedio: ${final_fair_value:.2f} ({upside_pct:+.1f}% upside)"
     )
 
     assumptions_used = assumptions.dict()
@@ -358,15 +393,21 @@ def quick_valuation(
     raw_inputs = {
         "fundamentals": fundamentals,
         "dcf_result": dcf_result,
+        "graham_inputs": {"eps": eps, "equity": total_equity},
+        "lynch_inputs": {"eps": eps, "growth": assumptions.high_growth_rate},
     }
 
     return QuickValuationResponse(
         ticker=str(ticker).upper(),
         current_price=price,
-        fair_value=fair_value,
+        fair_value=final_fair_value,
         upside_pct=upside_pct,
-        method="dcf",
+        method="combined_average",
         assumptions_used=assumptions_used,
         explanation=explanation,
         raw_inputs=raw_inputs,
+        dcf_value=dcf_fair_value,
+        graham_value=graham_value,
+        lynch_value=lynch_value,
+        average_value=average_value,
     )

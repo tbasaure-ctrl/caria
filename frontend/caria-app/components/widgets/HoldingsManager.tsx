@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { fetchHoldings, createHolding, deleteHolding, Holding } from '../../services/apiService';
 import { WidgetCard } from './WidgetCard';
+import { MoreVerticalIcon } from '../Icons';
 
 export const HoldingsManager: React.FC = () => {
     const [holdings, setHoldings] = useState<Holding[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showForm, setShowForm] = useState(false);
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         ticker: '',
         quantity: '',
@@ -204,12 +206,49 @@ export const HoldingsManager: React.FC = () => {
                                             </div>
                                         )}
                                     </div>
-                                    <button
-                                        onClick={() => handleDelete(holding.id)}
-                                        className="text-red-400 hover:text-red-300 text-xs px-2 py-1"
-                                    >
-                                        Eliminar
-                                    </button>
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setOpenMenuId(openMenuId === holding.id ? null : holding.id)}
+                                            className="text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800 transition-colors"
+                                        >
+                                            <MoreVerticalIcon className="w-4 h-4" />
+                                        </button>
+
+                                        {openMenuId === holding.id && (
+                                            <div className="absolute right-0 mt-1 w-32 bg-slate-800 border border-slate-700 rounded shadow-lg z-10 py-1">
+                                                <button
+                                                    onClick={() => {
+                                                        // TODO: Implement edit
+                                                        setOpenMenuId(null);
+                                                        alert('Edit coming soon');
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                                                >
+                                                    Editar
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        // TODO: Implement details
+                                                        setOpenMenuId(null);
+                                                        alert('Details coming soon');
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                                                >
+                                                    Ver Detalle
+                                                </button>
+                                                <div className="h-px bg-slate-700 my-1"></div>
+                                                <button
+                                                    onClick={() => {
+                                                        handleDelete(holding.id);
+                                                        setOpenMenuId(null);
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-slate-700 hover:text-red-300 transition-colors"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>

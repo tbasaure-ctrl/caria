@@ -56,158 +56,47 @@ export const FearGreedIndex: React.FC = () => {
     };
 
     const renderGauge = (value: number, color: string) => {
-        // Calculate angle for needle (0-100 maps to -90deg to +90deg)
         const angle = -90 + (value / 100) * 180;
 
         return (
-            <div className="relative w-full max-w-xs mx-auto mb-4" style={{ height: '140px' }}>
-                <svg viewBox="0 0 200 100" className="w-full h-full">
-                    {/* Background arc (full semicircle) */}
+            <div className="relative w-48 h-24 mx-auto mb-4">
+                <svg viewBox="0 0 100 50" className="w-full h-full">
+                    {/* Background arc */}
                     <path
-                        d="M 20 80 A 60 60 0 0 1 180 80"
+                        d="M 10 50 A 40 40 0 0 1 90 50"
                         fill="none"
                         stroke="var(--color-bg-tertiary)"
-                        strokeWidth="8"
+                        strokeWidth="6"
                         strokeLinecap="round"
                     />
-
-                    {/* Colored zones */}
-                    {/* Extreme Fear (0-25) */}
+                    {/* Colored progress arc */}
                     <path
-                        d="M 20 80 A 60 60 0 0 1 65 80"
-                        fill="none"
-                        stroke="#ef4444"
-                        strokeWidth="8"
-                        strokeLinecap="round"
-                        opacity="0.3"
-                    />
-                    {/* Fear (25-45) */}
-                    <path
-                        d="M 65 80 A 60 60 0 0 1 101 80"
-                        fill="none"
-                        stroke="#f59e0b"
-                        strokeWidth="8"
-                        strokeLinecap="round"
-                        opacity="0.3"
-                    />
-                    {/* Neutral (45-55) */}
-                    <path
-                        d="M 101 80 A 60 60 0 0 1 119 80"
-                        fill="none"
-                        stroke="#6b7280"
-                        strokeWidth="8"
-                        strokeLinecap="round"
-                        opacity="0.3"
-                    />
-                    {/* Greed (55-75) */}
-                    <path
-                        d="M 119 80 A 60 60 0 0 1 155 80"
-                        fill="none"
-                        stroke="#3b82f6"
-                        strokeWidth="8"
-                        strokeLinecap="round"
-                        opacity="0.3"
-                    />
-                    {/* Extreme Greed (75-100) */}
-                    <path
-                        d="M 155 80 A 60 60 0 0 1 180 80"
-                        fill="none"
-                        stroke="#10b981"
-                        strokeWidth="8"
-                        strokeLinecap="round"
-                        opacity="0.3"
-                    />
-
-                    {/* Progress arc (current value) */}
-                    <path
-                        d="M 20 80 A 60 60 0 0 1 180 80"
+                        d="M 10 50 A 40 40 0 0 1 90 50"
                         fill="none"
                         stroke={color}
-                        strokeWidth="10"
-                        strokeDasharray="188.5"
-                        strokeDashoffset={188.5 - (value / 100) * 188.5}
+                        strokeWidth="6"
+                        strokeDasharray="125.6"
+                        strokeDashoffset={125.6 - (value / 100) * 125.6}
                         strokeLinecap="round"
                         style={{
-                            transition: 'stroke-dashoffset 0.8s ease-out, stroke 0.5s ease-out',
-                            filter: 'drop-shadow(0 0 6px currentColor)',
+                            transition: 'stroke-dashoffset 0.8s ease-out',
+                            filter: 'drop-shadow(0 0 4px currentColor)'
                         }}
                     />
-
-                    {/* Zone labels */}
-                    <text x="20" y="95" fontSize="8" fill="var(--color-text-muted)" textAnchor="start">
-                        0
-                    </text>
-                    <text x="50" y="95" fontSize="8" fill="var(--color-text-muted)" textAnchor="middle">
-                        25
-                    </text>
-                    <text x="100" y="95" fontSize="8" fill="var(--color-text-muted)" textAnchor="middle">
-                        50
-                    </text>
-                    <text x="150" y="95" fontSize="8" fill="var(--color-text-muted)" textAnchor="middle">
-                        75
-                    </text>
-                    <text x="180" y="95" fontSize="8" fill="var(--color-text-muted)" textAnchor="end">
-                        100
-                    </text>
-
-                    {/* Zone labels on arc */}
-                    <text x="42" y="70" fontSize="7" fill="var(--color-text-muted)" textAnchor="middle" transform="rotate(-45 42 70)">
-                        EXTREME FEAR
-                    </text>
-                    <text x="83" y="60" fontSize="7" fill="var(--color-text-muted)" textAnchor="middle" transform="rotate(-22.5 83 60)">
-                        FEAR
-                    </text>
-                    <text x="100" y="50" fontSize="7" fill="var(--color-text-muted)" textAnchor="middle">
-                        NEUTRAL
-                    </text>
-                    <text x="117" y="60" fontSize="7" fill="var(--color-text-muted)" textAnchor="middle" transform="rotate(22.5 117 60)">
-                        GREED
-                    </text>
-                    <text x="158" y="70" fontSize="7" fill="var(--color-text-muted)" textAnchor="middle" transform="rotate(45 158 70)">
-                        EXTREME GREED
-                    </text>
                 </svg>
-
                 {/* Needle */}
                 <div
                     className="absolute bottom-0 left-1/2 origin-bottom transition-transform duration-700 ease-out"
                     style={{
                         transform: `translateX(-50%) rotate(${angle}deg)`,
-                        width: '3px',
-                        height: '50px',
-                        backgroundColor: 'var(--color-cream)',
-                        borderRadius: '2px',
-                        boxShadow: '0 0 8px rgba(255, 255, 255, 0.5)',
-                        zIndex: 10,
+                        width: '2px',
+                        height: '20px',
+                        backgroundColor: 'var(--color-cream)'
                     }}
-                />
-
+                ></div>
                 {/* Center dot */}
-                <div
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full"
-                    style={{
-                        backgroundColor: 'var(--color-cream)',
-                        boxShadow: '0 0 12px rgba(255, 255, 255, 0.8)',
-                        zIndex: 11,
-                    }}
-                />
-
-                {/* Value display */}
-                <div
-                    className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center"
-                    style={{ zIndex: 12 }}
-                >
-                    <div
-                        className="text-4xl font-bold"
-                        style={{
-                            fontFamily: 'var(--font-display)',
-                            color: color,
-                            textShadow: `0 0 10px ${color}40`,
-                        }}
-                    >
-                        {value}
-                    </div>
-                </div>
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full"
+                    style={{ backgroundColor: 'var(--color-cream)', boxShadow: '0 0 8px var(--color-cream)' }}></div>
             </div>
         );
     };
@@ -215,14 +104,12 @@ export const FearGreedIndex: React.FC = () => {
     if (loading) {
         return (
             <WidgetCard
-                title="Fear & Greed Index"
+                title="FEAR & GREED"
                 id="fear-greed-widget"
                 tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
             >
-                <div className="text-center py-8">
-                    <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                        Loading Fear & Greed Index...
-                    </div>
+                <div className="text-center h-[124px] flex items-center justify-center">
+                    <p className="text-slate-500">Loading index...</p>
                 </div>
             </WidgetCard>
         );
@@ -231,16 +118,15 @@ export const FearGreedIndex: React.FC = () => {
     if (error) {
         return (
             <WidgetCard
-                title="Fear & Greed Index"
+                title="FEAR & GREED"
                 id="fear-greed-widget"
                 tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
             >
-                <div className="text-center py-8">
-                    <div className="text-sm mb-2" style={{ color: '#ef4444' }}>{error}</div>
+                <div className="text-center h-[124px] flex flex-col items-center justify-center">
+                    <div className="text-sm mb-2 text-red-400">{error}</div>
                     <button
                         onClick={loadFearGreedIndex}
-                        className="text-xs underline"
-                        style={{ color: 'var(--color-primary)' }}
+                        className="text-xs underline text-blue-400"
                     >
                         Retry
                     </button>
@@ -261,57 +147,37 @@ export const FearGreedIndex: React.FC = () => {
 
     return (
         <WidgetCard
-            title="Fear & Greed Index"
+            title="FEAR & GREED"
             id="fear-greed-widget"
             tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
         >
             <div className="text-center">
-                {/* Gauge */}
                 {renderGauge(data.value, config.color)}
 
-                {/* Classification */}
-                <div
-                    className="text-xl font-bold mb-2"
-                    style={{
-                        fontFamily: 'var(--font-display)',
-                        color: config.color,
-                    }}
-                >
-                    {config.label}
-                </div>
+                <div className="flex flex-col items-center">
+                    <p className="text-2xl font-bold mt-3 mb-1"
+                        style={{ fontFamily: 'var(--font-display)', color: config.color }}>
+                        {config.label}
+                    </p>
 
-                {/* Change indicator */}
-                {data.change !== null && data.previous_close !== null && (
-                    <div className="flex items-center justify-center gap-2 text-sm mb-2">
-                        <span style={{ color: 'var(--color-text-secondary)' }}>Previous:</span>
-                        <span style={{ color: 'var(--color-text-secondary)' }}>{data.previous_close}</span>
-                        <span
-                            style={{
-                                color: data.change >= 0 ? '#10b981' : '#ef4444',
-                                fontWeight: 'bold',
-                            }}
-                        >
-                            {data.change >= 0 ? '+' : ''}
-                            {data.change}
-                        </span>
-                    </div>
-                )}
+                    {/* Change indicator */}
+                    {data.change !== null && data.previous_close !== null && (
+                        <div className="flex items-center gap-2 text-xs mb-2">
+                            <span className="text-slate-500">Prev: {data.previous_close}</span>
+                            <span
+                                style={{
+                                    color: data.change >= 0 ? '#10b981' : '#ef4444',
+                                    fontWeight: 'bold',
+                                }}
+                            >
+                                {data.change >= 0 ? '+' : ''}{data.change}
+                            </span>
+                        </div>
+                    )}
 
-                {/* Source attribution */}
-                <div className="text-xs mt-4" style={{ color: 'var(--color-text-muted)' }}>
-                    Source: CNN.com
-                </div>
-
-                {/* Description */}
-                <div
-                    className="text-xs mt-2 px-4 italic"
-                    style={{
-                        fontFamily: 'var(--font-body)',
-                        color: 'var(--color-text-muted)',
-                        lineHeight: '1.5',
-                    }}
-                >
-                    Emotions driving the US stock market on a given day
+                    <p className="text-xs mt-1 px-4 italic text-slate-500 leading-relaxed">
+                        Emotions driving the US stock market on a given day
+                    </p>
                 </div>
             </div>
         </WidgetCard>

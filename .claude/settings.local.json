@@ -62,7 +62,18 @@
       "Bash(cat:*)",
       "Bash(gcloud run services:*)",
       "Bash(python test_api_endpoints.py:*)",
-      "Bash(timeout 60 bash -c \"while true; do gcloud run services describe caria-api --region=us-central1 --format=''get(status.conditions[0].status)'' 2>/dev/null | grep -q ''True'' && break; sleep 5; done\")"
+      "Bash(timeout 60 bash -c \"while true; do gcloud run services describe caria-api --region=us-central1 --format=''get(status.conditions[0].status)'' 2>/dev/null | grep -q ''True'' && break; sleep 5; done\")",
+      "Bash(gcloud run revisions describe:*)",
+      "Bash(echo:*)",
+      "Bash(gcloud projects get-iam-policy:*)",
+      "Bash(gcloud iam service-accounts list:*)",
+      "Bash(gcloud artifacts repositories get-iam-policy:*)",
+      "Bash(gcloud iam service-accounts get-iam-policy:*)",
+      "Bash(gcloud projects add-iam-policy-binding:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(gcloud artifacts repositories list:*)",
+      "Bash(gcloud artifacts docker images describe:*)"
     ],
     "deny": [],
     "ask": []

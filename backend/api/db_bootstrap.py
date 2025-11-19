@@ -139,6 +139,16 @@ def ensure_holdings_table(conn: psycopg2.extensions.connection) -> None:
     _run_sql_file(conn, migration_file)
 
 
+def ensure_model_portfolio_tables(conn: psycopg2.extensions.connection) -> None:
+    """Make sure model portfolio tables exist by replaying migration if needed."""
+    if _table_exists(conn, "model_portfolios") and _table_exists(conn, "portfolio_performance"):
+        return
+
+    migration_file = MIGRATIONS_DIR / "003_add_model_portfolio_tables.sql"
+    LOGGER.warning("Model portfolio tables missing – applying %s", migration_file.name)
+    _run_sql_file(conn, migration_file)
+
+
 def ensure_default_user(conn: psycopg2.extensions.connection) -> None:
     """Create the default user if it does not exist."""
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
@@ -221,6 +231,7 @@ def run_bootstrap_tasks() -> None:
         ensure_auth_tables(conn)
         ensure_community_tables(conn)
         ensure_holdings_table(conn)
+        ensure_model_portfolio_tables(conn)
         ensure_default_user(conn)
     except Exception as exc:  # noqa: BLE001
         conn.rollback()

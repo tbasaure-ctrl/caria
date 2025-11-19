@@ -21,36 +21,36 @@ import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
 const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void; id?: string }> = ({ onStartAnalysis, onEnterArena, id }) => (
     <div id={id}
-         className="rounded-lg p-8 flex flex-col items-center justify-center text-center relative overflow-hidden group cursor-pointer transition-all duration-300"
-         style={{
-           backgroundColor: 'var(--color-bg-secondary)',
-           border: '1px solid var(--color-bg-tertiary)',
-           boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
-         }}
-         onClick={onStartAnalysis}
-         onMouseEnter={(e) => {
-           e.currentTarget.style.borderColor = 'var(--color-primary)';
-           e.currentTarget.style.transform = 'translateY(-2px)';
-         }}
-         onMouseLeave={(e) => {
-           e.currentTarget.style.borderColor = 'var(--color-bg-tertiary)';
-           e.currentTarget.style.transform = 'translateY(0)';
-         }}>
+        className="rounded-lg p-8 flex flex-col items-center justify-center text-center relative overflow-hidden group cursor-pointer transition-all duration-300"
+        style={{
+            backgroundColor: 'var(--color-bg-secondary)',
+            border: '1px solid var(--color-bg-tertiary)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+        }}
+        onClick={onStartAnalysis}
+        onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'var(--color-primary)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+        }}
+        onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'var(--color-bg-tertiary)';
+            e.currentTarget.style.transform = 'translateY(0)';
+        }}>
         {/* Background decoration */}
         <div className="absolute top-0 right-0 w-32 h-32 opacity-5"
-             style={{background: 'radial-gradient(circle, var(--color-primary) 0%, transparent 70%)'}}></div>
+            style={{ background: 'radial-gradient(circle, var(--color-primary) 0%, transparent 70%)' }}></div>
 
-        <ThesisIcon className="w-14 h-14 mb-4" style={{color: 'var(--color-secondary)'}} />
+        <ThesisIcon className="w-14 h-14 mb-4" style={{ color: 'var(--color-secondary)' }} />
         <h3 className="text-2xl font-bold mb-3"
-            style={{fontFamily: 'var(--font-display)', color: 'var(--color-cream)'}}>
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--color-cream)' }}>
             Have an idea?
         </h3>
         <p className="mb-6 max-w-sm leading-relaxed"
-           style={{
-             fontFamily: 'var(--font-body)',
-             color: 'var(--color-text-secondary)',
-             fontSize: '0.95rem'
-           }}>
+            style={{
+                fontFamily: 'var(--font-body)',
+                color: 'var(--color-text-secondary)',
+                fontSize: '0.95rem'
+            }}>
             Challenge your investment thesis against Caria. Uncover cognitive biases and strengthen your rationale before you invest.
         </p>
         <div className="flex flex-col gap-3 w-full max-w-sm">
@@ -58,17 +58,17 @@ const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: ()
                 onClick={onStartAnalysis}
                 className="py-3 px-8 rounded-lg font-semibold transition-all duration-200"
                 style={{
-                  backgroundColor: 'var(--color-primary)',
-                  color: 'var(--color-cream)',
-                  fontFamily: 'var(--font-body)'
+                    backgroundColor: 'var(--color-primary)',
+                    color: 'var(--color-cream)',
+                    fontFamily: 'var(--font-body)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--color-primary-light)';
-                  e.currentTarget.style.transform = 'scale(1.05)';
+                    e.currentTarget.style.backgroundColor = 'var(--color-primary-light)';
+                    e.currentTarget.style.transform = 'scale(1.05)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--color-primary)';
-                  e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.backgroundColor = 'var(--color-primary)';
+                    e.currentTarget.style.transform = 'scale(1)';
                 }}
             >
                 Let's Break It Down
@@ -80,18 +80,18 @@ const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: ()
                 }}
                 className="py-2 px-6 rounded-lg text-sm font-medium transition-all duration-200"
                 style={{
-                  backgroundColor: 'transparent',
-                  color: 'var(--color-text-secondary)',
-                  border: '1px solid var(--color-bg-tertiary)',
-                  fontFamily: 'var(--font-body)'
+                    backgroundColor: 'transparent',
+                    color: 'var(--color-text-secondary)',
+                    border: '1px solid var(--color-bg-tertiary)',
+                    fontFamily: 'var(--font-body)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--color-primary)';
-                  e.currentTarget.style.color = 'var(--color-primary)';
+                    e.currentTarget.style.borderColor = 'var(--color-primary)';
+                    e.currentTarget.style.color = 'var(--color-primary)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--color-bg-tertiary)';
-                  e.currentTarget.style.color = 'var(--color-text-secondary)';
+                    e.currentTarget.style.borderColor = 'var(--color-bg-tertiary)';
+                    e.currentTarget.style.color = 'var(--color-text-secondary)';
                 }}
             >
                 Want deeper analysis? Enter Arena →
@@ -139,19 +139,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
     return (
         <main className="flex-1 overflow-y-auto p-8"
-              style={{backgroundColor: 'var(--color-bg-primary)'}}>
-             <OnboardingTour />
+            style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+            {/* OnboardingTour removed */}
 
-             {/* Dashboard Header */}
-             <div className="mb-8 fade-in">
+            {/* Dashboard Header */}
+            <div className="mb-8 fade-in">
                 <h1 className="text-4xl font-bold mb-2"
-                    style={{fontFamily: 'var(--font-display)', color: 'var(--color-cream)'}}>
+                    style={{ fontFamily: 'var(--font-display)', color: 'var(--color-cream)' }}>
                     Investment Dashboard
                 </h1>
-                <p style={{fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)'}}>
+                <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)' }}>
                     Your comprehensive view of market insights and portfolio analysis
                 </p>
-             </div>
+            </div>
 
             {/* Top Row: Model Outlook & Fear/Greed Index (Compact) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-7 fade-in delay-100">
@@ -199,12 +199,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
             {/* Thesis Arena Modal */}
             {showArena && (
-                <div 
+                <div
                     className="fixed inset-0 z-50 flex items-center justify-center p-4"
                     style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
                     onClick={() => setShowArena(false)}
                 >
-                    <div 
+                    <div
                         className="bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6"
                         onClick={(e) => e.stopPropagation()}
                         style={{
@@ -213,9 +213,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         }}
                     >
                         <div className="flex justify-between items-center mb-4">
-                            <h2 
+                            <h2
                                 className="text-2xl font-bold"
-                                style={{ 
+                                style={{
                                     fontFamily: 'var(--font-display)',
                                     color: 'var(--color-cream)',
                                 }}

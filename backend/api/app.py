@@ -85,6 +85,7 @@ from api.routes.ux_tracking import router as ux_tracking_router
 from api.routes.reddit import router as reddit_router
 from api.routes.cors_test import router as cors_test_router
 from api.routes.lectures import router as lectures_router
+from api.routes.debug_secrets import router as debug_secrets_router
 
 
 # WebSocket support per audit document
@@ -318,6 +319,7 @@ app.include_router(ux_tracking_router)  # UX tracking: user journeys, onboarding
 app.include_router(reddit_router)  # Social sentiment: Reddit hot stocks tracking
 app.include_router(cors_test_router)  # CORS test endpoint for debugging
 app.include_router(lectures_router)  # Recommended lectures
+app.include_router(debug_secrets_router)  # Debug endpoint to check secrets status
 
 
 # Mount SocketIO app for WebSocket support per audit document

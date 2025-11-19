@@ -152,46 +152,57 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 </p>
             </div>
 
-            {/* Top Row: Model Outlook & Fear/Greed Index (Compact) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-7 fade-in delay-100">
-                <div className="transform scale-95">
-                    <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
-                </div>
-                <div className="transform scale-95">
-                    <FearGreedIndex />
-                </div>
-            </div>
-
-            {/* Global Market Bar */}
-            <div className="mb-7 fade-in delay-150">
+            {/* Global Market Bar - Full Width */}
+            <div className="mb-8 fade-in delay-100">
                 <GlobalMarketBar id="market-bar-widget" />
             </div>
 
-            {/* Portfolio & Holdings Manager Side by Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-7 mb-7 fade-in delay-200">
-                <Portfolio id="portfolio-widget" />
-                <HoldingsManager />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
-                {/* Column 1 - Main Content */}
-                <div className="lg:col-span-2 space-y-7 fade-in delay-250">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* LEFT COLUMN: Portfolio Management (4 cols) */}
+                <div className="lg:col-span-4 space-y-8 fade-in delay-200 flex flex-col">
+                    {/* Portfolio Overview */}
+                    <Portfolio id="portfolio-widget" />
+                    
+                    {/* Analytics */}
                     <PortfolioAnalytics />
+                    
+                    {/* Management Tools */}
+                    <HoldingsManager />
+                </div>
+
+                {/* CENTER COLUMN: Model & Market Analysis (5 cols) */}
+                <div className="lg:col-span-5 space-y-8 fade-in delay-300 flex flex-col">
+                    {/* Market Outlook Section - Side by Side */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                        <FearGreedIndex />
+                    </div>
+
+                    {/* Model Portfolios */}
                     <ModelPortfolioWidget />
+
+                    {/* Risk Analysis */}
                     <RegimeTestWidget />
                     <MonteCarloSimulation />
                 </div>
 
-                {/* Column 2 - Sidebar Widgets */}
-                <div className="space-y-7 fade-in delay-300">
+                {/* RIGHT COLUMN: Community & Research (3 cols) */}
+                <div className="lg:col-span-3 space-y-8 fade-in delay-400 flex flex-col">
+                    {/* Primary CTA */}
                     <StartAnalysisCTA
                         onStartAnalysis={onStartAnalysis}
                         onEnterArena={() => setShowArena(true)}
                         id="analysis-cta-widget"
                     />
-                    <ResearchSection />
-                    <RankingsWidget />
+
+                    {/* Community Feed */}
                     <CommunityFeed />
+
+                    {/* Research Tools */}
+                    <ResearchSection />
+                    
+                    {/* Rankings */}
+                    <RankingsWidget />
                 </div>
             </div>
 

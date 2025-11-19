@@ -12,6 +12,8 @@ requests>=2.31.0
 
 # Social media APIs
 praw>=7.7.0
+beautifulsoup4>=4.12.0
+
 
 
 # WebSocket support (per audit document - 3-part solution)

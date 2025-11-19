@@ -84,6 +84,8 @@ from api.routes.tactical_allocation import router as tactical_allocation_router
 from api.routes.ux_tracking import router as ux_tracking_router
 from api.routes.reddit import router as reddit_router
 from api.routes.cors_test import router as cors_test_router
+from api.routes.lectures import router as lectures_router
+
 
 # WebSocket support per audit document
 from api.websocket_chat import sio
@@ -193,6 +195,21 @@ def _init_state(app: FastAPI) -> None:
 
     app.state.model_bundle = model_bundle
 
+    # Inicializar LLM Service
+    try:
+        from api.services.llm_service import LLMService
+        from api import websocket_chat
+        
+        llm_service = LLMService(retriever=retriever, embedder=embedder)
+        app.state.llm_service = llm_service
+        
+        # Inject into websocket chat
+        websocket_chat.set_llm_service(llm_service)
+        LOGGER.info("LLM Service inicializado e inyectado en WebSocket Chat")
+    except Exception as exc:
+        LOGGER.exception("Error inicializando LLM Service: %s", exc)
+        app.state.llm_service = None
+
 
 app = FastAPI(
     title="Caria API",
@@ -300,6 +317,8 @@ app.include_router(tactical_allocation_router)  # Legacy: Use /api/portfolio/tac
 app.include_router(ux_tracking_router)  # UX tracking: user journeys, onboarding metrics (per audit 4.2)
 app.include_router(reddit_router)  # Social sentiment: Reddit hot stocks tracking
 app.include_router(cors_test_router)  # CORS test endpoint for debugging
+app.include_router(lectures_router)  # Recommended lectures
+
 
 # Mount SocketIO app for WebSocket support per audit document
 # This combines FastAPI with SocketIO to handle both HTTP and WebSocket connections

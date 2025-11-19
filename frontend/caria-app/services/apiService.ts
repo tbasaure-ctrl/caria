@@ -80,7 +80,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}, retr
     }
 
     let response: Response;
-    
+
     try {
         response = await fetch(url, {
             ...options,
@@ -156,11 +156,11 @@ export const fetchPrices = async (tickers: string[]): Promise<Record<string, Rea
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tickers }),
     });
-    
+
     if (!response.ok) {
         throw new Error(`Error fetching prices: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data.prices || {};
 };
@@ -199,7 +199,7 @@ export interface HoldingsWithPrices {
 
 export const fetchHoldings = async (): Promise<Holding[]> => {
     const response = await fetchWithAuth(`${API_URL}/api/holdings`);
-    
+
     if (!response.ok) {
         if (response.status === 404) {
             // Si es 404, probablemente no hay holdings aún - retornar lista vacía
@@ -208,13 +208,13 @@ export const fetchHoldings = async (): Promise<Holding[]> => {
         const errorData = await response.json().catch(() => ({ detail: response.statusText }));
         throw new Error(errorData.detail || `Error fetching holdings: ${response.statusText}`);
     }
-    
+
     return response.json();
 };
 
 export const fetchHoldingsWithPrices = async (): Promise<HoldingsWithPrices> => {
     const response = await fetchWithAuth(`${API_URL}/api/holdings/with-prices`);
-    
+
     if (!response.ok) {
         if (response.status === 404) {
             // Si es 404, retornar estructura vacía
@@ -229,7 +229,7 @@ export const fetchHoldingsWithPrices = async (): Promise<HoldingsWithPrices> => 
         const errorData = await response.json().catch(() => ({ detail: response.statusText }));
         throw new Error(errorData.detail || `Error fetching holdings with prices: ${response.statusText}`);
     }
-    
+
     return response.json();
 };
 
@@ -237,6 +237,7 @@ export const createHolding = async (holding: {
     ticker: string;
     quantity: number;
     average_cost: number;
+    purchase_date?: string;
     notes?: string;
 }): Promise<Holding> => {
     const response = await fetchWithAuth(`${API_URL}/api/holdings`, {
@@ -244,12 +245,12 @@ export const createHolding = async (holding: {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(holding),
     });
-    
+
     if (!response.ok) {
         const error = await response.json().catch(() => ({ detail: response.statusText }));
         throw new Error(error.detail || `Error creating holding: ${response.statusText}`);
     }
-    
+
     return response.json();
 };
 
@@ -257,9 +258,31 @@ export const deleteHolding = async (holdingId: string): Promise<void> => {
     const response = await fetchWithAuth(`${API_URL}/api/holdings/${holdingId}`, {
         method: 'DELETE',
     });
-    
+
     if (!response.ok) {
         const error = await response.json().catch(() => ({ detail: response.statusText }));
         throw new Error(error.detail || `Error deleting holding: ${response.statusText}`);
     }
+};
+
+// ============================================================================
+// LECTURES API
+// ============================================================================
+
+export interface LectureRecommendation {
+    title: string;
+    url: string;
+    source: string;
+    date: string;
+}
+
+export const fetchRecommendedLectures = async (): Promise<LectureRecommendation[]> => {
+    const response = await fetchWithAuth(`${API_URL}/api/lectures/recommended`);
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: response.statusText }));
+        throw new Error(error.detail || `Error fetching lectures: ${response.statusText}`);
+    }
+
+    return response.json();
 };

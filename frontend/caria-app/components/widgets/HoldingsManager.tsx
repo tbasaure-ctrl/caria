@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { fetchHoldings, createHolding, deleteHolding, Holding } from '../../services/apiService';
+import { fetchHoldingsWithPrices, createHolding, deleteHolding, HoldingWithPrice } from '../../services/apiService';
 import { WidgetCard } from './WidgetCard';
 import { MoreVerticalIcon } from '../Icons';
 
+type SortOption = 'ticker' | 'return' | 'value';
+
 export const HoldingsManager: React.FC = () => {
-    const [holdings, setHoldings] = useState<Holding[]>([]);
+    const [holdings, setHoldings] = useState<HoldingWithPrice[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showForm, setShowForm] = useState(false);
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const [sortOption, setSortOption] = useState<SortOption>('value');
     const [formData, setFormData] = useState({
         ticker: '',
         quantity: '',
@@ -24,12 +27,12 @@ export const HoldingsManager: React.FC = () => {
     const loadHoldings = async () => {
         try {
             setError(null);
-            const data = await fetchHoldings();
-            setHoldings(data);
+            const data = await fetchHoldingsWithPrices();
+            setHoldings(data.holdings);
             setLoading(false);
         } catch (err) {
             console.error('Error loading holdings:', err);
-            setError('Coming soon... Holdings management is being enhanced for a better experience.');
+            setError('Could not load holdings with prices.');
             setLoading(false);
         }
     };
@@ -54,7 +57,7 @@ export const HoldingsManager: React.FC = () => {
             setShowForm(false);
             loadHoldings();
         } catch (err) {
-            setError('Coming soon... Holdings creation is being enhanced for better reliability.');
+            setError('Error creating holding.');
         }
     };
 
@@ -64,7 +67,21 @@ export const HoldingsManager: React.FC = () => {
             await deleteHolding(id);
             loadHoldings();
         } catch (err) {
-            setError('Coming soon... Holdings deletion is being enhanced for better reliability.');
+            setError('Error deleting holding.');
+        }
+    };
+
+    const getSortedHoldings = () => {
+        const sorted = [...holdings];
+        switch (sortOption) {
+            case 'ticker':
+                return sorted.sort((a, b) => a.ticker.localeCompare(b.ticker));
+            case 'return':
+                return sorted.sort((a, b) => (b.gain_loss_pct || 0) - (a.gain_loss_pct || 0));
+            case 'value':
+                return sorted.sort((a, b) => (b.current_value || 0) - (a.current_value || 0));
+            default:
+                return sorted;
         }
     };
 
@@ -91,14 +108,43 @@ export const HoldingsManager: React.FC = () => {
                     </div>
                 )}
 
-                {!showForm ? (
-                    <button
-                        onClick={() => setShowForm(true)}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded transition-colors"
-                    >
-                        + Agregar Posición
-                    </button>
-                ) : (
+                <div className="flex justify-between items-center">
+                    {!showForm && (
+                        <button
+                            onClick={() => setShowForm(true)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-1.5 px-3 rounded transition-colors"
+                        >
+                            + Agregar
+                        </button>
+                    )}
+
+                    {/* Sort Controls */}
+                    <div className="flex bg-slate-800 rounded p-0.5">
+                        <button
+                            onClick={() => setSortOption('value')}
+                            className={`px-2 py-1 text-xs rounded ${sortOption === 'value' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                            title="Sort by Value"
+                        >
+                            $
+                        </button>
+                        <button
+                            onClick={() => setSortOption('return')}
+                            className={`px-2 py-1 text-xs rounded ${sortOption === 'return' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                            title="Sort by Return"
+                        >
+                            %
+                        </button>
+                        <button
+                            onClick={() => setSortOption('ticker')}
+                            className={`px-2 py-1 text-xs rounded ${sortOption === 'ticker' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                            title="Sort by Ticker"
+                        >
+                            AZ
+                        </button>
+                    </div>
+                </div>
+
+                {showForm && (
                     <form onSubmit={handleSubmit} className="space-y-3 bg-slate-900/50 p-4 rounded border border-slate-800">
                         <div>
                             <label className="block text-xs text-slate-400 mb-1">Ticker</label>
@@ -185,24 +231,31 @@ export const HoldingsManager: React.FC = () => {
                 )}
 
                 <div>
-                    <h4 className="text-xs text-slate-400 mb-2">Mis Posiciones</h4>
+                    <h4 className="text-xs text-slate-400 mb-2">Mis Posiciones ({holdings.length})</h4>
                     {holdings.length === 0 ? (
                         <div className="text-slate-500 text-sm">No hay posiciones. Agrega una para comenzar.</div>
                     ) : (
-                        <div className="space-y-2">
-                            {holdings.map((holding) => (
+                        <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+                            {getSortedHoldings().map((holding) => (
                                 <div
                                     key={holding.id}
-                                    className="flex justify-between items-center p-2 bg-slate-900/50 rounded border border-slate-800"
+                                    className="flex justify-between items-center p-2 bg-slate-900/50 rounded border border-slate-800 hover:border-slate-700 transition-colors"
                                 >
                                     <div>
-                                        <div className="text-slate-200 font-semibold">{holding.ticker}</div>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-slate-200 font-semibold">{holding.ticker}</span>
+                                            {holding.gain_loss_pct !== undefined && (
+                                                <span className={`text-xs ${holding.gain_loss_pct >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                    {holding.gain_loss_pct >= 0 ? '+' : ''}{holding.gain_loss_pct.toFixed(2)}%
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="text-xs text-slate-400">
                                             {holding.quantity} @ ${holding.average_cost.toFixed(2)}
                                         </div>
-                                        {(holding as any).purchase_date && (
+                                        {holding.current_value !== undefined && (
                                             <div className="text-xs text-slate-500 mt-0.5">
-                                                Bought: {new Date((holding as any).purchase_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                Val: ${holding.current_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                             </div>
                                         )}
                                     </div>
@@ -225,16 +278,6 @@ export const HoldingsManager: React.FC = () => {
                                                     className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
                                                 >
                                                     Editar
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        // TODO: Implement details
-                                                        setOpenMenuId(null);
-                                                        alert('Details coming soon');
-                                                    }}
-                                                    className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
-                                                >
-                                                    Ver Detalle
                                                 </button>
                                                 <div className="h-px bg-slate-700 my-1"></div>
                                                 <button

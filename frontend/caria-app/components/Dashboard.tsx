@@ -4,7 +4,6 @@ import { Portfolio } from './widgets/Portfolio';
 // import { TopMovers } from './widgets/TopMovers'; // Removed - using mock data
 import { ModelOutlook } from './widgets/ModelOutlook';
 import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
-import { ModelValidationDashboard } from './widgets/ModelValidationDashboard';
 import { FearGreedIndex } from './widgets/FearGreedIndex';
 import { ThesisIcon } from './Icons';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
@@ -181,7 +180,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     <ModelPortfolioWidget />
                     <RegimeTestWidget />
                     <MonteCarloSimulation />
-                    <ModelValidationDashboard />
                 </div>
 
                 {/* Column 2 - Sidebar Widgets */}

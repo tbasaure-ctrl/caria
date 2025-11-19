@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { fetchRecommendedLectures, LectureRecommendation } from '../../services/apiService';
 
 interface Resource {
     title: string;
@@ -9,7 +10,7 @@ interface Resource {
     tags: string[];
 }
 
-const RECOMMENDED_RESOURCES: Resource[] = [
+const STATIC_RESOURCES: Resource[] = [
     {
         title: "The Psychology of Money",
         description: "Understanding behavioral finance and cognitive biases in investing",
@@ -112,13 +113,41 @@ Our regime detection model analyzes multiple indicators to identify the current 
 export const Resources: React.FC = () => {
     const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
     const [filter, setFilter] = useState<string>('all');
+    const [resources, setResources] = useState<Resource[]>(STATIC_RESOURCES);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const loadLectures = async () => {
+            setLoading(true);
+            try {
+                const lectures = await fetchRecommendedLectures();
+                const mappedLectures: Resource[] = lectures.map(l => ({
+                    title: l.title,
+                    description: `From ${l.source} - ${new Date(l.date).toLocaleDateString()}`,
+                    type: 'article',
+                    url: l.url,
+                    tags: ['Daily', l.source]
+                }));
+
+                // Prepend dynamic lectures to static resources
+                setResources([...mappedLectures, ...STATIC_RESOURCES]);
+            } catch (err) {
+                console.error("Failed to load lectures:", err);
+                // Keep static resources on error
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadLectures();
+    }, []);
 
     const filteredResources = filter === 'all'
-        ? RECOMMENDED_RESOURCES
-        : RECOMMENDED_RESOURCES.filter(r => r.tags.some(tag => tag.toLowerCase().includes(filter.toLowerCase())));
+        ? resources
+        : resources.filter(r => r.tags.some(tag => tag.toLowerCase().includes(filter.toLowerCase())));
 
     const getTypeColor = (type: string) => {
-        switch(type) {
+        switch (type) {
             case 'book': return 'var(--color-primary)';
             case 'lecture': return 'var(--color-secondary)';
             case 'article': return 'var(--color-accent)';
@@ -127,6 +156,7 @@ export const Resources: React.FC = () => {
     };
 
     return (
+
         <div className="rounded-lg p-6" style={{
             backgroundColor: 'var(--color-bg-secondary)',
             border: '1px solid var(--color-bg-tertiary)'
@@ -164,7 +194,7 @@ export const Resources: React.FC = () => {
                     <div
                         className="relative w-full max-w-3xl bg-gray-950 rounded-lg p-6 overflow-y-auto max-h-[80vh]"
                         onClick={(e) => e.stopPropagation()}
-                        style={{border: '1px solid var(--color-bg-tertiary)'}}
+                        style={{ border: '1px solid var(--color-bg-tertiary)' }}
                     >
                         <button
                             onClick={() => setSelectedResource(null)}
@@ -172,13 +202,13 @@ export const Resources: React.FC = () => {
                         >
                             ✕
                         </button>
-                        <h3 className="text-2xl font-bold mb-2" style={{color: 'var(--color-cream)'}}>
+                        <h3 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-cream)' }}>
                             {selectedResource.title}
                         </h3>
-                        <p className="text-sm mb-4" style={{color: 'var(--color-text-secondary)'}}>
+                        <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
                             {selectedResource.description}
                         </p>
-                        <div className="prose prose-invert max-w-none" style={{color: 'var(--color-text-primary)'}}>
+                        <div className="prose prose-invert max-w-none" style={{ color: 'var(--color-text-primary)' }}>
                             {selectedResource.content.split('\n').map((line, i) => {
                                 if (line.startsWith('# ')) return <h1 key={i} className="text-2xl font-bold mt-6 mb-3">{line.slice(2)}</h1>;
                                 if (line.startsWith('## ')) return <h2 key={i} className="text-xl font-bold mt-4 mb-2">{line.slice(3)}</h2>;
@@ -219,12 +249,12 @@ export const Resources: React.FC = () => {
                             >
                                 {resource.type.toUpperCase()}
                             </span>
-                            {resource.url && <span className="text-xs" style={{color: 'var(--color-text-secondary)'}}>🔗</span>}
+                            {resource.url && <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>🔗</span>}
                         </div>
-                        <h3 className="font-bold mb-1" style={{color: 'var(--color-cream)'}}>
+                        <h3 className="font-bold mb-1" style={{ color: 'var(--color-cream)' }}>
                             {resource.title}
                         </h3>
-                        <p className="text-sm mb-2" style={{color: 'var(--color-text-secondary)'}}>
+                        <p className="text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
                             {resource.description}
                         </p>
                         <div className="flex gap-2 flex-wrap">

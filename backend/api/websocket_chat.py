@@ -92,6 +92,17 @@ def get_auth_service() -> AuthService:
     return AuthService(conn)
 
 
+
+# Global LLM Service instance
+llm_service = None
+
+
+def set_llm_service(service):
+    """Set LLM service instance."""
+    global llm_service
+    llm_service = service
+
+
 @sio.on('connect')
 async def handle_connect(sid: str, environ: dict, auth: Optional[dict]):
     """
@@ -168,6 +179,7 @@ async def handle_chat_message(sid: str, data: dict):
     """
     Handle incoming chat message.
     Store message in history for recovery on reconnection (Problem #3).
+    Uses LLMService for RAG + Generation.
     """
     user_id = user_sessions.get(sid)
     if not user_id:
@@ -198,13 +210,68 @@ async def handle_chat_message(sid: str, data: dict):
     
     LOGGER.debug(f"Chat message from user {user_id}: {message_text[:50]}...")
     
-    # Echo message back (in production, process with AI/LLM)
-    await sio.emit('chat_message', {
-        'id': message_record['id'],
-        'message': f"Received: {message_text}",  # Placeholder - replace with actual AI response
-        'timestamp': message_record['timestamp'],
+    # Generate AI response
+    ai_response_text = "I'm sorry, I'm having trouble connecting to my brain right now."
+    
+    if llm_service:
+        try:
+            # 1. Get RAG context
+            evidence_text, chunks = llm_service.get_rag_context(message_text)
+            
+            # 2. Build prompt
+            system_prompt = (
+                "You are Caria, an elite AI investment assistant designed for sophisticated investors. "
+                "Your goal is to provide data-driven, objective financial analysis. "
+                "Use the provided RAG context to answer the user's question with precision. "
+                "If the context is insufficient, leverage your general financial knowledge but explicitly state that the answer is not based on the retrieved documents. "
+                "Always maintain a professional, institutional-grade tone. "
+                "Highlight risks where appropriate. "
+                "Do not provide financial advice; instead, provide analysis to support decision-making."
+            )
+            
+            prompt = f"""Context from knowledge base:
+{evidence_text}
+
+User Question:
+{message_text}
+
+Answer:"""
+            
+            # 3. Call LLM
+            # Note: LLMService is synchronous, but we are in async function.
+            # For high load, this should be run in executor, but for now direct call is acceptable
+            # or we can use run_in_executor if we want to be strictly non-blocking.
+            import asyncio
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(None, llm_service.call_llm, prompt, system_prompt)
+            
+            if response:
+                ai_response_text = response
+            else:
+                ai_response_text = "I couldn't generate a response at this time."
+                
+        except Exception as e:
+            LOGGER.exception(f"Error generating AI response: {e}")
+            ai_response_text = "An error occurred while processing your request."
+    else:
+        LOGGER.warning("LLMService not initialized in WebSocket chat")
+    
+    # Emit response
+    response_record = {
+        'id': str(uuid4()),
+        'message': ai_response_text,
+        'timestamp': datetime.utcnow().isoformat(),
         'role': 'assistant',
-    }, room=sid)
+    }
+    
+    # Store response in history too
+    chat_history[user_id].append({
+        **response_record,
+        'user_id': 'ai_assistant',
+        'session_id': sid
+    })
+    
+    await sio.emit('chat_message', response_record, room=sid)
 
 
 def get_chat_history(user_id: str, since_timestamp: Optional[str] = None) -> list[dict]:
@@ -229,4 +296,5 @@ def get_chat_history(user_id: str, since_timestamp: Optional[str] = None) -> lis
     
     # Return all messages (or last 50)
     return user_messages[-50:]
+
 

@@ -171,7 +171,7 @@ export const ValuationTool: React.FC = () => {
       await runMonteCarlo(impliedMu, horizon);
     } catch (err: any) {
       console.error("Quick valuation error:", err);
-      setValError("Coming soon... Advanced valuation features are being enhanced for you.");
+      setValError(err.message || "An unexpected error occurred during valuation.");
     } finally {
       setIsLoadingValuation(false);
     }
@@ -220,12 +220,10 @@ export const ValuationTool: React.FC = () => {
   // Layouts Plotly
   const mcLayout = {
     title: {
-      text: `Monte Carlo – portfolio in ${
-        valuation?.ticker ?? ticker.toUpperCase()
-      } (${
-        mcResult?.simulation_params.simulations.toLocaleString() ??
+      text: `Monte Carlo – portfolio in ${valuation?.ticker ?? ticker.toUpperCase()
+        } (${mcResult?.simulation_params.simulations.toLocaleString() ??
         simulations.toLocaleString()
-      } paths)`,
+        } paths)`,
       font: { color: "#E0E1DD", size: 14 },
     },
     xaxis: {

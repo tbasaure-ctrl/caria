@@ -10,7 +10,7 @@ const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
     // ... (unchanged)
     const [activeSlice, setActiveSlice] = useState<AllocationData | null>(data.length > 0 ? data[0] : null);
     const total = data.reduce((acc, item) => acc + item.value, 0);
-    
+
     const radius = 1;
     const innerRadius = 0.6;
     let cumulative = 0;
@@ -18,12 +18,12 @@ const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
     return (
         <div className="flex items-center gap-4">
             <div className="relative w-24 h-24">
-                 <svg viewBox="-1 -1 2 2" className="w-full h-full transform -rotate-90">
+                <svg viewBox="-1 -1 2 2" className="w-full h-full transform -rotate-90">
                     {data.map(item => {
                         const angleStart = (cumulative / total) * 2 * Math.PI;
                         cumulative += item.value;
                         const angleEnd = (cumulative / total) * 2 * Math.PI;
-                        
+
                         const startX = Math.cos(angleStart) * radius;
                         const startY = Math.sin(angleStart) * radius;
                         const endX = Math.cos(angleEnd) * radius;
@@ -35,7 +35,7 @@ const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
                         const innerEndY = Math.sin(angleEnd) * innerRadius;
 
                         const largeArcFlag = (angleEnd - angleStart) > Math.PI ? 1 : 0;
-                        
+
                         const pathData = [
                             `M ${startX} ${startY}`,
                             `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`,
@@ -45,13 +45,13 @@ const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
                         ].join(' ');
 
                         return (
-                            <path 
-                                key={item.name} 
-                                d={pathData} 
-                                fill={item.color} 
+                            <path
+                                key={item.name}
+                                d={pathData}
+                                fill={item.color}
                                 onClick={() => setActiveSlice(item)}
                                 className="cursor-pointer transition-opacity duration-200"
-                                style={{opacity: activeSlice && activeSlice.name !== item.name ? 0.6 : 1}}
+                                style={{ opacity: activeSlice && activeSlice.name !== item.name ? 0.6 : 1 }}
                             />
                         );
                     })}
@@ -59,11 +59,11 @@ const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center select-none">
                     {activeSlice ? (
                         <>
-                            <span className="text-xl font-bold font-mono text-slate-100">{activeSlice.value}%</span>
+                            <span className="text-xl font-bold font-mono text-slate-100">{activeSlice.value.toFixed(0)}%</span>
                             <span className="text-xs text-slate-400">{activeSlice.name}</span>
                         </>
                     ) : (
-                         <>
+                        <>
                             <span className="text-xs text-slate-400">Click a</span>
                             <span className="text-xs text-slate-400">slice</span>
                         </>
@@ -75,7 +75,7 @@ const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
                     <div key={item.name} className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: item.color }}></div>
                         <span className="text-slate-300">{item.name}</span>
-                        <span className="font-mono text-slate-400">{item.value}%</span>
+                        <span className="font-mono text-slate-400">{item.value.toFixed(0)}%</span>
                     </div>
                 ))}
             </div>
@@ -86,14 +86,14 @@ const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
 type PerformanceGraphPoint = { date: string, value: number };
 type MappedPoint = PerformanceGraphPoint & { x: number; y: number };
 
-const PerformanceGraph: React.FC<{data: PerformanceGraphPoint[]}> = ({ data }) => {
+const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[] }> = ({ data }) => {
     const [hoveredPoint, setHoveredPoint] = useState<MappedPoint | null>(null);
     const svgRef = useRef<SVGSVGElement>(null);
-    
+
     const width = 500;
     const height = 150;
     const padding = { top: 20, right: 10, bottom: 20, left: 10 };
-    
+
     const { dataPoints, path, areaPath, lastValue, valueChange, percentChange, isPositive } = useMemo(() => {
         if (data.length === 0) return { dataPoints: [], path: '', areaPath: '', lastValue: 0, valueChange: 0, percentChange: 0, isPositive: true };
 
@@ -114,7 +114,7 @@ const PerformanceGraph: React.FC<{data: PerformanceGraphPoint[]}> = ({ data }) =
         const endValue = data[data.length - 1].value;
         const valChange = endValue - startValue;
         const pctChange = startValue !== 0 ? (valChange / startValue) * 100 : 0;
-        
+
         return {
             dataPoints: points,
             path: pathD,
@@ -125,36 +125,36 @@ const PerformanceGraph: React.FC<{data: PerformanceGraphPoint[]}> = ({ data }) =
             isPositive: valChange >= 0
         };
     }, [data]);
-    
+
     const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
         if (!svgRef.current) return;
         const svgRect = svgRef.current.getBoundingClientRect();
         const mouseX = event.clientX - svgRect.left;
 
-        const closestPoint = dataPoints.reduce((closest, point) => 
+        const closestPoint = dataPoints.reduce((closest, point) =>
             Math.abs(point.x - mouseX) < Math.abs(closest.x - mouseX) ? point : closest
         );
         setHoveredPoint(closestPoint);
     };
 
     const handleMouseLeave = () => setHoveredPoint(null);
-    
+
     return (
         <div>
             <div className="mb-4">
                 <p className="text-3xl font-bold mb-1"
-                   style={{fontFamily: 'var(--font-mono)', color: 'var(--color-cream)'}}>
+                    style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-cream)' }}>
                     ${lastValue.toLocaleString()}
                 </p>
                 <div className="flex items-center gap-2 text-sm"
-                     style={{
-                       color: isPositive ? 'var(--color-accent)' : 'var(--color-primary)',
-                       fontFamily: 'var(--font-mono)'
-                     }}>
+                    style={{
+                        color: isPositive ? 'var(--color-accent)' : 'var(--color-primary)',
+                        fontFamily: 'var(--font-mono)'
+                    }}>
                     {isPositive ? <ArrowUpIcon className="w-4 h-4" /> : <ArrowDownIcon className="w-4 h-4" />}
                     <span className="font-semibold">${valueChange.toFixed(2)}</span>
                     <span className="font-semibold">({percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%)</span>
-                    <span style={{color: 'var(--color-text-muted)', fontFamily: 'var(--font-body)'}}>
+                    <span style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-body)' }}>
                         {data.length} data points
                     </span>
                 </div>
@@ -163,8 +163,8 @@ const PerformanceGraph: React.FC<{data: PerformanceGraphPoint[]}> = ({ data }) =
                 <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full h-auto cursor-crosshair" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
                     <defs>
                         <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style={{stopColor: isPositive ? '#3A5A40' : '#5A2A27', stopOpacity: 0.3}} />
-                            <stop offset="100%" style={{stopColor: isPositive ? '#3A5A40' : '#5A2A27', stopOpacity: 0}} />
+                            <stop offset="0%" style={{ stopColor: isPositive ? '#3A5A40' : '#5A2A27', stopOpacity: 0.3 }} />
+                            <stop offset="100%" style={{ stopColor: isPositive ? '#3A5A40' : '#5A2A27', stopOpacity: 0 }} />
                         </linearGradient>
                     </defs>
                     <path d={areaPath} fill="url(#gradient)" />
@@ -179,18 +179,18 @@ const PerformanceGraph: React.FC<{data: PerformanceGraphPoint[]}> = ({ data }) =
                 </svg>
                 {hoveredPoint && (
                     <div className="absolute p-3 text-xs rounded-md pointer-events-none"
-                         style={{
+                        style={{
                             left: hoveredPoint.x > width / 2 ? `${hoveredPoint.x - 120}px` : `${hoveredPoint.x + 15}px`,
                             top: `${hoveredPoint.y - 30}px`,
                             transform: 'translateY(-100%)',
                             backgroundColor: 'var(--color-bg-secondary)',
                             border: '1px solid var(--color-bg-tertiary)',
                             backdropFilter: 'blur(8px)'
-                         }}>
-                        <p className="font-bold mb-1" style={{fontFamily: 'var(--font-mono)', color: 'var(--color-cream)'}}>
+                        }}>
+                        <p className="font-bold mb-1" style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-cream)' }}>
                             ${hoveredPoint.value.toFixed(2)}
                         </p>
-                        <p style={{fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)'}}>
+                        <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)' }}>
                             {new Date(hoveredPoint.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </p>
                     </div>
@@ -204,29 +204,29 @@ const TimeRangeSelector: React.FC<{ selected: string; onSelect: (range: string) 
     const ranges = ['1D', '1W', '1M', 'YTD', 'START'];
     return (
         <div className="flex items-center rounded-md p-1 gap-1"
-             style={{
-               backgroundColor: 'var(--color-bg-tertiary)',
-               border: '1px solid var(--color-bg-tertiary)'
-             }}>
+            style={{
+                backgroundColor: 'var(--color-bg-tertiary)',
+                border: '1px solid var(--color-bg-tertiary)'
+            }}>
             {ranges.map(range => (
                 <button
                     key={range}
                     onClick={() => onSelect(range)}
                     className="px-3 py-1.5 text-xs font-semibold rounded transition-all duration-200"
                     style={{
-                      backgroundColor: selected === range ? 'var(--color-primary)' : 'transparent',
-                      color: selected === range ? 'var(--color-cream)' : 'var(--color-text-muted)',
-                      fontFamily: 'var(--font-mono)'
+                        backgroundColor: selected === range ? 'var(--color-primary)' : 'transparent',
+                        color: selected === range ? 'var(--color-cream)' : 'var(--color-text-muted)',
+                        fontFamily: 'var(--font-mono)'
                     }}
                     onMouseEnter={(e) => {
-                      if (selected !== range) {
-                        e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
-                      }
+                        if (selected !== range) {
+                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                        }
                     }}
                     onMouseLeave={(e) => {
-                      if (selected !== range) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }
+                        if (selected !== range) {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                        }
                     }}
                 >
                     {range}
@@ -417,9 +417,9 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                         <div className="flex justify-between items-center mb-4">
                             <h4 className="text-xs"
                                 style={{
-                                  fontFamily: 'var(--font-mono)',
-                                  color: 'var(--color-text-muted)',
-                                  letterSpacing: '0.05em'
+                                    fontFamily: 'var(--font-mono)',
+                                    color: 'var(--color-text-muted)',
+                                    letterSpacing: '0.05em'
                                 }}>
                                 PERFORMANCE
                             </h4>

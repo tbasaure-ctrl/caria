@@ -43,7 +43,19 @@ async def load_models():
         valuation_model = joblib.load(MODELS_DIR / "valuation_model.pkl")
         momentum_model = joblib.load(MODELS_DIR / "momentum_model.pkl")
         valuation_analyzer = ValuationAnalyzer()
-        print("[OK] Models and valuation analyzer loaded successfully")
+        valuation_analyzer = ValuationAnalyzer()
+        
+        # Initialize RAG components
+        from caria.config.settings import Settings
+        from caria.embeddings.generator import EmbeddingGenerator
+        from caria.retrieval.vector_store import VectorStore
+        
+        settings = Settings()
+        app.state.settings = settings
+        app.state.embedding_generator = EmbeddingGenerator(settings)
+        app.state.vector_store = VectorStore.from_settings(settings)
+        
+        print("[OK] Models, valuation analyzer, and RAG components loaded successfully")
     except Exception as e:
         print(f"[WARNING] Error loading models: {e}")
 

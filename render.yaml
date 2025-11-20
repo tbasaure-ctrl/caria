@@ -2,51 +2,43 @@ services:
   - type: web
     name: caria-api
     env: docker
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: backend/Dockerfile
     dockerContext: .
+    # Important: Make sure Render uses backend/Dockerfile, not root Dockerfile
     plan: starter
     region: oregon
-    healthCheckPath: /health/live
+    buildCommand: ""
+    startCommand: /app/backend/start.sh
+    healthCheckPath: /health
     envVars:
-      - key: POSTGRES_HOST
-        fromDatabase:
-          name: caria-db
-          property: host
-      - key: POSTGRES_PORT
-        fromDatabase:
-          name: caria-db
-          property: port
-      - key: POSTGRES_USER
-        fromDatabase:
-          name: caria-db
-          property: user
-      - key: POSTGRES_PASSWORD
-        fromDatabase:
-          name: caria-db
-          property: password
-      - key: POSTGRES_DB
-        fromDatabase:
-          name: caria-db
-          property: database
-      - key: CORS_ORIGINS
-        value: https://tu-proyecto.vercel.app
-      - key: GEMINI_API_KEY
+      - key: DATABASE_URL
         sync: false
+        # Use Neon connection string: postgresql://user:password@host.neon.tech/dbname?sslmode=require
+        # Or pooled: postgresql://user:password@host-pooler.neon.tech/dbname?sslmode=require
+      - key: LLAMA_API_KEY
+        sync: false
+        # Set this in Render dashboard (get from Groq console)
+      - key: LLAMA_API_URL
+        value: https://api.groq.com/openai/v1/chat/completions
+      - key: LLAMA_MODEL
+        value: llama-3.1-8b-instruct
+      - key: REDDIT_CLIENT_ID
+        sync: false
+      - key: REDDIT_CLIENT_SECRET
+        sync: false
+      - key: REDDIT_USER_AGENT
+        value: Caria-Investment-App-v1.0
       - key: FMP_API_KEY
-        value: 79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
-      - key: FRED_API_KEY
-        value: 4b90ca15ff28cfec137179c22fd8246d
+        sync: false
       - key: JWT_SECRET_KEY
-        generateValue: true
-      - key: CARIA_SETTINGS_PATH
-        value: /app/caria_data/configs/base.yaml
-      - key: PYTHONUNBUFFERED
-        value: "1"
+        sync: false
+      - key: RETRIEVAL_PROVIDER
+        value: llama
+      - key: RETRIEVAL_EMBEDDING_DIM
+        value: "768"
+      - key: CORS_ORIGINS
+        value: https://caria-way.com;https://caria-git-main-tomas-projects-70a0592d.vercel.app
 
-databases:
-  - name: caria-db
-    plan: starter
-    databaseName: caria
-    user: caria_user
-
-
+# Note: Using Neon PostgreSQL (external) instead of Render PostgreSQL
+# Neon includes pgvector extension needed for RAG
+# Configure DATABASE_URL with your Neon connection string

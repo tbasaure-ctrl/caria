@@ -88,7 +88,7 @@ class QuickValuationResponse(BaseModel):
 
 
 def _get_fmp_api_key() -> str:
-    api_key = os.getenv("FMP_API_KEY")
+    api_key = os.getenv("FMP_API_KEY", "").strip()
     if not api_key:
         raise HTTPException(
             status_code=500,

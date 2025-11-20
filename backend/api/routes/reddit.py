@@ -79,8 +79,8 @@ async def get_reddit_sentiment(
 
     try:
         # Check if credentials are available
-        client_id = os.getenv("REDDIT_CLIENT_ID")
-        client_secret = os.getenv("REDDIT_CLIENT_SECRET")
+        client_id = os.getenv("REDDIT_CLIENT_ID", "").strip()
+        client_secret = os.getenv("REDDIT_CLIENT_SECRET", "").strip()
         user_agent = os.getenv("REDDIT_USER_AGENT", "Caria-Investment-App-v1.0")
         
         # Log credential status (without exposing secrets)

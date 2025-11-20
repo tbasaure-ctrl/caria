@@ -168,7 +168,7 @@ def _call_gemini(prompt: str) -> dict[str, Any] | None:
     Llama a Gemini usando la API REST oficial.
     Usa header x-goog-api-key (no query param) y reintenta ante 503.
     """
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
     api_url = os.getenv(
         "GEMINI_API_URL",
         "https://generativelanguage.googleapis.com/v1beta/models/"

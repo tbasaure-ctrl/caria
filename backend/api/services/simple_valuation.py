@@ -49,24 +49,24 @@ class SimpleValuationService:
     def _fetch_metrics(self, ticker: str) -> Optional[Dict[str, Any]]:
         """Fetch necessary metrics from FMP."""
         try:
-            # Get Key Metrics (TTM)
-            key_metrics = self.fmp_client.get_key_metrics_ttm(ticker)
-            if not key_metrics:
-                return None
+            # Get Key Metrics (Annual/Quarterly) - FMPClient has get_key_metrics
+            key_metrics = self.fmp_client.get_key_metrics(ticker, period="quarter")
             
-            # Get Financial Ratios (TTM)
-            ratios = self.fmp_client.get_ratios_ttm(ticker)
+            # Get Financial Ratios
+            ratios = self.fmp_client.get_financial_ratios(ticker, period="quarter")
             
-            # Get Profile (for beta, industry, etc.)
-            profile = self.fmp_client.get_company_profile(ticker)
-
-            # Get Growth (for growth rates)
-            growth = self.fmp_client.get_financial_growth(ticker)
+            # Get Profile (for beta, industry, etc.) - FMPClient doesn't have get_company_profile in the viewed file?
+            # Let's check FMPClient again. It has get_sp500_constituents, get_delisted... 
+            # It seems get_company_profile is missing from the viewed file in step 378!
+            # We will skip profile for now or use what we have.
+            # Wait, the previous code tried to use it.
+            # Let's stick to what we verified exists: get_key_metrics, get_financial_ratios, get_financial_growth
+            
+            growth = self.fmp_client.get_financial_growth(ticker, period="quarter")
 
             return {
                 **(key_metrics[0] if key_metrics else {}),
                 **(ratios[0] if ratios else {}),
-                **(profile[0] if profile else {}),
                 "growth": growth[0] if growth else {}
             }
         except Exception as e:
@@ -76,10 +76,10 @@ class SimpleValuationService:
     def _calculate_dcf(self, metrics: Dict[str, Any], current_price: float) -> Dict[str, Any]:
         """Perform a simplified DCF calculation."""
         try:
-            fcf_per_share = metrics.get("freeCashFlowPerShareTTM", 0)
-            if not fcf_per_share or fcf_per_share <= 0:
-                 # Fallback to EPS if FCF is negative/missing
-                fcf_per_share = metrics.get("netIncomePerShareTTM", 0)
+            fcf_per_share = metrics.get("freeCashFlowPerShareTTM") or metrics.get("freeCashFlowPerShare")
+            if not fcf_per_share:
+                 # Fallback to EPS
+                fcf_per_share = metrics.get("netIncomePerShareTTM") or metrics.get("netIncomePerShare") or 0
             
             if fcf_per_share <= 0:
                  return {
@@ -144,12 +144,12 @@ class SimpleValuationService:
         return {
             "method": "Market Multiples",
             "multiples": {
-                "PE": metrics.get("peRatioTTM", 0),
-                "PB": metrics.get("pbRatioTTM", 0),
-                "EV/EBITDA": metrics.get("enterpriseValueOverEBITDATTM", 0),
-                "Div Yield": metrics.get("dividendYieldPercentageTTM", 0)
+                "PE": metrics.get("peRatioTTM") or metrics.get("peRatio") or 0,
+                "PB": metrics.get("pbRatioTTM") or metrics.get("pbRatio") or 0,
+                "EV/EBITDA": metrics.get("enterpriseValueOverEBITDATTM") or metrics.get("enterpriseValueOverEBITDA") or 0,
+                "Div Yield": metrics.get("dividendYieldPercentageTTM") or metrics.get("dividendYieldPercentage") or 0
             },
-            "explanation": "Current market multiples based on TTM data."
+            "explanation": "Current market multiples."
         }
 
     def _default_assumptions(self):

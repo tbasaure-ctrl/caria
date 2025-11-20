@@ -253,20 +253,6 @@ export const ThesisEditorModal: React.FC<ThesisEditorModalProps> = ({
                                 color: 'var(--color-text-primary)',
                             }}
                         />
-                        <div className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-                            {thesisPreview.length}/500 characters
-                        </div>
-                    </div>
-
-                    {/* Full Thesis Toggle */}
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="checkbox"
-                            id="show-full"
-                            checked={showFullEditor}
-                            onChange={(e) => setShowFullEditor(e.target.checked)}
-                            className="rounded"
-                        />
                         <label
                             htmlFor="show-full"
                             className="text-sm cursor-pointer"
@@ -325,11 +311,10 @@ export const ThesisEditorModal: React.FC<ThesisEditorModalProps> = ({
                     {/* Validation Result */}
                     {validationResult && (
                         <div
-                            className={`p-3 rounded-lg ${
-                                validationResult.is_valid
-                                    ? 'bg-green-900/20 border-green-500/30'
-                                    : 'bg-yellow-900/20 border-yellow-500/30'
-                            }`}
+                            className={`p-3 rounded-lg ${validationResult.is_valid
+                                ? 'bg-green-900/20 border-green-500/30'
+                                : 'bg-yellow-900/20 border-yellow-500/30'
+                                }`}
                             style={{ border: '1px solid' }}
                         >
                             <div className="flex items-center justify-between mb-2">

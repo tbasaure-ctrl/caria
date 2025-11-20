@@ -124,3 +124,4 @@ psql -h 127.0.0.1 -U postgres -d caria -f caria_data/migrations/013_fix_missing_
 
 Todos los cambios están en GitHub y se desplegarán automáticamente.
 
+

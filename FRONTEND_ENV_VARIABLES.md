@@ -240,3 +240,4 @@ VITE_API_URL=http://localhost:8000
 4. **CORS:** Asegúrate de que el backend tenga configurado CORS para permitir peticiones desde tu dominio de Vercel.
 
 
+

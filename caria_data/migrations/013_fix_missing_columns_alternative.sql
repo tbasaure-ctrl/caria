@@ -111,3 +111,4 @@ COMMENT ON TABLE thesis_arena_threads IS 'Stores Thesis Arena challenge sessions
 COMMENT ON TABLE arena_rounds IS 'Stores individual conversation rounds in Thesis Arena';
 COMMENT ON TABLE model_retraining_triggers IS 'Tracks when model retraining should be triggered based on performance thresholds';
 
+

@@ -178,7 +178,7 @@ export const ValuationTool: React.FC = () => {
   };
 
   const runMonteCarlo = async (muForSim?: number, yearsForSim?: number) => {
-    const muToUse = muForSim ?? mu;
+    // const muToUse = muForSim ?? mu; // Not used for stock forecast
     const yearsToUse = yearsForSim ?? years;
 
     setIsLoadingMC(true);
@@ -186,17 +186,13 @@ export const ValuationTool: React.FC = () => {
     setMcResult(null);
 
     try {
-      const resp = await fetchWithAuth(`${API_BASE_URL}/api/montecarlo/simulate`, {
+      const resp = await fetchWithAuth(`${API_BASE_URL}/api/montecarlo/forecast/stock`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          initial_value: initialValue,
-          mu: muToUse,
-          sigma: sigma,
-          years: yearsToUse,
+          ticker: ticker.toUpperCase(),
+          horizon_years: yearsToUse,
           simulations: simulations,
-          contributions_per_year: 0.0,
-          annual_fee: 0.0,
         }),
       });
 
@@ -211,7 +207,7 @@ export const ValuationTool: React.FC = () => {
       setMcResult(data);
     } catch (err: any) {
       console.error("Monte Carlo valuation error:", err);
-      setMcError("Coming soon... Monte Carlo simulations are being enhanced for more accurate predictions.");
+      setMcError(err.message || "Simulation failed");
     } finally {
       setIsLoadingMC(false);
     }
@@ -423,51 +419,15 @@ export const ValuationTool: React.FC = () => {
             {/* Monte Carlo como retorno del portfolio */}
             <div className="space-y-3">
               <h2 className="text-lg font-semibold text-slate-100">
-                3. Monte Carlo – portfolio invested in {valuation.ticker}
+                3. Monte Carlo – Stock Price Forecast for {valuation.ticker}
               </h2>
               <p className="text-sm text-slate-400">
-                Se usa el retorno anual implícito del DCF como μ inicial y se
-                simula la distribución de posibles trayectorias del valor de un
-                portfolio invertido en {valuation.ticker}. Puedes ajustar μ y σ
-                para explorar escenarios más agresivos o conservadores.
+                Projecting future stock price based on historical volatility and drift.
+                Shows distribution of possible future prices.
               </p>
 
               {/* Parámetros MC */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div>
-                  <div className="text-slate-400">Initial Value ($)</div>
-                  <input
-                    type="number"
-                    value={initialValue}
-                    onChange={(e) =>
-                      setInitialValue(parseFloat(e.target.value) || 0)
-                    }
-                    className="w-full mt-1 bg-gray-800 border border-slate-700 rounded-md py-1 px-2 text-slate-100"
-                    disabled={isLoadingMC}
-                  />
-                </div>
-                <div>
-                  <div className="text-slate-400">Expected Return μ</div>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={mu}
-                    onChange={(e) => setMu(parseFloat(e.target.value) || 0)}
-                    className="w-full mt-1 bg-gray-800 border border-slate-700 rounded-md py-1 px-2 text-slate-100"
-                    disabled={isLoadingMC}
-                  />
-                </div>
-                <div>
-                  <div className="text-slate-400">Volatility σ</div>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={sigma}
-                    onChange={(e) => setSigma(parseFloat(e.target.value) || 0)}
-                    className="w-full mt-1 bg-gray-800 border border-slate-700 rounded-md py-1 px-2 text-slate-100"
-                    disabled={isLoadingMC}
-                  />
-                </div>
                 <div>
                   <div className="text-slate-400">Years</div>
                   <input
@@ -477,6 +437,9 @@ export const ValuationTool: React.FC = () => {
                     className="w-full mt-1 bg-gray-800 border border-slate-700 rounded-md py-1 px-2 text-slate-100"
                     disabled={isLoadingMC}
                   />
+                </div>
+                <div className="col-span-3 flex items-end text-slate-500 italic">
+                  * Forecasting based on historical volatility and drift.
                 </div>
               </div>
 

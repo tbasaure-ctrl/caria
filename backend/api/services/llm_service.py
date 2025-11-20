@@ -115,6 +115,8 @@ class LLMService:
                 )
                 return text if text else None
             except Exception as e:
+                if 'resp' in locals() and hasattr(resp, 'text'):
+                     LOGGER.error(f"Gemini error response: {resp.text}")
                 LOGGER.warning(f"Gemini attempt {attempt+1} failed: {e}")
                 break
         return None

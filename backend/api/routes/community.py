@@ -362,17 +362,7 @@ async def get_post_details(
     """
     Get full details of a community post (including full thesis).
     """
-    import psycopg2
-    import os
-    from psycopg2.extras import RealDictCursor
-
-    conn = psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "localhost"),
-        port=int(os.getenv("POSTGRES_PORT", "5432")),
-        user=os.getenv("POSTGRES_USER", "caria_user"),
-        password=os.getenv("POSTGRES_PASSWORD"),
-        database=os.getenv("POSTGRES_DB", "caria"),
-    )
+    conn = _get_db_connection()
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:

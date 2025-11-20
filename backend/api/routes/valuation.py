@@ -4,7 +4,7 @@ import logging
 
 from ..services.simple_valuation import SimpleValuationService
 
-router = APIRouter()
+router = APIRouter(prefix="/api/valuation", tags=["valuation"])
 LOGGER = logging.getLogger("caria.api.valuation")
 
 class ValuationRequest(BaseModel):

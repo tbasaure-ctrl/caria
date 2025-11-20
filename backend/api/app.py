@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 # Configurar paths antes de importar módulos de caria
@@ -119,7 +120,10 @@ def _load_settings() -> Settings:
     return Settings.from_yaml(settings_path)
 
 
-def _init_state(app: FastAPI) -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initializes application state and services on startup."""
+    LOGGER.info("Iniciando servicios de Caria API (Lifespan)...")
     settings = _load_settings()
     app.state.settings = settings
 
@@ -129,10 +133,12 @@ def _init_state(app: FastAPI) -> None:
     # Inicializar RAG (opcional - puede fallar si PostgreSQL no está disponible)
     vector_store = retriever = embedder = None
     try:
+        # Nota: VectorStore y EmbeddingGenerator ahora usan lazy loading internamente
+        # para evitar consumo excesivo de memoria al inicio (especialmente en Render Starter Plan)
         vector_store = VectorStore.from_settings(settings)
         retriever = Retriever(vector_store=vector_store)
         embedder = EmbeddingGenerator(settings=settings)
-        LOGGER.info("Stack RAG inicializado correctamente")
+        LOGGER.info("Stack RAG configurado (modelos se cargarán bajo demanda)")
     except UnicodeDecodeError as exc:
         LOGGER.warning(
             "Error de encoding al conectar a PostgreSQL. "
@@ -143,7 +149,7 @@ def _init_state(app: FastAPI) -> None:
         )
     except Exception as exc:  # noqa: BLE001
         LOGGER.warning(
-            "No se pudo inicializar el stack RAG (esto es opcional y no bloquea la API): %s",
+            "No se pudo configurar el stack RAG (esto es opcional y no bloquea la API): %s",
             exc,
         )
 
@@ -153,14 +159,12 @@ def _init_state(app: FastAPI) -> None:
 
     # Inicializar servicio de régimen HMM
     try:
+        # RegimeService ahora usa lazy loading para el modelo pickle
         regime_service = RegimeService(settings)
         app.state.regime_service = regime_service
-        if regime_service.is_available():
-            LOGGER.info("Servicio de régimen HMM inicializado")
-        else:
-            LOGGER.warning("Servicio de régimen HMM no disponible (modelo no encontrado)")
+        LOGGER.info("Servicio de régimen HMM configurado (modelo se cargará bajo demanda)")
     except Exception as exc:  # noqa: BLE001
-        LOGGER.exception("Error inicializando servicio de régimen: %s", exc)
+        LOGGER.exception("Error configurando servicio de régimen: %s", exc)
         app.state.regime_service = None
 
     # Inicializar servicio de factores
@@ -211,11 +215,16 @@ def _init_state(app: FastAPI) -> None:
         LOGGER.exception("Error inicializando LLM Service: %s", exc)
         app.state.llm_service = None
 
+    yield # Control flow returns here when app stops
+    
+    LOGGER.info("Apagando servicios de Caria API...")
+
 
 app = FastAPI(
     title="Caria API",
     description="Multi-user investment analysis platform with regime detection, RAG, and valuation",
-    version="2.0.0"
+    version="2.0.0",
+    lifespan=lifespan,
 )
 
 # Configurar CORS
@@ -284,7 +293,7 @@ app.add_middleware(
     max_age=600,  # Cache preflight requests for 10 minutes
 )
 
-_init_state(app)
+# Removed explicit _init_state(app) call in favor of lifespan
 
 # Include domain routers per audit document (4.1): Modular monolith architecture
 # Domain boundaries: Each domain is self-contained with strict boundaries
@@ -319,7 +328,10 @@ app.include_router(ux_tracking_router)  # UX tracking: user journeys, onboarding
 app.include_router(reddit_router)  # Social sentiment: Reddit hot stocks tracking
 app.include_router(cors_test_router)  # CORS test endpoint for debugging
 app.include_router(lectures_router)  # Recommended lectures
+app.include_router(lectures_router)  # Recommended lectures
 app.include_router(debug_secrets_router)  # Debug endpoint to check secrets status
+from api.routes.debug import router as debug_router
+app.include_router(debug_router) # LLM Debug endpoint
 
 
 # Mount SocketIO app for WebSocket support per audit document
@@ -511,7 +523,11 @@ def healthcheck() -> dict[str, str]:
     if regime_service and regime_service.is_available():
         status["regime"] = "available"
     else:
-        status["regime"] = "unavailable"
+        # Check if lazy load pending
+        if regime_service:
+            status["regime"] = "lazy_loaded"
+        else:
+            status["regime"] = "unavailable"
 
     # Factores (Sistema III)
     factor_service = getattr(app.state, "factor_service", None)
@@ -540,4 +556,3 @@ def healthcheck() -> dict[str, str]:
 # This combines FastAPI (HTTP) with SocketIO (WebSocket) per audit document
 # uvicorn will use: uvicorn api.app:socketio_app
 __all__ = ['socketio_app', 'app']
-

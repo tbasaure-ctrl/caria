@@ -39,27 +39,18 @@ class EmbeddingGenerator:
             self.settings.get("retrieval", "embedding_dim", default=1024)
         )
         
+        # Inicializar variables de estado para lazy loading
+        self._local_model = None
+        self._gemini = None
+        
         if self.provider == "local":
-            # Modelos locales usando sentence-transformers
+            # Verificación preliminar de dependencias, pero no carga modelo
             try:
-                from sentence_transformers import SentenceTransformer  # type: ignore[import]
+                import sentence_transformers  # type: ignore[import]
             except ImportError as exc:
                 raise RuntimeError(
                     "sentence-transformers no está instalado; ejecuta `pip install sentence-transformers`"
                 ) from exc
-            
-            LOGGER.info("Cargando modelo local de embeddings: %s", self.embedding_model)
-            self._local_model = SentenceTransformer(self.embedding_model)
-            # Obtener dimensión real del modelo
-            actual_dim = self._local_model.get_sentence_embedding_dimension()
-            if actual_dim != self.embedding_dim:
-                LOGGER.warning(
-                    "Dimensión configurada (%d) no coincide con modelo (%d). Usando dimensión del modelo.",
-                    self.embedding_dim,
-                    actual_dim,
-                )
-                self.embedding_dim = actual_dim
-            LOGGER.info("Modelo local cargado con dimensión: %d", self.embedding_dim)
             
         elif self.provider == "openai":
             self.api_key = os.getenv("OPENAI_API_KEY")
@@ -70,19 +61,43 @@ class EmbeddingGenerator:
             if not self.api_key:
                 raise RuntimeError("GEMINI_API_KEY no configurado")
             try:
-                import google.generativeai as genai  # type: ignore[import]
+                import google.generativeai  # type: ignore[import]
             except ImportError as exc:  # pragma: no cover - dependency guard
                 raise RuntimeError(
                     "google-generativeai no está instalado; ejecuta `poetry install`"
                 ) from exc
-            genai.configure(api_key=self.api_key)
-            self._gemini = genai
-            if self.embedding_model == "text-embedding-3-small":
-                # Ajuste de valor por defecto cuando se usa Gemini
-                self.embedding_model = "models/text-embedding-004"
-                self.embedding_dim = 768
         else:
             raise ValueError(f"Proveedor de embeddings no soportado: {self.provider}")
+
+    def _ensure_model_loaded(self) -> None:
+        """Carga el modelo o cliente necesario bajo demanda."""
+        if self.provider == "local":
+            if self._local_model is None:
+                from sentence_transformers import SentenceTransformer
+                
+                LOGGER.info("Cargando modelo local de embeddings (esto puede tomar unos segundos): %s", self.embedding_model)
+                self._local_model = SentenceTransformer(self.embedding_model)
+                
+                # Obtener dimensión real del modelo
+                actual_dim = self._local_model.get_sentence_embedding_dimension()
+                if actual_dim != self.embedding_dim:
+                    LOGGER.warning(
+                        "Dimensión configurada (%d) no coincide con modelo (%d). Usando dimensión del modelo.",
+                        self.embedding_dim,
+                        actual_dim,
+                    )
+                    self.embedding_dim = actual_dim
+                LOGGER.info("Modelo local cargado con dimensión: %d", self.embedding_dim)
+                
+        elif self.provider == "gemini":
+            if self._gemini is None:
+                import google.generativeai as genai
+                genai.configure(api_key=self.api_key)
+                self._gemini = genai
+                if self.embedding_model == "text-embedding-3-small":
+                    # Ajuste de valor por defecto cuando se usa Gemini
+                    self.embedding_model = "models/text-embedding-004"
+                    self.embedding_dim = 768
 
     def embed_file(self, dataset_path: Path) -> list[dict[str, Any]]:
         frame = pd.read_parquet(dataset_path)
@@ -105,8 +120,14 @@ class EmbeddingGenerator:
 
     def embed_text(self, text: str) -> list[float]:
         """Genera embedding para un texto usando el proveedor configurado."""
+        # Asegurar carga del modelo antes de usar
+        self._ensure_model_loaded()
+
         if self.provider == "local":
             # Modelo local usando sentence-transformers
+            if self._local_model is None: # Should be loaded by _ensure_model_loaded
+                 raise RuntimeError("Error interno: Modelo local no cargado")
+                 
             embedding = self._local_model.encode(text, normalize_embeddings=True)
             return embedding.tolist()
         
@@ -124,6 +145,9 @@ class EmbeddingGenerator:
             return response.json()["data"][0]["embedding"]
         
         if self.provider == "gemini":
+            if self._gemini is None:
+                raise RuntimeError("Error interno: Cliente Gemini no cargado")
+
             result = self._gemini.embed_content(
                 model=self.embedding_model,
                 content=text,
@@ -139,4 +163,3 @@ class EmbeddingGenerator:
         """Mantiene compatibilidad retroactiva con llamadas anteriores."""
 
         return self.embed_text(text)
-

@@ -1,6 +1,7 @@
-# Dockerfile para Caria API Multi-User
-# Build context: notebooks/ directory (root of repository)
-# This Dockerfile is optimized for Render deployment
+# DEPRECATED: This Dockerfile is OLD and uses wrong paths (services/ instead of backend/)
+# DO NOT USE THIS FILE
+# Use backend/Dockerfile instead
+# This file is kept for reference only
 
 FROM python:3.11-slim
 

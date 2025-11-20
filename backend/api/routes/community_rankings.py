@@ -234,10 +234,13 @@ async def validate_post(
     import requests
     import json
     
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = os.getenv("LLAMA_API_KEY")
+    api_url = os.getenv("LLAMA_API_URL", "https://api.groq.com/openai/v1/chat/completions")
+    model = os.getenv("LLAMA_MODEL", "llama-3.1-8b-instruct")
+    
     if not api_key:
         # Fallback: approve if no API key
-        LOGGER.warning("GEMINI_API_KEY not configured, approving post by default")
+        LOGGER.warning("LLAMA_API_KEY not configured, approving post by default")
         return PostValidateResponse(
             is_valid=True,
             quality_score=0.7,
@@ -271,19 +274,25 @@ Return a JSON response with:
 Minimum quality threshold: 0.5
 Reject if: spam, low-effort, irrelevant, or quality_score < 0.5"""
     
-    api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
     
     payload = {
-        "contents": [{
-            "parts": [{"text": validation_prompt}]
-        }]
+        "model": model,
+        "messages": [
+            {"role": "system", "content": "You are a quality moderator. Return only valid JSON."},
+            {"role": "user", "content": validation_prompt}
+        ],
+        "temperature": 0.3,
     }
     
     try:
-        resp = requests.post(api_url, json=payload, timeout=30)
+        resp = requests.post(api_url, headers=headers, json=payload, timeout=30)
         
         if resp.status_code != 200:
-            LOGGER.warning(f"Gemini validation failed: {resp.status_code}")
+            LOGGER.warning(f"Llama validation failed: {resp.status_code}")
             # Fallback: approve if validation fails
             return PostValidateResponse(
                 is_valid=True,
@@ -293,15 +302,10 @@ Reject if: spam, low-effort, irrelevant, or quality_score < 0.5"""
             )
         
         data = resp.json()
-        text = (
-            data.get("candidates", [{}])[0]
-            .get("content", {})
-            .get("parts", [{}])[0]
-            .get("text", "")
-        )
+        text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
         
         if not text:
-            LOGGER.warning("Gemini returned empty validation response")
+            LOGGER.warning("Llama returned empty validation response")
             return PostValidateResponse(
                 is_valid=True,
                 quality_score=0.7,
@@ -312,10 +316,11 @@ Reject if: spam, low-effort, irrelevant, or quality_score < 0.5"""
         # Parse JSON response
         try:
             # Extract JSON from text (might have markdown formatting)
-            json_start = text.find("{")
-            json_end = text.rfind("}") + 1
+            clean_text = text.replace("```json", "").replace("```", "").strip()
+            json_start = clean_text.find("{")
+            json_end = clean_text.rfind("}") + 1
             if json_start >= 0 and json_end > json_start:
-                json_text = text[json_start:json_end]
+                json_text = clean_text[json_start:json_end]
                 validation_result = json.loads(json_text)
             else:
                 raise ValueError("No JSON found in response")
@@ -337,7 +342,7 @@ Reject if: spam, low-effort, irrelevant, or quality_score < 0.5"""
         )
         
     except Exception as e:
-        LOGGER.exception(f"Error validating post: {e}")
+        LOGGER.exception(f"Error validating post with Llama: {e}")
         # Fallback: approve if validation fails
         return PostValidateResponse(
             is_valid=True,

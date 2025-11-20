@@ -33,11 +33,26 @@ interface MultiplesBlock {
   explanation: string;
 }
 
+interface ReverseDcfBlock {
+  implied_growth_rate: number;
+  explanation: string;
+}
+
+interface MultiplesValuationBlock {
+  method: string;
+  fair_value: number;
+  avg_pe?: number;
+  avg_pb?: number;
+  explanation: string;
+}
+
 interface QuickValuationResponse {
   ticker: string;
   currency: string;
   current_price: number;
   dcf: DcfBlock;
+  reverse_dcf: ReverseDcfBlock;
+  multiples_valuation: MultiplesValuationBlock;
   multiples: MultiplesBlock;
 }
 
@@ -221,6 +236,7 @@ export const ValuationTool: React.FC = () => {
         simulations.toLocaleString()
         } paths)`,
       font: { color: "#E0E1DD", size: 14 },
+      pad: { b: 10 }
     },
     xaxis: {
       title: "Years",
@@ -296,115 +312,71 @@ export const ValuationTool: React.FC = () => {
         {/* Contenido de valuación */}
         {valuation && (
           <section className="space-y-6">
-            {/* Fair value + precio actual */}
+            {/* Reverse DCF & Multiples Valuation (New) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gray-900/70 rounded-lg p-4 space-y-1">
-                <div className="text-xs text-slate-400">Fair Value</div>
-                <div className="text-2xl font-semibold text-slate-100">
-                  {formatMoney(valuation.dcf.fair_value_per_share)}
+              {/* Reverse DCF */}
+              <div className="bg-indigo-900/20 border border-indigo-500/30 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between items-start">
+                  <div className="text-xs text-indigo-300 font-semibold uppercase tracking-wider">Reverse DCF</div>
+                  <div className="text-xs text-indigo-400/70">Implied Growth</div>
                 </div>
-                <div className="text-xs text-slate-500">
-                  via DCF scorecard · Upside{" "}
-                  <span
-                    className={
-                      valuation.dcf.upside_percent >= 0
-                        ? "text-emerald-400"
-                        : "text-red-400"
-                    }
-                  >
+                <div className="text-3xl font-bold text-indigo-100">
+                  {(valuation.reverse_dcf.implied_growth_rate * 100).toFixed(1)}%
+                </div>
+                <div className="text-xs text-indigo-300/80 leading-relaxed">
+                  {valuation.reverse_dcf.explanation}
+                </div>
+              </div>
+
+              {/* Multiples Valuation */}
+              <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between items-start">
+                  <div className="text-xs text-emerald-300 font-semibold uppercase tracking-wider">Historical Multiples</div>
+                  <div className="text-xs text-emerald-400/70">Fair Value</div>
+                </div>
+                <div className="text-3xl font-bold text-emerald-100">
+                  {formatMoney(valuation.multiples_valuation.fair_value)}
+                </div>
+                <div className="text-xs text-emerald-300/80 leading-relaxed">
+                  Based on 5y Avg PE ({valuation.multiples_valuation.avg_pe?.toFixed(1)}x) & PB ({valuation.multiples_valuation.avg_pb?.toFixed(1)}x).
+                </div>
+              </div>
+            </div>
+
+            {/* Standard DCF (De-emphasized but visible) */}
+            <div className="border-t border-slate-800 pt-4">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-semibold text-slate-300">Standard DCF Analysis</h3>
+                <span className="text-xs text-slate-500">Assumed Growth: {(valuation.dcf.assumptions.high_growth_rate * 100).toFixed(1)}%</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-900/40 p-3 rounded border border-slate-800">
+                  <div className="text-xs text-slate-500">Fair Value</div>
+                  <div className="text-lg font-mono text-slate-200">{formatMoney(valuation.dcf.fair_value_per_share)}</div>
+                </div>
+                <div className="bg-gray-900/40 p-3 rounded border border-slate-800">
+                  <div className="text-xs text-slate-500">Upside</div>
+                  <div className={`text-lg font-mono ${valuation.dcf.upside_percent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {valuation.dcf.upside_percent.toFixed(1)}%
-                  </span>
-                </div>
-              </div>
-
-              <div className="bg-gray-900/70 rounded-lg p-4 space-y-1">
-                <div className="text-xs text-slate-400">Current Price</div>
-                <div className="text-2xl font-semibold text-slate-100">
-                  {formatMoney(valuation.current_price)}
-                </div>
-                <div className="text-xs text-slate-500">
-                  Currency: {valuation.currency}
-                </div>
-              </div>
-            </div>
-
-            {/* DCF method + assumptions */}
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-slate-100">
-                1. DCF – Method & Assumptions
-              </h2>
-              <p className="text-sm text-slate-400">{valuation.dcf.explanation}</p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-                <div className="bg-gray-900/60 p-3 rounded-md">
-                  <div className="text-slate-400">FCF Yield start</div>
-                  <div className="text-slate-100 font-mono">
-                    {(valuation.dcf.assumptions.fcf_yield_start * 100).toFixed(
-                      1
-                    )}
-                    %
-                  </div>
-                </div>
-                <div className="bg-gray-900/60 p-3 rounded-md">
-                  <div className="text-slate-400">High growth</div>
-                  <div className="text-slate-100 font-mono">
-                    {(
-                      valuation.dcf.assumptions.high_growth_rate * 100
-                    ).toFixed(1)}
-                    % · {valuation.dcf.assumptions.high_growth_years} yrs
-                  </div>
-                </div>
-                <div className="bg-gray-900/60 p-3 rounded-md">
-                  <div className="text-slate-400">Fade years</div>
-                  <div className="text-slate-100 font-mono">
-                    {valuation.dcf.assumptions.fade_years}
-                  </div>
-                </div>
-                <div className="bg-gray-900/60 p-3 rounded-md">
-                  <div className="text-slate-400">Terminal growth</div>
-                  <div className="text-slate-100 font-mono">
-                    {(
-                      valuation.dcf.assumptions.terminal_growth_rate * 100
-                    ).toFixed(1)}
-                    %
-                  </div>
-                </div>
-                <div className="bg-gray-900/60 p-3 rounded-md">
-                  <div className="text-slate-400">Discount rate</div>
-                  <div className="text-slate-100 font-mono">
-                    {(valuation.dcf.assumptions.discount_rate * 100).toFixed(
-                      1
-                    )}
-                    %
-                  </div>
-                </div>
-                <div className="bg-gray-900/60 p-3 rounded-md">
-                  <div className="text-slate-400">Implied return (CAGR)</div>
-                  <div className="text-slate-100 font-mono">
-                    {(valuation.dcf.implied_return_cagr * 100).toFixed(1)}%
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Multiples derivados */}
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-slate-100">
-                2. Multiples – sanity check
-              </h2>
-              <p className="text-sm text-slate-400">
-                {valuation.multiples.explanation}
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+            {/* Multiples Table */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-slate-300">Current Market Multiples</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                 {Object.entries(valuation.multiples.multiples).map(
                   ([key, value]) => {
-                    const num = Number(value); // cast para contentar a TS
+                    const num = Number(value);
                     return (
                       <div
                         key={key}
-                        className="bg-gray-900/60 p-3 rounded-md space-y-1"
+                        className="bg-gray-900/40 p-2 rounded border border-slate-800"
                       >
-                        <div className="text-slate-400">{key}</div>
-                        <div className="text-slate-100 font-mono">
+                        <div className="text-slate-500 mb-1">{key}</div>
+                        <div className="text-slate-200 font-mono">
                           {key.includes("yield") || key.includes("rate")
                             ? `${(num * 100).toFixed(1)}%`
                             : num.toFixed(2)}
@@ -416,132 +388,78 @@ export const ValuationTool: React.FC = () => {
               </div>
             </div>
 
-            {/* Monte Carlo como retorno del portfolio */}
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-slate-100">
-                3. Monte Carlo – Stock Price Forecast for {valuation.ticker}
+            {/* Monte Carlo */}
+            <div className="border-t border-slate-800 pt-4 space-y-3">
+              <h2 className="text-sm font-semibold text-slate-300">
+                Monte Carlo – Stock Price Forecast
               </h2>
-              <p className="text-sm text-slate-400">
-                Projecting future stock price based on historical volatility and drift.
-                Shows distribution of possible future prices.
+              <p className="text-xs text-slate-500">
+                Projecting future stock price based on historical volatility.
               </p>
 
               {/* Parámetros MC */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div>
-                  <div className="text-slate-400">Years</div>
+              <div className="flex items-center gap-3 text-xs">
+                <div className="w-24">
+                  <label className="text-slate-400 block mb-1">Years</label>
                   <input
                     type="number"
                     value={years}
                     onChange={(e) => setYears(parseInt(e.target.value) || 1)}
-                    className="w-full mt-1 bg-gray-800 border border-slate-700 rounded-md py-1 px-2 text-slate-100"
+                    className="w-full bg-gray-800 border border-slate-700 rounded py-1 px-2 text-slate-100"
                     disabled={isLoadingMC}
                   />
                 </div>
-                <div className="col-span-3 flex items-end text-slate-500 italic">
-                  * Forecasting based on historical volatility and drift.
+                <div className="flex-1 flex items-end">
+                  <button
+                    onClick={() => runMonteCarlo()}
+                    disabled={isLoadingMC}
+                    className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-1.5 rounded transition-colors text-xs font-medium"
+                  >
+                    {isLoadingMC ? "Running..." : "Re-run Simulation"}
+                  </button>
                 </div>
               </div>
 
-              <button
-                onClick={() => runMonteCarlo()}
-                disabled={isLoadingMC || sigma <= 0}
-                className="w-full bg-slate-700 text-white font-bold py-2 px-4 rounded-md hover:bg-slate-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              >
-                {isLoadingMC ? "Running Monte Carlo..." : "Re-run Monte Carlo"}
-              </button>
-
               {mcError && (
-                <div className="text-sm text-red-400 bg-red-900/30 p-2 rounded-md">
+                <div className="text-xs text-red-400 bg-red-900/20 p-2 rounded">
                   {mcError}
                 </div>
               )}
 
               {mcResult && (
-                <div className="space-y-4">
+                <div className="space-y-4 mt-2">
                   {/* Percentiles */}
                   <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div className="bg-gray-900/70 p-2 rounded-md">
-                      <div className="text-slate-400">P10</div>
-                      <div className="text-slate-100 font-mono">
+                    <div className="bg-gray-900/40 p-2 rounded border border-slate-800">
+                      <div className="text-slate-500">P10 (Bear)</div>
+                      <div className="text-slate-200 font-mono">
                         {formatMoney(mcResult.percentiles.p10)}
                       </div>
                     </div>
-                    <div className="bg-gray-900/70 p-2 rounded-md">
-                      <div className="text-slate-400">P50 (Median)</div>
-                      <div className="text-slate-100 font-mono">
+                    <div className="bg-gray-900/40 p-2 rounded border border-slate-800">
+                      <div className="text-slate-500">P50 (Base)</div>
+                      <div className="text-slate-200 font-mono">
                         {formatMoney(mcResult.percentiles.p50)}
                       </div>
                     </div>
-                    <div className="bg-gray-900/70 p-2 rounded-md">
-                      <div className="text-slate-400">P90</div>
-                      <div className="text-slate-100 font-mono">
+                    <div className="bg-gray-900/40 p-2 rounded border border-slate-800">
+                      <div className="text-slate-500">P90 (Bull)</div>
+                      <div className="text-slate-200 font-mono">
                         {formatMoney(mcResult.percentiles.p90)}
                       </div>
                     </div>
                   </div>
 
-                  {/* Riesgo */}
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Expected Value:</span>
-                      <span className="text-slate-100 font-mono">
-                        {formatMoney(mcResult.metrics.mean)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">VaR (5%):</span>
-                      <span className="text-red-400 font-mono">
-                        {formatMoney(mcResult.metrics.var_5pct)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">CVaR (5%):</span>
-                      <span className="text-red-400 font-mono">
-                        {formatMoney(mcResult.metrics.cvar_5pct)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Prob. Loss:</span>
-                      <span className="text-slate-300 font-mono">
-                        {(
-                          mcResult.metrics.prob_final_less_invested * 100
-                        ).toFixed(1)}
-                        %
-                      </span>
-                    </div>
-                  </div>
-
                   {/* Paths */}
-                  <div className="bg-gray-900/50 rounded-md p-2">
+                  <div className="bg-gray-900/20 rounded border border-slate-800/50 p-1">
                     <Plot
                       data={[mcResult.plotly_data] as any}
                       layout={mcLayout}
                       config={{ displayModeBar: false, responsive: true }}
-                      style={{ width: "100%", height: "300px" }}
+                      style={{ width: "100%", height: "250px" }}
                       useResizeHandler
                     />
                   </div>
-
-                  {/* Histograma */}
-                  {mcResult.histogram && (
-                    <div className="bg-gray-900/50 rounded-md p-2">
-                      <Plot
-                        data={[mcResult.histogram] as any}
-                        layout={histLayout}
-                        config={{ displayModeBar: false, responsive: true }}
-                        style={{ width: "100%", height: "250px" }}
-                        useResizeHandler
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {!mcResult && !isLoadingMC && !mcError && (
-                <div className="text-center text-xs text-slate-500 py-4">
-                  Run Monte Carlo to see the distribution of possible portfolio
-                  values given this valuation.
                 </div>
               )}
             </div>
@@ -549,9 +467,8 @@ export const ValuationTool: React.FC = () => {
         )}
 
         {!valuation && !isLoadingValuation && !valError && (
-          <div className="text-center text-xs text-slate-500 py-4">
-            Enter a ticker and click Analyze to get a DCF-based fair value and
-            a portfolio Monte Carlo projection.
+          <div className="text-center text-xs text-slate-500 py-8 italic">
+            Enter a ticker to see Reverse DCF, Multiples Valuation, and Monte Carlo forecasts.
           </div>
         )}
       </div>

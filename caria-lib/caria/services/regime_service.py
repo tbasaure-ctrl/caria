@@ -25,10 +25,19 @@ class RegimeService:
             model_path: Ruta al modelo HMM entrenado (opcional, busca en models_path)
         """
         self.settings = settings
+        self.detector = None
+        self._model_path = model_path  # Guardar path para lazy loading
+        self._model_loaded = False
         
-        # Determinar ruta del modelo
+    def _load_model(self) -> None:
+        """Carga el modelo bajo demanda."""
+        if self._model_loaded:
+            return
+
+        # Determinar ruta del modelo si no se especificó
+        model_path = self._model_path
         if model_path is None:
-            models_path_str = settings.get("storage", "models_path", default="models")
+            models_path_str = self.settings.get("storage", "models_path", default="models")
             models_path = Path(models_path_str)
             
             # Si es relativo, intentar encontrar desde caria_data/
@@ -52,11 +61,14 @@ class RegimeService:
             self.detector = None
         else:
             try:
+                LOGGER.info("Cargando modelo HMM desde %s...", model_path)
                 self.detector = HMMRegimeDetector.load(str(model_path))
-                LOGGER.info("Modelo HMM cargado desde %s", model_path)
+                LOGGER.info("Modelo HMM cargado exitosamente")
             except Exception as exc:
                 LOGGER.exception("Error cargando modelo HMM: %s", exc)
                 self.detector = None
+        
+        self._model_loaded = True
     
     def get_current_regime(
         self,
@@ -70,6 +82,9 @@ class RegimeService:
         Returns:
             Estado de régimen actual o None si el servicio no está disponible
         """
+        # Carga lazy del modelo
+        self._load_model()
+
         if self.detector is None:
             return None
         
@@ -159,5 +174,5 @@ class RegimeService:
     
     def is_available(self) -> bool:
         """Verifica si el servicio está disponible."""
+        self._load_model()
         return self.detector is not None
-

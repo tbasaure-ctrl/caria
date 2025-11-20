@@ -21,7 +21,7 @@ async def check_secrets_status():
         "reddit_client_secret": bool(os.getenv("REDDIT_CLIENT_SECRET")),
         "reddit_user_agent": bool(os.getenv("REDDIT_USER_AGENT")),
         "fmp_api_key": bool(os.getenv("FMP_API_KEY")),
-        "gemini_api_key": bool(os.getenv("GEMINI_API_KEY")),
+        "llama_api_key": bool(os.getenv("LLAMA_API_KEY")),
         "postgres_password": bool(os.getenv("POSTGRES_PASSWORD")),
         "jwt_secret_key": bool(os.getenv("JWT_SECRET_KEY")),
     }

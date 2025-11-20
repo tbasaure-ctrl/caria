@@ -165,8 +165,9 @@ def search_wisdom(request: Request, payload: WisdomQuery) -> WisdomResponse:
 
 def _call_gemini(prompt: str) -> dict[str, Any] | None:
     """
-    Llama a Gemini usando la API REST oficial.
-    Usa header x-goog-api-key (no query param) y reintenta ante 503.
+    DEPRECATED: Gemini API support removed due to Google project suspension.
+    This function is kept for backward compatibility but may not work.
+    Use _call_llama() instead.
     """
     api_key = os.getenv("GEMINI_API_KEY", "").strip()
     api_url = os.getenv(
@@ -375,10 +376,11 @@ Respond ONLY in valid JSON with this exact structure:
 }}
 """
 
-    # 3) Llamar a Gemini y fallback a Llama
-    llm_result = _call_gemini(prompt)
+    # 3) Llamar a Llama primero (Gemini removido debido a suspensión de proyecto Google)
+    llm_result = _call_llama(prompt)
     if llm_result is None:
-        llm_result = _call_llama(prompt)
+        LOGGER.warning("Llama API call failed, attempting Gemini fallback")
+        llm_result = _call_gemini(prompt)
 
     if llm_result is not None and llm_result.get("raw_text"):
         critical, biases, recs, conf = _parse_llm_json(llm_result["raw_text"])
@@ -395,7 +397,7 @@ Respond ONLY in valid JSON with this exact structure:
     ticker_info = f" sobre {payload.ticker}" if payload.ticker else ""
     basic_analysis = f"""Análisis de la tesis{ticker_info}: "{payload.thesis}".
 
-No se pudo acceder a un modelo de lenguaje avanzado (Gemini/Llama).
+No se pudo acceder a un modelo de lenguaje avanzado (Llama/Gemini).
 Se muestra un checklist básico para que revises tu propia tesis.
 """
 

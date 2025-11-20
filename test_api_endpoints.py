@@ -10,7 +10,8 @@ from dataclasses import dataclass
 import os
 
 # Configuration
-API_BASE_URL = os.getenv("API_BASE_URL", "https://caria-api-418525923468.us-central1.run.app")
+# Update this to your Render URL after deployment: https://caria-api.onrender.com
+API_BASE_URL = os.getenv("API_BASE_URL", "https://caria-api.onrender.com")
 TEST_USER_EMAIL = "test@caria.com"
 TEST_USER_PASSWORD = "testpassword123"
 

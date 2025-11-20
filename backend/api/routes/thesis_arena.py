@@ -45,66 +45,63 @@ def _load_community_prompt(community: str) -> str:
         return f"You are a {community.replace('_', ' ')} investor. Analyze the investment thesis."
 
 
-def _call_gemini_parallel(prompt: str, community: str) -> Optional[str]:
-    """Call Gemini API with community-specific prompt."""
-    api_key = os.getenv("GEMINI_API_KEY")
+def _call_llama_parallel(prompt: str, community: str) -> Optional[str]:
+    """Call Llama API (Groq) with community-specific prompt."""
+    api_key = os.getenv("LLAMA_API_KEY")
+    api_url = os.getenv("LLAMA_API_URL", "https://api.groq.com/openai/v1/chat/completions")
+    model = os.getenv("LLAMA_MODEL", "llama-3.1-8b-instruct")
+    
     if not api_key:
-        LOGGER.warning("GEMINI_API_KEY not configured")
+        LOGGER.warning("LLAMA_API_KEY not configured")
         return None
     
     # Load community prompt
     community_prompt = _load_community_prompt(community)
     
     # Combine prompts
-    full_prompt = f"""{community_prompt}
+    system_prompt = f"""{community_prompt}
 
-Investment Thesis to Analyze:
+You are a {community.replace('_', ' ')} investor. Analyze investment theses from this perspective."""
+    
+    user_prompt = f"""Investment Thesis to Analyze:
 {prompt}
 
 Provide your analysis and response as a {community.replace('_', ' ')} investor. Be specific, challenge assumptions, and provide actionable insights."""
     
-    api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
     
     payload = {
-        "contents": [{
-            "parts": [{"text": full_prompt}]
-        }]
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        "temperature": 0.7,
     }
     
     try:
-        resp = requests.post(api_url, json=payload, timeout=30)
+        resp = requests.post(api_url, headers=headers, json=payload, timeout=30)
         
         if resp.status_code == 503:
-            LOGGER.warning(f"Gemini 503 for {community}, skipping")
+            LOGGER.warning(f"Llama 503 for {community}, skipping")
             return None
         
         resp.raise_for_status()
         data = resp.json()
         
-        # Debug: log response structure
-        LOGGER.debug(f"Gemini response structure for {community}: {json.dumps(data, indent=2)[:500]}")
-        
-        candidates = data.get("candidates", [])
-        if not candidates:
-            LOGGER.warning(f"Gemini returned no candidates for {community}. Full response: {json.dumps(data)[:500]}")
-            return None
-        
-        content = candidates[0].get("content", {})
-        parts = content.get("parts", [])
-        if not parts:
-            LOGGER.warning(f"Gemini returned no parts for {community}. Content: {content}")
-            return None
-        
-        text = parts[0].get("text", "")
+        text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
         
         if not text:
-            LOGGER.warning(f"Gemini returned empty text for {community}. Parts: {parts}")
+            LOGGER.warning(f"Llama returned empty text for {community}")
             return None
         
-        LOGGER.info(f"Gemini successfully returned response for {community} ({len(text)} chars)")
+        LOGGER.info(f"Llama successfully returned response for {community} ({len(text)} chars)")
         return text
     except Exception as e:
-        LOGGER.exception(f"Error calling Gemini for {community}: {e}")
+        LOGGER.exception(f"Error calling Llama for {community}: {e}")
         return None
 
 
@@ -273,7 +270,7 @@ async def challenge_thesis_arena(
     """
     Challenge investment thesis with parallel community responses.
     
-    Calls Gemini API in parallel for each of the 4 communities:
+    Calls Llama API (Groq) in parallel for each of the 4 communities:
     - value_investor
     - crypto_bro
     - growth_investor
@@ -307,7 +304,7 @@ async def challenge_thesis_arena(
         asyncio.set_event_loop(loop)
     
     tasks = [
-        loop.run_in_executor(None, _call_gemini_parallel, prompt, community)
+        loop.run_in_executor(None, _call_llama_parallel, prompt, community)
         for community in COMMUNITIES
     ]
     
@@ -443,7 +440,7 @@ Please respond to the user's follow-up from your community perspective. Consider
             asyncio.set_event_loop(loop)
         
         tasks = [
-            loop.run_in_executor(None, _call_gemini_parallel, context_prompt, community)
+            loop.run_in_executor(None, _call_llama_parallel, context_prompt, community)
             for community in COMMUNITIES
         ]
         

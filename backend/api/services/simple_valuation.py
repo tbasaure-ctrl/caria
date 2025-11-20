@@ -31,15 +31,23 @@ class SimpleValuationService:
             # 2. Calculate DCF
             dcf = self._calculate_dcf(metrics, current_price)
 
-            # 3. Calculate Multiples
-            multiples = self._calculate_multiples(metrics)
+            # 3. Calculate Reverse DCF (Implied Growth)
+            reverse_dcf = self._calculate_reverse_dcf(metrics, current_price, dcf["assumptions"])
+
+            # 4. Calculate Multiples Valuation (Fair Value based on Hist Avg)
+            multiples_val = self._calculate_historical_multiples_valuation(ticker, metrics)
+
+            # 5. Current Multiples
+            current_multiples = self._calculate_multiples(metrics)
 
             return {
                 "ticker": ticker,
                 "currency": metrics.get("currency", "USD"),
                 "current_price": current_price,
                 "dcf": dcf,
-                "multiples": multiples
+                "reverse_dcf": reverse_dcf,
+                "multiples_valuation": multiples_val,
+                "multiples": current_multiples
             }
 
         except Exception as e:
@@ -49,19 +57,13 @@ class SimpleValuationService:
     def _fetch_metrics(self, ticker: str) -> Optional[Dict[str, Any]]:
         """Fetch necessary metrics from FMP."""
         try:
-            # Get Key Metrics (Annual/Quarterly) - FMPClient has get_key_metrics
+            # Get Key Metrics (Annual/Quarterly)
             key_metrics = self.fmp_client.get_key_metrics(ticker, period="quarter")
             
             # Get Financial Ratios
             ratios = self.fmp_client.get_financial_ratios(ticker, period="quarter")
             
-            # Get Profile (for beta, industry, etc.) - FMPClient doesn't have get_company_profile in the viewed file?
-            # Let's check FMPClient again. It has get_sp500_constituents, get_delisted... 
-            # It seems get_company_profile is missing from the viewed file in step 378!
-            # We will skip profile for now or use what we have.
-            # Wait, the previous code tried to use it.
-            # Let's stick to what we verified exists: get_key_metrics, get_financial_ratios, get_financial_growth
-            
+            # Get Growth
             growth = self.fmp_client.get_financial_growth(ticker, period="quarter")
 
             return {
@@ -140,6 +142,99 @@ class SimpleValuationService:
                 "explanation": "Calculation failed."
             }
 
+    def _calculate_reverse_dcf(self, metrics: Dict[str, Any], current_price: float, assumptions: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Calculate Implied Growth Rate (Reverse DCF).
+        Solves for 'g' such that DCF(g) == current_price.
+        """
+        try:
+            fcf_per_share = metrics.get("freeCashFlowPerShareTTM") or metrics.get("freeCashFlowPerShare")
+            if not fcf_per_share:
+                fcf_per_share = metrics.get("netIncomePerShareTTM") or metrics.get("netIncomePerShare") or 0
+            
+            if fcf_per_share <= 0:
+                return {"implied_growth_rate": 0, "explanation": "N/A (Negative FCF)"}
+
+            discount_rate = assumptions.get("discount_rate", 0.10)
+            terminal_growth = assumptions.get("terminal_growth_rate", 0.03)
+            years = 5
+
+            # Binary search for implied growth
+            low = -0.50
+            high = 1.00
+            implied_growth = 0.0
+            
+            for _ in range(20): # 20 iterations is enough precision
+                mid = (low + high) / 2
+                
+                # Calculate DCF with 'mid' growth
+                future_cash_flows = []
+                for i in range(1, years + 1):
+                    fcf = fcf_per_share * ((1 + mid) ** i)
+                    future_cash_flows.append(fcf / ((1 + discount_rate) ** i))
+                
+                terminal_val = (fcf_per_share * ((1 + mid) ** years) * (1 + terminal_growth)) / (discount_rate - terminal_growth)
+                terminal_val_discounted = terminal_val / ((1 + discount_rate) ** years)
+                fair_val = sum(future_cash_flows) + terminal_val_discounted
+                
+                if fair_val > current_price:
+                    high = mid
+                else:
+                    low = mid
+                implied_growth = mid
+
+            return {
+                "implied_growth_rate": round(implied_growth, 4),
+                "explanation": f"The market is pricing in a {implied_growth*100:.1f}% annual growth rate for the next 5 years."
+            }
+        except Exception as e:
+            LOGGER.error(f"Reverse DCF error: {e}")
+            return {"implied_growth_rate": 0, "explanation": "Calculation failed"}
+
+    def _calculate_historical_multiples_valuation(self, ticker: str, current_metrics: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Valuation based on 5-year historical average multiples.
+        """
+        try:
+            # We need historical ratios. FMPClient has get_financial_ratios(period='annual')
+            # We'll fetch last 5 years annual
+            hist_ratios = self.fmp_client.get_financial_ratios(ticker, period="annual")
+            if not hist_ratios:
+                return {"method": "N/A", "fair_value": 0, "explanation": "No historical data"}
+
+            # Take last 5 entries (assuming sorted desc date)
+            last_5 = hist_ratios[:5]
+            
+            avg_pe = sum(x.get("peRatio", 0) for x in last_5) / len(last_5)
+            avg_pb = sum(x.get("priceToBookRatio", 0) for x in last_5) / len(last_5)
+            
+            # Current metrics
+            eps = current_metrics.get("netIncomePerShareTTM") or current_metrics.get("netIncomePerShare") or 0
+            bps = current_metrics.get("bookValuePerShareTTM") or current_metrics.get("bookValuePerShare") or 0
+            
+            vals = []
+            if avg_pe > 0 and eps > 0:
+                vals.append(avg_pe * eps)
+            if avg_pb > 0 and bps > 0:
+                vals.append(avg_pb * bps)
+            
+            if not vals:
+                return {"method": "N/A", "fair_value": 0, "explanation": "Negative earnings/book value"}
+            
+            fair_value = sum(vals) / len(vals)
+            
+            return {
+                "method": "5y Avg Multiples (PE & PB)",
+                "fair_value": round(fair_value, 2),
+                "avg_pe": round(avg_pe, 2),
+                "avg_pb": round(avg_pb, 2),
+                "explanation": f"Fair value derived from 5y Avg PE ({avg_pe:.1f}x) and PB ({avg_pb:.1f}x)."
+            }
+
+        except Exception as e:
+            LOGGER.error(f"Multiples Valuation error: {e}")
+            return {"method": "Error", "fair_value": 0, "explanation": "Calculation failed"}
+
     def _calculate_multiples(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "method": "Market Multiples",
@@ -176,6 +271,8 @@ class SimpleValuationService:
                 "assumptions": self._default_assumptions(),
                 "explanation": f"Valuation failed: {error_msg}"
             },
+            "reverse_dcf": {"implied_growth_rate": 0, "explanation": "N/A"},
+            "multiples_valuation": {"method": "Error", "fair_value": 0, "explanation": "N/A"},
             "multiples": {
                 "method": "Error",
                 "multiples": {},

@@ -1,5 +1,6 @@
 """
-LLM Service for handling RAG and interactions with Gemini/Llama.
+LLM Service for handling RAG and interactions with Llama (Groq).
+Gemini support removed due to Google project suspension.
 """
 import json
 import logging
@@ -59,74 +60,35 @@ class LLMService:
 
     def call_llm(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         """
-        Call Gemini, fallback to Llama.
+        Call Llama (Groq) API only.
         Returns the raw text response.
         """
-        # Try Gemini first
-        response = self._call_gemini(prompt, system_prompt)
-        if response:
-            return response
-            
-        # Fallback to Llama
+        # Use Llama only (Gemini removed due to Google project suspension)
         return self._call_llama(prompt, system_prompt)
 
     def _call_gemini(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
-        api_key = os.getenv("GEMINI_API_KEY", "").strip()
-        api_url = os.getenv(
-            "GEMINI_API_URL",
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-        )
-
-        if not api_key:
-            LOGGER.warning("GEMINI_API_KEY no configurada")
-            return None
-
-        headers = {
-            "Content-Type": "application/json",
-            "x-goog-api-key": api_key,
-        }
-        
-        # Construct payload
-        # Gemini API structure might vary, sticking to the one in analysis.py
-        # System prompt integration depends on model version, but we'll append to prompt for simplicity if needed
-        # or use the proper field if we were using the SDK. REST API supports system_instruction in some versions.
-        # For safety, we'll prepend system prompt to user prompt if provided, or keep it simple.
-        
-        full_prompt = prompt
-        if system_prompt:
-            full_prompt = f"{system_prompt}\n\nUser Query:\n{prompt}"
-
-        payload = {
-            "contents": [{"parts": [{"text": full_prompt}]}]
-        }
-
-        for attempt in range(3):
-            try:
-                resp = requests.post(api_url, headers=headers, json=payload, timeout=40)
-                if resp.status_code == 503 and attempt < 2:
-                    continue
-                resp.raise_for_status()
-                data = resp.json()
-                text = (
-                    data.get("candidates", [{}])[0]
-                    .get("content", {})
-                    .get("parts", [{}])[0]
-                    .get("text", "")
-                )
-                return text if text else None
-            except Exception as e:
-                if 'resp' in locals() and hasattr(resp, 'text'):
-                     LOGGER.error(f"Gemini error response: {resp.text}")
-                LOGGER.warning(f"Gemini attempt {attempt+1} failed: {e}")
-                break
+        """
+        DEPRECATED: Gemini API support removed due to Google project suspension.
+        This method is kept for backward compatibility but always returns None.
+        Use _call_llama() instead.
+        """
+        LOGGER.warning("Gemini API is deprecated and disabled. Use Llama instead.")
         return None
 
     def _call_llama(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
+        """
+        Call Llama API via Groq (OpenAI-compatible endpoint).
+        """
         api_key = os.getenv("LLAMA_API_KEY")
         api_url = os.getenv("LLAMA_API_URL", "https://api.groq.com/openai/v1/chat/completions")
         model = os.getenv("LLAMA_MODEL", "llama-3.1-8b-instruct")
 
-        if not api_key or not api_url:
+        if not api_key:
+            LOGGER.warning("LLAMA_API_KEY not configured")
+            return None
+
+        if not api_url:
+            LOGGER.warning("LLAMA_API_URL not configured")
             return None
 
         headers = {

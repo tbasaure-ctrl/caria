@@ -6,7 +6,7 @@ import requests
 import os
 import json
 
-API_BASE_URL = "https://caria-api-418525923468.us-central1.run.app"
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 def test_reddit_endpoint():
     """Test Reddit API endpoint directamente."""
@@ -94,10 +94,10 @@ def test_fear_greed_endpoint():
     except Exception as e:
         print(f"❌ Exception: {e}")
 
-def test_gemini_via_thesis_arena():
-    """Test Gemini API a través del endpoint de Thesis Arena."""
+def test_llama_via_thesis_arena():
+    """Test Llama (Groq) API a través del endpoint de Thesis Arena."""
     print("\n" + "="*60)
-    print("TESTING GEMINI API (via Thesis Arena)")
+    print("TESTING LLAMA API (via Thesis Arena)")
     print("="*60)
     
     try:
@@ -116,11 +116,11 @@ def test_gemini_via_thesis_arena():
         print(f"Response: {response.text[:500]}")
         
         if response.status_code == 200:
-            print(f"✅ Gemini API funciona!")
+            print(f"✅ Llama API funciona!")
         elif response.status_code == 401:
             print(f"⚠️ Requiere autenticación (esperado)")
         elif response.status_code == 500:
-            print(f"❌ Error 500 - Revisar si Gemini API key está configurada")
+            print(f"❌ Error 500 - Revisar si LLAMA_API_KEY está configurada")
             print(f"Error detail: {response.text}")
         else:
             print(f"⚠️ Status: {response.status_code}")
@@ -137,13 +137,12 @@ def main():
     test_reddit_endpoint()
     test_fmp_endpoint()
     test_fear_greed_endpoint()
-    test_gemini_via_thesis_arena()
+    test_llama_via_thesis_arena()
     
     print("\n" + "="*60)
     print("RESUMEN")
     print("="*60)
-    print("\nSi ves errores 500, revisa los logs del backend:")
-    print("gcloud run services logs read caria-api --region=us-central1 --project=caria-backend --limit=50")
+    print("\nSi ves errores 500, revisa los logs del backend (Railway, Docker o uvicorn).")
 
 if __name__ == "__main__":
     main()

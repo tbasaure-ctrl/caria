@@ -8,7 +8,7 @@ import requests
 import json
 from typing import Dict, Any
 
-API_BASE_URL = os.getenv("API_BASE_URL", "https://caria-api-418525923468.us-central1.run.app")
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 def test_health_check() -> Dict[str, Any]:
     """Verifica que el backend esté corriendo."""
@@ -61,26 +61,23 @@ def test_fmp_connection() -> Dict[str, Any]:
             "error": str(e)
         }
 
-def test_gemini_connection() -> Dict[str, Any]:
-    """Verifica que Gemini API funcione (a través del backend)."""
+def test_llama_connection() -> Dict[str, Any]:
+    """Verifica que Llama (Groq) funcione (a través del backend)."""
     try:
-        # Intentar un endpoint que use Gemini (por ejemplo, chat o análisis)
-        # Usaremos el endpoint de chat si existe, o uno de thesis arena
         response = requests.post(
             f"{API_BASE_URL}/api/thesis/arena/challenge",
             json={
-                "thesis": "Test thesis to verify Gemini connection",
+                "thesis": "Test thesis to verify Llama connection",
                 "ticker": "AAPL",
                 "initial_conviction": 50.0
             },
             timeout=30,
             headers={"Content-Type": "application/json"}
         )
-        # Puede fallar por autenticación, pero si llega a Gemini, veremos un error diferente
         return {
             "status": "success" if response.status_code == 200 else "partial",
             "status_code": response.status_code,
-            "note": "401/403 expected without auth, but 500 means Gemini might not be configured",
+            "note": "401/403 expected without auth, but 500 means LLAMA_API_KEY might not be configured",
             "data": response.text[:300] if response.text else "No response"
         }
     except Exception as e:
@@ -167,19 +164,19 @@ def main():
     print()
     
     # 4. Gemini API
-    print("4. Verificando Gemini API (análisis)...")
-    results["gemini"] = test_gemini_connection()
-    if results["gemini"]["status"] == "success":
-        print("   [OK] Gemini API funciona correctamente")
-    elif results["gemini"]["status"] == "partial":
-        if results["gemini"]["status_code"] in [401, 403]:
+    print("4. Verificando Llama API (análisis)...")
+    results["llama"] = test_llama_connection()
+    if results["llama"]["status"] == "success":
+        print("   [OK] Llama API funciona correctamente")
+    elif results["llama"]["status"] == "partial":
+        if results["llama"]["status_code"] in [401, 403]:
             print("   [WARN] Requiere autenticación (esperado)")
-        elif results["gemini"]["status_code"] == 500:
-            print("   [FAIL] Error 500: GEMINI_API_KEY probablemente no está configurada en Cloud Run")
+        elif results["llama"]["status_code"] == 500:
+            print("   [FAIL] Error 500: LLAMA_API_KEY posiblemente no está configurada")
         else:
-            print(f"   [WARN] Status {results['gemini']['status_code']}: {results['gemini'].get('data', '')}")
+            print(f"   [WARN] Status {results['llama']['status_code']}: {results['llama'].get('data', '')}")
     else:
-        print(f"   [FAIL] Gemini API no funciona: {results['gemini'].get('error', results['gemini'])}")
+        print(f"   [FAIL] Llama API no funciona: {results['llama'].get('error', results['llama'])}")
     print()
     
     # 5. Reddit API
@@ -216,27 +213,23 @@ def main():
     # Recomendaciones
     if results["health"]["status"] != "success":
         print("[CRITICAL] PROBLEMA CRÍTICO: El backend no está corriendo")
-        print("   -> Verifica el deployment en Cloud Run")
-        print("   -> Revisa los logs: gcloud run services logs read caria-api --region=us-central1")
+        print("   -> Verifica el deployment (Railway/Railway CLI o docker logs)")
     
     if results["fmp"].get("status_code") == 500:
         print("\n[FAIL] FMP_API_KEY no configurada:")
-        print("   -> Verifica que el secret 'fmp-api-key' exista en Secret Manager")
-        print("   -> Verifica que el workflow lo esté pasando: --set-secrets=FMP_API_KEY=fmp-api-key:latest")
+        print("   -> Verifica que la variable de entorno FMP_API_KEY esté definida en Railway/Vercel/.env")
     
-    if results["gemini"].get("status_code") == 500:
-        print("\n[FAIL] GEMINI_API_KEY no configurada:")
-        print("   -> Verifica que el secret 'gemini-api-key' exista en Secret Manager")
-        print("   -> Verifica que el workflow lo esté pasando: --set-secrets=GEMINI_API_KEY=gemini-api-key:latest")
+    if results["llama"].get("status_code") == 500:
+        print("\n[FAIL] LLAMA_API_KEY no configurada:")
+        print("   -> Verifica que LLAMA_API_KEY y LLAMA_API_URL estén configuradas en el backend")
     
     if results["reddit"].get("status_code") == 500:
         print("\n[FAIL] REDDIT_CLIENT_ID/SECRET no configuradas:")
-        print("   -> Verifica que los secrets 'reddit-client-id' y 'reddit-client-secret' existan")
-        print("   -> Verifica que el workflow los esté pasando correctamente")
+        print("   -> Verifica que las variables REDDIT_CLIENT_ID y REDDIT_CLIENT_SECRET estén definidas")
     
     print("\n" + "=" * 80)
     print("Para ver logs detallados del backend:")
-    print("gcloud run services logs read caria-api --region=us-central1 --limit=50")
+    print("Railway: usa `railway logs -s caria` o revisa el dashboard. Para local/docker, revisa los logs de uvicorn.")
     print("=" * 80)
 
 if __name__ == "__main__":

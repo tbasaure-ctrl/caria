@@ -26,32 +26,21 @@ DEFAULT_USER_FULL_NAME = "TBL Admin"
 
 def _connection_kwargs() -> dict[str, object]:
     """Get connection parameters, supporting both DATABASE_URL and individual variables."""
-    # Railway proporciona DATABASE_URL automáticamente cuando agregas PostgreSQL
-    # Cloud SQL usa formato: postgresql://user:password@/dbname?host=/cloudsql/instance
+    # Railway/Neon proporciona DATABASE_URL automáticamente cuando agregas PostgreSQL
+    # Neon format: postgresql://user:password@host.neon.tech/dbname?sslmode=require
     database_url = os.getenv("DATABASE_URL")
+    LOGGER.info("DATABASE_URL from env: %s", "SET" if database_url else "NOT SET")
     if database_url:
+        # Log first few chars for debugging (don't log full password)
+        if len(database_url) > 20:
+            LOGGER.info("DATABASE_URL starts with: %s...", database_url[:20])
+        else:
+            LOGGER.warning("DATABASE_URL seems too short: %s", database_url)
         try:
-            from urllib.parse import parse_qs
             parsed = urlparse(database_url)
 
-            # Extraer parámetros de query string
-            query_params = parse_qs(parsed.query)
-
-            # Verificar si hay un socket Unix de Cloud SQL en el query string
-            unix_socket_host = None
-            if 'host' in query_params:
-                unix_socket_host = query_params['host'][0]
-
-            # Si hay socket Unix (Cloud SQL), usarlo
-            if unix_socket_host:
-                return {
-                    "host": unix_socket_host,
-                    "user": parsed.username,
-                    "password": parsed.password,
-                    "database": parsed.path.lstrip('/'),
-                }
-            # Si no, usar conexión normal con hostname y port
-            elif parsed.hostname:
+            # Neon uses standard PostgreSQL TCP connections
+            if parsed.hostname:
                 return {
                     "host": parsed.hostname,
                     "port": parsed.port or 5432,
@@ -59,17 +48,24 @@ def _connection_kwargs() -> dict[str, object]:
                     "password": parsed.password,
                     "database": parsed.path.lstrip('/'),
                 }
+            else:
+                raise ValueError("DATABASE_URL missing hostname")
         except Exception as e:
-            LOGGER.warning(f"Error parsing DATABASE_URL: {e}. Using individual variables...")
+            LOGGER.error(f"Error parsing DATABASE_URL: {e}. Using individual variables...")
+            LOGGER.error(f"Raw DATABASE_URL value: {database_url[:50]}..." if database_url and len(database_url) > 50 else f"Raw DATABASE_URL value: {database_url}")
 
     # Fallback a variables individuales
-    return {
+    LOGGER.warning("Falling back to individual POSTGRES_* variables (DATABASE_URL not usable)")
+    fallback_params = {
         "host": os.getenv("POSTGRES_HOST", "localhost"),
         "port": int(os.getenv("POSTGRES_PORT", "5432")),
         "user": os.getenv("POSTGRES_USER", "caria_user"),
         "password": os.getenv("POSTGRES_PASSWORD"),
         "database": os.getenv("POSTGRES_DB", "caria"),
     }
+    LOGGER.warning("Fallback connection params: host=%s, port=%s, user=%s, database=%s", 
+                   fallback_params["host"], fallback_params["port"], fallback_params["user"], fallback_params["database"])
+    return fallback_params
 
 
 def _connect() -> Optional[psycopg2.extensions.connection]:
@@ -221,22 +217,10 @@ def ensure_init_schema(conn: psycopg2.extensions.connection) -> None:
 
 def ensure_schema_updates(conn: psycopg2.extensions.connection) -> None:
     """Ensure critical schema updates are applied (e.g. missing columns)."""
-    # Migration 013 fixes missing columns in refresh_tokens, community_posts, etc.
-    fix_sql = ROOT_DIR / "caria_data" / "migrations" / "013_fix_missing_columns.sql"
-    
-    if not fix_sql.exists():
-        LOGGER.warning("Schema update file not found: %s", fix_sql)
-        return
-
-    # We can't easily check if it's already applied without a migrations table,
-    # but the SQL file uses IF NOT EXISTS / DO blocks so it's safe to run multiple times.
-    LOGGER.info("Applying schema updates from %s", fix_sql.name)
-    try:
-        _run_sql_file(conn, fix_sql)
-        LOGGER.info("Schema updates applied successfully")
-    except Exception as e:
-        LOGGER.error("Error applying schema updates: %s", e)
-        # Don't raise, so we don't block startup if this fails (e.g. permissions)
+    # Migration 013 was removed - schema updates are now handled in init.sql and individual migrations
+    # This function is kept for backward compatibility but does nothing
+    LOGGER.debug("Schema updates check skipped (migration 013 removed, handled in init.sql)")
+    return
 
 
 def run_bootstrap_tasks() -> None:

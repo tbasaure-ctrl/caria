@@ -15,7 +15,7 @@ POSTGRES_PASSWORD=tu_password_aqui
 POSTGRES_DB=caria
 
 # FMP API Key (para precios en tiempo real)
-FMP_API_KEY=79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
+FMP_API_KEY=your-fmp-api-key-here
 
 # JWT Secret Key
 JWT_SECRET_KEY=tu_secret_key_seguro_aqui
@@ -49,7 +49,7 @@ export POSTGRES_PORT=5432
 export POSTGRES_USER=caria_user
 export POSTGRES_PASSWORD=tu_password
 export POSTGRES_DB=caria
-export FMP_API_KEY=79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
+export FMP_API_KEY=your-fmp-api-key-here
 export JWT_SECRET_KEY=tu_secret_key_seguro
 ```
 
@@ -60,7 +60,7 @@ $env:POSTGRES_PORT="5432"
 $env:POSTGRES_USER="caria_user"
 $env:POSTGRES_PASSWORD="tu_password"
 $env:POSTGRES_DB="caria"
-$env:FMP_API_KEY="79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq"
+$env:FMP_API_KEY="your-fmp-api-key-here"
 $env:JWT_SECRET_KEY="tu_secret_key_seguro"
 ```
 
@@ -71,7 +71,7 @@ set POSTGRES_PORT=5432
 set POSTGRES_USER=caria_user
 set POSTGRES_PASSWORD=tu_password
 set POSTGRES_DB=caria
-set FMP_API_KEY=79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
+set FMP_API_KEY=your-fmp-api-key-here
 set JWT_SECRET_KEY=tu_secret_key_seguro
 ```
 
@@ -88,7 +88,7 @@ services:
       - POSTGRES_USER=caria_user
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=caria
-      - FMP_API_KEY=79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
+      - FMP_API_KEY=your-fmp-api-key-here
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
 ```
 

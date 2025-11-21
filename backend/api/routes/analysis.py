@@ -160,66 +160,7 @@ def search_wisdom(request: Request, payload: WisdomQuery) -> WisdomResponse:
     )
 
 
-# ---------- Helpers LLM (Gemini + fallback Llama) ----------
-
-
-def _call_gemini(prompt: str) -> dict[str, Any] | None:
-    """
-    DEPRECATED: Gemini API support removed due to Google project suspension.
-    This function is kept for backward compatibility but may not work.
-    Use _call_llama() instead.
-    """
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
-    api_url = os.getenv(
-        "GEMINI_API_URL",
-        "https://generativelanguage.googleapis.com/v1beta/models/"
-        "gemini-1.5-flash:generateContent",
-    )
-
-    if not api_key:
-        LOGGER.warning("GEMINI_API_KEY no configurada; se omite Gemini")
-        return None
-
-    headers = {
-        "Content-Type": "application/json",
-        "x-goog-api-key": api_key,
-    }
-    payload = {
-        "contents": [
-            {
-                "parts": [
-                    {"text": prompt},
-                ]
-            }
-        ]
-    }
-
-    for attempt in range(3):
-        try:
-            resp = requests.post(api_url, headers=headers, json=payload, timeout=40)
-            # Reintento simple si el servidor responde 503
-            if resp.status_code == 503 and attempt < 2:
-                LOGGER.warning("Gemini 503 Service Unavailable, reintentando...")
-                continue
-
-            resp.raise_for_status()
-            data = resp.json()
-            text = (
-                data.get("candidates", [{}])[0]
-                .get("content", {})
-                .get("parts", [{}])[0]
-                .get("text", "")
-            )
-            if not text:
-                LOGGER.warning("Gemini respondió sin texto útil: %s", data)
-                return None
-            return {"raw_text": text}
-        except Exception as exc:  # noqa: BLE001
-            LOGGER.exception("Error llamando a Gemini (intento %d): %s", attempt + 1, exc)
-            # si no es 503, salimos directo al fallback
-            break
-
-    return None
+# ---------- LLM Helper (Groq Llama) ----------
 
 
 def _call_llama(prompt: str) -> dict[str, Any] | None:
@@ -312,8 +253,7 @@ def challenge_thesis(
     """
     Desafía una tesis de inversión:
     - Usa RAG si está disponible para extraer sabiduría histórica / citas.
-    - Llama a Gemini; si falla, intenta Llama.
-    - Si todo falla, usa un checklist básico.
+    - Llama a Llama (Groq). Si falla, usa un checklist básico.
     """
     # 1) RAG: recuperar fragmentos relevantes si el stack está disponible
     retriever = getattr(request.app.state, "retriever", None)
@@ -376,11 +316,8 @@ Respond ONLY in valid JSON with this exact structure:
 }}
 """
 
-    # 3) Llamar a Llama primero (Gemini removido debido a suspensión de proyecto Google)
+    # 3) Llamar a Llama (Groq)
     llm_result = _call_llama(prompt)
-    if llm_result is None:
-        LOGGER.warning("Llama API call failed, attempting Gemini fallback")
-        llm_result = _call_gemini(prompt)
 
     if llm_result is not None and llm_result.get("raw_text"):
         critical, biases, recs, conf = _parse_llm_json(llm_result["raw_text"])
@@ -397,7 +334,7 @@ Respond ONLY in valid JSON with this exact structure:
     ticker_info = f" sobre {payload.ticker}" if payload.ticker else ""
     basic_analysis = f"""Análisis de la tesis{ticker_info}: "{payload.thesis}".
 
-No se pudo acceder a un modelo de lenguaje avanzado (Llama/Gemini).
+No se pudo acceder al modelo Groq Llama.
 Se muestra un checklist básico para que revises tu propia tesis.
 """
 

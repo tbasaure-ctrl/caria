@@ -6,8 +6,8 @@ import os
 import praw
 
 # Credenciales actuales
-CLIENT_ID = "1eIYr0z6slzt62EXy1KQ6Q"
-CLIENT_SECRET = "p53Yud4snfuadHAvgva_6vWkj0eXcw"
+CLIENT_ID = "your-reddit-client-id"
+CLIENT_SECRET = "your-reddit-client-secret"
 
 print("="*60)
 print("TEST DE AUTENTICACIÓN DE REDDIT")

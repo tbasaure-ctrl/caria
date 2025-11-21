@@ -3,8 +3,8 @@ import os
 import sys
 
 # Set env vars provided by user
-os.environ["REDDIT_CLIENT_ID"] = "1eIYr0z6slzt62EXy1KQ6Q"
-os.environ["REDDIT_CLIENT_SECRET"] = "p53Yud4snfuadHAvgva_6vWkj0eXcw"
+os.environ["REDDIT_CLIENT_ID"] = "your-reddit-client-id"
+os.environ["REDDIT_CLIENT_SECRET"] = "your-reddit-client-secret"
 os.environ["REDDIT_USER_AGENT"] = "Caria/1.0"
 
 try:

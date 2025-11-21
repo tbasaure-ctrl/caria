@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types';
 import { CariaLogoIcon, XIcon, SendIcon } from './Icons';
-import { challengeThesis } from '../services/firebaseFunctionsService';
+import { API_BASE_URL, fetchWithAuth } from '../services/apiService';
 
 
 // -----------------------------------------------
@@ -157,12 +157,17 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         setIsLoading(true);
 
         try {
-            // Llamar a Firebase Function (serverless con RAG integrado)
-            const data = await challengeThesis({
-                thesis: text,
-                ticker: ticker,
-                top_k: 5
+            // Call Railway backend API endpoint
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/analysis/challenge`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    thesis: text,
+                    ticker: ticker,
+                    top_k: 5
+                })
             });
+            
+            const data = await response.json();
 
             const critical = data.critical_analysis || 'No analysis provided.';
             const biases = Array.isArray(data.identified_biases) ? data.identified_biases : [];

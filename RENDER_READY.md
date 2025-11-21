@@ -34,3 +34,4 @@ curl https://caria-api.onrender.com/health
 
 Debería retornar: `{"status": "ok", ...}`
 
+

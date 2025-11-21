@@ -138,7 +138,7 @@ def main():
         print("   echo 'SECRET_VALUE' | gcloud secrets versions add SECRET_NAME --data-file=- --project=caria-backend")
         print("\n   Ejemplo para Reddit:")
         print("   gcloud secrets create reddit-client-id --project=caria-backend")
-        print("   echo '1eIYr0z6slzt62EXy1KQ6Q' | gcloud secrets versions add reddit-client-id --data-file=- --project=caria-backend")
+        print("   echo 'your-reddit-client-id' | gcloud secrets versions add reddit-client-id --data-file=- --project=caria-backend")
     
     print("\n" + "=" * 80)
 

@@ -6,7 +6,7 @@ import requests
 import os
 
 # Test FMP API directamente
-FMP_API_KEY = "79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq"
+FMP_API_KEY = "your-fmp-api-key-here"
 
 def test_fmp_quote():
     """Test FMP quote endpoint directamente."""

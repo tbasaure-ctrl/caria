@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from typing import Any, List, Dict
 
 import requests
-import google.generativeai as genai
 
 from caria.retrieval.vector_store import VectorStore
 from caria.retrieval.retrievers import Retriever
@@ -29,12 +28,8 @@ class ChallengeThesisResult:
 
 class RAGService:
     """
-    Servicio RAG para desafiar tesis de inversión.
-
-    Orden de resolución:
-    1. Gemini (principal)
-    2. Llama (backup, endpoint OpenAI-compatible)
-    3. Fallback básico sin LLM
+    Servicio RAG para desafiar tesis de inversión usando Groq Llama
+    (OpenAI-compatible). Si no está disponible, aplica un checklist básico.
     """
 
     def __init__(
@@ -49,18 +44,7 @@ class RAGService:
         self.embedder = embedder
         self.settings = settings
 
-        # ---------- Gemini ----------
-        gemini_key = os.getenv("GEMINI_API_KEY")
-        if gemini_key:
-            genai.configure(api_key=gemini_key)
-            gemini_model_name = getattr(settings, "llm_model_name", "gemini-1.5-pro")
-            self.gemini_model = genai.GenerativeModel(gemini_model_name)
-            self.gemini_available = True
-        else:
-            self.gemini_model = None
-            self.gemini_available = False
-
-        # ---------- Llama (OpenAI-compatible endpoint) ----------
+        # ---------- Llama (Groq OpenAI-compatible endpoint) ----------
         self.llama_base_url = os.getenv("LLAMA_API_URL")  # p.ej. https://api.groq.com/openai
         self.llama_api_key = os.getenv("LLAMA_API_KEY")
         self.llama_model_name = os.getenv(
@@ -221,13 +205,6 @@ class RAGService:
     # Llamadas a LLM
     # ------------------------------------------------------------------
 
-    def _call_gemini(self, prompt: str) -> Dict[str, Any]:
-        if not self.gemini_available or self.gemini_model is None:
-            raise RuntimeError("Gemini no configurado")
-        resp = self.gemini_model.generate_content(prompt)
-        text = resp.text or ""
-        return self._parse_json_from_text(text)
-
     def _call_llama(self, prompt: str) -> Dict[str, Any]:
         if not self.llama_available:
             raise RuntimeError("Llama no configurado")
@@ -262,24 +239,13 @@ class RAGService:
         ticker: str | None = None,
         top_k: int = 5,
     ) -> ChallengeThesisResult:
-        """
-        Desafía una tesis de inversión usando RAG + Gemini,
-        con backup automático en Llama y fallback básico.
-        """
+        """Desafía una tesis de inversión usando RAG + Llama."""
         query_text = thesis if not ticker else f"{thesis} ({ticker})"
         chunks = self._retrieve_chunks(query_text, top_k=top_k)
 
         prompt = self._build_prompt(thesis, ticker, chunks)
 
-        # 1) Intentar Gemini
-        if self.gemini_available:
-            try:
-                data = self._call_gemini(prompt)
-                return self._normalize_output(thesis, ticker, chunks, data)
-            except Exception as exc:
-                print(f"[RAGService] Error con Gemini, intentando Llama: {exc}")
-
-        # 2) Intentar Llama
+        # Intentar Llama
         if self.llama_available:
             try:
                 data = self._call_llama(prompt)
@@ -287,5 +253,5 @@ class RAGService:
             except Exception as exc:
                 print(f"[RAGService] Error con Llama, usando fallback básico: {exc}")
 
-        # 3) Fallback básico
+        # Fallback básico
         return self._basic_fallback(thesis, ticker, chunks)

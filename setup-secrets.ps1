@@ -21,10 +21,10 @@ $jwtSecret = New-RandomString
 
 # A dictionary of secrets to create.
 $secrets = @{
-    "reddit-client-id"      = "1eIYr0z6slzt62EXy1KQ6Q";
-    "reddit-client-secret"  = "p53Yud4snfuadHAvgva_6vWkj0eXcw";
+    "reddit-client-id"      = "your-reddit-client-id";
+    "reddit-client-secret"  = "your-reddit-client-secret";
     "gemini-api-key"        = "AIzaSyC-EeIteUCY3gh0z4eFqRiwnqqkO9E5RQU";
-    "fmp-api-key"           = "79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq";
+    "fmp-api-key"           = "your-fmp-api-key-here";
     "postgres-password"     = "SimplePass123";
     "jwt-secret-key"        = $jwtSecret;
 }

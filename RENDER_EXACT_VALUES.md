@@ -71,3 +71,4 @@ Después de guardar, los logs deberían mostrar:
 - ✅ Building Docker image
 - ✅ No debería decir "backend/Dockerfile is missing"
 
+

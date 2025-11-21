@@ -460,31 +460,20 @@ def healthcheck() -> dict[str, str]:
         import psycopg2
         from urllib.parse import urlparse, parse_qs
 
-        # Try DATABASE_URL first (Cloud SQL format)
+        # Try DATABASE_URL first (Neon/Railway format)
         database_url = os.getenv("DATABASE_URL")
         if database_url:
             parsed = urlparse(database_url)
-            query_params = parse_qs(parsed.query)
-
-            # Check for Unix socket (Cloud SQL)
-            unix_socket_host = query_params.get('host', [None])[0]
-
-            if unix_socket_host:
-                # Use Cloud SQL Unix socket
-                conn = psycopg2.connect(
-                    host=unix_socket_host,
-                    user=parsed.username,
-                    password=parsed.password,
-                    database=parsed.path.lstrip('/'),
-                )
-            elif parsed.hostname:
-                # Use normal TCP connection
+            
+            # Use normal TCP connection (Neon uses standard PostgreSQL connection strings)
+            if parsed.hostname:
                 conn = psycopg2.connect(
                     host=parsed.hostname,
                     port=parsed.port or 5432,
                     user=parsed.username,
                     password=parsed.password,
                     database=parsed.path.lstrip('/'),
+                    sslmode='require' if 'sslmode=require' in parsed.query else None,
                 )
             else:
                 raise ValueError("Invalid DATABASE_URL format")

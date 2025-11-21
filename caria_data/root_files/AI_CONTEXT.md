@@ -259,7 +259,7 @@ Antes de {acción} en {ticker}:
 Crear `.env` en raíz:
 ```bash
 # APIs de datos
-FMP_API_KEY=79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
+FMP_API_KEY=your-fmp-api-key-here
 FRED_API_KEY=your_key_here
 TWITTER_API_KEY=your_key_here
 REDDIT_CLIENT_ID=your_key_here

@@ -58,7 +58,7 @@ POSTGRES_PORT=5432
 POSTGRES_USER=caria_user
 POSTGRES_PASSWORD=Theolucas7
 POSTGRES_DB=caria
-FMP_API_KEY=79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
+FMP_API_KEY=your-fmp-api-key-here
 ```
 
 **Nota**: El archivo `.env` está en `.gitignore` por seguridad, así que no se subirá al repositorio.

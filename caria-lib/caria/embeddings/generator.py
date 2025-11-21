@@ -2,8 +2,7 @@
 
 Soporta múltiples proveedores:
 - local: Modelos locales usando sentence-transformers (recomendado)
-- openai: OpenAI API (text-embedding-3-small, text-embedding-ada-002)
-- gemini: Google Gemini API
+- openai: APIs compatibles con el endpoint de embeddings de OpenAI
 """
 
 from __future__ import annotations
@@ -41,7 +40,6 @@ class EmbeddingGenerator:
         
         # Inicializar variables de estado para lazy loading
         self._local_model = None
-        self._gemini = None
         
         if self.provider == "local":
             # Verificación preliminar de dependencias, pero no carga modelo
@@ -56,16 +54,6 @@ class EmbeddingGenerator:
             self.api_key = os.getenv("OPENAI_API_KEY")
             if not self.api_key:
                 raise RuntimeError("OPENAI_API_KEY no configurado")
-        elif self.provider == "gemini":
-            self.api_key = os.getenv("GEMINI_API_KEY")
-            if not self.api_key:
-                raise RuntimeError("GEMINI_API_KEY no configurado")
-            try:
-                import google.generativeai  # type: ignore[import]
-            except ImportError as exc:  # pragma: no cover - dependency guard
-                raise RuntimeError(
-                    "google-generativeai no está instalado; ejecuta `poetry install`"
-                ) from exc
         else:
             raise ValueError(f"Proveedor de embeddings no soportado: {self.provider}")
 
@@ -89,16 +77,6 @@ class EmbeddingGenerator:
                     self.embedding_dim = actual_dim
                 LOGGER.info("Modelo local cargado con dimensión: %d", self.embedding_dim)
                 
-        elif self.provider == "gemini":
-            if self._gemini is None:
-                import google.generativeai as genai
-                genai.configure(api_key=self.api_key)
-                self._gemini = genai
-                if self.embedding_model == "text-embedding-3-small":
-                    # Ajuste de valor por defecto cuando se usa Gemini
-                    self.embedding_model = "models/text-embedding-004"
-                    self.embedding_dim = 768
-
     def embed_file(self, dataset_path: Path) -> list[dict[str, Any]]:
         frame = pd.read_parquet(dataset_path)
         records: list[dict[str, Any]] = []
@@ -143,19 +121,6 @@ class EmbeddingGenerator:
             )
             response.raise_for_status()
             return response.json()["data"][0]["embedding"]
-        
-        if self.provider == "gemini":
-            if self._gemini is None:
-                raise RuntimeError("Error interno: Cliente Gemini no cargado")
-
-            result = self._gemini.embed_content(
-                model=self.embedding_model,
-                content=text,
-            )
-            embedding = result.get("embedding") if result else None
-            if not embedding:
-                raise RuntimeError("Gemini no generó un embedding válido")
-            return list(embedding)
         
         raise RuntimeError(f"Proveedor desconocido: {self.provider}")
 

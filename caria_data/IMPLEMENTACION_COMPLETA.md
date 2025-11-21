@@ -403,7 +403,7 @@ poetry add ollama google-generativeai
 
 ```bash
 # APIs de datos
-FMP_API_KEY=79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
+FMP_API_KEY=your-fmp-api-key-here
 FRED_API_KEY=your_fred_key
 
 # LLM (elegir uno o ambos)

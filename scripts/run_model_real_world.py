@@ -188,8 +188,8 @@ def main() -> None:
     print(json.dumps(baseline_metrics, indent=2))
 
     if args.run_vector_pipeline:
-        os.environ.setdefault("RETRIEVAL_PROVIDER", "gemini")
-        os.environ.setdefault("RETRIEVAL_EMBEDDING_MODEL", "models/text-embedding-004")
+        os.environ.setdefault("RETRIEVAL_PROVIDER", "local")
+        os.environ.setdefault("RETRIEVAL_EMBEDDING_MODEL", "nomic-embed-text-v1")
         os.environ.setdefault("RETRIEVAL_EMBEDDING_DIM", "768")
         settings = Settings.from_yaml(base_path / "configs/base.yaml")
         raw_dir = base_path / "data/raw/wisdom" / args.wisdom_version

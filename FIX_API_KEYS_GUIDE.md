@@ -14,8 +14,8 @@ Los siguientes secrets deben estar en **Google Cloud Secret Manager**:
 
 1. `gemini-api-key` - API Key de Google Gemini
 2. `fmp-api-key` - API Key de Financial Modeling Prep
-3. `reddit-client-id` - Reddit Client ID: `1eIYr0z6slzt62EXy1KQ6Q`
-4. `reddit-client-secret` - Reddit Client Secret: `p53Yud4snfuadHAvgva_6vWkj0eXcw`
+3. `reddit-client-id` - Reddit Client ID: `your-reddit-client-id`
+4. `reddit-client-secret` - Reddit Client Secret: `your-reddit-client-secret`
 5. `postgres-password` - Password de PostgreSQL
 6. `jwt-secret-key` - Secret para JWT tokens
 
@@ -32,7 +32,7 @@ Los siguientes secrets deben estar en **Google Cloud Secret Manager**:
 
 3. **Crear un secret (ejemplo Reddit Client ID):**
    - Name: `reddit-client-id`
-   - Secret value: `1eIYr0z6slzt62EXy1KQ6Q`
+   - Secret value: `your-reddit-client-id`
    - Haz clic en "CREATE SECRET"
 
 4. **Repite para todos los secrets faltantes**
@@ -49,8 +49,8 @@ gcloud config set project caria-backend
 # Crear secrets
 echo -n 'TU_GEMINI_API_KEY' | gcloud secrets create gemini-api-key --data-file=- --project=caria-backend
 echo -n 'TU_FMP_API_KEY' | gcloud secrets create fmp-api-key --data-file=- --project=caria-backend
-echo -n '1eIYr0z6slzt62EXy1KQ6Q' | gcloud secrets create reddit-client-id --data-file=- --project=caria-backend
-echo -n 'p53Yud4snfuadHAvgva_6vWkj0eXcw' | gcloud secrets create reddit-client-secret --data-file=- --project=caria-backend
+echo -n 'your-reddit-client-id' | gcloud secrets create reddit-client-id --data-file=- --project=caria-backend
+echo -n 'your-reddit-client-secret' | gcloud secrets create reddit-client-secret --data-file=- --project=caria-backend
 echo -n 'TU_POSTGRES_PASSWORD' | gcloud secrets create postgres-password --data-file=- --project=caria-backend
 echo -n 'TU_JWT_SECRET' | gcloud secrets create jwt-secret-key --data-file=- --project=caria-backend
 ```
@@ -130,8 +130,8 @@ Deberías ver:
 
 ## 📝 Valores de Reddit (Ya Conocidos)
 
-- **Client ID:** `1eIYr0z6slzt62EXy1KQ6Q`
-- **Client Secret:** `p53Yud4snfuadHAvgva_6vWkj0eXcw`
+- **Client ID:** `your-reddit-client-id`
+- **Client Secret:** `your-reddit-client-secret`
 - **User Agent:** `Caria-Investment-App-v1.0` (ya configurado como env var)
 
 ## ⚠️ Notas Importantes

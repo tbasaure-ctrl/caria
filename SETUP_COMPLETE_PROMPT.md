@@ -25,10 +25,10 @@ gcloud run services logs read caria-api --region=us-central1 --project=caria-bac
 Crear los siguientes secrets (si no existen):
 
 1. **reddit-client-id**
-   - Valor: `1eIYr0z6slzt62EXy1KQ6Q`
+   - Valor: `your-reddit-client-id`
 
 2. **reddit-client-secret**
-   - Valor: `p53Yud4snfuadHAvgva_6vWkj0eXcw`
+   - Valor: `your-reddit-client-secret`
 
 3. **gemini-api-key**
    - Valor: [Obtener de Google AI Studio: https://aistudio.google.com/apikey]
@@ -45,8 +45,8 @@ Crear los siguientes secrets (si no existen):
 **Método rápido (gcloud CLI):**
 ```bash
 gcloud config set project caria-backend
-echo -n '1eIYr0z6slzt62EXy1KQ6Q' | gcloud secrets create reddit-client-id --data-file=-
-echo -n 'p53Yud4snfuadHAvgva_6vWkj0eXcw' | gcloud secrets create reddit-client-secret --data-file=-
+echo -n 'your-reddit-client-id' | gcloud secrets create reddit-client-id --data-file=-
+echo -n 'your-reddit-client-secret' | gcloud secrets create reddit-client-secret --data-file=-
 # Repetir para los demás secrets
 ```
 

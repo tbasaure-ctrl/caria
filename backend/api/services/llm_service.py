@@ -1,6 +1,5 @@
 """
-LLM Service for handling RAG and interactions with Llama (Groq).
-Gemini support removed due to Google project suspension.
+LLM Service for handling RAG interactions with Groq's Llama endpoint.
 """
 import json
 import logging
@@ -60,20 +59,9 @@ class LLMService:
 
     def call_llm(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         """
-        Call Llama (Groq) API only.
-        Returns the raw text response.
+        Call Groq's Llama endpoint and return the raw text response.
         """
-        # Use Llama only (Gemini removed due to Google project suspension)
         return self._call_llama(prompt, system_prompt)
-
-    def _call_gemini(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
-        """
-        DEPRECATED: Gemini API support removed due to Google project suspension.
-        This method is kept for backward compatibility but always returns None.
-        Use _call_llama() instead.
-        """
-        LOGGER.warning("Gemini API is deprecated and disabled. Use Llama instead.")
-        return None
 
     def _call_llama(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         """

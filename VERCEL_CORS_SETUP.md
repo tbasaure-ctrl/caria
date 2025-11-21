@@ -144,8 +144,8 @@ POSTGRES_USER=<railway-auto-provided>
 POSTGRES_PASSWORD=<railway-auto-provided>
 POSTGRES_DB=railway
 GEMINI_API_KEY=your-key-here
-FMP_API_KEY=79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
-FRED_API_KEY=4b90ca15ff28cfec137179c22fd8246d
+FMP_API_KEY=your-fmp-api-key-here
+FRED_API_KEY=your-fred-api-key
 ```
 
 **Vercel Environment Variables:**

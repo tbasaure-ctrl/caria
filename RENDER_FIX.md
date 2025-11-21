@@ -42,9 +42,9 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: FMP_API_KEY
-        value: 79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
+        value: your-fmp-api-key-here
       - key: FRED_API_KEY
-        value: 4b90ca15ff28cfec137179c22fd8246d
+        value: your-fred-api-key
 ```
 
 ## Why Railway is Better

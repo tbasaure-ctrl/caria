@@ -156,8 +156,8 @@ The code already has excellent fallback to mock data if Reddit API fails.
 
 ### Reddit API Configuration (Already Set)
 ```bash
-REDDIT_CLIENT_ID: 1eIYr0z6slzt62EXy1KQ6Q
-REDDIT_CLIENT_SECRET: p53Yud4snfuadHAvgva_6vWkj0eXcw
+REDDIT_CLIENT_ID: your-reddit-client-id
+REDDIT_CLIENT_SECRET: your-reddit-client-secret
 REDDIT_USER_AGENT: Caria-Investment-App-v1.0
 ```
 

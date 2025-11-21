@@ -16,13 +16,13 @@
 gcloud secrets create fmp-api-key --project=caria-backend --data-file=-
 
 # O si ya existe, actualizar
-echo "79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq" | gcloud secrets versions add fmp-api-key --project=caria-backend --data-file=-
+echo "your-fmp-api-key-here" | gcloud secrets versions add fmp-api-key --project=caria-backend --data-file=-
 ```
 
 ### Opción B: Como Env Var (Más simple, menos seguro)
 Agregar a GitHub Actions workflow:
 ```yaml
---set-env-vars=...,FMP_API_KEY=79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
+--set-env-vars=...,FMP_API_KEY=your-fmp-api-key-here
 ```
 
 ### Cambios Necesarios
@@ -75,7 +75,7 @@ Usar `DATABASE_URL` o Cloud SQL socket en lugar de hostname "postgres".
 gcloud secrets describe fmp-api-key --project=caria-backend
 
 # Si no existe, crearlo
-echo "79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq" | gcloud secrets create fmp-api-key --project=caria-backend --data-file=-
+echo "your-fmp-api-key-here" | gcloud secrets create fmp-api-key --project=caria-backend --data-file=-
 
 # Verificar GEMINI_API_KEY
 gcloud secrets versions access latest --secret=gemini-api-key --project=caria-backend

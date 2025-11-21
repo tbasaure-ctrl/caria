@@ -223,3 +223,4 @@ curl https://caria-api.onrender.com/api/regime/current
 3. **El modelo necesita datos históricos** - mínimo 1990-2024 para buen rendimiento
 4. **Sin el modelo, algunas funcionalidades usarán valores por defecto** - pero es mejor tener el modelo real
 
+

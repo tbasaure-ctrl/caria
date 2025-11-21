@@ -47,7 +47,7 @@ POSTGRES_PASSWORD=tu_password_aqui
 POSTGRES_DB=caria
 
 # FMP API Key (para precios en tiempo real) - YA CONFIGURADA
-FMP_API_KEY=79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq
+FMP_API_KEY=your-fmp-api-key-here
 
 # Gemini API Key (opcional - para RAG/chat, Llama será backup si no está configurada)
 GEMINI_API_KEY=tu_gemini_api_key_aqui
@@ -74,7 +74,7 @@ Get-Content .env | ForEach-Object {
 ```
 
 **Nota**: 
-- La API key de FMP (`79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq`) ya está configurada y se usará automáticamente para los precios en tiempo real.
+- La API key de FMP (`your-fmp-api-key-here`) ya está configurada y se usará automáticamente para los precios en tiempo real.
 - `GEMINI_API_KEY` es opcional. Si no está configurada, el sistema usará Llama (Ollama) como backup automáticamente.
 
 ### Paso 2: Generar Archivos de Datos Requeridos

@@ -46,7 +46,7 @@ def update_env_file():
             "POSTGRES_DB=caria",
             "",
             "# FMP API Key",
-            "FMP_API_KEY=79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq",
+            "FMP_API_KEY=your-fmp-api-key-here",
             "",
             "# JWT Secret Key",
             "# JWT_SECRET_KEY=tu_secret_key_aqui",

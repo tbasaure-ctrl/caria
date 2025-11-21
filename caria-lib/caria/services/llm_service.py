@@ -1,4 +1,4 @@
-"""Servicio LLM multi-provider (Llama, Gemini, OpenAI).
+"""Servicio LLM multi-provider (Llama/Groq, OpenAI).
 
 Abstracción para usar diferentes LLMs de manera intercambiable.
 """
@@ -16,8 +16,7 @@ LOGGER = logging.getLogger("caria.services.llm")
 
 class LLMProvider(str, Enum):
     """Providers de LLM soportados."""
-    LLAMA = "llama"  # Via Ollama local
-    GEMINI = "gemini"  # Google Gemini API
+    LLAMA = "llama"  # Groq (OpenAI-compatible) o Ollama local
     OPENAI = "openai"  # OpenAI API (fallback)
 
 
@@ -35,9 +34,8 @@ class LLMService:
 
     # Modelos disponibles por provider
     MODELS = {
-        LLMProvider.LLAMA: ["llama3.2", "llama3.1", "llama3", "llama2"],
-        LLMProvider.GEMINI: ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-pro"],
-        LLMProvider.OPENAI: ["gpt-4", "gpt-3.5-turbo"],
+        LLMProvider.LLAMA: ["llama-3.1-8b-instruct", "llama3.2", "llama3.1"],
+        LLMProvider.OPENAI: ["gpt-4o", "gpt-4", "gpt-3.5-turbo"],
     }
 
     def __init__(
@@ -49,9 +47,9 @@ class LLMService:
         """Inicializa el servicio LLM.
 
         Args:
-            provider: Provider a usar (llama, gemini, openai)
+            provider: Provider a usar (llama u openai)
             model: Modelo específico (si None, usa el primero disponible)
-            api_key: API key (solo para Gemini/OpenAI)
+            api_key: API key (solo para Groq/OpenAI)
         """
         self.provider = provider
         self.model = model or self.MODELS[provider][0]
@@ -60,11 +58,9 @@ class LLMService:
 
     def _get_api_key_from_env(self) -> str | None:
         """Obtiene API key desde variables de entorno."""
-        if self.provider == LLMProvider.GEMINI:
-            return os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-        elif self.provider == LLMProvider.OPENAI:
+        if self.provider == LLMProvider.OPENAI:
             return os.getenv("OPENAI_API_KEY")
-        return None
+        return os.getenv("LLAMA_API_KEY")
 
     def _init_client(self) -> Any:
         """Inicializa cliente del provider."""
@@ -72,28 +68,30 @@ class LLMService:
             return self._client
 
         if self.provider == LLMProvider.LLAMA:
-            try:
-                import ollama
-                self._client = ollama
-                LOGGER.info("Ollama client initialized for Llama")
-            except ImportError:
-                raise RuntimeError(
-                    "Ollama not installed. Install with: pip install ollama\n"
-                    "Also ensure Ollama is running locally: https://ollama.ai/"
-                )
+            # Prefer Groq HTTP API (OpenAI compatible). Fall back to Ollama if API key missing.
+            if self.api_key:
+                import requests  # lazy import
 
-        elif self.provider == LLMProvider.GEMINI:
-            try:
-                import google.generativeai as genai
-                if not self.api_key:
-                    raise ValueError("GEMINI_API_KEY or GOOGLE_API_KEY not set")
-                genai.configure(api_key=self.api_key)
-                self._client = genai
-                LOGGER.info("Gemini client initialized")
-            except ImportError:
-                raise RuntimeError(
-                    "Google Generative AI not installed. Install with: pip install google-generativeai"
-                )
+                self._client = {
+                    "type": "groq",
+                    "session": requests.Session(),
+                    "url": os.getenv(
+                        "LLAMA_API_URL",
+                        "https://api.groq.com/openai/v1/chat/completions",
+                    ),
+                }
+                LOGGER.info("Groq client initialized for Llama")
+            else:
+                try:
+                    import ollama
+
+                    self._client = {"type": "ollama", "client": ollama}
+                    LOGGER.info("Ollama client initialized for Llama (no API key set)")
+                except ImportError as exc:
+                    raise RuntimeError(
+                        "Neither Groq LLAMA_API_KEY nor Ollama are available. "
+                        "Set LLAMA_API_KEY for Groq or install Ollama locally."
+                    ) from exc
 
         elif self.provider == LLMProvider.OPENAI:
             try:
@@ -132,9 +130,7 @@ class LLMService:
         try:
             if self.provider == LLMProvider.LLAMA:
                 return self._generate_llama(client, prompt, max_tokens, temperature, system_prompt)
-            elif self.provider == LLMProvider.GEMINI:
-                return self._generate_gemini(client, prompt, max_tokens, temperature, system_prompt)
-            elif self.provider == LLMProvider.OPENAI:
+            if self.provider == LLMProvider.OPENAI:
                 return self._generate_openai(client, prompt, max_tokens, temperature, system_prompt)
         except Exception as e:
             LOGGER.error("Error generating with %s: %s", self.provider, e)
@@ -148,59 +144,48 @@ class LLMService:
         temperature: float,
         system_prompt: str | None,
     ) -> LLMResponse:
-        """Genera con Llama via Ollama."""
+        """Genera con Llama via Groq (si hay API key) o Ollama."""
         messages = []
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
-        response = client.chat(
-            model=self.model,
-            messages=messages,
-            options={
-                "temperature": temperature,
-                "num_predict": max_tokens,
-            }
-        )
-
-        content = response.get("message", {}).get("content", "")
-        tokens = response.get("eval_count", 0)
-
-        return LLMResponse(
-            content=content,
-            provider=self.provider,
-            model=self.model,
-            tokens_used=tokens,
-        )
-
-    def _generate_gemini(
-        self,
-        client: Any,
-        prompt: str,
-        max_tokens: int,
-        temperature: float,
-        system_prompt: str | None,
-    ) -> LLMResponse:
-        """Genera con Google Gemini."""
-        model = client.GenerativeModel(self.model)
-
-        # Gemini maneja system prompt como parte del contenido
-        full_prompt = prompt
-        if system_prompt:
-            full_prompt = f"{system_prompt}\n\n{prompt}"
-
-        generation_config = {
-            "max_output_tokens": max_tokens,
-            "temperature": temperature,
-        }
-
-        response = model.generate_content(
-            full_prompt,
-            generation_config=generation_config,
-        )
-
-        content = response.text
-        tokens = response.usage_metadata.total_token_count if hasattr(response, "usage_metadata") else None
+        if client["type"] == "groq":
+            session = client["session"]
+            resp = session.post(
+                client["url"],
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": self.model,
+                    "messages": messages,
+                    "temperature": temperature,
+                    "max_tokens": max_tokens,
+                },
+                timeout=40,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            content = (
+                data.get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", "")
+            )
+            tokens = data.get("usage", {}).get("total_tokens")
+        else:
+            ollama_client = client["client"]
+            response = ollama_client.chat(
+                model=self.model,
+                messages=messages,
+                options={
+                    "temperature": temperature,
+                    "num_predict": max_tokens,
+                },
+            )
+            content = response.get("message", {}).get("content", "")
+            tokens = response.get("eval_count", 0)
 
         return LLMResponse(
             content=content,
@@ -244,24 +229,22 @@ class LLMService:
     def auto_detect(cls) -> LLMService:
         """Detecta y usa el primer LLM disponible.
 
-        Prioridad: Llama (local) > Gemini (API) > OpenAI (API)
+        Prioridad: Groq/Ollama > OpenAI.
         """
-        # 1. Intentar Llama (gratis, local)
+        # 1. Intentar Groq (LLAMA_API_KEY)
+        if os.getenv("LLAMA_API_KEY"):
+            LOGGER.info("Auto-detected: Groq (LLAMA_API_KEY found)")
+            return cls(provider=LLMProvider.LLAMA)
+
+        # 2. Intentar Ollama
         try:
             import ollama
+
             ollama.list()  # Test connection
             LOGGER.info("Auto-detected: Llama via Ollama")
             return cls(provider=LLMProvider.LLAMA)
         except Exception:
             pass
-
-        # 2. Intentar Gemini (API key en env)
-        if os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"):
-            try:
-                LOGGER.info("Auto-detected: Gemini (API key found)")
-                return cls(provider=LLMProvider.GEMINI)
-            except Exception:
-                pass
 
         # 3. Intentar OpenAI (fallback)
         if os.getenv("OPENAI_API_KEY"):
@@ -273,7 +256,7 @@ class LLMService:
 
         raise RuntimeError(
             "No LLM provider available. Options:\n"
-            "1. Install Ollama and run locally: https://ollama.ai/\n"
-            "2. Set GEMINI_API_KEY environment variable\n"
+            "1. Set LLAMA_API_KEY for Groq (https://console.groq.com/)\n"
+            "2. Install Ollama and run locally: https://ollama.ai/\n"
             "3. Set OPENAI_API_KEY environment variable"
         )

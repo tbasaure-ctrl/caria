@@ -1,2 +1,0 @@
-"""Caria source root module."""
-

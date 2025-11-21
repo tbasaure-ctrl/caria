@@ -12,8 +12,10 @@ DEFAULT_ENV = {
     "POSTGRES_USER": "caria_user",
     "POSTGRES_PASSWORD": "",  # Debe ser configurado por el usuario
     "POSTGRES_DB": "caria",
-    "FMP_API_KEY": "79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq",  # API key específica para precios en tiempo real
-    "GEMINI_API_KEY": "",  # API key de Google Gemini (opcional, Llama será backup)
+    "FMP_API_KEY": "your-fmp-api-key-here",  # API key específica para precios en tiempo real
+    "LLAMA_API_KEY": "",  # Groq API key
+    "LLAMA_API_URL": "https://api.groq.com/openai/v1/chat/completions",
+    "LLAMA_MODEL": "llama-3.1-8b-instruct",
     "JWT_SECRET_KEY": "",  # Se generará si está vacío
     "CORS_ORIGINS": "http://localhost:3000,http://localhost:5173",
 }

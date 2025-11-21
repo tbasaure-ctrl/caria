@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 SILVER = BASE_DIR / "data/silver/fundamentals"
 SILVER.mkdir(parents=True, exist_ok=True)
 
-FMP_API_KEY = "79fY9wvC9qtCJHcn6Yelf4ilE9TkRMoq"
+FMP_API_KEY = "your-fmp-api-key-here"
 
 def log(msg):
     """Print with flush"""

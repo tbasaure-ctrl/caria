@@ -1,11 +1,12 @@
 """
-Test completo de APIs con autenticación para verificar FMP y Gemini.
+Test completo de APIs con autenticación para verificar FMP y Llama (Groq).
 """
 
 import requests
 import json
+import os
 
-API_BASE_URL = "https://caria-api-418525923468.us-central1.run.app"
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 def test_with_auth():
     """Test completo con autenticación."""
@@ -106,10 +107,10 @@ def test_with_auth():
     except Exception as e:
         print(f"❌ Exception: {e}")
     
-    # 3. Test Gemini API (Thesis Arena)
-    print("\n3. Probando Gemini API (Thesis Arena)...")
+    # 3. Test Llama API (Thesis Arena)
+    print("\n3. Probando Llama API (Thesis Arena)...")
     try:
-        gemini_response = requests.post(
+        llama_response = requests.post(
             f"{API_BASE_URL}/api/thesis/arena/challenge",
             json={
                 "thesis": "Apple will outperform the market due to strong iPhone sales",
@@ -117,24 +118,24 @@ def test_with_auth():
                 "initial_conviction": 75.0
             },
             headers=headers,
-            timeout=30
+            timeout=40
         )
-        print(f"Status Code: {gemini_response.status_code}")
-        if gemini_response.status_code == 200:
-            data = gemini_response.json()
-            print("✅ Gemini API funciona!")
+        print(f"Status Code: {llama_response.status_code}")
+        if llama_response.status_code == 200:
+            data = llama_response.json()
+            print("✅ Llama API funciona!")
             print(f"   Comunidades respondieron: {len(data.get('community_responses', []))}")
             if data.get('community_responses'):
                 first_response = data['community_responses'][0]
                 print(f"   Ejemplo: {first_response.get('community')} - {first_response.get('response', '')[:100]}...")
-        elif gemini_response.status_code == 500:
-            error_detail = gemini_response.json().get("detail", "")
+        elif llama_response.status_code == 500:
+            error_detail = llama_response.json().get("detail", "")
             print(f"❌ Error 500: {error_detail}")
-            if "GEMINI_API_KEY" in error_detail or "not configured" in error_detail:
-                print("   → Problema: GEMINI_API_KEY no está siendo leída correctamente")
+            if "LLAMA_API_KEY" in error_detail or "not configured" in error_detail:
+                print("   → Problema: LLAMA_API_KEY no está siendo leída correctamente")
         else:
-            print(f"⚠️ Status: {gemini_response.status_code}")
-            print(f"Response: {gemini_response.text[:300]}")
+            print(f"⚠️ Status: {llama_response.status_code}")
+            print(f"Response: {llama_response.text[:300]}")
     except Exception as e:
         print(f"❌ Exception: {e}")
     
@@ -177,9 +178,9 @@ def test_with_auth():
     print("\n" + "="*60)
     print("RESUMEN")
     print("="*60)
-    print("\nSi FMP o Gemini dan error 500, el problema es que los secrets")
-    print("no se están leyendo correctamente en el código, aunque estén")
-    print("configurados en Cloud Run.")
+    print("\nSi FMP o Llama dan error 500, verifica que las API keys")
+    print("y variables de entorno estén configuradas correctamente")
+    print("en el servicio de backend (Railway, Render o entorno local).")
 
 if __name__ == "__main__":
     test_with_auth()

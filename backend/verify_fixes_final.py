@@ -57,7 +57,7 @@ def verify_llm_service():
         # Check if the code contains the logging line
         with open("backend/api/services/llm_service.py", "r") as f:
             content = f.read()
-            if 'LOGGER.error(f"Gemini error response: {resp.text}")' in content:
+            if 'LOGGER.warning(f"Llama call failed: {e}")' in content:
                 LOGGER.info("LLMService logging verified.")
                 return True
             else:

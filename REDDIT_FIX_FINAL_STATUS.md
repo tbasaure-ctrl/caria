@@ -86,7 +86,7 @@ curl "https://caria-api-418525923468.us-central1.run.app/api/social/reddit?timef
 ### Reddit API Credentials ✅
 ```bash
 curl -X POST "https://www.reddit.com/api/v1/access_token" \
-  -u "1eIYr0z6slzt62EXy1KQ6Q:p53Yud4snfuadHAvgva_6vWkj0eXcw" \
+  -u "your-reddit-client-id:your-reddit-client-secret" \
   -d "grant_type=client_credentials" \
   -A "Caria-Investment-App-v1.0"
 
@@ -101,10 +101,10 @@ Response: {
 ### Cloud Run Environment Variables ✅
 ```bash
 gcloud secrets versions access latest --secret="reddit-client-id"
-# Output: 1eIYr0z6slzt62EXy1KQ6Q
+# Output: your-reddit-client-id
 
 gcloud secrets versions access latest --secret="reddit-client-secret"
-# Output: p53Yud4snfuadHAvgva_6vWkj0eXcw
+# Output: your-reddit-client-secret
 ```
 ✅ **Secrets correctly configured in Google Secret Manager**
 

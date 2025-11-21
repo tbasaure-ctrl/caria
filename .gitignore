@@ -69,6 +69,7 @@ docker-compose.override.yml
 
 # ML/Data
 *.pkl
+!caria_data/models/regime_hmm_model.pkl
 *.h5
 *.ckpt
 *.pt

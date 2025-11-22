@@ -28,8 +28,7 @@ export const RedditSentiment: React.FC = () => {
             if (!response.ok) throw new Error('Failed to fetch Reddit data');
             const data = await response.json();
             setStocks(data.stocks || []);
-        } catch (err: any) {
-            console.error('Reddit fetch error:', err);
+        } catch (err: unknown) {
             setError('Coming soon... Reddit sentiment analysis is being enhanced to provide even better social media insights.');
             // Fallback mock data for development
             setStocks([

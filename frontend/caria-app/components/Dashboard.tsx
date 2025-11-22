@@ -137,8 +137,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     return (
         <main className="flex-1 overflow-y-auto p-6 max-w-[1920px] mx-auto"
             style={{ backgroundColor: 'var(--color-bg-primary)', minHeight: '100vh' }}>
-            {/* OnboardingTour removed */}
-
             {/* Dashboard Header */}
             <div className="mb-8 fade-in">
                 <h1 className="text-4xl font-bold mb-2"

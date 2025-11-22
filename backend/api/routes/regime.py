@@ -143,10 +143,6 @@ def _quick_regime_from_prices(symbol: str = "SPY") -> RegimeResponse | None:
     except Exception as exc:  # noqa: BLE001
         LOGGER.warning("Fallback regime computation failed: %s", exc)
         return None
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Servicio de régimen no disponible. Entrena el modelo HMM primero.",
-        )
-    return regime_service
 
 
 @router.get("/current", response_model=RegimeResponse)

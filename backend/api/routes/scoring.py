@@ -8,6 +8,7 @@ from api.services.scoring_service import ScoringService
 from caria.models.auth import UserInDB
 
 router = APIRouter(prefix="/api/analysis", tags=["analysis"])
+score_router = APIRouter(prefix="/api", tags=["analysis"])
 
 scoring_service = ScoringService()
 
@@ -23,7 +24,9 @@ class ScoringResponse(BaseModel):
     qualityScore: float
     valuationScore: float
     momentumScore: float
-    compositeScore: float
+    qualitativeMoatScore: float | None = None
+    cScore: float
+    classification: str | None = None
     current_price: float
     fair_value: float | None
     valuation_upside_pct: float | None
@@ -44,3 +47,10 @@ def get_scoring(
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error calculando puntajes: {exc}") from exc
 
+
+@score_router.get("/score/{ticker}", response_model=ScoringResponse)
+def get_scoring_alias(
+    ticker: str,
+    current_user: UserInDB = Depends(get_current_user),
+) -> ScoringResponse:
+    return get_scoring(ticker=ticker, current_user=current_user)

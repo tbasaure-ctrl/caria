@@ -1,104 +1,195 @@
 import logging
-import os
 import statistics
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
-from caria.ingestion.clients.fmp_client import FMPClient
+from api.services.openbb_client import openbb_client
 
 LOGGER = logging.getLogger("caria.services.simple_valuation")
 
+
+def _sorted_by_date(data: List[Dict[str, Any]], reverse: bool = True) -> List[Dict[str, Any]]:
+    def _key(item: Dict[str, Any]) -> str:
+        return item.get("date") or item.get("period_ending") or item.get("period") or ""
+
+    return sorted(data, key=_key, reverse=reverse)
+
+
+def _first_value(record: Dict[str, Any], keys: List[str]) -> Optional[float]:
+    for key in keys:
+        if record is None:
+            break
+        value = record.get(key)
+        if value not in (None, "", "NA"):
+            return value
+    return None
+
+
 class SimpleValuationService:
     """
-    A robust, simplified valuation service that:
-    1. Fetches key metrics from FMP.
-    2. Performs basic DCF and Multiples calculations.
-    3. Handles errors gracefully and returns partial data if possible.
+    Valuation toolkit backed by OpenBB data.
     """
 
-    def __init__(self, fmp_client: Optional[FMPClient] = None):
-        self.fmp_client = fmp_client or FMPClient(api_key=os.getenv("FMP_API_KEY", "").strip())
+    def __init__(self) -> None:
+        self.client = openbb_client
 
     def get_valuation(self, ticker: str, current_price: float) -> Dict[str, Any]:
-        """
-        Get a comprehensive valuation for a ticker.
-        """
         try:
-            # 1. Fetch Data
-            metrics = self._fetch_metrics(ticker)
+            dataset = self._fetch_dataset(ticker)
+            if not dataset:
+                LOGGER.warning("Dataset missing for %s", ticker)
+                return self._fallback_response(ticker, current_price, "OpenBB data unavailable")
+
+            latest_price = dataset.get("latest_price") or current_price
+            if not latest_price:
+                return self._fallback_response(ticker, current_price, "No price data")
+
+            metrics = self._build_metrics(dataset)
             if not metrics:
-                LOGGER.warning(f"Could not fetch metrics for {ticker}")
-                return self._fallback_response(ticker, current_price, "Data unavailable")
+                return self._fallback_response(ticker, latest_price, "Metrics unavailable")
 
-            # 2. Calculate DCF
-            dcf = self._calculate_dcf(metrics, current_price)
-
-            # 3. Calculate Reverse DCF (Implied Growth)
-            reverse_dcf = self._calculate_reverse_dcf(metrics, current_price, dcf["assumptions"])
-
-            # 4. Calculate Multiples Valuation (Fair Value based on Hist Avg)
-            multiples_val = self._calculate_historical_multiples_valuation(ticker, metrics, current_price)
-
-            # 5. Current Multiples
+            dcf = self._calculate_dcf(metrics, latest_price)
+            reverse_dcf = self._calculate_reverse_dcf(metrics, latest_price, dcf["assumptions"])
+            multiples_val = self._calculate_historical_multiples_valuation(metrics, latest_price)
             current_multiples = self._calculate_multiples(metrics)
 
             return {
-                "ticker": ticker,
+                "ticker": ticker.upper(),
                 "currency": metrics.get("currency", "USD"),
-                "current_price": current_price,
+                "current_price": latest_price,
                 "dcf": dcf,
                 "reverse_dcf": reverse_dcf,
                 "multiples_valuation": multiples_val,
-                "multiples": current_multiples
+                "multiples": current_multiples,
             }
+        except Exception as exc:  # noqa: BLE001
+            LOGGER.exception("Error in simple valuation for %s: %s", ticker, exc)
+            return self._fallback_response(ticker, current_price, str(exc))
 
-        except Exception as e:
-            LOGGER.exception(f"Error in simple valuation for {ticker}: {e}")
-            return self._fallback_response(ticker, current_price, str(e))
-
-    def _fetch_metrics(self, ticker: str) -> Optional[Dict[str, Any]]:
-        """Fetch necessary metrics from FMP."""
+    def _fetch_dataset(self, ticker: str) -> Optional[Dict[str, Any]]:
         try:
-            # Get Key Metrics (Annual/Quarterly)
-            key_metrics = self.fmp_client.get_key_metrics(ticker, period="quarter")
-            
-            # Get Financial Ratios
-            ratios = self.fmp_client.get_financial_ratios(ticker, period="quarter")
-            
-            # Get Growth
-            growth = self.fmp_client.get_financial_growth(ticker, period="quarter")
-
-            return {
-                **(key_metrics[0] if key_metrics else {}),
-                **(ratios[0] if ratios else {}),
-                "growth": growth[0] if growth else {}
-            }
-        except Exception as e:
-            LOGGER.error(f"Error fetching FMP data: {e}")
+            return self.client.get_ticker_data(ticker)
+        except Exception as exc:  # noqa: BLE001
+            LOGGER.error("OpenBB fetch failed for %s: %s", ticker, exc)
             return None
+
+    def _build_metrics(self, dataset: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        income = _sorted_by_date(dataset["financials"].get("income_statement", []))
+        balance = _sorted_by_date(dataset["financials"].get("balance_sheet", []))
+        cash = _sorted_by_date(dataset["financials"].get("cash_flow", []))
+        multiples_history = dataset.get("multiples", [])
+
+        if not income or not cash:
+            return None
+
+        latest_income = income[0]
+        latest_cash = cash[0]
+        latest_balance = balance[0] if balance else {}
+        latest_multiples = multiples_history[0] if multiples_history else {}
+
+        shares = (
+            _first_value(latest_income, ["weightedAverageShsOutDil", "weightedAverageShsOut"])
+            or _first_value(latest_multiples, ["shares_outstanding", "sharesOutstanding"])
+            or _first_value(latest_balance, ["commonStockSharesOutstanding"])
+        )
+
+        revenue = _first_value(latest_income, ["totalRevenue", "revenue"])
+        gross_profit = _first_value(latest_income, ["grossProfit"])
+        operating_income = _first_value(latest_income, ["operatingIncome", "ebit"])
+        ebitda = _first_value(latest_income, ["ebitda"])
+        fcf = _first_value(latest_cash, ["freeCashFlow", "fcf"])
+        currency = latest_income.get("currency") or latest_multiples.get("currency") or "USD"
+
+        fcf_per_share = None
+        if fcf and shares not in (None, 0):
+            fcf_per_share = fcf / shares
+
+        revenue_growth = None
+        if len(income) >= 2:
+            prev_revenue = _first_value(income[1], ["totalRevenue", "revenue"])
+            if revenue and prev_revenue and prev_revenue != 0:
+                revenue_growth = (revenue - prev_revenue) / abs(prev_revenue)
+
+        fcf_growth = None
+        if len(cash) >= 2 and len(income) >= 2:
+            prev_fcf = _first_value(cash[1], ["freeCashFlow", "fcf"])
+            prev_shares = (
+                _first_value(income[1], ["weightedAverageShsOutDil", "weightedAverageShsOut"])
+                or shares
+            )
+            if prev_fcf and prev_shares and fcf_per_share and prev_shares != 0:
+                prev_fcf_per_share = prev_fcf / prev_shares
+                if prev_fcf_per_share != 0:
+                    fcf_growth = (fcf_per_share - prev_fcf_per_share) / abs(prev_fcf_per_share)
+
+        net_debt = (
+            _first_value(latest_balance, ["totalDebt", "shortLongTermDebtTotal", "longTermDebtTotal"])
+            or 0
+        ) - (_first_value(latest_balance, ["cashAndCashEquivalents", "cash"]) or 0)
+
+        revenue_series = [x for x in (revenue,) if x is not None]
+
+        return {
+            "currency": currency,
+            "freeCashFlowPerShare": fcf_per_share,
+            "growth": {"freeCashFlowGrowth": fcf_growth or revenue_growth or 0.05},
+            "enterpriseValueOverRevenue": _first_value(
+                latest_multiples,
+                ["ev_to_revenue", "enterpriseValueRevenueMultiple", "evSales", "enterpriseValueOverRevenue"],
+            ),
+            "enterpriseValueOverEBITDA": _first_value(
+                latest_multiples,
+                ["ev_to_ebitda", "enterpriseValueToEbitda", "evEbitda", "enterpriseValueOverEBITDA"],
+            ),
+            "enterpriseValueOverRevenueTTM": _first_value(
+                latest_multiples,
+                ["enterpriseValueOverRevenueTTM", "ev_to_revenue"],
+            ),
+            "enterpriseValueOverEBITDATTM": _first_value(
+                latest_multiples,
+                ["enterpriseValueOverEBITDATTM", "ev_to_ebitda"],
+            ),
+            "netDebt": net_debt,
+            "sharesOutstanding": shares,
+            "revenueTTM": revenue,
+            "ebitdaTTM": ebitda,
+            "gross_margin": (gross_profit / revenue) if revenue and gross_profit else None,
+            "operating_margin": (operating_income / revenue) if revenue and operating_income else None,
+            "multiples_history": multiples_history,
+            "income_statements": income,
+            "cash_flow_statements": cash,
+            "revenue_series": revenue_series,
+        }
 
     def _calculate_dcf(self, metrics: Dict[str, Any], current_price: float) -> Dict[str, Any]:
         """Perform a simplified DCF calculation."""
         try:
-            fcf_per_share = metrics.get("freeCashFlowPerShareTTM") or metrics.get("freeCashFlowPerShare")
+            fcf_per_share = metrics.get("freeCashFlowPerShare")
             if not fcf_per_share:
                  # Fallback to EPS
-                fcf_per_share = metrics.get("netIncomePerShareTTM") or metrics.get("netIncomePerShare") or 0
-            
-            if fcf_per_share <= 0:
-                 return {
-                    "method": "N/A (Negative FCF/Earnings)",
+                return {
+                    "method": "N/A",
                     "fair_value_per_share": 0,
                     "upside_percent": 0,
                     "implied_return_cagr": 0,
                     "assumptions": self._default_assumptions(),
-                    "explanation": "Cannot calculate DCF with negative Free Cash Flow or Earnings."
+                    "explanation": "Cannot calculate DCF without Free Cash Flow.",
+                }
+            
+            if fcf_per_share <= 0:
+                return {
+                    "method": "N/A (Negative FCF)",
+                    "fair_value_per_share": 0,
+                    "upside_percent": 0,
+                    "implied_return_cagr": 0,
+                    "assumptions": self._default_assumptions(),
+                    "explanation": "Cannot calculate DCF with negative Free Cash Flow.",
                 }
 
             # Assumptions
-            growth_rate = min(metrics.get("growth", {}).get("freeCashFlowGrowth", 0.10), 0.15) # Cap at 15%
-            if growth_rate < 0.02: growth_rate = 0.05 # Min 5%
+            growth_rate = metrics.get("growth", {}).get("freeCashFlowGrowth") or 0.08
+            growth_rate = max(min(growth_rate, 0.18), 0.03)
             
-            discount_rate = 0.10 # Simplified WACC
+            discount_rate = 0.10  # Simplified WACC
             terminal_growth = 0.03
             years = 5
 
@@ -192,59 +283,56 @@ class SimpleValuationService:
             LOGGER.error(f"Reverse DCF error: {e}")
             return {"implied_growth_rate": 0, "explanation": "Calculation failed"}
 
-    def _calculate_historical_multiples_valuation(
-        self,
-        ticker: str,
-        current_metrics: Dict[str, Any],
-        current_price: float,
-    ) -> Dict[str, Any]:
+    def _calculate_historical_multiples_valuation(self, metrics: Dict[str, Any], current_price: float) -> Dict[str, Any]:
         """
-        Valuation based on 5-year historical average multiples.
+        Valuation based on 3-5 year median EV/Sales and EV/EBITDA using OpenBB history.
         """
         try:
-            # We need historical ratios. FMPClient has get_financial_ratios(period='annual')
-            # We'll fetch last 5 years annual
-            hist_ratios = self.fmp_client.get_financial_ratios(ticker, period="annual")
+            hist_ratios = metrics.get("multiples_history") or []
             if not hist_ratios:
                 return {"method": "N/A", "fair_value": 0, "explanation": "No historical EV multiples"}
 
-            last_entries = hist_ratios[:5]
+            last_entries = hist_ratios[:8]
             ev_sales_samples = [
-                x.get("enterpriseValueOverRevenue")
+                _first_value(
+                    x,
+                    ["ev_to_revenue", "enterpriseValueRevenueMultiple", "evSales", "enterpriseValueOverRevenue"],
+                )
                 for x in last_entries
-                if x.get("enterpriseValueOverRevenue")
+                if _first_value(
+                    x,
+                    ["ev_to_revenue", "enterpriseValueRevenueMultiple", "evSales", "enterpriseValueOverRevenue"],
+                )
             ]
             ev_ebitda_samples = [
-                x.get("enterpriseValueOverEBITDA")
+                _first_value(
+                    x,
+                    ["ev_to_ebitda", "enterpriseValueToEbitda", "evEbitda", "enterpriseValueOverEBITDA"],
+                )
                 for x in last_entries
-                if x.get("enterpriseValueOverEBITDA")
+                if _first_value(
+                    x,
+                    ["ev_to_ebitda", "enterpriseValueToEbitda", "evEbitda", "enterpriseValueOverEBITDA"],
+                )
             ]
 
             ev_sales_median = statistics.median(ev_sales_samples) if ev_sales_samples else None
             ev_ebitda_median = statistics.median(ev_ebitda_samples) if ev_ebitda_samples else None
 
-            shares = current_metrics.get("sharesOutstanding") or current_metrics.get("weightedAverageShsOutDil")
+            shares = metrics.get("sharesOutstanding")
             if not shares:
-                market_cap = current_metrics.get("marketCap")
-                if market_cap and current_price:
-                    shares = market_cap / current_price
+                return {
+                    "method": "EV Multiples (3-5y median)",
+                    "fair_value": 0,
+                    "ev_sales_median": ev_sales_median,
+                    "ev_ebitda_median": ev_ebitda_median,
+                    "breakdown": {},
+                    "explanation": "Shares outstanding unavailable",
+                }
 
-            revenue = current_metrics.get("revenueTTM")
-            if not revenue and shares and current_metrics.get("revenuePerShareTTM"):
-                revenue = current_metrics["revenuePerShareTTM"] * shares
-
-            ebitda = current_metrics.get("ebitdaTTM")
-            if not ebitda and shares and current_metrics.get("ebitdaPerShareTTM"):
-                ebitda = current_metrics["ebitdaPerShareTTM"] * shares
-
-            net_debt = current_metrics.get("netDebt")
-            if net_debt is None:
-                debt = current_metrics.get("totalDebt")
-                cash = current_metrics.get("cashAndShortTermInvestments")
-                if debt is not None and cash is not None:
-                    net_debt = debt - cash
-                else:
-                    net_debt = 0
+            revenue = metrics.get("revenueTTM")
+            ebitda = metrics.get("ebitdaTTM")
+            net_debt = metrics.get("netDebt") or 0
 
             fair_values = []
             breakdown: Dict[str, float] = {}

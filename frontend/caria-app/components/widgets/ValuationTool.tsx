@@ -111,12 +111,24 @@ interface ScoringResponse {
   qualityScore: number;
   valuationScore: number;
   momentumScore: number;
-  compositeScore: number;
+  qualitativeMoatScore?: number | null;
+  cScore: number;
+  classification?: string;
   valuation_upside_pct: number | null;
 }
 
 const formatMoney = (v: number) =>
   `$${v.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+
+const getCScoreTheme = (score: number) => {
+  if (score >= 80) {
+    return { label: "Probable Outlier", color: "#10b981", background: "rgba(16,185,129,0.1)" };
+  }
+  if (score >= 60) {
+    return { label: "High-Quality Compounder", color: "#fbbf24", background: "rgba(251,191,36,0.12)" };
+  }
+  return { label: "Standard / Non-Outlier", color: "#f87171", background: "rgba(248,113,113,0.12)" };
+};
 
 export const ValuationTool: React.FC = () => {
   const [ticker, setTicker] = useState("AAPL");
@@ -339,32 +351,87 @@ export const ValuationTool: React.FC = () => {
           )}
         </section>
 
-        {scoring && (
-          <section className="grid grid-cols-2 md:grid-cols-4 gap-3 border border-slate-800 rounded-lg p-4 bg-gray-950/30">
-            {[
-              { label: 'Quality', value: scoring.qualityScore, hint: 'ROIC + márgenes + crecimiento' },
-              { label: 'Valuation', value: scoring.valuationScore, hint: scoring.valuation_upside_pct !== null ? `Upside: ${scoring.valuation_upside_pct.toFixed(1)}%` : 'Upside relativo' },
-              { label: 'Momentum', value: scoring.momentumScore, hint: '1M vs 3M trend + volatilidad' },
-              { label: 'Composite', value: scoring.compositeScore, hint: 'Promedio de los tres modelos' },
-            ].map((item) => (
-              <div key={item.label} className="text-center">
-                <div
-                  className="mx-auto w-20 h-20 rounded-full flex items-center justify-center font-bold text-xl"
-                  style={{
-                    backgroundColor: 'rgba(59,130,246,0.1)',
-                    border: '1px solid rgba(59,130,246,0.3)',
-                    color:
-                      item.value >= 70 ? '#10b981' : item.value >= 50 ? '#fbbf24' : '#f87171',
-                  }}
-                >
-                  {item.value.toFixed(0)}
+        {scoring && (() => {
+          const theme = getCScoreTheme(scoring.cScore);
+          return (
+          return (
+          <section className="space-y-3">
+            <div
+              className="rounded-lg border px-4 py-4"
+              style={{
+                backgroundColor: theme.background,
+                borderColor: theme.color,
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-slate-400">C-Score</p>
+                  <div className="text-4xl font-bold" style={{ color: theme.color }}>
+                    {scoring.cScore.toFixed(0)}
+                  </div>
+                  <p className="text-sm mt-1 text-slate-300">
+                    {scoring.classification || theme.label}
+                  </p>
                 </div>
-                <div className="mt-2 text-sm text-slate-200">{item.label}</div>
-                <div className="text-xs text-slate-500">{item.hint}</div>
+                <div className="text-right text-xs text-slate-400">
+                  <p>Quality weighting 35%</p>
+                  <p>Valuation weighting 25%</p>
+                  <p>Momentum weighting 20%</p>
+                  <p>Moat weighting 20%</p>
+                </div>
               </div>
-            ))}
+              <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-300">
+                <div>
+                  <p className="uppercase tracking-wide text-slate-500">Quality</p>
+                  <p className="text-lg font-semibold text-slate-100">{scoring.qualityScore.toFixed(0)}</p>
+                </div>
+                <div>
+                  <p className="uppercase tracking-wide text-slate-500">Valuation</p>
+                  <p className="text-lg font-semibold text-slate-100">{scoring.valuationScore.toFixed(0)}</p>
+                  {scoring.valuation_upside_pct !== null && (
+                    <p className="text-[11px] text-slate-400">Upside {scoring.valuation_upside_pct.toFixed(1)}%</p>
+                  )}
+                </div>
+                <div>
+                  <p className="uppercase tracking-wide text-slate-500">Momentum</p>
+                  <p className="text-lg font-semibold text-slate-100">{scoring.momentumScore.toFixed(0)}</p>
+                </div>
+                <div>
+                  <p className="uppercase tracking-wide text-slate-500">Moat</p>
+                  <p className="text-lg font-semibold text-slate-100">
+                    {(scoring.qualitativeMoatScore ?? 0).toFixed(0)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 border border-slate-800 rounded-lg p-4 bg-gray-950/30">
+              {[
+                { label: 'Quality', value: scoring.qualityScore, hint: 'ROIC + márgenes + crecimiento' },
+                { label: 'Valuation', value: scoring.valuationScore, hint: scoring.valuation_upside_pct !== null ? `Upside: ${scoring.valuation_upside_pct.toFixed(1)}%` : 'Upside relativo' },
+                { label: 'Momentum', value: scoring.momentumScore, hint: '1M vs 3M trend + volatilidad' },
+                { label: 'Moat', value: scoring.qualitativeMoatScore ?? 0, hint: 'Margen y crecimiento estable' },
+              ].map((item) => (
+                <div key={item.label} className="text-center">
+                  <div
+                    className="mx-auto w-20 h-20 rounded-full flex items-center justify-center font-bold text-xl"
+                    style={{
+                      backgroundColor: 'rgba(59,130,246,0.1)',
+                      border: '1px solid rgba(59,130,246,0.3)',
+                      color:
+                        item.value >= 70 ? '#10b981' : item.value >= 50 ? '#fbbf24' : '#f87171',
+                    }}
+                  >
+                    {item.value.toFixed(0)}
+                  </div>
+                  <div className="mt-2 text-sm text-slate-200">{item.label}</div>
+                  <div className="text-xs text-slate-500">{item.hint}</div>
+                </div>
+              ))}
+            </div>
           </section>
-        )}
+          );
+        })()}
 
         {scoringError && (
           <div className="text-xs text-amber-300 bg-amber-900/20 border border-amber-500/20 p-2 rounded-md">

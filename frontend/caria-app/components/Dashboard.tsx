@@ -13,6 +13,7 @@ import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
 import { ThesisArena } from './widgets/ThesisArena';
 import { ResearchSection } from './ResearchSection';
+import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 import { SafeWidget } from './SafeWidget';
 
@@ -197,6 +198,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* RIGHT COLUMN: Community & Rankings */}
                 <div className="space-y-6 fade-in delay-500">
+                    <SafeWidget>
+                        <WeeklyMedia />
+                    </SafeWidget>
                     <SafeWidget>
                         <CommunityFeed />
                     </SafeWidget>

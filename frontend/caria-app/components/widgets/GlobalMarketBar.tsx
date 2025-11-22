@@ -10,7 +10,8 @@ import { getErrorMessage } from '../../src/utils/errorHandling';
 const GLOBAL_INDICES = [
     { ticker: 'SPY', name: 'S&P 500', region: 'USA' },
     { ticker: 'VGK', name: 'STOXX 600', region: 'Europe' }, // VGK es un ETF europeo amplio
-    { ticker: 'EEM', name: 'Emerging Markets', region: 'Chile' }, // EEM para mercados emergentes
+    { ticker: 'EEM', name: 'Emerging Markets', region: 'Emerging' }, // EEM para mercados emergentes
+    { ticker: 'GLD', name: 'Gold', region: 'Commodity' }, // GLD es el ETF de oro más líquido
 ];
 
 const POLLING_INTERVAL = 30000; // 30 segundos
@@ -55,7 +56,7 @@ export const GlobalMarketBar: React.FC<{id?: string}> = ({id}) => {
                 title="GLOBAL MARKETS"
                 tooltip="Principales índices de mercado globales en tiempo real: S&P 500, STOXX 600, y mercados emergentes."
             >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {GLOBAL_INDICES.map(index => (
                         <div key={index.name} className="border rounded-lg p-4" style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-bg-tertiary)' }}>
                             <div style={{ color: 'var(--color-text-secondary)' }} className="text-sm">Cargando...</div>
@@ -70,9 +71,9 @@ export const GlobalMarketBar: React.FC<{id?: string}> = ({id}) => {
         <WidgetCard
             id={id}
             title="GLOBAL MARKETS"
-            tooltip="Principales índices de mercado globales en tiempo real: S&P 500, STOXX 600, y mercados emergentes."
+            tooltip="Principales índices de mercado globales en tiempo real: S&P 500, STOXX 600, mercados emergentes y oro."
         >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {GLOBAL_INDICES.map(index => {
                 const priceData = prices[index.ticker];
                 if (!priceData) {

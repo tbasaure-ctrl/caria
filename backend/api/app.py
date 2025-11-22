@@ -61,6 +61,7 @@ from api.domains.portfolio import portfolio_router
 from api.domains.social import social_router
 from api.domains.analysis import analysis_router as analysis_domain_router
 from api.domains.market_data import market_data_router
+from api.dependencies import open_db_connection
 
 # Legacy routes (kept for backward compatibility)
 # These are now organized under domain routers above
@@ -462,51 +463,18 @@ def healthcheck() -> dict[str, str]:
 
     # Database / Authentication
     try:
-        import psycopg2
-        from urllib.parse import urlparse, parse_qs
-
-        # Try DATABASE_URL first (Neon/Railway format)
-        database_url = os.getenv("DATABASE_URL")
-        if database_url:
-            parsed = urlparse(database_url)
-            if parsed.hostname:
-                query_params = parse_qs(parsed.query)
-                sslmode = query_params.get("sslmode", [None])[0]
-                conn_args = {
-                    "host": parsed.hostname,
-                    "port": parsed.port or 5432,
-                    "user": parsed.username,
-                    "password": parsed.password,
-                    "database": parsed.path.lstrip("/"),
-                }
-                if sslmode:
-                    conn_args["sslmode"] = sslmode
-                conn = psycopg2.connect(**conn_args)
-            else:
-                raise ValueError("Invalid DATABASE_URL format")
-            conn.close()
-            status["database"] = "available"
-            status["auth"] = "available"
-        elif os.getenv("POSTGRES_PASSWORD"):
-            # Fallback to individual variables
-            conn = psycopg2.connect(
-                host=os.getenv("POSTGRES_HOST", "localhost"),
-                port=int(os.getenv("POSTGRES_PORT", "5432")),
-                user=os.getenv("POSTGRES_USER", "caria_user"),
-                password=os.getenv("POSTGRES_PASSWORD"),
-                database=os.getenv("POSTGRES_DB", "caria"),
-            )
-            conn.close()
-            status["database"] = "available"
-            status["auth"] = "available"
-        else:
-            LOGGER.warning("Neither DATABASE_URL nor POSTGRES_PASSWORD set, database check skipped")
-            status["database"] = "unconfigured"
-            status["auth"] = "unconfigured"
+        conn = open_db_connection()
+        conn.close()
+        status["database"] = "available"
+        status["auth"] = "available"
     except Exception as exc:  # noqa: BLE001
         LOGGER.warning("Database connection failed: %s", exc)
-        status["database"] = "unavailable"
-        status["auth"] = "unavailable"
+        if os.getenv("DATABASE_URL") or os.getenv("POSTGRES_PASSWORD"):
+            status["database"] = "unavailable"
+            status["auth"] = "unavailable"
+        else:
+            status["database"] = "unconfigured"
+            status["auth"] = "unconfigured"
 
     # RAG (Sistema II)
     if app.state.vector_store is None:

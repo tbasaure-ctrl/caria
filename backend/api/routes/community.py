@@ -7,11 +7,13 @@ from __future__ import annotations
 
 from datetime import datetime
 import logging
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
+from psycopg2 import errors
+from psycopg2.extras import RealDictCursor
 
 from api.dependencies import get_current_user, get_optional_current_user, open_db_connection
 from caria.models.auth import UserInDB

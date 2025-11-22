@@ -3,6 +3,7 @@ import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react'
 import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, createHolding, deleteHolding } from '../../services/apiService';
 import { ArrowUpIcon, ArrowDownIcon } from '../Icons';
 import { WidgetCard } from './WidgetCard';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 type AllocationData = { name: string; value: number; color: string };
 
@@ -286,9 +287,8 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                 }
                 const data = await fetchHoldingsWithPrices();
                 setPortfolioData(data);
-            } catch (err: any) {
-                console.error('Error fetching portfolio:', err);
-                setError(err?.message || 'No pudimos cargar tu portfolio. Intenta nuevamente.');
+            } catch (err: unknown) {
+                setError(getErrorMessage(err) || 'No pudimos cargar tu portfolio. Intenta nuevamente.');
             } finally {
                 if (showSpinner) {
                     setLoading(false);
@@ -465,9 +465,8 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             setFormData(createDefaultFormState());
             setShowForm(false);
             await loadPortfolio(false);
-        } catch (err: any) {
-            console.error('Error creating holding:', err);
-            setFormError(err?.message || 'No se pudo guardar la posición.');
+        } catch (err: unknown) {
+            setFormError(getErrorMessage(err) || 'No se pudo guardar la posición.');
         } finally {
             setActionLoading(false);
         }
@@ -481,9 +480,8 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             setActionLoading(true);
             await deleteHolding(id);
             await loadPortfolio(false);
-        } catch (err: any) {
-            console.error('Error deleting holding:', err);
-            setFormError(err?.message || 'No se pudo eliminar la posición.');
+        } catch (err: unknown) {
+            setFormError(getErrorMessage(err) || 'No se pudo eliminar la posición.');
         } finally {
             setActionLoading(false);
         }

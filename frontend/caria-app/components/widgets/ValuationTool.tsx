@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Plot from "react-plotly.js";
 import { WidgetCard } from "./WidgetCard";
 import { fetchWithAuth, API_BASE_URL } from "../../services/apiService";
+import { getErrorMessage } from "../../src/utils/errorHandling";
 
 // ---------- Tipos que deben calzar con el backend ----------
 
@@ -241,8 +242,7 @@ export const ValuationTool: React.FC = () => {
         } else {
           throw new Error('Scoring failed');
         }
-      } catch (scoringErr: any) {
-        console.error('Scoring error:', scoringErr);
+      } catch (scoringErr: unknown) {
         setScoringError('No se pudieron calcular los puntajes de Quality/Valuation/Momentum.');
       }
 
@@ -254,9 +254,8 @@ export const ValuationTool: React.FC = () => {
       setYears(horizon);
 
       await runMonteCarlo(impliedMu, horizon);
-    } catch (err: any) {
-      console.error("Quick valuation error:", err);
-      setValError(err.message || "An unexpected error occurred during valuation.");
+    } catch (err: unknown) {
+      setValError(getErrorMessage(err) || "An unexpected error occurred during valuation.");
     } finally {
       setIsLoadingValuation(false);
     }
@@ -290,9 +289,8 @@ export const ValuationTool: React.FC = () => {
 
       const data: MonteCarloResult = await resp.json();
       setMcResult(data);
-    } catch (err: any) {
-      console.error("Monte Carlo valuation error:", err);
-      setMcError(err.message || "Simulation failed");
+    } catch (err: unknown) {
+      setMcError(getErrorMessage(err) || "Simulation failed");
     } finally {
       setIsLoadingMC(false);
     }

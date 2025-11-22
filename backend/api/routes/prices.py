@@ -16,7 +16,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from api.dependencies import get_current_user
+from api.dependencies import get_optional_current_user
 from caria.models.auth import UserInDB
 from api.services.openbb_client import openbb_client
 
@@ -75,11 +75,12 @@ def _build_quote(symbol: str) -> dict[str, Any]:
 @router.post("/realtime", response_model=RealtimePriceResponse)
 def get_realtime_prices(
     request: RealtimePriceRequest,
-    current_user: UserInDB = Depends(get_current_user),
+    current_user: UserInDB | None = Depends(get_optional_current_user),
 ) -> RealtimePriceResponse:
     """Obtiene precios en tiempo real para múltiples tickers.
     
     Usa FMP API para obtener datos actualizados de precios, cambios y porcentajes.
+    Autenticación opcional - precios públicos disponibles para todos.
     """
     try:
         prices: dict[str, dict[str, Any]] = {}
@@ -98,9 +99,12 @@ def get_realtime_prices(
 @router.get("/realtime/{ticker}")
 def get_realtime_price_single(
     ticker: str,
-    current_user: UserInDB = Depends(get_current_user),
+    current_user: UserInDB | None = Depends(get_optional_current_user),
 ) -> dict[str, Any]:
-    """Obtiene precio en tiempo real para un solo ticker."""
+    """Obtiene precio en tiempo real para un solo ticker.
+    
+    Autenticación opcional - precios públicos disponibles para todos.
+    """
     try:
         return _build_quote(ticker)
     except HTTPException:

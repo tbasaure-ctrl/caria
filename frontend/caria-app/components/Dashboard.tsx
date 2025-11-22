@@ -113,24 +113,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
     const [showArena, setShowArena] = useState(false);
 
-    // Ensure content becomes visible even if animations fail
-    useEffect(() => {
-        console.log('Dashboard: Component mounted, fetching regime data...');
-        // Force visibility of fade-in elements after a short delay to ensure animations work
-        const timer = setTimeout(() => {
-            const fadeElements = document.querySelectorAll('.fade-in');
-            fadeElements.forEach(el => {
-                const htmlEl = el as HTMLElement;
-                // Only set opacity if it's still 0 (animation didn't work)
-                if (window.getComputedStyle(htmlEl).opacity === '0') {
-                    htmlEl.style.opacity = '1';
-                }
-            });
-        }, 1200); // After animation should complete (1000ms + buffer)
-        
-        return () => clearTimeout(timer);
-    }, []);
-
     useEffect(() => {
         const fetchRegimeData = async () => {
             setIsLoadingRegime(true);

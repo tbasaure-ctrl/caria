@@ -136,7 +136,17 @@ export const FearGreedIndex: React.FC = () => {
     }
 
     if (!data) {
-        return null;
+        return (
+            <WidgetCard
+                title="FEAR & GREED"
+                id="fear-greed-widget"
+                tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
+            >
+                <div className="text-center h-[124px] flex items-center justify-center">
+                    <p className="text-slate-500">No data available</p>
+                </div>
+            </WidgetCard>
+        );
     }
 
     const config = CLASSIFICATION_CONFIG[data.classification] || {

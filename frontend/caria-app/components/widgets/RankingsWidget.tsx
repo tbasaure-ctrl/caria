@@ -135,7 +135,17 @@ export const RankingsWidget: React.FC = () => {
     }
 
     if (!rankings) {
-        return null;
+        return (
+            <WidgetCard
+                title="Community Rankings"
+                id="rankings-widget"
+                tooltip="Rankings de la comunidad: comunidades más activas, tesis más populares, y tesis con mayor convicción sostenida."
+            >
+                <div className="text-center h-[124px] flex items-center justify-center">
+                    <p className="text-slate-500">No rankings available</p>
+                </div>
+            </WidgetCard>
+        );
     }
 
     return (

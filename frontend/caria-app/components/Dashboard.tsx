@@ -13,7 +13,6 @@ import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
 import { ThesisArena } from './widgets/ThesisArena';
 import { ResearchSection } from './ResearchSection';
-import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 import { SafeWidget } from './SafeWidget';
 
@@ -217,7 +216,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             {/* WEEKLY MEDIA: Near Research Section */}
             <div className="mb-8 fade-in delay-700">
                 <SafeWidget>
-                    <WeeklyMedia />
                 </SafeWidget>
             </div>
 

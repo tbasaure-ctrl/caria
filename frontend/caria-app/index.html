@@ -145,6 +145,12 @@
         opacity: 0;
         animation: fadeIn 1s ease-out forwards;
       }
+      
+      /* Ensure content is visible after animation or if animation fails */
+      .fade-in.visible,
+      .fade-in[style*="opacity: 1"] {
+        opacity: 1 !important;
+      }
 
       .fade-in-scale {
         opacity: 0;

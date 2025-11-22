@@ -113,16 +113,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
     const [showArena, setShowArena] = useState(false);
 
+    // Ensure content becomes visible even if animations fail
+    useEffect(() => {
+        console.log('Dashboard: Component mounted, fetching regime data...');
+        // Force visibility of fade-in elements after a short delay to ensure animations work
+        const timer = setTimeout(() => {
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach(el => {
+                const htmlEl = el as HTMLElement;
+                // Only set opacity if it's still 0 (animation didn't work)
+                if (window.getComputedStyle(htmlEl).opacity === '0') {
+                    htmlEl.style.opacity = '1';
+                }
+            });
+        }, 1200); // After animation should complete (1000ms + buffer)
+        
+        return () => clearTimeout(timer);
+    }, []);
+
     useEffect(() => {
         const fetchRegimeData = async () => {
             setIsLoadingRegime(true);
             try {
                 // Use centralized API_BASE_URL per audit document
+                console.log('Dashboard: Fetching from', `${API_BASE_URL}/api/regime/current`);
                 const response = await fetchWithAuth(`${API_BASE_URL}/api/regime/current`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
                 const data = await response.json();
+                console.log('Dashboard: Regime data received', data);
                 setRegimeData({ regime: data.regime, confidence: data.confidence });
             } catch (error) {
                 console.error("Failed to fetch regime data:", error);
@@ -135,9 +155,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
         fetchRegimeData();
     }, []);
 
+    console.log('Dashboard: Rendering dashboard component');
+    
     return (
         <main className="flex-1 overflow-y-auto p-6 max-w-[1920px] mx-auto"
-            style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+            style={{ backgroundColor: 'var(--color-bg-primary)', minHeight: '100vh' }}>
             {/* OnboardingTour removed */}
 
             {/* Dashboard Header */}

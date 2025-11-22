@@ -16,6 +16,7 @@ import { ThesisArena } from './widgets/ThesisArena';
 import { OnboardingTour } from './OnboardingTour';
 import { ResearchSection } from './ResearchSection';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
+import { SafeWidget } from './SafeWidget';
 
 const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void; id?: string }> = ({ onStartAnalysis, onEnterArena, id }) => (
     <div id={id}
@@ -155,21 +156,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
             {/* Global Market Bar - Full Width */}
             <div className="mb-6 fade-in delay-100">
-                <GlobalMarketBar id="market-bar-widget" />
+                <SafeWidget>
+                    <GlobalMarketBar id="market-bar-widget" />
+                </SafeWidget>
             </div>
 
             {/* TOP ROW: Market Indicators - Full Width */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 fade-in delay-200">
-                <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
-                <FearGreedIndex />
+                <SafeWidget>
+                    <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                </SafeWidget>
+                <SafeWidget>
+                    <FearGreedIndex />
+                </SafeWidget>
             </div>
 
             {/* MAIN CONTENT: 3 Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 {/* LEFT COLUMN: Portfolio Management */}
                 <div className="space-y-6 fade-in delay-300">
-                    <Portfolio id="portfolio-widget" />
-                    <PortfolioAnalytics />
+                    <SafeWidget>
+                        <Portfolio id="portfolio-widget" />
+                    </SafeWidget>
+                    <SafeWidget>
+                        <PortfolioAnalytics />
+                    </SafeWidget>
                 </div>
 
                 {/* CENTER COLUMN: Analysis & Simulation */}
@@ -179,21 +190,33 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         onEnterArena={() => setShowArena(true)}
                         id="analysis-cta-widget"
                     />
-                    <ModelPortfolioWidget />
-                    <RegimeTestWidget />
-                    <MonteCarloSimulation />
+                    <SafeWidget>
+                        <ModelPortfolioWidget />
+                    </SafeWidget>
+                    <SafeWidget>
+                        <RegimeTestWidget />
+                    </SafeWidget>
+                    <SafeWidget>
+                        <MonteCarloSimulation />
+                    </SafeWidget>
                 </div>
 
                 {/* RIGHT COLUMN: Community & Rankings */}
                 <div className="space-y-6 fade-in delay-500">
-                    <CommunityFeed />
-                    <RankingsWidget />
+                    <SafeWidget>
+                        <CommunityFeed />
+                    </SafeWidget>
+                    <SafeWidget>
+                        <RankingsWidget />
+                    </SafeWidget>
                 </div>
             </div>
 
             {/* RESEARCH SECTION: Full Width Row */}
             <div className="mb-8 fade-in delay-600">
-                <ResearchSection />
+                <SafeWidget>
+                    <ResearchSection />
+                </SafeWidget>
             </div>
 
             {/* Thesis Arena Modal */}

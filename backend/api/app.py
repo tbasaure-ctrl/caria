@@ -469,17 +469,19 @@ def healthcheck() -> dict[str, str]:
         database_url = os.getenv("DATABASE_URL")
         if database_url:
             parsed = urlparse(database_url)
-            
-            # Use normal TCP connection (Neon uses standard PostgreSQL connection strings)
             if parsed.hostname:
-                conn = psycopg2.connect(
-                    host=parsed.hostname,
-                    port=parsed.port or 5432,
-                    user=parsed.username,
-                    password=parsed.password,
-                    database=parsed.path.lstrip('/'),
-                    sslmode='require' if 'sslmode=require' in parsed.query else None,
-                )
+                query_params = parse_qs(parsed.query)
+                sslmode = query_params.get("sslmode", [None])[0]
+                conn_args = {
+                    "host": parsed.hostname,
+                    "port": parsed.port or 5432,
+                    "user": parsed.username,
+                    "password": parsed.password,
+                    "database": parsed.path.lstrip("/"),
+                }
+                if sslmode:
+                    conn_args["sslmode"] = sslmode
+                conn = psycopg2.connect(**conn_args)
             else:
                 raise ValueError("Invalid DATABASE_URL format")
             conn.close()

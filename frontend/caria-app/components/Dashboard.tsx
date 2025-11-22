@@ -13,7 +13,6 @@ import { MonteCarloSimulation } from './widgets/MonteCarloSimulation';
 import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
 import { ThesisArena } from './widgets/ThesisArena';
-import { OnboardingTour } from './OnboardingTour';
 import { ResearchSection } from './ResearchSection';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 import { SafeWidget } from './SafeWidget';
@@ -119,16 +118,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             setIsLoadingRegime(true);
             try {
                 // Use centralized API_BASE_URL per audit document
-                console.log('Dashboard: Fetching from', `${API_BASE_URL}/api/regime/current`);
                 const response = await fetchWithAuth(`${API_BASE_URL}/api/regime/current`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
                 const data = await response.json();
-                console.log('Dashboard: Regime data received', data);
                 setRegimeData({ regime: data.regime, confidence: data.confidence });
             } catch (error) {
-                console.error("Failed to fetch regime data:", error);
+                // Silently fallback to default regime
                 setRegimeData({ regime: 'slowdown', confidence: 0 }); // Fallback
             } finally {
                 setIsLoadingRegime(false);

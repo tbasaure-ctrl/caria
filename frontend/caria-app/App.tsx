@@ -28,13 +28,27 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
 
   render() {
     if (this.state.hasError) {
+      const error = this.state.error;
+      const isHooksError = error?.message?.includes('310') || error?.message?.includes('Rendered more hooks');
+      
       return (
         <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: 'var(--color-bg-primary)'}}>
-          <div className="text-center p-8">
+          <div className="text-center p-8 max-w-2xl">
             <h1 className="text-2xl font-bold mb-4" style={{color: 'var(--color-cream)'}}>Something went wrong</h1>
             <p className="mb-4" style={{color: 'var(--color-text-secondary)'}}>
-              {this.state.error?.message || 'An unexpected error occurred'}
+              {error?.message || 'An unexpected error occurred'}
             </p>
+            {isHooksError && (
+              <div className="mb-4 p-4 rounded" style={{backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text-secondary)'}}>
+                <p className="text-sm mb-2">This error usually means:</p>
+                <ul className="text-sm text-left list-disc list-inside space-y-1">
+                  <li>Hooks are being called conditionally</li>
+                  <li>Hooks are called in different orders between renders</li>
+                  <li>A component is using hooks incorrectly</li>
+                </ul>
+                <p className="text-sm mt-2">Check the browser console for more details.</p>
+              </div>
+            )}
             <button
               onClick={() => {
                 this.setState({ hasError: false, error: null });
@@ -99,16 +113,10 @@ const App: React.FC = () => {
       <div className="min-h-screen text-[var(--color-text-primary)] font-sans antialiased" style={{backgroundColor: 'var(--color-bg-primary)'}}>
         {authToken ? (
           <div className="flex h-screen w-full">
-            <ErrorBoundary>
-              <Sidebar onLogout={handleLogout} />
-            </ErrorBoundary>
-            <ErrorBoundary>
-              <Dashboard onStartAnalysis={() => setAnalysisOpen(true)} />
-            </ErrorBoundary>
+            <Sidebar onLogout={handleLogout} />
+            <Dashboard onStartAnalysis={() => setAnalysisOpen(true)} />
             {isAnalysisOpen && (
-              <ErrorBoundary>
-                <AnalysisTool onClose={() => setAnalysisOpen(false)} />
-              </ErrorBoundary>
+              <AnalysisTool onClose={() => setAnalysisOpen(false)} />
             )}
           </div>
         ) : (

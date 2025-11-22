@@ -154,8 +154,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
         fetchRegimeData();
     }, []);
-
-    console.log('Dashboard: Rendering dashboard component');
     
     return (
         <main className="flex-1 overflow-y-auto p-6 max-w-[1920px] mx-auto"

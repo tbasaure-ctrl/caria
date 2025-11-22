@@ -5,9 +5,48 @@ Thin wrapper around the OpenBB SDK with simple caching and defensive parsing.
 from __future__ import annotations
 
 import logging
+import os
 from datetime import datetime, timedelta
 from functools import lru_cache
 from typing import Any, Dict, List, Optional
+
+DEFAULT_OPENBB_EXTENSIONS = ",".join(
+    [
+        "benzinga@1.5.0",
+        "bls@1.2.0",
+        "cftc@1.2.0",
+        "commodity@1.4.0",
+        "congress_gov@1.1.0",
+        "crypto@1.5.0",
+        "currency@1.5.0",
+        "derivatives@1.5.0",
+        "econdb@1.4.0",
+        "economy@1.5.0",
+        "equity@1.5.0",
+        "etf@1.5.0",
+        "federal_reserve@1.5.0",
+        "fixedincome@1.5.0",
+        "fmp@1.5.1",
+        "fred@1.5.0",
+        "imf@1.2.0",
+        "index@1.5.0",
+        "intrinio@1.5.0",
+        "news@1.5.0",
+        "oecd@1.5.0",
+        "polygon@1.5.0",
+        "regulators@1.5.0",
+        "sec@1.5.0",
+        "tiingo@1.5.0",
+        "tradingeconomics@1.5.0",
+        "us_eia@1.2.0",
+        "uscongress@1.1.0",
+        "yfinance@1.5.0",
+    ]
+)
+
+os.environ.setdefault("OPENBB_EXTENSION_LIST", DEFAULT_OPENBB_EXTENSIONS)
+os.environ.setdefault("OPENBB_FORCE_EXTENSION_BUILD", "true")
+os.environ.setdefault("OPENBB_USER_DATA_PATH", "/tmp/openbb")
 
 from openbb import obb
 from psycopg2.extras import Json

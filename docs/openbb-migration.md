@@ -40,4 +40,5 @@
 - ✅ **Factor attribution + explanations**: `/api/analysis/scoring` returns per-pillar driver weights plus natural-language rationales; the frontend renders attribution bars and commentary.
 - ✅ **Bayesian-smoothed ensemble**: Quality/Valuation/Momentum scores combine rule-based metrics with trend proxies and a Bayesian prior to avoid noisy jumps.
 - ✅ **C-Score screener**: `/api/screener/cscore` ranks user-supplied tickers by C-Score for quick portfolio filtering.
+- ✅ **Deterministic OpenBB build**: `OPENBB_EXTENSION_LIST` (extensions above), `OPENBB_FORCE_EXTENSION_BUILD=true`, and `OPENBB_USER_DATA_PATH=/tmp/openbb` are now set so Railway can preload the SDK without writing outside `/tmp`.
 

@@ -1,6 +1,6 @@
 """
 LLM Service for handling RAG interactions with Groq's Llama endpoint.
-Supports Llama 3.1 70B (default) via Groq with Claude 3.5 Sonnet as fallback.
+Supports Llama 4 Scout (default) via Groq with Claude 3.5 Sonnet as fallback.
 """
 import json
 import logging
@@ -10,6 +10,7 @@ from typing import Any, List, Optional, Tuple
 import requests
 
 LOGGER = logging.getLogger("caria.api.services.llm")
+DEFAULT_GROQ_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
 
 class LLMService:
     def __init__(self, retriever=None, embedder=None):
@@ -97,13 +98,12 @@ class LLMService:
 
     def _call_llama(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         """
-        Call Llama 3.1 70B via Groq (OpenAI-compatible endpoint).
+        Call Groq's Llama endpoint (OpenAI-compatible).
         """
         api_key = os.getenv("LLAMA_API_KEY")
         api_url = os.getenv("LLAMA_API_URL", "https://api.groq.com/openai/v1/chat/completions")
-        # Default to Llama 3.1 70B for better quality
-        # Groq model names: llama-3.1-70b-versatile, llama-3.1-70b-instruct, llama-3-70b-8192
-        model = os.getenv("LLAMA_MODEL", "llama-3.1-70b-versatile")
+        model = os.getenv("LLAMA_MODEL", DEFAULT_GROQ_MODEL)
+        fallback_model = os.getenv("LLAMA_FALLBACK_MODEL")
 
         if not api_key:
             LOGGER.warning("LLAMA_API_KEY not configured")
@@ -123,21 +123,26 @@ class LLMService:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
-        payload = {
-            "model": model,
-            "messages": messages,
-            "temperature": 0.7,
-        }
+        response = self._invoke_groq(api_url, headers, messages, model)
+        if response:
+            return response
 
+        if fallback_model and fallback_model != model:
+            LOGGER.info("Primary model '%s' returned empty response. Trying fallback '%s'.", model, fallback_model)
+            return self._invoke_groq(api_url, headers, messages, fallback_model)
+        return None
+
+    def _invoke_groq(self, api_url: str, headers: dict[str, str], messages: list[dict[str, str]], model: str) -> Optional[str]:
+        payload = {"model": model, "messages": messages, "temperature": 0.7}
         try:
             resp = requests.post(api_url, headers=headers, json=payload, timeout=40)
             resp.raise_for_status()
             data = resp.json()
             content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-            LOGGER.info(f"Groq Llama 3.1 70B response received (model: {model})")
+            LOGGER.info("Groq response received (model=%s)", model)
             return content
-        except Exception as e:
-            LOGGER.warning(f"Llama call failed: {e}")
+        except Exception as exc:  # noqa: BLE001
+            LOGGER.warning("Groq call failed for model %s: %s", model, exc)
             return None
     
     def _call_claude(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:

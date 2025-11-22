@@ -63,14 +63,6 @@ interface QuickValuationResponse {
 // Monte Carlo (mismo shape que tu widget actual)
 interface MonteCarloResult {
   paths: number[][];
-interface ScoringResponse {
-  ticker: string;
-  qualityScore: number;
-  valuationScore: number;
-  momentumScore: number;
-  compositeScore: number;
-  valuation_upside_pct: number | null;
-}
   final_values: number[];
   percentiles: {
     p5: number;
@@ -112,6 +104,15 @@ interface ScoringResponse {
     years: number;
     simulations: number;
   };
+}
+
+interface ScoringResponse {
+  ticker: string;
+  qualityScore: number;
+  valuationScore: number;
+  momentumScore: number;
+  compositeScore: number;
+  valuation_upside_pct: number | null;
 }
 
 const formatMoney = (v: number) =>

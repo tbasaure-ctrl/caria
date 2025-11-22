@@ -33,11 +33,11 @@
   - Returned via `/api/analysis/scoring/{ticker}` and the new alias `/api/score/{ticker}`.
   - Frontend highlights the C‑Score badge with color-coded classifications (Probable Outlier / High-Quality Compounder / Standard).
 
-## Next Enhancements
+## Enhancements (Nov 2025)
 
-- Persist OpenBB snapshots in Neon (e.g., `openbb_cache` table) for cold-start resilience and historical backtesting.
-- Extend the qualitative moat component with board/insider data, patent density, or Glassdoor-style proxies delivered via OpenBB/Alt data.
-- Expand the scoring service to expose factor attribution and SHAP-style explanations.
-- Introduce Bayesian updating or ensemble models (XGBoost + rule-based) to smooth regime shifts.
-- Wire factor analysis and screening endpoints (e.g., `/api/screener/cscore`) for portfolio-level views.
+- ✅ **Persistent OpenBB cache**: Neon table `openbb_cache` now stores price history / multiples / profile snapshots so cold starts reuse previously fetched data.
+- ✅ **Qualitative moat upgrade**: Moat score blends insider & institutional ownership, gross-margin stability, revenue persistence, R&D intensity, and scale (employees) using the OpenBB profile payload.
+- ✅ **Factor attribution + explanations**: `/api/analysis/scoring` returns per-pillar driver weights plus natural-language rationales; the frontend renders attribution bars and commentary.
+- ✅ **Bayesian-smoothed ensemble**: Quality/Valuation/Momentum scores combine rule-based metrics with trend proxies and a Bayesian prior to avoid noisy jumps.
+- ✅ **C-Score screener**: `/api/screener/cscore` ranks user-supplied tickers by C-Score for quick portfolio filtering.
 

@@ -17,6 +17,21 @@ class ScoringDetails(BaseModel):
     quality: dict
     valuation: dict
     momentum: dict
+    moat: dict | None = None
+
+
+class FactorAttribution(BaseModel):
+    quality: dict | None = None
+    valuation: dict | None = None
+    momentum: dict | None = None
+    moat: dict | None = None
+
+
+class ScoringExplanations(BaseModel):
+    quality: str | None = None
+    valuation: str | None = None
+    momentum: str | None = None
+    moat: str | None = None
 
 
 class ScoringResponse(BaseModel):
@@ -31,6 +46,8 @@ class ScoringResponse(BaseModel):
     fair_value: float | None
     valuation_upside_pct: float | None
     details: ScoringDetails
+    factorAttribution: FactorAttribution | None = None
+    explanations: ScoringExplanations | None = None
 
 
 @router.get("/scoring/{ticker}", response_model=ScoringResponse)

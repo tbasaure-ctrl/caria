@@ -106,6 +106,27 @@ interface MonteCarloResult {
   };
 }
 
+interface ScoringDetails {
+  quality?: Record<string, any>;
+  valuation?: Record<string, any>;
+  momentum?: Record<string, any>;
+  moat?: Record<string, any>;
+}
+
+interface FactorAttribution {
+  quality?: Record<string, number>;
+  valuation?: Record<string, number>;
+  momentum?: Record<string, number>;
+  moat?: Record<string, number>;
+}
+
+interface ScoringExplanations {
+  quality?: string;
+  valuation?: string;
+  momentum?: string;
+  moat?: string;
+}
+
 interface ScoringResponse {
   ticker: string;
   qualityScore: number;
@@ -114,7 +135,12 @@ interface ScoringResponse {
   qualitativeMoatScore?: number | null;
   cScore: number;
   classification?: string;
+  current_price: number;
+  fair_value: number | null;
   valuation_upside_pct: number | null;
+  details?: ScoringDetails;
+  factorAttribution?: FactorAttribution;
+  explanations?: ScoringExplanations;
 }
 
 const formatMoney = (v: number) =>
@@ -149,6 +175,8 @@ export const ValuationTool: React.FC = () => {
   const [mcResult, setMcResult] = useState<MonteCarloResult | null>(null);
   const [isLoadingMC, setIsLoadingMC] = useState(false);
   const [mcError, setMcError] = useState<string | null>(null);
+
+  const cScoreTheme = scoring ? getCScoreTheme(scoring.cScore) : null;
 
   const handleAnalyze = async () => {
     setIsLoadingValuation(true);
@@ -351,87 +379,97 @@ export const ValuationTool: React.FC = () => {
           )}
         </section>
 
-        {scoring && (() => {
-          const theme = getCScoreTheme(scoring.cScore);
-          return (
-          return (
-          <section className="space-y-3">
+        {scoring && cScoreTheme && (
+          <section className="space-y-4">
             <div
               className="rounded-lg border px-4 py-4"
               style={{
-                backgroundColor: theme.background,
-                borderColor: theme.color,
+                backgroundColor: cScoreTheme.background,
+                borderColor: cScoreTheme.color,
               }}
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-slate-400">C-Score</p>
-                  <div className="text-4xl font-bold" style={{ color: theme.color }}>
+                  <div className="text-4xl font-bold" style={{ color: cScoreTheme.color }}>
                     {scoring.cScore.toFixed(0)}
                   </div>
                   <p className="text-sm mt-1 text-slate-300">
-                    {scoring.classification || theme.label}
+                    {scoring.classification || cScoreTheme.label}
                   </p>
+                  {scoring.fair_value && (
+                    <p className="text-xs text-slate-400 mt-1">
+                      FV ${scoring.fair_value.toFixed(2)} vs. Price ${scoring.current_price.toFixed(2)}
+                    </p>
+                  )}
                 </div>
                 <div className="text-right text-xs text-slate-400">
-                  <p>Quality weighting 35%</p>
-                  <p>Valuation weighting 25%</p>
-                  <p>Momentum weighting 20%</p>
-                  <p>Moat weighting 20%</p>
+                  <p>Quality 35%</p>
+                  <p>Valuation 25%</p>
+                  <p>Momentum 20%</p>
+                  <p>Moat 20%</p>
                 </div>
               </div>
               <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-300">
-                <div>
-                  <p className="uppercase tracking-wide text-slate-500">Quality</p>
-                  <p className="text-lg font-semibold text-slate-100">{scoring.qualityScore.toFixed(0)}</p>
-                </div>
-                <div>
-                  <p className="uppercase tracking-wide text-slate-500">Valuation</p>
-                  <p className="text-lg font-semibold text-slate-100">{scoring.valuationScore.toFixed(0)}</p>
-                  {scoring.valuation_upside_pct !== null && (
-                    <p className="text-[11px] text-slate-400">Upside {scoring.valuation_upside_pct.toFixed(1)}%</p>
-                  )}
-                </div>
-                <div>
-                  <p className="uppercase tracking-wide text-slate-500">Momentum</p>
-                  <p className="text-lg font-semibold text-slate-100">{scoring.momentumScore.toFixed(0)}</p>
-                </div>
-                <div>
-                  <p className="uppercase tracking-wide text-slate-500">Moat</p>
-                  <p className="text-lg font-semibold text-slate-100">
-                    {(scoring.qualitativeMoatScore ?? 0).toFixed(0)}
-                  </p>
-                </div>
+                {[
+                  { label: 'Quality', value: scoring.qualityScore },
+                  { label: 'Valuation', value: scoring.valuationScore, hint: scoring.valuation_upside_pct !== null ? `Upside ${scoring.valuation_upside_pct.toFixed(1)}%` : undefined },
+                  { label: 'Momentum', value: scoring.momentumScore },
+                  { label: 'Moat', value: scoring.qualitativeMoatScore ?? 0 },
+                ].map((item) => (
+                  <div key={item.label}>
+                    <p className="uppercase tracking-wide text-slate-500">{item.label}</p>
+                    <p className="text-lg font-semibold text-slate-100">{item.value.toFixed(0)}</p>
+                    {item.hint && <p className="text-[11px] text-slate-400">{item.hint}</p>}
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 border border-slate-800 rounded-lg p-4 bg-gray-950/30">
-              {[
-                { label: 'Quality', value: scoring.qualityScore, hint: 'ROIC + márgenes + crecimiento' },
-                { label: 'Valuation', value: scoring.valuationScore, hint: scoring.valuation_upside_pct !== null ? `Upside: ${scoring.valuation_upside_pct.toFixed(1)}%` : 'Upside relativo' },
-                { label: 'Momentum', value: scoring.momentumScore, hint: '1M vs 3M trend + volatilidad' },
-                { label: 'Moat', value: scoring.qualitativeMoatScore ?? 0, hint: 'Margen y crecimiento estable' },
-              ].map((item) => (
-                <div key={item.label} className="text-center">
-                  <div
-                    className="mx-auto w-20 h-20 rounded-full flex items-center justify-center font-bold text-xl"
-                    style={{
-                      backgroundColor: 'rgba(59,130,246,0.1)',
-                      border: '1px solid rgba(59,130,246,0.3)',
-                      color:
-                        item.value >= 70 ? '#10b981' : item.value >= 50 ? '#fbbf24' : '#f87171',
-                    }}
-                  >
-                    {item.value.toFixed(0)}
-                  </div>
-                  <div className="mt-2 text-sm text-slate-200">{item.label}</div>
-                  <div className="text-xs text-slate-500">{item.hint}</div>
+            {scoring.factorAttribution && (
+              <div className="border border-slate-800 rounded-lg p-4 bg-gray-950/30 space-y-3">
+                <div className="text-xs text-slate-400 uppercase tracking-wider">Factor attribution</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(scoring.factorAttribution).map(([pillar, drivers]) => (
+                    drivers && (
+                      <div key={pillar}>
+                        <p className="text-xs text-slate-500 mb-2">{pillar.toUpperCase()}</p>
+                        <div className="space-y-2">
+                          {Object.entries(drivers).map(([name, value]) => {
+                            const safeValue = typeof value === "number" ? value : 0;
+                            return (
+                              <div key={name}>
+                                <div className="flex justify-between text-[11px] text-slate-400">
+                                  <span>{name}</span>
+                                  <span>{safeValue.toFixed(0)} / 100</span>
+                                </div>
+                                <div className="h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                                  <div className="h-full bg-slate-500" style={{ width: `${Math.min(100, Math.max(0, safeValue))}%` }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {scoring.explanations && (
+              <div className="text-xs text-slate-400 space-y-1 border border-slate-800 rounded-lg p-3 bg-slate-900/40">
+                {Object.entries(scoring.explanations).map(([pillar, text]) => (
+                  text && (
+                    <p key={pillar}>
+                      <span className="text-slate-300 font-semibold">{pillar}:</span> {text}
+                    </p>
+                  )
+                ))}
+              </div>
+            )}
           </section>
-          );
-        })()}
+        )}
 
         {scoringError && (
           <div className="text-xs text-amber-300 bg-amber-900/20 border border-amber-500/20 p-2 rounded-md">

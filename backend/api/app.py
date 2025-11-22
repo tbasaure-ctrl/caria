@@ -88,6 +88,7 @@ from api.routes.cors_test import router as cors_test_router
 from api.routes.lectures import router as lectures_router
 from api.routes.debug_secrets import router as debug_secrets_router
 from api.routes.scoring import router as scoring_router, score_router as score_public_router
+from api.routes.screener import router as screener_router
 
 
 # WebSocket support per audit document
@@ -335,6 +336,7 @@ from api.routes.debug import router as debug_router
 app.include_router(debug_router) # LLM Debug endpoint
 app.include_router(scoring_router)
 app.include_router(score_public_router)
+app.include_router(screener_router)
 
 
 # Mount SocketIO app for WebSocket support per audit document

@@ -7,7 +7,6 @@ import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
 import { FearGreedIndex } from './widgets/FearGreedIndex';
 import { ThesisIcon } from './Icons';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
-import { HoldingsManager } from './widgets/HoldingsManager';
 import { CommunityFeed } from './widgets/CommunityFeed';
 import { RankingsWidget } from './widgets/RankingsWidget';
 import { MonteCarloSimulation } from './widgets/MonteCarloSimulation';
@@ -169,7 +168,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 <div className="space-y-6 fade-in delay-300">
                     <Portfolio id="portfolio-widget" />
                     <PortfolioAnalytics />
-                    <HoldingsManager />
                 </div>
 
                 {/* CENTER COLUMN: Analysis & Simulation */}

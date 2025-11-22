@@ -6,8 +6,9 @@ and banned keyword screening).
 """
 
 import logging
+from collections import defaultdict, deque
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Deque, Dict, List, Optional
 from urllib.parse import urlparse
 import xml.etree.ElementTree as ET
 
@@ -21,13 +22,16 @@ ALLOWED_DOMAINS = {
     "fool.com",
     "blogs.cfainstitute.org",
     "fs.blog",
+    "awealthofcommonsense.com",
+    "collaborativefund.com",
+    "humbledollar.com",
 }
 
 BANNED_KEYWORDS = [
     "sponsored", "ad:", "crypto", "nft", "giveaway", "contest",
 ]
 
-MAX_ARTICLES = 8
+MAX_ARTICLES = 10
 
 
 class LecturesService:
@@ -45,6 +49,9 @@ class LecturesService:
             self._fetch_motley_fool_rss,
             self._fetch_cfa_institute_rss,
             self._fetch_farnam_street_rss,
+            self._fetch_awealthofcommonsense_rss,
+            self._fetch_collaborative_fund_rss,
+            self._fetch_humble_dollar_rss,
         ]
 
         for fetcher in fetchers:
@@ -54,8 +61,10 @@ class LecturesService:
                 LOGGER.warning("Error fetching %s: %s", fetcher.__name__, exc)
 
         filtered = self._apply_quality_filter(articles)
-        self._cache[today] = filtered
-        return filtered
+        balanced = self._rebalance_sources(filtered)
+        final_list = balanced[:MAX_ARTICLES]
+        self._cache[today] = final_list
+        return final_list
 
     def _apply_quality_filter(self, articles: List[Dict[str, str]]) -> List[Dict[str, str]]:
         unique_titles = set()
@@ -79,10 +88,26 @@ class LecturesService:
             unique_titles.add(title_key)
             filtered.append(article)
 
-            if len(filtered) >= MAX_ARTICLES:
-                break
-
         return filtered
+
+    def _rebalance_sources(self, articles: List[Dict[str, str]]) -> List[Dict[str, str]]:
+        if not articles:
+            return []
+
+        buckets: Dict[str, Deque[Dict[str, str]]] = defaultdict(deque)
+        for article in articles:
+            source = article.get("source", "Other")
+            buckets[source].append(article)
+
+        ordered_sources = sorted(buckets.keys(), key=lambda s: (-len(buckets[s]), s))
+
+        balanced: List[Dict[str, str]] = []
+        while any(buckets.values()):
+            for source in ordered_sources:
+                if buckets[source]:
+                    balanced.append(buckets[source].popleft())
+
+        return balanced
 
     def _scrape_abnormal_returns(self) -> List[Dict[str, str]]:
         resp = requests.get("https://abnormalreturns.com/", timeout=10)
@@ -158,6 +183,24 @@ class LecturesService:
         return self._fetch_rss_entries(
             "https://fs.blog/feed/",
             "Farnam Street",
+        )
+
+    def _fetch_awealthofcommonsense_rss(self) -> List[Dict[str, str]]:
+        return self._fetch_rss_entries(
+            "https://awealthofcommonsense.com/feed/",
+            "A Wealth of Common Sense",
+        )
+
+    def _fetch_collaborative_fund_rss(self) -> List[Dict[str, str]]:
+        return self._fetch_rss_entries(
+            "https://www.collaborativefund.com/blog/rss/",
+            "Collaborative Fund",
+        )
+
+    def _fetch_humble_dollar_rss(self) -> List[Dict[str, str]]:
+        return self._fetch_rss_entries(
+            "https://humbledollar.com/feed/",
+            "Humble Dollar",
         )
 
 

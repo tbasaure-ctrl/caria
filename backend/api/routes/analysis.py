@@ -327,12 +327,12 @@ Instrucciones:
 4. Asigna un confidence_score entre 0 y 1 sobre la robustez de la tesis.
 
 Responde SOLO en JSON v�lido con la forma:
-{
+{{
   "critical_analysis": "texto detallado",
   "identified_biases": ["bias 1", "bias 2"],
   "recommendations": ["reco 1", "reco 2"],
   "confidence_score": 0.0-1.0
-}
+}}
 """
 
     llm_response_text: Optional[str] = None

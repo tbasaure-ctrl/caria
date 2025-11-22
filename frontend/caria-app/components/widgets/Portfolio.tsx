@@ -1,6 +1,6 @@
 
-import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice } from '../../services/apiService';
+import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
+import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, createHolding, deleteHolding } from '../../services/apiService';
 import { ArrowUpIcon, ArrowDownIcon } from '../Icons';
 import { WidgetCard } from './WidgetCard';
 
@@ -10,6 +10,15 @@ const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
     // ... (unchanged)
     const [activeSlice, setActiveSlice] = useState<AllocationData | null>(data.length > 0 ? data[0] : null);
     const total = data.reduce((acc, item) => acc + item.value, 0);
+
+    if (!data.length || total <= 0) {
+        return (
+            <div className="flex flex-col gap-2 text-slate-400 text-sm">
+                <p>No allocation data yet.</p>
+                <p>Add positions to visualize your weights.</p>
+            </div>
+        );
+    }
 
     const radius = 1;
     const innerRadius = 0.6;
@@ -238,31 +247,70 @@ const TimeRangeSelector: React.FC<{ selected: string; onSelect: (range: string) 
 
 const POLLING_INTERVAL = 30000; // 30 segundos
 
+type HoldingFormState = {
+    ticker: string;
+    quantity: string;
+    average_cost: string;
+    purchase_date: string;
+    notes: string;
+};
+
+const createDefaultFormState = (): HoldingFormState => ({
+    ticker: '',
+    quantity: '',
+    average_cost: '',
+    purchase_date: new Date().toISOString().split('T')[0],
+    notes: '',
+});
+
 export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
     const [portfolioData, setPortfolioData] = useState<HoldingsWithPrices | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState('1M');
+    const [formData, setFormData] = useState<HoldingFormState>(createDefaultFormState());
+    const [formError, setFormError] = useState<string | null>(null);
+    const [sortOption, setSortOption] = useState<'value' | 'return' | 'ticker'>('value');
+    const [showForm, setShowForm] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
-    useEffect(() => {
-        const updatePortfolio = async () => {
+    const loadPortfolio = useCallback(
+        async (showSpinner = true) => {
             try {
                 setError(null);
+                if (showSpinner) {
+                    setLoading(true);
+                } else {
+                    setIsRefreshing(true);
+                }
                 const data = await fetchHoldingsWithPrices();
                 setPortfolioData(data);
-                setLoading(false);
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Error fetching portfolio:', err);
-                setError('Coming soon... Portfolio data loading is being enhanced for better performance.');
-                setLoading(false);
+                setError(err?.message || 'No pudimos cargar tu portfolio. Intenta nuevamente.');
+            } finally {
+                if (showSpinner) {
+                    setLoading(false);
+                } else {
+                    setIsRefreshing(false);
+                }
             }
-        };
+        },
+        []
+    );
 
-        updatePortfolio();
-        const interval = setInterval(updatePortfolio, POLLING_INTERVAL);
-
+    useEffect(() => {
+        loadPortfolio();
+        const interval = setInterval(() => loadPortfolio(false), POLLING_INTERVAL);
         return () => clearInterval(interval);
-    }, []);
+    }, [loadPortfolio]);
+
+    useEffect(() => {
+        if (portfolioData && portfolioData.holdings.length === 0) {
+            setShowForm(true);
+        }
+    }, [portfolioData]);
 
     if (loading) {
         return (
@@ -289,27 +337,9 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         );
     }
 
-    if (!portfolioData || portfolioData.holdings.length === 0) {
-        return (
-            <WidgetCard
-                id={id}
-                title="PORTFOLIO SNAPSHOT"
-                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
-            >
-                <div className="space-y-4">
-                    <div className="text-slate-400 text-sm">
-                        No hay holdings. Agrega posiciones para ver tu portfolio.
-                    </div>
-                    <div className="text-xs text-slate-500">
-                        Usa el endpoint /api/holdings para agregar posiciones.
-                    </div>
-                </div>
-            </WidgetCard>
-        );
-    }
+    const hasHoldings = Boolean(portfolioData && portfolioData.holdings.length > 0);
 
-    // Calculate performance data based on holdings and time range
-    const getPerformanceData = (): PerformanceGraphPoint[] => {
+    const getPerformanceData = useCallback((): PerformanceGraphPoint[] => {
         if (!portfolioData || portfolioData.holdings.length === 0) return [];
 
         const now = new Date();
@@ -369,19 +399,95 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         }
 
         return data;
+    }, [portfolioData, timeRange]);
+
+    const performanceData = useMemo(() => getPerformanceData(), [getPerformanceData]);
+
+    const allocationData = useMemo(() => {
+        if (!portfolioData || portfolioData.holdings.length === 0 || portfolioData.total_value <= 0) {
+            return [];
+        }
+        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+        return portfolioData.holdings.map((holding, i) => {
+            const holdingValue = holding.current_value ?? holding.current_price * holding.quantity;
+            return {
+                name: holding.ticker,
+                value: portfolioData.total_value > 0 ? (holdingValue / portfolioData.total_value) * 100 : 0,
+                color: colors[i % colors.length],
+            };
+        });
+    }, [portfolioData]);
+
+    const sortedHoldings = useMemo(() => {
+        if (!portfolioData) return [];
+        const holdings = [...portfolioData.holdings];
+        switch (sortOption) {
+            case 'return':
+                return holdings.sort((a, b) => (b.gain_loss_pct || 0) - (a.gain_loss_pct || 0));
+            case 'ticker':
+                return holdings.sort((a, b) => a.ticker.localeCompare(b.ticker));
+            case 'value':
+            default:
+                return holdings.sort((a, b) => (b.current_value || 0) - (a.current_value || 0));
+        }
+    }, [portfolioData, sortOption]);
+
+    const handleAddHolding = async (event: React.FormEvent) => {
+        event.preventDefault();
+        setFormError(null);
+
+        const ticker = formData.ticker.trim().toUpperCase();
+        const quantity = parseFloat(formData.quantity);
+        const averageCost = parseFloat(formData.average_cost);
+
+        if (!ticker) {
+            setFormError('Ingresa un ticker válido.');
+            return;
+        }
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+            setFormError('Ingresa una cantidad válida.');
+            return;
+        }
+        if (!Number.isFinite(averageCost) || averageCost <= 0) {
+            setFormError('Ingresa un costo promedio válido.');
+            return;
+        }
+
+        try {
+            setActionLoading(true);
+            await createHolding({
+                ticker,
+                quantity,
+                average_cost: averageCost,
+                purchase_date: formData.purchase_date,
+                notes: formData.notes || undefined,
+            });
+            setFormData(createDefaultFormState());
+            setShowForm(false);
+            await loadPortfolio(false);
+        } catch (err: any) {
+            console.error('Error creating holding:', err);
+            setFormError(err?.message || 'No se pudo guardar la posición.');
+        } finally {
+            setActionLoading(false);
+        }
     };
 
-    const performanceData = getPerformanceData();
-
-    // Convertir a datos de allocation para el pie chart
-    const allocationData = portfolioData.holdings.map((holding, i) => {
-        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-        return {
-            name: holding.ticker,
-            value: (holding.current_value / portfolioData.total_value) * 100,
-            color: colors[i % colors.length],
-        };
-    });
+    const handleDeleteHolding = async (id: string) => {
+        if (!window.confirm('¿Eliminar esta posición?')) {
+            return;
+        }
+        try {
+            setActionLoading(true);
+            await deleteHolding(id);
+            await loadPortfolio(false);
+        } catch (err: any) {
+            console.error('Error deleting holding:', err);
+            setFormError(err?.message || 'No se pudo eliminar la posición.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
 
     return (
         <WidgetCard
@@ -390,71 +496,248 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
         >
             <div className="space-y-6">
-                {/* Resumen */}
-                <div>
-                    <h4 className="text-xs text-slate-400 mb-2">Resumen</h4>
-                    <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                            <span className="text-slate-300">Valor Total:</span>
-                            <span className="font-mono text-slate-100">${portfolioData.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-slate-300">Costo Total:</span>
-                            <span className="font-mono text-slate-300">${portfolioData.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </div>
-                        <div className={`flex justify-between text-sm ${portfolioData.total_gain_loss >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                            <span>Ganancia/Pérdida:</span>
-                            <span className="font-mono">
-                                ${portfolioData.total_gain_loss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({portfolioData.total_gain_loss_pct >= 0 ? '+' : ''}{portfolioData.total_gain_loss_pct.toFixed(2)}%)
-                            </span>
-                        </div>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h4 className="text-xs text-slate-400 mb-2">Resumen</h4>
                     </div>
+                    {isRefreshing && (
+                        <span className="text-xs text-slate-500 animate-pulse">Actualizando…</span>
+                    )}
                 </div>
-
-                {/* Performance Graph */}
-                {performanceData.length > 0 && (
-                    <div>
-                        <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-xs"
-                                style={{
-                                    fontFamily: 'var(--font-mono)',
-                                    color: 'var(--color-text-muted)',
-                                    letterSpacing: '0.05em'
-                                }}>
-                                PERFORMANCE
-                            </h4>
-                            <TimeRangeSelector selected={timeRange} onSelect={setTimeRange} />
-                        </div>
-                        <PerformanceGraph data={performanceData} />
-                    </div>
-                )}
-
-                {/* Allocation */}
-                {allocationData.length > 0 && (
-                    <div>
-                        <h4 className="text-xs text-slate-400 mb-2">Allocation</h4>
-                        <PieChart data={allocationData} />
-                    </div>
-                )}
-
-                {/* Holdings List */}
-                <div>
-                    <h4 className="text-xs text-slate-400 mb-2">Posiciones</h4>
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                        {portfolioData.holdings.map((holding: HoldingWithPrice) => (
-                            <div key={holding.ticker} className="flex justify-between items-center text-sm border-b border-slate-800 pb-2">
-                                <div>
-                                    <span className="text-slate-200 font-semibold">{holding.ticker}</span>
-                                    <span className="text-slate-400 ml-2">{holding.quantity.toFixed(2)} acciones</span>
-                                </div>
-                                <div className="text-right">
-                                    <div className="font-mono text-slate-100">${holding.current_price.toFixed(2)}</div>
-                                    <div className={`text-xs ${holding.gain_loss >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                                        {holding.gain_loss >= 0 ? '+' : ''}{holding.gain_loss_pct.toFixed(2)}%
-                                    </div>
-                                </div>
+                {portfolioData && (
+                    <>
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-slate-300">Valor Total:</span>
+                                <span className="font-mono text-slate-100">
+                                    ${portfolioData.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
                             </div>
-                        ))}
+                            <div className="flex justify-between text-sm">
+                                <span className="text-slate-300">Costo Total:</span>
+                                <span className="font-mono text-slate-300">
+                                    ${portfolioData.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                            </div>
+                            <div className={`flex justify-between text-sm ${portfolioData.total_gain_loss >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
+                                <span>Ganancia/Pérdida:</span>
+                                <span className="font-mono">
+                                    ${portfolioData.total_gain_loss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({portfolioData.total_gain_loss_pct >= 0 ? '+' : ''}{portfolioData.total_gain_loss_pct.toFixed(2)}%)
+                                </span>
+                            </div>
+                        </div>
+
+                        {hasHoldings ? (
+                            <>
+                                {performanceData.length > 0 && (
+                                    <div>
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h4
+                                                className="text-xs"
+                                                style={{
+                                                    fontFamily: 'var(--font-mono)',
+                                                    color: 'var(--color-text-muted)',
+                                                    letterSpacing: '0.05em',
+                                                }}
+                                            >
+                                                PERFORMANCE
+                                            </h4>
+                                            <TimeRangeSelector selected={timeRange} onSelect={setTimeRange} />
+                                        </div>
+                                        <PerformanceGraph data={performanceData} />
+                                    </div>
+                                )}
+
+                                {allocationData.length > 0 && (
+                                    <div>
+                                        <h4 className="text-xs text-slate-400 mb-2">Allocation</h4>
+                                        <PieChart data={allocationData} />
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="rounded-lg border border-dashed border-slate-700 p-4 text-sm text-slate-400">
+                                Tu portfolio está vacío. Agrega tu primera posición para comenzar a trackear el desempeño.
+                            </div>
+                        )}
+                    </>
+                )}
+
+                <div className="border border-slate-800 rounded-lg p-4 space-y-4">
+                    <div className="flex flex-wrap items-center gap-4 justify-between">
+                        <div>
+                            <h4 className="text-sm font-semibold" style={{ color: 'var(--color-cream)' }}>
+                                Gestión de posiciones
+                            </h4>
+                            <p className="text-xs text-slate-500">Registra compras, ventas y notas clave.</p>
+                        </div>
+                        <div className="flex bg-slate-900/70 rounded-md overflow-hidden">
+                            <button
+                                onClick={() => setSortOption('value')}
+                                className={`px-3 py-1 text-xs font-mono ${sortOption === 'value' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                            >
+                                $
+                            </button>
+                            <button
+                                onClick={() => setSortOption('return')}
+                                className={`px-3 py-1 text-xs font-mono ${sortOption === 'return' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                            >
+                                %
+                            </button>
+                            <button
+                                onClick={() => setSortOption('ticker')}
+                                className={`px-3 py-1 text-xs font-mono ${sortOption === 'ticker' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                            >
+                                AZ
+                            </button>
+                        </div>
+                        <button
+                            onClick={() => setShowForm((prev) => !prev)}
+                            className="text-xs font-semibold px-4 py-2 rounded-md transition-colors"
+                            style={{
+                                backgroundColor: 'var(--color-primary)',
+                                color: 'var(--color-cream)',
+                            }}
+                        >
+                            {showForm ? 'Cerrar formulario' : 'Agregar posición'}
+                        </button>
+                    </div>
+
+                    {showForm && (
+                        <form onSubmit={handleAddHolding} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-900/50 p-4 rounded-lg border border-slate-800">
+                            <div>
+                                <label className="block text-xs text-slate-400 mb-1">Ticker</label>
+                                <input
+                                    type="text"
+                                    value={formData.ticker}
+                                    onChange={(e) => setFormData({ ...formData, ticker: e.target.value })}
+                                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
+                                    placeholder="AAPL"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-slate-400 mb-1">Cantidad</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={formData.quantity}
+                                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
+                                    placeholder="10"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-slate-400 mb-1">Costo Promedio</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={formData.average_cost}
+                                    onChange={(e) => setFormData({ ...formData, average_cost: e.target.value })}
+                                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
+                                    placeholder="150.00"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-slate-400 mb-1">Fecha de compra</label>
+                                <input
+                                    type="date"
+                                    value={formData.purchase_date}
+                                    onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
+                                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
+                                    required
+                                />
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-xs text-slate-400 mb-1">Notas (opcional)</label>
+                                <input
+                                    type="text"
+                                    value={formData.notes}
+                                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
+                                    placeholder="Catalizadores, tesis resumida, etc."
+                                />
+                            </div>
+                            <div className="md:col-span-2 flex gap-3">
+                                <button
+                                    type="submit"
+                                    disabled={actionLoading}
+                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded transition-colors disabled:opacity-50"
+                                >
+                                    Guardar posición
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowForm(false);
+                                        setFormData(createDefaultFormState());
+                                        setFormError(null);
+                                    }}
+                                    className="px-4 py-2 rounded text-sm font-semibold text-slate-300 border border-slate-700 hover:border-slate-500"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    )}
+
+                    {formError && (
+                        <div className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded p-2">
+                            {formError}
+                        </div>
+                    )}
+
+                    <div>
+                        {sortedHoldings.length === 0 ? (
+                            <div className="text-center text-sm text-slate-500 py-8">
+                                No hay posiciones registradas aún.
+                            </div>
+                        ) : (
+                            <div className="space-y-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
+                                {sortedHoldings.map((holding: HoldingWithPrice) => (
+                                    <div
+                                        key={holding.id}
+                                        className="flex justify-between items-center p-2 bg-slate-900/40 rounded border border-slate-800"
+                                    >
+                                        <div>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-slate-200 font-semibold">{holding.ticker}</span>
+                                                {holding.gain_loss_pct !== undefined && (
+                                                    <span className={`text-xs ${holding.gain_loss_pct >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                        {holding.gain_loss_pct >= 0 ? '+' : ''}
+                                                        {holding.gain_loss_pct.toFixed(2)}%
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="text-xs text-slate-400">
+                                                {holding.quantity} @ ${holding.average_cost.toFixed(2)}
+                                            </div>
+                                            {holding.notes && (
+                                                <div className="text-xs text-slate-500 mt-1">{holding.notes}</div>
+                                            )}
+                                        </div>
+                                        <div className="text-right space-y-1">
+                                            <div className="font-mono text-slate-100">
+                                                ${(holding.current_value ?? holding.current_price * holding.quantity).toLocaleString(undefined, {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0,
+                                                })}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => holding.id && handleDeleteHolding(holding.id)}
+                                                disabled={actionLoading}
+                                                className="text-xs text-red-400 hover:text-red-300"
+                                            >
+                                                Eliminar
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

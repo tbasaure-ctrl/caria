@@ -13,63 +13,21 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from psycopg2.extras import RealDictCursor
 
-from api.dependencies import get_current_user, get_optional_current_user
-# Import _get_db_connection from community module
-# We'll define it here to avoid circular imports
-def _get_db_connection():
-    """Get database connection using DATABASE_URL or fallback."""
-    import psycopg2
-    import os
-    from urllib.parse import urlparse, parse_qs
-
-    database_url = os.getenv("DATABASE_URL")
-    conn = None
-    
-    if database_url:
-        try:
-            parsed = urlparse(database_url)
-            query_params = parse_qs(parsed.query)
-            unix_socket_host = query_params.get('host', [None])[0]
-            
-            if unix_socket_host:
-                conn = psycopg2.connect(
-                    host=unix_socket_host,
-                    user=parsed.username,
-                    password=parsed.password,
-                    database=parsed.path.lstrip('/'),
-                )
-            elif parsed.hostname:
-                conn = psycopg2.connect(
-                    host=parsed.hostname,
-                    port=parsed.port or 5432,
-                    user=parsed.username,
-                    password=parsed.password,
-                    database=parsed.path.lstrip('/'),
-                )
-        except Exception as e:
-            import logging
-            logging.getLogger(__name__).warning(f"Error using DATABASE_URL: {e}")
-    
-    if conn is None:
-        password = os.getenv("POSTGRES_PASSWORD")
-        if not password:
-            raise HTTPException(status_code=500, detail="Database password not configured")
-        conn = psycopg2.connect(
-            host=os.getenv("POSTGRES_HOST", "localhost"),
-            port=int(os.getenv("POSTGRES_PORT", "5432")),
-            user=os.getenv("POSTGRES_USER", "caria_user"),
-            password=password,
-            database=os.getenv("POSTGRES_DB", "caria"),
-        )
-    
-    return conn
-
-
+from api.dependencies import get_current_user, get_optional_current_user, open_db_connection
 from caria.models.auth import UserInDB
 
 LOGGER = logging.getLogger("caria.api.community_rankings")
 
 router = APIRouter(prefix="/api/community", tags=["Community"])
+
+
+def _get_db_connection():
+    """Wrapper to standardize DB access + HTTP error conversion."""
+    try:
+        return open_db_connection()
+    except Exception as exc:  # noqa: BLE001
+        LOGGER.exception("Unable to connect to database for community rankings: %s", exc)
+        raise HTTPException(status_code=500, detail="Database connection failed") from exc
 
 
 class RankingsResponse(BaseModel):
@@ -195,7 +153,10 @@ async def get_community_rankings(
             )
     except Exception as e:
         LOGGER.exception("Error getting rankings for user=%s", getattr(current_user, "id", None))
-        raise HTTPException(status_code=500, detail="Error getting rankings") from e
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error getting rankings ({e.__class__.__name__})",
+        ) from e
     finally:
         if conn:
             conn.close()

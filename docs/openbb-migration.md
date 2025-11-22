@@ -41,4 +41,5 @@
 - ✅ **Bayesian-smoothed ensemble**: Quality/Valuation/Momentum scores combine rule-based metrics with trend proxies and a Bayesian prior to avoid noisy jumps.
 - ✅ **C-Score screener**: `/api/screener/cscore` ranks user-supplied tickers by C-Score for quick portfolio filtering.
 - ✅ **Deterministic OpenBB build**: `OPENBB_EXTENSION_LIST` (extensions above), `OPENBB_FORCE_EXTENSION_BUILD=true`, and `OPENBB_USER_DATA_PATH=/tmp/openbb` are now set so Railway can preload the SDK without writing outside `/tmp`.
+- ✅ **Torch runtime bundled**: `torch==2.2.2` is pinned in `backend/requirements.txt` so OpenBB’s package builder can resolve its custom class hooks during container startup.
 

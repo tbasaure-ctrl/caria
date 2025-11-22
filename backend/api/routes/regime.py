@@ -41,6 +41,12 @@ def _guard_regime_service(request: Request) -> RegimeService:
     regime_service = getattr(request.app.state, "regime_service", None)
     if regime_service is None or not regime_service.is_available():
         raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Servicio de régimen no disponible. Entrena el modelo HMM primero.",
+        )
+    return regime_service
+
+
 def _quick_regime_from_prices(symbol: str = "SPY") -> RegimeResponse | None:
     """Fallback regime classification using price momentum & volatility."""
     try:

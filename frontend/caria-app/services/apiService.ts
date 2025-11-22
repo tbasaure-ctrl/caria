@@ -152,14 +152,30 @@ export interface RealtimePrice {
 }
 
 export const fetchPrices = async (tickers: string[]): Promise<Record<string, RealtimePrice>> => {
-    const response = await fetchWithAuth(`${API_URL}/api/prices/realtime`, {
+    // Prices endpoint now supports optional auth - try with auth first, fallback without
+    const token = getToken();
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`${API_URL}/api/prices/realtime`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ tickers }),
     });
 
     if (!response.ok) {
-        throw new Error(`Error fetching prices: ${response.statusText}`);
+        const errorText = await response.text();
+        let errorMessage = `Error fetching prices: ${response.statusText}`;
+        try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.detail || errorMessage;
+        } catch {
+            // If not JSON, use status text
+        }
+        throw new Error(errorMessage);
     }
 
     const data = await response.json();

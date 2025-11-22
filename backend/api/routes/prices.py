@@ -20,6 +20,18 @@ from api.dependencies import get_current_user
 from caria.models.auth import UserInDB
 from api.services.openbb_client import openbb_client
 
+
+def _value(entry: Any, field: str) -> Any:
+    if entry is None:
+        return None
+    if isinstance(entry, dict):
+        return entry.get(field)
+    if hasattr(entry, "model_dump"):
+        data = entry.model_dump()
+        if isinstance(data, dict):
+            return data.get(field)
+    return getattr(entry, field, None)
+
 router = APIRouter(prefix="/api/prices", tags=["prices"])
 
 
@@ -40,12 +52,12 @@ def _build_quote(symbol: str) -> dict[str, Any]:
 
     latest = history[-1]
     prev = history[-2] if len(history) > 1 else None
-    close = latest.get("close") or latest.get("adj_close")
-    prev_close = prev.get("close") if prev else None
+    close = _value(latest, "close") or _value(latest, "adj_close")
+    prev_close = _value(prev, "close") if prev is not None else None
 
     change = None
     change_percent = None
-    if close is not None and prev_close:
+    if close is not None and prev_close is not None:
         change = close - prev_close
         if prev_close != 0:
             change_percent = (change / prev_close) * 100
@@ -56,7 +68,7 @@ def _build_quote(symbol: str) -> dict[str, Any]:
         "previousClose": prev_close,
         "change": change,
         "changesPercentage": change_percent,
-        "date": latest.get("date"),
+        "date": _value(latest, "date"),
     }
 
 

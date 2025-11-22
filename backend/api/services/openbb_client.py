@@ -60,6 +60,15 @@ LOGGER = logging.getLogger("caria.api.services.openbb")
 CACHE_TTL = timedelta(hours=6)
 
 
+def _get_entry_value(entry: Any, field: str) -> Any:
+    if isinstance(entry, dict):
+        return entry.get(field)
+    if hasattr(entry, "model_dump"):
+        dumped = entry.model_dump()
+        return dumped.get(field)
+    return getattr(entry, field, None)
+
+
 def _unwrap_results(result: Any) -> List[Dict[str, Any]]:
     if result is None:
         return []

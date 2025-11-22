@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Portfolio } from './widgets/Portfolio';
-// import { TopMovers } from './widgets/TopMovers'; // Removed - using mock data
 import { ModelOutlook } from './widgets/ModelOutlook';
 import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
 import { FearGreedIndex } from './widgets/FearGreedIndex';

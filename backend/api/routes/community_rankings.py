@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from psycopg2.extras import RealDictCursor
 
-from api.dependencies import get_optional_current_user
+from api.dependencies import get_current_user, get_optional_current_user
 # Import _get_db_connection from community module
 # We'll define it here to avoid circular imports
 def _get_db_connection():

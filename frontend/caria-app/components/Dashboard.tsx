@@ -199,9 +199,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {/* RIGHT COLUMN: Community & Rankings */}
                 <div className="space-y-6 fade-in delay-500">
                     <SafeWidget>
-                        <WeeklyMedia />
-                    </SafeWidget>
-                    <SafeWidget>
                         <CommunityFeed />
                     </SafeWidget>
                     <SafeWidget>
@@ -214,6 +211,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             <div className="mb-8 fade-in delay-600">
                 <SafeWidget>
                     <ResearchSection />
+                </SafeWidget>
+            </div>
+
+            {/* WEEKLY MEDIA: Near Research Section */}
+            <div className="mb-8 fade-in delay-700">
+                <SafeWidget>
+                    <WeeklyMedia />
                 </SafeWidget>
             </div>
 

@@ -17,22 +17,20 @@ interface MediaItem {
 
 // Update this array weekly with new podcast and YouTube video
 const mediaItems: MediaItem[] = [
-    // Add your first two items here
-    // Example format:
-    // {
-    //     type: 'podcast',
-    //     title: 'Podcast Title',
-    //     description: 'Description of the podcast episode',
-    //     url: 'https://...',
-    //     host: 'Host Name'
-    // },
-    // {
-    //     type: 'youtube',
-    //     title: 'YouTube Video Title',
-    //     description: 'Description of the video',
-    //     url: 'https://youtube.com/...',
-    //     thumbnail: 'https://...' // Optional: YouTube thumbnail URL
-    // }
+    {
+        type: 'youtube',
+        title: 'Charlie Munger - Taking Drawdowns with Philosophy and Equanimity',
+        description: 'Wisdom on handling market downturns with philosophical perspective and calm composure.',
+        url: 'https://youtu.be/7sNUg2kPJwI?si=wZfqg2mKkVD8HN4w',
+        thumbnail: 'https://img.youtube.com/vi/7sNUg2kPJwI/maxresdefault.jpg'
+    },
+    {
+        type: 'podcast',
+        title: 'The Knowledge Project - Morgan Housel',
+        description: 'Insights on investing, decision-making, and understanding human behavior in markets.',
+        url: 'https://open.spotify.com/episode/00ll36IR6rEoigiqFRwBzW?si=Qa78MY88QjWilhw4lJjQCA',
+        host: 'The Knowledge Project'
+    }
 ];
 
 export const WeeklyMedia: React.FC = () => {

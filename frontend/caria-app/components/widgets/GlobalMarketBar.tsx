@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchPrices, RealtimePrice } from '../../services/apiService';
 import { ArrowUpIcon, ArrowDownIcon } from '../Icons';
 import { WidgetCard } from './WidgetCard';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 // Principales índices globales (ETFs que representan índices)
 // Usando ETFs reales que se pueden obtener de FMP API
@@ -27,12 +28,12 @@ export const GlobalMarketBar: React.FC<{id?: string}> = ({id}) => {
                 const data = await fetchPrices(tickers);
                 setPrices(data);
                 setLoading(false);
-            } catch (err: any) {
-                console.error('Error fetching global market indices:', err);
+            } catch (err: unknown) {
+                const message = getErrorMessage(err);
                 // Check if it's an authentication error
-                if (err.message?.includes('401') || err.message?.includes('403')) {
+                if (message.includes('401') || message.includes('403')) {
                     setError('Please log in to view market data');
-                } else if (err.message?.includes('Failed to connect')) {
+                } else if (message.includes('Failed to connect') || message.includes('network')) {
                     setError('Unable to connect to market data service');
                 } else {
                     setError('Market data temporarily unavailable');

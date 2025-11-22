@@ -125,8 +125,7 @@ export const ArenaThreadModal: React.FC<ArenaThreadModalProps> = ({
             setRounds([...rounds, newRound]);
             setCurrentConviction(data.current_conviction);
             setUserMessage(''); // Clear input
-        } catch (err: any) {
-            console.error('Error responding in arena:', err);
+        } catch (err: unknown) {
             setError('Coming soon... Arena conversations are being enhanced for better multi-round analysis.');
         } finally {
             setIsLoading(false);

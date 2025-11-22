@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 interface RedditStock {
     ticker: string;

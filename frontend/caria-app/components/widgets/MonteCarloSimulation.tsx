@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
 import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 interface MonteCarloResult {
     paths: number[][];

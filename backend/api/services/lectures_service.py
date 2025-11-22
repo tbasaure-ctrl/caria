@@ -1,152 +1,168 @@
 """
-Service to fetch recommended lectures/articles from external sources.
-Sources:
-- Abnormal Returns (Finance/Investing)
-- Morning Brew (General Business/Tech)
+Professional curation service for recommended lectures/articles.
+Sources include: Abnormal Returns, The Motley Fool, CFA Institute, Farnam Street.
+All items go through a strict quality filter (domain allow-list, title length,
+and banned keyword screening).
 """
+
 import logging
+from datetime import datetime
+from typing import Dict, List, Optional
+from urllib.parse import urlparse
+import xml.etree.ElementTree as ET
+
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
-from typing import List, Dict, Optional
 
 LOGGER = logging.getLogger("caria.api.services.lectures")
 
+ALLOWED_DOMAINS = {
+    "abnormalreturns.com",
+    "fool.com",
+    "blogs.cfainstitute.org",
+    "fs.blog",
+}
+
+BANNED_KEYWORDS = [
+    "sponsored", "ad:", "crypto", "nft", "giveaway", "contest",
+]
+
+MAX_ARTICLES = 8
+
+
 class LecturesService:
-    def __init__(self):
-        self.sources = [
-            {
-                "name": "Abnormal Returns",
-                "url": "https://abnormalreturns.com/",
-                "type": "finance",
-                "logo": "https://abnormalreturns.com/favicon.ico"
-            },
-            {
-                "name": "Morning Brew",
-                "url": "https://www.morningbrew.com/daily",
-                "type": "business",
-                "logo": "https://www.morningbrew.com/favicon.ico"
-            }
-        ]
-        # Simple in-memory cache: {date_str: [articles]}
-        self._cache = {}
+    def __init__(self) -> None:
+        self._cache: Dict[str, List[Dict[str, str]]] = {}
 
     def get_daily_recommendations(self) -> List[Dict[str, str]]:
-        """
-        Get recommended articles for today.
-        Returns a list of dicts with title, url, source, date.
-        """
-        today = datetime.now().strftime("%Y-%m-%d")
-        
-        # Check cache first
+        today = datetime.utcnow().strftime("%Y-%m-%d")
         if today in self._cache:
             return self._cache[today]
-        
-        articles = []
-        
-        # Fetch from Abnormal Returns
-        try:
-            ar_articles = self._scrape_abnormal_returns()
-            articles.extend(ar_articles)
-        except Exception as e:
-            LOGGER.error(f"Error fetching Abnormal Returns: {e}")
-            
-        # Fetch from Morning Brew
-        try:
-            mb_articles = self._scrape_morning_brew()
-            articles.extend(mb_articles)
-        except Exception as e:
-            LOGGER.error(f"Error fetching Morning Brew: {e}")
-            
-        # Update cache if we found something
-        if articles:
-            self._cache[today] = articles
-            
-        return articles
+
+        articles: List[Dict[str, str]] = []
+        fetchers = [
+            self._scrape_abnormal_returns,
+            self._fetch_motley_fool_rss,
+            self._fetch_cfa_institute_rss,
+            self._fetch_farnam_street_rss,
+        ]
+
+        for fetcher in fetchers:
+            try:
+                articles.extend(fetcher())
+            except Exception as exc:  # noqa: BLE001
+                LOGGER.warning("Error fetching %s: %s", fetcher.__name__, exc)
+
+        filtered = self._apply_quality_filter(articles)
+        self._cache[today] = filtered
+        return filtered
+
+    def _apply_quality_filter(self, articles: List[Dict[str, str]]) -> List[Dict[str, str]]:
+        unique_titles = set()
+        filtered: List[Dict[str, str]] = []
+
+        for article in articles:
+            title = article.get("title", "").strip()
+            url = article.get("url", "")
+            domain = urlparse(url).netloc.replace("www.", "")
+
+            if not title or len(title) < 40:
+                continue
+            if any(bad in title.lower() for bad in BANNED_KEYWORDS):
+                continue
+            if not any(domain.endswith(allowed) for allowed in ALLOWED_DOMAINS):
+                continue
+            title_key = title.lower()
+            if title_key in unique_titles:
+                continue
+
+            unique_titles.add(title_key)
+            filtered.append(article)
+
+            if len(filtered) >= MAX_ARTICLES:
+                break
+
+        return filtered
 
     def _scrape_abnormal_returns(self) -> List[Dict[str, str]]:
-        """Scrape latest links from Abnormal Returns."""
-        try:
-            resp = requests.get("https://abnormalreturns.com/", timeout=10)
-            resp.raise_for_status()
-            soup = BeautifulSoup(resp.text, 'html.parser')
-            
-            articles = []
-            # Logic depends on their current HTML structure. 
-            # Usually they have a daily link post.
-            # Looking for the first main post content which usually contains the links.
-            
-            # This is a heuristic. Adjust based on actual site structure.
-            # Assuming standard WordPress structure
-            main_content = soup.find('div', class_='entry-content')
-            if not main_content:
-                # Try finding the latest post link first
-                latest_post = soup.find('h2', class_='entry-title')
-                if latest_post and latest_post.find('a'):
-                    post_url = latest_post.find('a')['href']
-                    # Fetch the specific post
-                    resp_post = requests.get(post_url, timeout=10)
-                    soup_post = BeautifulSoup(resp_post.text, 'html.parser')
-                    main_content = soup_post.find('div', class_='entry-content')
+        resp = requests.get("https://abnormalreturns.com/", timeout=10)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
 
-            if main_content:
-                # Extract links
-                for link in main_content.find_all('a'):
-                    url = link.get('href')
-                    title = link.get_text().strip()
-                    
-                    if url and title and len(title) > 10 and "http" in url:
-                        # Filter out internal links or garbage
-                        if "abnormalreturns.com" not in url and "twitter.com" not in url:
-                            articles.append({
-                                "title": title,
-                                "url": url,
-                                "source": "Abnormal Returns",
-                                "date": datetime.now().isoformat()
-                            })
-                            if len(articles) >= 5: # Limit to 5
-                                break
-            return articles
-        except Exception as e:
-            LOGGER.warning(f"Scraping Abnormal Returns failed: {e}")
-            return []
+        articles: List[Dict[str, str]] = []
+        main_content = soup.find("div", class_="entry-content")
+        if not main_content:
+            latest_post = soup.find("h2", class_="entry-title")
+            if latest_post and latest_post.find("a"):
+                post_url = latest_post.find("a")["href"]
+                resp_post = requests.get(post_url, timeout=10)
+                resp_post.raise_for_status()
+                soup_post = BeautifulSoup(resp_post.text, "html.parser")
+                main_content = soup_post.find("div", class_="entry-content")
 
-    def _scrape_morning_brew(self) -> List[Dict[str, str]]:
-        """Scrape latest stories from Morning Brew."""
-        try:
-            # Morning Brew main page usually has "Latest" or similar
-            resp = requests.get("https://www.morningbrew.com/daily", timeout=10)
-            resp.raise_for_status()
-            soup = BeautifulSoup(resp.text, 'html.parser')
-            
-            articles = []
-            # Look for story cards or links
-            # Heuristic: look for h3 or links with specific classes
-            # This is fragile and might need adjustment
-            
-            for link in soup.find_all('a', href=True):
-                url = link['href']
-                # Check if it looks like a story
-                if "/stories/" in url:
-                    title = link.get_text().strip()
-                    if title and len(title) > 10:
-                        full_url = f"https://www.morningbrew.com{url}" if url.startswith("/") else url
-                        articles.append({
+        if main_content:
+            for link in main_content.find_all("a"):
+                url = link.get("href")
+                title = link.get_text().strip()
+                if url and title and "http" in url:
+                    if "abnormalreturns.com" in url or "twitter.com" in url:
+                        continue
+                    articles.append(
+                        {
                             "title": title,
-                            "url": full_url,
-                            "source": "Morning Brew",
-                            "date": datetime.now().isoformat()
-                        })
-                        if len(articles) >= 5:
-                            break
-                            
-            return articles
-        except Exception as e:
-            LOGGER.warning(f"Scraping Morning Brew failed: {e}")
-            return []
+                            "url": url,
+                            "source": "Abnormal Returns",
+                            "date": datetime.utcnow().isoformat(),
+                        }
+                    )
+                if len(articles) >= 5:
+                    break
+        return articles
 
-# Singleton
+    def _fetch_rss_entries(self, feed_url: str, source: str) -> List[Dict[str, str]]:
+        resp = requests.get(feed_url, timeout=10)
+        resp.raise_for_status()
+        root = ET.fromstring(resp.text)
+        items: List[Dict[str, str]] = []
+
+        for item in root.findall("./channel/item"):
+            title = item.findtext("title") or ""
+            link = item.findtext("link") or ""
+            pub_date = item.findtext("pubDate") or datetime.utcnow().isoformat()
+            if title and link:
+                items.append(
+                    {
+                        "title": title.strip(),
+                        "url": link.strip(),
+                        "source": source,
+                        "date": pub_date,
+                    }
+                )
+            if len(items) >= 5:
+                break
+        return items
+
+    def _fetch_motley_fool_rss(self) -> List[Dict[str, str]]:
+        return self._fetch_rss_entries(
+            "https://www.fool.com/investing-news/?format=rss",
+            "The Motley Fool",
+        )
+
+    def _fetch_cfa_institute_rss(self) -> List[Dict[str, str]]:
+        return self._fetch_rss_entries(
+            "https://blogs.cfainstitute.org/investor/feed/",
+            "CFA Institute",
+        )
+
+    def _fetch_farnam_street_rss(self) -> List[Dict[str, str]]:
+        return self._fetch_rss_entries(
+            "https://fs.blog/feed/",
+            "Farnam Street",
+        )
+
+
 _lectures_service = LecturesService()
 
-def get_lectures_service():
+
+def get_lectures_service() -> LecturesService:
     return _lectures_service

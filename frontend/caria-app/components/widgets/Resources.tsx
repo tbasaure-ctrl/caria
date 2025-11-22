@@ -16,14 +16,14 @@ const STATIC_RESOURCES: Resource[] = [
         description: "Understanding behavioral finance and cognitive biases in investing",
         type: "book",
         url: "https://www.amazon.com/Psychology-Money-Timeless-lessons-happiness/dp/0857197681",
-        tags: ["Behavioral Finance", "Psychology"]
+        tags: ["behavioral", "psychology"]
     },
     {
         title: "Thinking, Fast and Slow",
         description: "Daniel Kahneman's masterwork on cognitive biases and decision-making",
         type: "book",
         url: "https://www.amazon.com/Thinking-Fast-Slow-Daniel-Kahneman/dp/0374533555",
-        tags: ["Psychology", "Decision Making"]
+        tags: ["behavioral", "decision"]
     },
     {
         title: "Common Investment Biases",
@@ -52,14 +52,14 @@ Following what everyone else is doing without independent analysis.
 
 **How it affects investing**: Buying hot stocks because "everyone is talking about them."
         `,
-        tags: ["Bias", "Psychology"]
+        tags: ["behavioral", "bias"]
     },
     {
         title: "Warren Buffett's Letters to Shareholders",
         description: "Decades of wisdom from the Oracle of Omaha",
         type: "article",
         url: "https://www.berkshirehathaway.com/letters/letters.html",
-        tags: ["Value Investing", "Buffett"]
+        tags: ["valuation", "value investing"]
     },
     {
         title: "Valuation Methods Explained",
@@ -85,7 +85,7 @@ Value based on M&A deals of similar companies.
 
 **Remember**: No valuation method is perfect. Use multiple approaches.
         `,
-        tags: ["Valuation", "DCF"]
+        tags: ["valuation", "education"]
     },
     {
         title: "Market Cycles and Regime Detection",
@@ -106,7 +106,7 @@ Markets move in cycles. Understanding where we are in the cycle helps with posit
 ## How Caria Helps
 Our regime detection model analyzes multiple indicators to identify the current market environment.
         `,
-        tags: ["Market Cycles", "Macro"]
+        tags: ["macro", "cycles"]
     }
 ];
 
@@ -123,10 +123,10 @@ export const Resources: React.FC = () => {
                 const lectures = await fetchRecommendedLectures();
                 const mappedLectures: Resource[] = lectures.map(l => ({
                     title: l.title,
-                    description: `From ${l.source} - ${new Date(l.date).toLocaleDateString()}`,
+                    description: `${l.source} • ${new Date(l.date).toLocaleDateString()}`,
                     type: 'article',
                     url: l.url,
-                    tags: ['Daily', l.source]
+                    tags: ['finance', 'curated', l.source.toLowerCase()]
                 }));
 
                 // Prepend dynamic lectures to static resources
@@ -161,26 +161,35 @@ export const Resources: React.FC = () => {
             backgroundColor: 'var(--color-bg-secondary)',
             border: '1px solid var(--color-bg-tertiary)'
         }}>
-            <h2 className="text-2xl font-bold mb-4" style={{
+            <h2 className="text-2xl font-bold mb-2" style={{
                 fontFamily: 'var(--font-display)',
                 color: 'var(--color-cream)'
             }}>
-                📚 Recommended Resources
+                Recommended Research & Lectures
             </h2>
+            <p className="text-xs mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+                Curated daily from Abnormal Returns, The Motley Fool, CFA Institute, Farnam Street, and other institutional-grade sources. Sponsored and low-quality pieces are filtered out.
+            </p>
 
             {/* Filter buttons */}
             <div className="flex gap-2 mb-4 flex-wrap">
-                {['all', 'bias', 'valuation', 'psychology'].map(f => (
+                {[
+                    { label: 'All', value: 'all' },
+                    { label: 'Finance', value: 'finance' },
+                    { label: 'Valuation', value: 'valuation' },
+                    { label: 'Behavioral', value: 'behavioral' },
+                    { label: 'Macro', value: 'macro' },
+                ].map(({ label, value }) => (
                     <button
-                        key={f}
-                        onClick={() => setFilter(f)}
+                        key={value}
+                        onClick={() => setFilter(value)}
                         className="px-3 py-1 rounded text-sm transition-all"
                         style={{
-                            backgroundColor: filter === f ? 'var(--color-primary)' : 'var(--color-bg-tertiary)',
-                            color: filter === f ? 'var(--color-cream)' : 'var(--color-text-secondary)',
+                            backgroundColor: filter === value ? 'var(--color-primary)' : 'var(--color-bg-tertiary)',
+                            color: filter === value ? 'var(--color-cream)' : 'var(--color-text-secondary)',
                         }}
                     >
-                        {f.charAt(0).toUpperCase() + f.slice(1)}
+                        {label}
                     </button>
                 ))}
             </div>
@@ -249,7 +258,6 @@ export const Resources: React.FC = () => {
                             >
                                 {resource.type.toUpperCase()}
                             </span>
-                            {resource.url && <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>🔗</span>}
                         </div>
                         <h3 className="font-bold mb-1" style={{ color: 'var(--color-cream)' }}>
                             {resource.title}

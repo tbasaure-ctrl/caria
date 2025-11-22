@@ -1,5 +1,6 @@
 import logging
 import os
+import statistics
 from typing import Any, Dict, Optional
 
 from caria.ingestion.clients.fmp_client import FMPClient
@@ -35,7 +36,7 @@ class SimpleValuationService:
             reverse_dcf = self._calculate_reverse_dcf(metrics, current_price, dcf["assumptions"])
 
             # 4. Calculate Multiples Valuation (Fair Value based on Hist Avg)
-            multiples_val = self._calculate_historical_multiples_valuation(ticker, metrics)
+            multiples_val = self._calculate_historical_multiples_valuation(ticker, metrics, current_price)
 
             # 5. Current Multiples
             current_multiples = self._calculate_multiples(metrics)
@@ -191,7 +192,12 @@ class SimpleValuationService:
             LOGGER.error(f"Reverse DCF error: {e}")
             return {"implied_growth_rate": 0, "explanation": "Calculation failed"}
 
-    def _calculate_historical_multiples_valuation(self, ticker: str, current_metrics: Dict[str, Any]) -> Dict[str, Any]:
+    def _calculate_historical_multiples_valuation(
+        self,
+        ticker: str,
+        current_metrics: Dict[str, Any],
+        current_price: float,
+    ) -> Dict[str, Any]:
         """
         Valuation based on 5-year historical average multiples.
         """
@@ -200,51 +206,97 @@ class SimpleValuationService:
             # We'll fetch last 5 years annual
             hist_ratios = self.fmp_client.get_financial_ratios(ticker, period="annual")
             if not hist_ratios:
-                return {"method": "N/A", "fair_value": 0, "explanation": "No historical data"}
+                return {"method": "N/A", "fair_value": 0, "explanation": "No historical EV multiples"}
 
-            # Take last 5 entries (assuming sorted desc date)
-            last_5 = hist_ratios[:5]
-            
-            avg_pe = sum(x.get("peRatio", 0) for x in last_5) / len(last_5)
-            avg_pb = sum(x.get("priceToBookRatio", 0) for x in last_5) / len(last_5)
-            
-            # Current metrics
-            eps = current_metrics.get("netIncomePerShareTTM") or current_metrics.get("netIncomePerShare") or 0
-            bps = current_metrics.get("bookValuePerShareTTM") or current_metrics.get("bookValuePerShare") or 0
-            
-            vals = []
-            if avg_pe > 0 and eps > 0:
-                vals.append(avg_pe * eps)
-            if avg_pb > 0 and bps > 0:
-                vals.append(avg_pb * bps)
-            
-            if not vals:
-                return {"method": "N/A", "fair_value": 0, "explanation": "Negative earnings/book value"}
-            
-            fair_value = sum(vals) / len(vals)
-            
+            last_entries = hist_ratios[:5]
+            ev_sales_samples = [
+                x.get("enterpriseValueOverRevenue")
+                for x in last_entries
+                if x.get("enterpriseValueOverRevenue")
+            ]
+            ev_ebitda_samples = [
+                x.get("enterpriseValueOverEBITDA")
+                for x in last_entries
+                if x.get("enterpriseValueOverEBITDA")
+            ]
+
+            ev_sales_median = statistics.median(ev_sales_samples) if ev_sales_samples else None
+            ev_ebitda_median = statistics.median(ev_ebitda_samples) if ev_ebitda_samples else None
+
+            shares = current_metrics.get("sharesOutstanding") or current_metrics.get("weightedAverageShsOutDil")
+            if not shares:
+                market_cap = current_metrics.get("marketCap")
+                if market_cap and current_price:
+                    shares = market_cap / current_price
+
+            revenue = current_metrics.get("revenueTTM")
+            if not revenue and shares and current_metrics.get("revenuePerShareTTM"):
+                revenue = current_metrics["revenuePerShareTTM"] * shares
+
+            ebitda = current_metrics.get("ebitdaTTM")
+            if not ebitda and shares and current_metrics.get("ebitdaPerShareTTM"):
+                ebitda = current_metrics["ebitdaPerShareTTM"] * shares
+
+            net_debt = current_metrics.get("netDebt")
+            if net_debt is None:
+                debt = current_metrics.get("totalDebt")
+                cash = current_metrics.get("cashAndShortTermInvestments")
+                if debt is not None and cash is not None:
+                    net_debt = debt - cash
+                else:
+                    net_debt = 0
+
+            fair_values = []
+            breakdown: Dict[str, float] = {}
+
+            if ev_sales_median and revenue and shares:
+                enterprise_value_sales = ev_sales_median * revenue
+                equity_value_sales = enterprise_value_sales - (net_debt or 0)
+                if equity_value_sales > 0:
+                    fair_value_sales = equity_value_sales / shares
+                    fair_values.append(fair_value_sales)
+                    breakdown["ev_sales"] = round(fair_value_sales, 2)
+
+            if ev_ebitda_median and ebitda and shares:
+                enterprise_value_ebitda = ev_ebitda_median * ebitda
+                equity_value_ebitda = enterprise_value_ebitda - (net_debt or 0)
+                if equity_value_ebitda > 0:
+                    fair_value_ebitda = equity_value_ebitda / shares
+                    fair_values.append(fair_value_ebitda)
+                    breakdown["ev_ebitda"] = round(fair_value_ebitda, 2)
+
+            if not fair_values:
+                return {
+                    "method": "EV Multiples (3-5y median)",
+                    "fair_value": 0,
+                    "ev_sales_median": ev_sales_median,
+                    "ev_ebitda_median": ev_ebitda_median,
+                    "breakdown": breakdown,
+                    "explanation": "Insufficient revenue/EBITDA data to compute EV multiples.",
+                }
+
+            fair_value = sum(fair_values) / len(fair_values)
             return {
-                "method": "5y Avg Multiples (PE & PB)",
+                "method": "EV Multiples (3-5y median)",
                 "fair_value": round(fair_value, 2),
-                "avg_pe": round(avg_pe, 2),
-                "avg_pb": round(avg_pb, 2),
-                "explanation": f"Fair value derived from 5y Avg PE ({avg_pe:.1f}x) and PB ({avg_pb:.1f}x)."
+                "ev_sales_median": round(ev_sales_median, 2) if ev_sales_median else None,
+                "ev_ebitda_median": round(ev_ebitda_median, 2) if ev_ebitda_median else None,
+                "breakdown": breakdown,
+                "explanation": "Fair value calculated using median EV/Sales and EV/EBITDA over the last 3-5 years.",
             }
 
         except Exception as e:
             LOGGER.error(f"Multiples Valuation error: {e}")
-            return {"method": "Error", "fair_value": 0, "explanation": "Calculation failed"}
+            return {"method": "Error", "fair_value": 0, "explanation": "EV multiple calculation failed"}
 
     def _calculate_multiples(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "method": "Market Multiples",
             "multiples": {
-                "PE": metrics.get("peRatioTTM") or metrics.get("peRatio") or 0,
-                "PB": metrics.get("pbRatioTTM") or metrics.get("pbRatio") or 0,
+                "EV/Sales": metrics.get("enterpriseValueOverRevenueTTM") or metrics.get("enterpriseValueOverRevenue") or 0,
                 "EV/EBITDA": metrics.get("enterpriseValueOverEBITDATTM") or metrics.get("enterpriseValueOverEBITDA") or 0,
-                "Div Yield": metrics.get("dividendYieldPercentageTTM") or metrics.get("dividendYieldPercentage") or 0
             },
-            "explanation": "Current market multiples."
+            "explanation": "Enterprise value multiples vs. sales and EBITDA."
         }
 
     def _default_assumptions(self):

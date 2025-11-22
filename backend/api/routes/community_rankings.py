@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from psycopg2.extras import RealDictCursor
 
-from api.dependencies import get_current_user
+from api.dependencies import get_optional_current_user
 # Import _get_db_connection from community module
 # We'll define it here to avoid circular imports
 def _get_db_connection():
@@ -81,7 +81,7 @@ class RankingsResponse(BaseModel):
 
 @router.get("/rankings", response_model=RankingsResponse)
 async def get_community_rankings(
-    current_user: Optional[UserInDB] = Depends(get_current_user),
+    current_user: Optional[UserInDB] = Depends(get_optional_current_user),
 ) -> RankingsResponse:
     """
     Get community rankings: top communities, hot theses, and survivors.
@@ -194,8 +194,8 @@ async def get_community_rankings(
                 survivors=survivors,
             )
     except Exception as e:
-        LOGGER.exception(f"Error getting rankings: {e}")
-        raise HTTPException(status_code=500, detail=f"Error getting rankings: {str(e)}") from e
+        LOGGER.exception("Error getting rankings for user=%s", getattr(current_user, "id", None))
+        raise HTTPException(status_code=500, detail="Error getting rankings") from e
     finally:
         if conn:
             conn.close()

@@ -61,6 +61,7 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
     const [isLoading, setIsLoading] = useState(false);
     const [results, setResults] = useState<ThesisArenaResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [hoveredCommunity, setHoveredCommunity] = useState<string | null>(null);
     const [showThreadModal, setShowThreadModal] = useState(false);
     const [showEditorModal, setShowEditorModal] = useState(false);
@@ -73,6 +74,7 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
 
         setIsLoading(true);
         setError(null);
+        setSuccessMessage(null);
         setResults(null);
 
         try {
@@ -95,9 +97,10 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
 
             const data = await response.json();
             setResults(data);
+            setSuccessMessage('Las comunidades han respondido. Revisa el impacto en tu convicción.');
         } catch (err: any) {
             console.error('Error challenging thesis:', err);
-            setError('Coming soon... Thesis Arena is being enhanced to provide even better analysis from our investment communities.');
+            setError(err?.message || 'No pudimos desafiar la tesis. Intenta nuevamente.');
         } finally{
             setIsLoading(false);
         }
@@ -118,6 +121,18 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
 
     return (
         <div className="space-y-6">
+            {successMessage && (
+                <div
+                    className="p-3 rounded-md text-sm"
+                    style={{
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        color: '#10b981',
+                    }}
+                >
+                    {successMessage}
+                </div>
+            )}
             <WidgetCard
                 title="Thesis Arena"
                 className="fade-in"
@@ -331,7 +346,7 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
                     onClose={() => setShowEditorModal(false)}
                     onSuccess={() => {
                         setShowEditorModal(false);
-                        // Optionally reload community feed or show success message
+                        setSuccessMessage('Tu tesis ya es visible en el feed de la comunidad.');
                     }}
                     prefillData={{
                         title: `${results.ticker ? `${results.ticker}: ` : ''}Investment Thesis`,

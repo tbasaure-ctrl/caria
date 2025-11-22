@@ -41,8 +41,12 @@ interface ReverseDcfBlock {
 interface MultiplesValuationBlock {
   method: string;
   fair_value: number;
-  avg_pe?: number;
-  avg_pb?: number;
+  ev_sales_median?: number;
+  ev_ebitda_median?: number;
+  breakdown?: {
+    ev_sales?: number;
+    ev_ebitda?: number;
+  };
   explanation: string;
 }
 
@@ -59,6 +63,14 @@ interface QuickValuationResponse {
 // Monte Carlo (mismo shape que tu widget actual)
 interface MonteCarloResult {
   paths: number[][];
+interface ScoringResponse {
+  ticker: string;
+  qualityScore: number;
+  valuationScore: number;
+  momentumScore: number;
+  compositeScore: number;
+  valuation_upside_pct: number | null;
+}
   final_values: number[];
   percentiles: {
     p5: number;
@@ -110,6 +122,8 @@ export const ValuationTool: React.FC = () => {
   const [valuation, setValuation] = useState<QuickValuationResponse | null>(
     null
   );
+  const [scoring, setScoring] = useState<ScoringResponse | null>(null);
+  const [scoringError, setScoringError] = useState<string | null>(null);
   const [isLoadingValuation, setIsLoadingValuation] = useState(false);
   const [valError, setValError] = useState<string | null>(null);
 
@@ -126,6 +140,8 @@ export const ValuationTool: React.FC = () => {
   const handleAnalyze = async () => {
     setIsLoadingValuation(true);
     setValError(null);
+    setScoring(null);
+    setScoringError(null);
     setMcResult(null);
     setMcError(null);
 
@@ -175,6 +191,19 @@ export const ValuationTool: React.FC = () => {
 
       const valData: QuickValuationResponse = await valResp.json();
       setValuation(valData);
+
+      try {
+        const scoringResp = await fetchWithAuth(`${API_BASE_URL}/api/analysis/scoring/${cleanTicker}`);
+        if (scoringResp.ok) {
+          const scoringData: ScoringResponse = await scoringResp.json();
+          setScoring(scoringData);
+        } else {
+          throw new Error('Scoring failed');
+        }
+      } catch (scoringErr: any) {
+        console.error('Scoring error:', scoringErr);
+        setScoringError('No se pudieron calcular los puntajes de Quality/Valuation/Momentum.');
+      }
 
       // 3) usar el CAGR implícito del DCF como μ y horizonte para Monte Carlo
       const impliedMu = valData.dcf.implied_return_cagr;
@@ -309,6 +338,39 @@ export const ValuationTool: React.FC = () => {
           )}
         </section>
 
+        {scoring && (
+          <section className="grid grid-cols-2 md:grid-cols-4 gap-3 border border-slate-800 rounded-lg p-4 bg-gray-950/30">
+            {[
+              { label: 'Quality', value: scoring.qualityScore, hint: 'ROIC + márgenes + crecimiento' },
+              { label: 'Valuation', value: scoring.valuationScore, hint: scoring.valuation_upside_pct !== null ? `Upside: ${scoring.valuation_upside_pct.toFixed(1)}%` : 'Upside relativo' },
+              { label: 'Momentum', value: scoring.momentumScore, hint: '1M vs 3M trend + volatilidad' },
+              { label: 'Composite', value: scoring.compositeScore, hint: 'Promedio de los tres modelos' },
+            ].map((item) => (
+              <div key={item.label} className="text-center">
+                <div
+                  className="mx-auto w-20 h-20 rounded-full flex items-center justify-center font-bold text-xl"
+                  style={{
+                    backgroundColor: 'rgba(59,130,246,0.1)',
+                    border: '1px solid rgba(59,130,246,0.3)',
+                    color:
+                      item.value >= 70 ? '#10b981' : item.value >= 50 ? '#fbbf24' : '#f87171',
+                  }}
+                >
+                  {item.value.toFixed(0)}
+                </div>
+                <div className="mt-2 text-sm text-slate-200">{item.label}</div>
+                <div className="text-xs text-slate-500">{item.hint}</div>
+              </div>
+            ))}
+          </section>
+        )}
+
+        {scoringError && (
+          <div className="text-xs text-amber-300 bg-amber-900/20 border border-amber-500/20 p-2 rounded-md">
+            {scoringError}
+          </div>
+        )}
+
         {/* Contenido de valuación */}
         {valuation && (
           <section className="space-y-6">
@@ -337,28 +399,23 @@ export const ValuationTool: React.FC = () => {
                 <div className="text-3xl font-bold text-emerald-100">
                   {formatMoney(valuation.multiples_valuation.fair_value)}
                 </div>
-                <div className="text-xs text-emerald-300/80 leading-relaxed">
-                  Based on 5y Avg PE ({valuation.multiples_valuation.avg_pe?.toFixed(1)}x) & PB ({valuation.multiples_valuation.avg_pb?.toFixed(1)}x).
-                </div>
-              </div>
-            </div>
-
-            {/* Standard DCF (De-emphasized but visible) */}
-            <div className="border-t border-slate-800 pt-4">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-sm font-semibold text-slate-300">Standard DCF Analysis</h3>
-                <span className="text-xs text-slate-500">Assumed Growth: {(valuation.dcf.assumptions.high_growth_rate * 100).toFixed(1)}%</span>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-900/40 p-3 rounded border border-slate-800">
-                  <div className="text-xs text-slate-500">Fair Value</div>
-                  <div className="text-lg font-mono text-slate-200">{formatMoney(valuation.dcf.fair_value_per_share)}</div>
-                </div>
-                <div className="bg-gray-900/40 p-3 rounded border border-slate-800">
-                  <div className="text-xs text-slate-500">Upside</div>
-                  <div className={`text-lg font-mono ${valuation.dcf.upside_percent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {valuation.dcf.upside_percent.toFixed(1)}%
+                <div className="text-xs text-emerald-300/80 leading-relaxed space-y-1">
+                  <div>
+                    Medianas: EV/Sales {valuation.multiples_valuation.ev_sales_median?.toFixed(1) ?? '—'}x • EV/EBITDA{' '}
+                    {valuation.multiples_valuation.ev_ebitda_median?.toFixed(1) ?? '—'}x
                   </div>
+                  {valuation.multiples_valuation.breakdown && (
+                    <div className="text-[11px] text-emerald-200/80">
+                      {valuation.multiples_valuation.breakdown.ev_sales !== undefined && (
+                        <span>EV/Sales → {formatMoney(valuation.multiples_valuation.breakdown.ev_sales)} </span>
+                      )}
+                      {valuation.multiples_valuation.breakdown.ev_ebitda !== undefined && (
+                        <span className="ml-1">
+                          EV/EBITDA → {formatMoney(valuation.multiples_valuation.breakdown.ev_ebitda)}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

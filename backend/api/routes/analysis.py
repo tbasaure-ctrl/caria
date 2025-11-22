@@ -21,6 +21,7 @@ if CARIA_DATA_SRC.exists() and str(CARIA_DATA_SRC) not in sys.path:
 
 from api.dependencies import get_current_user
 from api.validators import Ticker
+from api.services.llm_service import LLMService
 from caria.models.auth import UserInDB
 from caria.retrieval.retrievers import RetrievalResult
 
@@ -163,7 +164,7 @@ def search_wisdom(request: Request, payload: WisdomQuery) -> WisdomResponse:
 # ---------- LLM Helper (Groq Llama) ----------
 
 
-def _call_llama(prompt: str) -> dict[str, Any] | None:
+def _call_llama(prompt: str, system_prompt: Optional[str] = None) -> dict[str, Any] | None:
     """Llama a Llama vía proveedor compatible con OpenAI (ej: Groq)."""
     api_key = os.getenv("LLAMA_API_KEY")
     api_url = os.getenv(
@@ -184,20 +185,19 @@ def _call_llama(prompt: str) -> dict[str, Any] | None:
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
-    payload = {
-        "model": model,
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    "You are an investment coach that analyses theses, "
-                    "finds biases and gives practical recommendations."
-                ),
-            },
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": 0.7,
-    }
+    messages = [
+        {
+            "role": "system",
+            "content": system_prompt
+            or (
+                "You are an investment coach that analyses theses, "
+                "finds biases and gives practical recommendations."
+            ),
+        },
+        {"role": "user", "content": prompt},
+    ]
+
+    payload = {"model": model, "messages": messages, "temperature": 0.7}
 
     try:
         resp = requests.post(api_url, headers=headers, json=payload, timeout=40)
@@ -256,15 +256,34 @@ def challenge_thesis(
     - Llama a Llama (Groq). Si falla, usa un checklist básico.
     """
     # 1) RAG: recuperar fragmentos relevantes si el stack está disponible
+    llm_service: Optional[LLMService] = getattr(request.app.state, "llm_service", None)
     retriever = getattr(request.app.state, "retriever", None)
     embedder = getattr(request.app.state, "embedder", None)
 
     retrieved_chunks: list[WisdomResult] = []
-    evidence_text = ""
+    evidence_text = "Stack RAG no disponible en este momento."
+    query_text = f"{payload.thesis}\nTicker: {payload.ticker or ''}"
 
-    if retriever is not None and embedder is not None:
+    if llm_service is not None:
         try:
-            query_text = f"{payload.thesis}\nTicker: {payload.ticker or ''}"
+            rag_text, chunk_dicts = llm_service.get_rag_context(query_text, top_k=payload.top_k)
+            evidence_text = rag_text
+            retrieved_chunks = [
+                WisdomResult(
+                    id=chunk.get("id") or str(idx),
+                    score=float(chunk.get("score", 0.0)),
+                    title=chunk.get("title"),
+                    source=chunk.get("source"),
+                    content=chunk.get("content"),
+                    metadata=chunk.get("metadata") or {},
+                )
+                for idx, chunk in enumerate(chunk_dicts)
+            ]
+        except Exception as exc:  # noqa: BLE001
+            LOGGER.exception("Error durante recuperación RAG con LLM Service: %s", exc)
+            evidence_text = "Error al recuperar evidencia; continúa sin RAG."
+    elif retriever is not None and embedder is not None:
+        try:
             embedding = embedder.embed_text(query_text)
             results = retriever.query(embedding, top_k=payload.top_k)
 
@@ -272,7 +291,6 @@ def challenge_thesis(
                 wr = _serialize_result(r)
                 retrieved_chunks.append(wr)
 
-            # Resumen corto de evidencia para el prompt
             evidence_lines: list[str] = []
             for wr in retrieved_chunks[:5]:
                 snippet = (wr.content or "").replace("\n", " ")
@@ -285,42 +303,54 @@ def challenge_thesis(
         except Exception as exc:  # noqa: BLE001
             LOGGER.exception("Error durante recuperación RAG: %s", exc)
             evidence_text = "Error al recuperar evidencia; continúa sin RAG."
-    else:
-        evidence_text = "Stack RAG no disponible en este momento."
 
     # 2) Construir prompt para el LLM
     ticker_str = payload.ticker or "N/A"
+    analysis_system_prompt = (
+        "You are Caria, a legendary and wise investment mentor. "
+        "You blend rigorous fundamental analysis with decades of portfolio management experience. "
+        "Challenge investors with respect, highlight asymmetric risks, and always explain the why. "
+        "Respond in the user's language (Spanish if the thesis is in Spanish)."
+    )
     prompt = f"""
-You are CARIA, a rational investment sparring partner.
+Contexto recuperado (puede estar vac�o o tener ruido):
+{evidence_text}
 
-User:
+Tesis del usuario:
 - Thesis: "{payload.thesis}"
 - Ticker: {ticker_str}
 
-Evidence from historical wisdom, books, and notes (may be empty or noisy):
-{evidence_text}
+Instrucciones:
+1. Analiza la calidad del negocio, valuaci�n, catalizadores, riesgos y sizing recomendado.
+2. Se�ala sesgos cognitivos concretos (confirmation, optimism, anchoring, FOMO, etc.).
+3. Entrega recomendaciones accionables (datos a validar, m�tricas a monitorear, escenarios).
+4. Asigna un confidence_score entre 0 y 1 sobre la robustez de la tesis.
 
-Tasks:
-1. Critically analyze the thesis: quality of business, valuation, risks, time horizon, and portfolio sizing.
-2. Explicitly identify cognitive biases (confirmation, optimism, anchoring, FOMO, etc.).
-3. Give practical, concrete recommendations (what to double-check, what scenarios to run, when NOT to invest).
-4. Estimate a confidence_score between 0 and 1 for how robust the thesis looks.
-
-Respond ONLY in valid JSON with this exact structure:
-
-{{
-  "critical_analysis": "string, detailed but concise, in Spanish if the input is Spanish.",
-  "identified_biases": ["string", "..."],
-  "recommendations": ["string", "..."],
+Responde SOLO en JSON v�lido con la forma:
+{
+  "critical_analysis": "texto detallado",
+  "identified_biases": ["bias 1", "bias 2"],
+  "recommendations": ["reco 1", "reco 2"],
   "confidence_score": 0.0-1.0
-}}
+}
 """
 
-    # 3) Llamar a Llama (Groq)
-    llm_result = _call_llama(prompt)
+    llm_response_text: Optional[str] = None
+    llm_error: Optional[str] = None
 
-    if llm_result is not None and llm_result.get("raw_text"):
-        critical, biases, recs, conf = _parse_llm_json(llm_result["raw_text"])
+    if llm_service is not None:
+        llm_response_text = llm_service.call_llm(prompt, system_prompt=analysis_system_prompt)
+        if not llm_response_text:
+            llm_error = "LLM service returned empty response"
+    else:
+        llm_result = _call_llama(prompt, system_prompt=analysis_system_prompt)
+        if llm_result is not None and llm_result.get("raw_text"):
+            llm_response_text = llm_result["raw_text"]
+        else:
+            llm_error = "Groq Llama fallback returned no response"
+
+    if llm_response_text:
+        critical, biases, recs, conf = _parse_llm_json(llm_response_text)
         return ChallengeThesisResponse(
             thesis=payload.thesis,
             retrieved_chunks=retrieved_chunks,
@@ -330,12 +360,11 @@ Respond ONLY in valid JSON with this exact structure:
             confidence_score=conf,
         )
 
-    # 4) Fallback total: checklist básico (lo que estás viendo ahora)
     ticker_info = f" sobre {payload.ticker}" if payload.ticker else ""
-    basic_analysis = f"""Análisis de la tesis{ticker_info}: "{payload.thesis}".
+    basic_analysis = f"""An�lisis de la tesis{ticker_info}: "{payload.thesis}".
 
-No se pudo acceder al modelo Groq Llama.
-Se muestra un checklist básico para que revises tu propia tesis.
+No se pudo acceder al modelo Groq Llama ({llm_error or 'motivo desconocido'}).
+Se muestra un checklist b�sico para que revises tu propia tesis.
 """
 
     return ChallengeThesisResponse(
@@ -343,14 +372,14 @@ Se muestra un checklist básico para que revises tu propia tesis.
         retrieved_chunks=retrieved_chunks,
         critical_analysis=basic_analysis,
         identified_biases=[
-            "Confirmation bias: solo buscar información que confirma tu tesis",
+            "Confirmation bias: solo buscar informaci�n que confirma tu tesis",
             "Overconfidence: subestimar riesgos y volatilidad",
         ],
         recommendations=[
-            "Revisar múltiple evidencia independiente (fuera de redes sociales)",
-            "Analizar estados financieros y valuación frente a su historia y pares",
+            "Revisar m�ltiple evidencia independiente (fuera de redes sociales)",
+            "Analizar estados financieros y valuaci�n frente a su historia y pares",
             "Definir un rango de escenarios (pesimista, base, optimista) y su impacto",
-            "Decidir un tamaño de posición acorde a tu convicción y a tu portafolio total",
+            "Decidir un tama�o de posici�n acorde a tu convicci�n y a tu portafolio total",
         ],
         confidence_score=0.5,
     )

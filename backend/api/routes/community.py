@@ -6,16 +6,19 @@ Per user requirements: posts show title/preview, users can vote UP.
 from __future__ import annotations
 
 from datetime import datetime
+import logging
 from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
-from api.dependencies import get_current_user
+from api.dependencies import get_current_user, get_optional_current_user
 from caria.models.auth import UserInDB
 
 router = APIRouter(prefix="/api/community", tags=["Community"])
+
+LOGGER = logging.getLogger("caria.api.community")
 
 
 def _get_db_connection():
@@ -109,7 +112,7 @@ async def get_community_posts(
     sort_by: str = Query("upvotes", pattern="^(upvotes|created_at|analysis_merit_score)$"),
     ticker: Optional[str] = Query(None, max_length=10),
     search: Optional[str] = Query(None, max_length=100, description="Search query for title/preview/ticker"),
-    current_user: Optional[UserInDB] = Depends(get_current_user),
+    current_user: Optional[UserInDB] = Depends(get_optional_current_user),
 ) -> list[CommunityPostResponse]:
     """
     Get community posts (top ideas).
@@ -191,6 +194,9 @@ async def get_community_posts(
                 )
                 for row in rows
             ]
+    except Exception as exc:
+        LOGGER.exception("Error retrieving community posts: limit=%s offset=%s sort=%s ticker=%s search=%s", limit, offset, sort_by, ticker, search)
+        raise HTTPException(status_code=500, detail="Error retrieving community posts") from exc
     finally:
         conn.close()
 
@@ -255,6 +261,11 @@ async def create_community_post(
                 arena_round_id=str(row["arena_round_id"]) if row.get("arena_round_id") else None,
                 arena_community=row.get("arena_community"),
             )
+    except Exception as exc:
+        LOGGER.exception("Error creating community post for user=%s ticker=%s", current_user.id, post_data.ticker)
+        if conn:
+            conn.rollback()
+        raise HTTPException(status_code=500, detail="Error creating community post") from exc
     finally:
         conn.close()
 
@@ -350,6 +361,11 @@ async def vote_on_post(
             upvotes = cursor.fetchone()[0]
 
             return {"action": action, "upvotes": upvotes, "user_has_voted": action == "added"}
+    except Exception as exc:
+        LOGGER.exception("Error voting on post %s by user %s", post_id, current_user.id)
+        if conn:
+            conn.rollback()
+        raise
     finally:
         conn.close()
 
@@ -357,7 +373,7 @@ async def vote_on_post(
 @router.get("/posts/{post_id}", response_model=CommunityPostResponse)
 async def get_post_details(
     post_id: UUID,
-    current_user: Optional[UserInDB] = Depends(get_current_user),
+    current_user: Optional[UserInDB] = Depends(get_optional_current_user),
 ) -> CommunityPostResponse:
     """
     Get full details of a community post (including full thesis).
@@ -407,6 +423,11 @@ async def get_post_details(
                 created_at=row["created_at"],
                 updated_at=row["updated_at"],
             )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        LOGGER.exception("Error retrieving community post %s", post_id)
+        raise HTTPException(status_code=500, detail="Error retrieving community post") from exc
     finally:
         conn.close()
 

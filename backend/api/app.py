@@ -87,6 +87,7 @@ from api.routes.reddit import router as reddit_router
 from api.routes.cors_test import router as cors_test_router
 from api.routes.lectures import router as lectures_router
 from api.routes.debug_secrets import router as debug_secrets_router
+from api.routes.scoring import router as scoring_router
 
 
 # WebSocket support per audit document
@@ -332,6 +333,7 @@ app.include_router(lectures_router)  # Recommended lectures
 app.include_router(debug_secrets_router)  # Debug endpoint to check secrets status
 from api.routes.debug import router as debug_router
 app.include_router(debug_router) # LLM Debug endpoint
+app.include_router(scoring_router)
 
 
 # Mount SocketIO app for WebSocket support per audit document

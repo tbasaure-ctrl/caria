@@ -3,28 +3,14 @@
  * Replaces CommunityIdeas widget with improved functionality.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { WidgetCard } from './WidgetCard';
-import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
-
-interface CommunityPost {
-    id: string;
-    user_id: string;
-    username: string | null;
-    title: string;
-    thesis_preview: string;
-    full_thesis: string | null;
-    ticker: string | null;
-    analysis_merit_score: number;
-    upvotes: number;
-    user_has_voted: boolean;
-    created_at: string;
-    updated_at: string;
-    is_arena_post: boolean;
-    arena_thread_id: string | null;
-    arena_round_id: string | null;
-    arena_community: string | null;
-}
+import { API_BASE_URL, fetchWithAuth } from '../../services/apiService';
+import {
+    CommunityPost,
+    CommunityPostSort,
+    fetchCommunityPosts,
+} from '../../services/communityService';
 
 const COMMUNITY_LABELS: Record<string, string> = {
     value_investor: 'Value Investor',
@@ -40,40 +26,98 @@ export const CommunityFeed: React.FC = () => {
     const [expandedPost, setExpandedPost] = useState<string | null>(null);
     const [voting, setVoting] = useState<Set<string>>(new Set());
     const [searchQuery, setSearchQuery] = useState('');
-    const [sortBy, setSortBy] = useState<'upvotes' | 'created_at' | 'analysis_merit_score'>('upvotes');
+    const [sortBy, setSortBy] = useState<CommunityPostSort>('upvotes');
+    const [statusMessage, setStatusMessage] = useState<string | null>(null);
+    const cacheHydrated = useRef(false);
+    const postsRef = useRef<CommunityPost[]>([]);
+
+    const CACHE_KEY = 'caria.community.feed.cache.v1';
 
     useEffect(() => {
-        loadPosts();
+        postsRef.current = posts;
+    }, [posts]);
+
+    useEffect(() => {
+        if (!posts.length) return;
+        sessionStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({
+                posts,
+                savedAt: Date.now(),
+                sortBy,
+            })
+        );
+    }, [posts, sortBy]);
+
+    const hydrateFromCache = useCallback(() => {
+        if (cacheHydrated.current) return;
+        cacheHydrated.current = true;
+        try {
+            const cachedRaw = sessionStorage.getItem(CACHE_KEY);
+            if (!cachedRaw) return;
+            const cached = JSON.parse(cachedRaw);
+            if (cached?.sortBy && cached.sortBy !== sortBy) {
+                return;
+            }
+            if (Array.isArray(cached.posts) && cached.posts.length > 0) {
+                setPosts(cached.posts);
+                setStatusMessage('Mostrando datos guardados mientras actualizamos el feed...');
+            }
+        } catch (cacheError) {
+            console.warn('No se pudo hidratar cache del feed', cacheError);
+        }
     }, [sortBy]);
 
-    const loadPosts = async () => {
-        try {
+    const loadPosts = useCallback(
+        async (signal?: AbortSignal) => {
             setLoading(true);
             setError(null);
-            const response = await fetchWithAuth(
-                `${API_BASE_URL}/api/community/posts?limit=50&sort_by=${sortBy}`
-            );
-
-            if (!response.ok) {
-                throw new Error('Failed to load community posts');
+            try {
+                const data = await fetchCommunityPosts({ sortBy, limit: 50, signal });
+                setPosts(data);
+                setStatusMessage(null);
+            } catch (err: any) {
+                if (err?.name === 'AbortError') {
+                    return;
+                }
+                console.error('Error loading community posts:', err);
+                hydrateFromCache();
+                const message = err?.message || '';
+                if (message.includes('401') || message.includes('Session expired')) {
+                    setError('Inicia sesión para ver las publicaciones de la comunidad.');
+                } else if (message.includes('connect')) {
+                    setError('Servicio de comunidad no disponible. Reintentando...');
+                } else if (!postsRef.current.length) {
+                    setError('Unable to load community posts. Please try again later.');
+                } else {
+                    setStatusMessage('Mostrando datos guardados. Último refresh falló.');
+                }
+            } finally {
+                setLoading(false);
             }
+        },
+        [sortBy, hydrateFromCache]
+    );
 
-            const data = await response.json();
-            setPosts(data);
-        } catch (err: any) {
-            console.error('Error loading community posts:', err);
-            // Provide more specific error messages
-            if (err.message?.includes('401') || err.message?.includes('403')) {
-                setError('Please log in to view community posts');
-            } else if (err.message?.includes('Failed to connect')) {
-                setError('Unable to connect to community service');
-            } else {
-                setError('Unable to load community posts. Please try again later.');
-            }
-        } finally {
-            setLoading(false);
+    useEffect(() => {
+        cacheHydrated.current = false;
+        hydrateFromCache();
+        const controller = new AbortController();
+        loadPosts(controller.signal);
+        return () => controller.abort();
+    }, [sortBy, hydrateFromCache, loadPosts]);
+
+    useEffect(() => {
+        const handleExternalRefresh = () => loadPosts();
+        if (typeof window !== 'undefined') {
+            window.addEventListener('caria-community-refresh', handleExternalRefresh);
         }
-    };
+        return () => {
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('caria-community-refresh', handleExternalRefresh);
+            }
+        };
+    }, [loadPosts]);
 
     const filteredPosts = useMemo(() => {
         if (!searchQuery.trim()) {
@@ -183,7 +227,7 @@ export const CommunityFeed: React.FC = () => {
             >
                 <div className="text-sm" style={{ color: '#ef4444' }}>{error}</div>
                 <button
-                    onClick={loadPosts}
+                    onClick={() => loadPosts()}
                     className="mt-2 text-xs underline"
                     style={{ color: 'var(--color-primary)' }}
                 >
@@ -199,7 +243,7 @@ export const CommunityFeed: React.FC = () => {
             id="community-feed-widget"
             tooltip="Feed de tesis e ideas de inversión de la comunidad. Busca, vota y descubre insights compartidos por otros usuarios."
         >
-            <div className="space-y-4">
+                <div className="space-y-4">
                 {/* Search and Sort Controls */}
                 <div className="space-y-2">
                     <div className="flex gap-2">
@@ -218,7 +262,7 @@ export const CommunityFeed: React.FC = () => {
                         <select
                             value={sortBy}
                             onChange={(e) =>
-                                setSortBy(e.target.value as 'upvotes' | 'created_at' | 'analysis_merit_score')
+                                setSortBy(e.target.value as CommunityPostSort)
                             }
                             className="px-3 py-2 rounded-lg text-sm"
                             style={{
@@ -232,6 +276,11 @@ export const CommunityFeed: React.FC = () => {
                             <option value="analysis_merit_score">Best Analysis</option>
                         </select>
                     </div>
+                    {statusMessage && (
+                        <div className="text-xs" style={{ color: '#fbbf24' }}>
+                            {statusMessage}
+                        </div>
+                    )}
                     {searchQuery && (
                         <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                             Showing {filteredPosts.length} of {posts.length} posts

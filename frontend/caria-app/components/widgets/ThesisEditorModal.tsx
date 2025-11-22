@@ -126,14 +126,16 @@ export const ThesisEditorModal: React.FC<ThesisEditorModalProps> = ({
                 throw new Error(errorData.detail || 'Failed to create post');
             }
 
-            // Success
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('caria-community-refresh'));
+            }
             if (onSuccess) {
                 onSuccess();
             }
             onClose();
         } catch (err: any) {
             console.error('Error creating post:', err);
-            setError('Coming soon... Post creation is being enhanced for better sharing capabilities.');
+            setError(err?.message || 'No pudimos publicar tu tesis. Intenta nuevamente.');
         } finally {
             setIsSubmitting(false);
         }

@@ -3,6 +3,7 @@ import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
 import { CommunityCard } from './CommunityCard';
 import { CommunityTooltip } from './CommunityTooltip';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 interface CommunityResponse {
     community: string;

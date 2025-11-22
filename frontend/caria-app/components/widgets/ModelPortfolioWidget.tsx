@@ -54,8 +54,7 @@ export const ModelPortfolioWidget: React.FC = () => {
             if (data.length > 0 && !selectedPortfolio) {
                 setSelectedPortfolio(data[0]);
             }
-        } catch (err: any) {
-            console.error('Error loading model portfolios:', err);
+        } catch (err: unknown) {
             setError('Coming soon... Model portfolios are being enhanced with better allocation strategies.');
         } finally {
             setLoading(false);
@@ -84,8 +83,7 @@ export const ModelPortfolioWidget: React.FC = () => {
             const newPortfolio = await response.json();
             await loadPortfolios(); // Reload list
             setSelectedPortfolio(newPortfolio);
-        } catch (err: any) {
-            console.error('Error selecting portfolio:', err);
+        } catch (err: unknown) {
             setError('Coming soon... Portfolio selection is being enhanced for better recommendations.');
         } finally {
             setIsSelecting(false);

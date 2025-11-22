@@ -91,9 +91,8 @@ export const MonteCarloSimulation: React.FC = () => {
 
             const data: MonteCarloResult = await response.json();
             setResult(data);
-        } catch (err: any) {
+        } catch (err: unknown) {
             setError('Coming soon... Monte Carlo simulations are being enhanced for more accurate predictions.');
-            console.error('Monte Carlo error:', err);
         } finally {
             setIsLoading(false);
         }

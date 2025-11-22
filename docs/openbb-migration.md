@@ -43,4 +43,5 @@
 - ✅ **Deterministic OpenBB build**: `OPENBB_EXTENSION_LIST` (extensions above), `OPENBB_FORCE_EXTENSION_BUILD=true`, and `OPENBB_USER_DATA_PATH=/tmp/openbb` are now set so Railway can preload the SDK without writing outside `/tmp`.
 - ✅ **Torch runtime bundled**: `torch==2.2.2` is pinned in `backend/requirements.txt` so OpenBB’s package builder can resolve its custom class hooks during container startup.
 - ✅ **Pinned NumPy 1.26**: `numpy==1.26.4` keeps Torch (and OpenBB’s extensions) on the supported ABI while upstream packages finish porting to NumPy 2.x.
+- ✅ **Provider overrides**: Use `OPENBB_PRICE_PROVIDER` / `OPENBB_FUNDAMENTAL_PROVIDER` (default `yfinance`) to control which market-data source OpenBB calls. Price/multiples now default to Yahoo Finance replacements compatible with the latest SDK.
 

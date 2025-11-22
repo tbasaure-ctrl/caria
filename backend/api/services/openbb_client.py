@@ -48,6 +48,9 @@ os.environ.setdefault("OPENBB_EXTENSION_LIST", DEFAULT_OPENBB_EXTENSIONS)
 os.environ.setdefault("OPENBB_FORCE_EXTENSION_BUILD", "true")
 os.environ.setdefault("OPENBB_USER_DATA_PATH", "/tmp/openbb")
 
+PRICE_PROVIDER = os.getenv("OPENBB_PRICE_PROVIDER", "yfinance")
+FUNDAMENTAL_PROVIDER = os.getenv("OPENBB_FUNDAMENTAL_PROVIDER", "yfinance")
+
 from openbb import obb
 from psycopg2.extras import Json
 
@@ -185,7 +188,7 @@ class OpenBBClient:
             self.cache.set(cache_key, persisted)
             return persisted
 
-        response = obb.equity.price.historical(symbol=symbol, provider="yahoo", start_date=start_date)
+        response = obb.equity.price.historical(symbol=symbol, provider=PRICE_PROVIDER, start_date=start_date)
         data = _unwrap_results(response)
         data.sort(key=lambda x: x.get("date") or x.get("timestamp") or "")
         self.cache.set(cache_key, data)
@@ -202,7 +205,7 @@ class OpenBBClient:
             self.cache.set(cache_key, persisted)
             return persisted
 
-        response = obb.equity.fundamental.multiples(symbol=symbol, provider="yahoo")
+        response = obb.equity.fundamental.multiples(symbol=symbol, provider=FUNDAMENTAL_PROVIDER)
         data = _unwrap_results(response)
         self.cache.set(cache_key, data)
         self.persistent_cache.set(cache_key, data)
@@ -218,7 +221,7 @@ class OpenBBClient:
             self.cache.set(cache_key, persisted)
             return persisted
 
-        response = obb.equity.fundamental.financials(symbol=symbol, provider="yahoo")
+        response = obb.equity.fundamental.financials(symbol=symbol, provider=FUNDAMENTAL_PROVIDER)
         payload = getattr(response, "results", response)
 
         financials = {

@@ -16,7 +16,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSuccess, onSw
     const [passwordFocused, setPasswordFocused] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [loginMethod, setLoginMethod] = useState<'username' | 'google' | null>(null);
+    // Google Sign-In temporarily disabled
+    const [loginMethod, setLoginMethod] = useState<'username' | null>(null);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -150,7 +151,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSuccess, onSw
                             disabled={isLoading} 
                             className="w-full bg-slate-800 text-white font-bold py-3 px-5 rounded-md hover:bg-slate-700 transition-all disabled:opacity-50 disabled:bg-slate-800 disabled:cursor-not-allowed"
                         >
-                            {isLoading && loginMethod === 'username' ? (
+                            {isLoading ? (
                                 <span className="flex items-center justify-center gap-2">
                                     <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

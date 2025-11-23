@@ -57,62 +57,41 @@ interface QuickValuationResponse {
   dcf: DcfBlock;
   reverse_dcf: ReverseDcfBlock;
   multiples_valuation: MultiplesValuationBlock;
-  multiples: MultiplesBlock;
-}
-
-// Monte Carlo (mismo shape que tu widget actual)
-interface MonteCarloResult {
-  paths: number[][];
-  final_values: number[];
-  percentiles: {
-    p5: number;
-    p10: number;
-    p25: number;
-    p50: number;
-    p75: number;
-    p90: number;
-    p95: number;
-  };
-  metrics: {
-    mean: number;
-    median: number;
-    std: number;
-    var_5pct: number;
-    cvar_5pct: number;
-    prob_final_less_invested: number;
-    moic_median: number;
-  };
-  plotly_data: {
-    x: (number | null)[];
-    y: (number | null)[];
-    type: string;
-    mode: string;
-    line: { width: number; color: string };
-    name: string;
-  };
-  histogram: {
-    x: number[];
-    type: string;
-    nbinsx: number;
-    marker: { color: string; line: { color: string; width: number } };
-    name: string;
-  };
-  simulation_params: {
-    initial_value: number;
-    mu: number;
-    sigma: number;
-    years: number;
-    simulations: number;
-  };
-}
-
-interface ScoringResponse {
-  ticker: string;
-  qualityScore: number;
-  valuationScore: number;
-  momentumScore: number;
-  compositeScore: number;
-  valuation_upside_pct: number | null;
+  p75: number;
+  p90: number;
+  p95: number;
+};
+metrics: {
+  mean: number;
+  median: number;
+  std: number;
+  var_5pct: number;
+  cvar_5pct: number;
+  prob_final_less_invested: number;
+  moic_median: number;
+};
+plotly_data: {
+  x: (number | null)[];
+  y: (number | null)[];
+  type: string;
+  mode: string;
+  line: { width: number; color: string };
+  name: string;
+};
+histogram: {
+  x: number[];
+  type: string;
+  nbinsx: number;
+  marker: { color: string; line: { color: string; width: number } };
+  name: string;
+};
+simulation_params: {
+  initial_value: number;
+  mu: number;
+  sigma: number;
+  years: number;
+  simulations: number;
+};
 }
 
 const formatMoney = (v: number) =>

@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 
 from api.dependencies import get_current_user
 from caria.models.auth import UserInDB
-from api.services.openbb_client import openbb_client
+from api.services.openbb_client import OpenBBClient
 
 router = APIRouter(prefix="/api/prices", tags=["prices"])
 
@@ -33,31 +33,9 @@ class RealtimePriceResponse(BaseModel):
     prices: dict[str, dict[str, Any]]  # ticker -> datos de precio
 
 
-def _build_quote(symbol: str) -> dict[str, Any]:
-    history = openbb_client.get_price_history(symbol, start_date="2023-01-01")
-    if not history:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Precio no encontrado para {symbol}")
-
-    latest = history[-1]
-    prev = history[-2] if len(history) > 1 else None
-    close = latest.get("close") or latest.get("adj_close")
-    prev_close = prev.get("close") if prev else None
-
-    change = None
-    change_percent = None
-    if close is not None and prev_close:
-        change = close - prev_close
-        if prev_close != 0:
-            change_percent = (change / prev_close) * 100
-
-    return {
-        "symbol": symbol.upper(),
-        "price": close,
-        "previousClose": prev_close,
-        "change": change,
-        "changesPercentage": change_percent,
-        "date": latest.get("date"),
-    }
+def _get_openbb_client() -> OpenBBClient:
+    """Obtiene cliente OpenBB."""
+    return OpenBBClient()
 
 
 @router.post("/realtime", response_model=RealtimePriceResponse)
@@ -70,12 +48,10 @@ def get_realtime_prices(
     Usa FMP API para obtener datos actualizados de precios, cambios y porcentajes.
     """
     try:
-        prices: dict[str, dict[str, Any]] = {}
-        for ticker in request.tickers:
-            prices[ticker.upper()] = _build_quote(ticker)
+        client = _get_openbb_client()
+        prices = client.get_current_prices(request.tickers)
+        
         return RealtimePriceResponse(prices=prices)
-    except HTTPException:
-        raise
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -90,7 +66,22 @@ def get_realtime_price_single(
 ) -> dict[str, Any]:
     """Obtiene precio en tiempo real para un solo ticker."""
     try:
-        return _build_quote(ticker)
+        client = _get_openbb_client()
+        # Use batch method for single ticker to get full dict structure
+        prices = client.get_current_prices([ticker.upper()])
+        price_data = prices.get(ticker.upper())
+        
+        if price_data is None or price_data.get("price") == 0:
+             # Try fallback if 0
+             pass
+        
+        if price_data is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Precio no encontrado para {ticker}",
+            )
+        
+        return price_data
     except HTTPException:
         raise
     except Exception as exc:

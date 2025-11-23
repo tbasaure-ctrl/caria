@@ -340,29 +340,78 @@ export const ValuationTool: React.FC = () => {
         </section>
 
         {scoring && (
-          <section className="grid grid-cols-2 md:grid-cols-4 gap-3 border border-slate-800 rounded-lg p-4 bg-gray-950/30">
-            {[
-              { label: 'Quality', value: scoring.qualityScore, hint: 'ROIC + márgenes + crecimiento' },
-              { label: 'Valuation', value: scoring.valuationScore, hint: scoring.valuation_upside_pct !== null ? `Upside: ${scoring.valuation_upside_pct.toFixed(1)}%` : 'Upside relativo' },
-              { label: 'Momentum', value: scoring.momentumScore, hint: '1M vs 3M trend + volatilidad' },
-              { label: 'Composite', value: scoring.compositeScore, hint: 'Promedio de los tres modelos' },
-            ].map((item) => (
-              <div key={item.label} className="text-center">
-                <div
-                  className="mx-auto w-20 h-20 rounded-full flex items-center justify-center font-bold text-xl"
+          <section className="border border-slate-800 rounded-lg p-6 bg-gray-950/50 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full pointer-events-none"></div>
+            
+            <div className="flex flex-col md:flex-row gap-8 items-center">
+              {/* Main C-Score */}
+              <div className="text-center min-w-[180px]">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Caria C-Score
+                </h3>
+                <div 
+                  className="text-6xl font-bold mb-2"
                   style={{
-                    backgroundColor: 'rgba(59,130,246,0.1)',
-                    border: '1px solid rgba(59,130,246,0.3)',
-                    color:
-                      item.value >= 70 ? '#10b981' : item.value >= 50 ? '#fbbf24' : '#f87171',
+                    color: scoring.compositeScore >= 80 ? '#10b981' : scoring.compositeScore >= 60 ? '#fbbf24' : '#9ca3af',
+                    textShadow: '0 0 20px rgba(0,0,0,0.5)'
                   }}
                 >
-                  {item.value.toFixed(0)}
+                  {scoring.compositeScore.toFixed(0)}
                 </div>
-                <div className="mt-2 text-sm text-slate-200">{item.label}</div>
-                <div className="text-xs text-slate-500">{item.hint}</div>
+                <div className="px-3 py-1 rounded-full text-xs font-bold inline-block"
+                  style={{
+                    backgroundColor: scoring.compositeScore >= 80 ? 'rgba(16, 185, 129, 0.2)' : scoring.compositeScore >= 60 ? 'rgba(251, 191, 36, 0.2)' : 'rgba(156, 163, 175, 0.2)',
+                    color: scoring.compositeScore >= 80 ? '#10b981' : scoring.compositeScore >= 60 ? '#fbbf24' : '#9ca3af',
+                  }}
+                >
+                  {scoring.compositeScore >= 80 ? 'PROBABLE OUTLIER' : scoring.compositeScore >= 60 ? 'HIGH-QUALITY' : 'STANDARD'}
+                </div>
               </div>
-            ))}
+
+              {/* Divider */}
+              <div className="hidden md:block w-px h-24 bg-slate-800"></div>
+
+              {/* Breakdown */}
+              <div className="flex-1 w-full grid grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-500 font-medium">QUALITY (35%)</div>
+                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full rounded-full" 
+                      style={{ width: `${scoring.qualityScore}%`, backgroundColor: '#3b82f6' }}
+                    ></div>
+                  </div>
+                  <div className="text-lg font-bold text-slate-200">{scoring.qualityScore.toFixed(0)}<span className="text-xs text-slate-500 font-normal">/100</span></div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-500 font-medium">VALUATION (25%)</div>
+                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full rounded-full" 
+                      style={{ width: `${scoring.valuationScore}%`, backgroundColor: '#8b5cf6' }}
+                    ></div>
+                  </div>
+                  <div className="text-lg font-bold text-slate-200">{scoring.valuationScore.toFixed(0)}<span className="text-xs text-slate-500 font-normal">/100</span></div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-500 font-medium">MOMENTUM (20%)</div>
+                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full rounded-full" 
+                      style={{ width: `${scoring.momentumScore}%`, backgroundColor: '#f59e0b' }}
+                    ></div>
+                  </div>
+                  <div className="text-lg font-bold text-slate-200">{scoring.momentumScore.toFixed(0)}<span className="text-xs text-slate-500 font-normal">/100</span></div>
+                </div>
+                
+                <div className="col-span-3 text-xs text-slate-500 mt-1 flex justify-between">
+                   <span>* Moat Score (20%) not yet available</span>
+                   <span>Weights re-normalized to 100%</span>
+                </div>
+              </div>
+            </div>
           </section>
         )}
 

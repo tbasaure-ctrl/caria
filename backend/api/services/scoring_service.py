@@ -30,16 +30,22 @@ class ScoringService:
         valuation_score, valuation_details = self._calculate_valuation_score(valuation, current_price)
         momentum_score, momentum_details = self._calculate_momentum_score(ticker)
 
+        # Composite Score Formula (C-Score)
+        # Target weights: Quality (35%), Valuation (25%), Momentum (20%), Moat (20%)
+        # Since Moat is missing, we re-normalize: 35+25+20 = 80
+        # Quality: 0.35 / 0.8 = 0.4375
+        # Valuation: 0.25 / 0.8 = 0.3125
+        # Momentum: 0.20 / 0.8 = 0.25
         composite = round(
-            (quality_score + valuation_score + momentum_score) / 3,
-            2,
+            (quality_score * 0.4375) + (valuation_score * 0.3125) + (momentum_score * 0.25),
+            0, # Round to integer for cleaner UI
         )
 
         return {
             "ticker": ticker,
-            "qualityScore": round(quality_score, 2),
-            "valuationScore": round(valuation_score, 2),
-            "momentumScore": round(momentum_score, 2),
+            "qualityScore": round(quality_score, 0),
+            "valuationScore": round(valuation_score, 0),
+            "momentumScore": round(momentum_score, 0),
             "compositeScore": composite,
             "current_price": current_price,
             "fair_value": valuation_details.get("fair_value"),

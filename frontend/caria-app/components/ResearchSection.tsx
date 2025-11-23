@@ -2,6 +2,7 @@ import React from 'react';
 import { ValuationTool } from './widgets/ValuationTool';
 import { RedditSentiment } from './widgets/RedditSentiment';
 import { Resources } from './widgets/Resources';
+import { WeeklyContent } from './widgets/WeeklyContent';
 
 /**
  * ResearchSection - Groups related research and analysis widgets together
@@ -10,8 +11,9 @@ import { Resources } from './widgets/Resources';
  * - ValuationTool: Quick DCF-based valuation and Monte Carlo simulations
  * - RedditSentiment: Social sentiment analysis from Reddit
  * - Resources: Recommended articles, books, and educational content
+ * - WeeklyContent: Curated podcast and video of the week
  * 
- * All three widgets are visually grouped with a section header and improved spacing.
+ * All widgets are visually grouped with a section header and improved spacing.
  */
 export const ResearchSection: React.FC = () => {
     return (
@@ -40,10 +42,17 @@ export const ResearchSection: React.FC = () => {
             </div>
 
             {/* Research Widgets - Grid Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <ValuationTool />
-                <RedditSentiment />
-                <Resources />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="lg:col-span-2">
+                    <ValuationTool />
+                </div>
+                <div className="lg:col-span-1 space-y-6">
+                    <Resources />
+                    <RedditSentiment />
+                </div>
+                <div className="lg:col-span-1">
+                    <WeeklyContent />
+                </div>
             </div>
         </div>
     );

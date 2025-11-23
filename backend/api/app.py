@@ -249,6 +249,18 @@ for origin in required_origins:
 # This matches both preview and production deployments
 vercel_regex = r"https://.*\.vercel\.app"
 
+# --- DEBUG ENDPOINT FOR CORS ---
+@app.get("/api/debug/cors")
+def debug_cors():
+    """Returns the list of allowed origins for debugging deployment status."""
+    return {
+        "allowed_origins": cors_origins,
+        "vercel_regex": vercel_regex,
+        "env_cors": os.getenv("CORS_ORIGINS"),
+        "deployment_version": "2.1.0-cors-fix" 
+    }
+# -------------------------------
+
 # Logging para debugging
 LOGGER.info(f"CORS configured with origins: {cors_origins}")
 LOGGER.info(f"CORS regex pattern for Vercel: {vercel_regex}")

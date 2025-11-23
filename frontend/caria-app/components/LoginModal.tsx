@@ -30,6 +30,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSuccess, onSw
         try {
             // Use centralized API_BASE_URL per audit document (must be absolute URL)
             const { API_BASE_URL } = await import('../services/apiService');
+            // Remove /api if API_BASE_URL already includes it to avoid double slash or path issues
+            // But usually API_BASE_URL is just the domain.
+            // Let's ensure we are using the correct endpoint.
             const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

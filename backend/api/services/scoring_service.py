@@ -31,6 +31,7 @@ class ScoringService:
         if not latest_price:
             raise RuntimeError(f"Price history unavailable for {ticker}")
 
+<<<<<<< HEAD
         valuation = self.valuation_service.get_valuation(ticker, latest_price)
 
         quality_score, quality_details = self._quality_model(dataset)
@@ -44,6 +45,17 @@ class ScoringService:
             + 0.20 * momentum_score
             + 0.20 * qualitative_moat,
             2,
+=======
+        # Composite Score Formula (C-Score)
+        # Target weights: Quality (35%), Valuation (25%), Momentum (20%), Moat (20%)
+        # Since Moat is missing, we re-normalize: 35+25+20 = 80
+        # Quality: 0.35 / 0.8 = 0.4375
+        # Valuation: 0.25 / 0.8 = 0.3125
+        # Momentum: 0.20 / 0.8 = 0.25
+        composite = round(
+            (quality_score * 0.4375) + (valuation_score * 0.3125) + (momentum_score * 0.25),
+            0, # Round to integer for cleaner UI
+>>>>>>> cursor/diagnose-and-restore-broken-next-js-ui-gemini-3-pro-preview-049d
         )
 
         explanations = self._build_explanations(quality_details, valuation_details, momentum_details, moat_details)
@@ -56,6 +68,7 @@ class ScoringService:
 
         return {
             "ticker": ticker,
+<<<<<<< HEAD
             "qualityScore": round(quality_score, 2),
             "valuationScore": round(valuation_score, 2),
             "momentumScore": round(momentum_score, 2),
@@ -63,6 +76,13 @@ class ScoringService:
             "cScore": c_score,
             "classification": self._classify_c_score(c_score),
             "current_price": latest_price,
+=======
+            "qualityScore": round(quality_score, 0),
+            "valuationScore": round(valuation_score, 0),
+            "momentumScore": round(momentum_score, 0),
+            "compositeScore": composite,
+            "current_price": current_price,
+>>>>>>> cursor/diagnose-and-restore-broken-next-js-ui-gemini-3-pro-preview-049d
             "fair_value": valuation_details.get("fair_value"),
             "valuation_upside_pct": valuation_details.get("upside_pct"),
             "details": {

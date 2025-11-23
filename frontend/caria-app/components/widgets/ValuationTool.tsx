@@ -63,6 +63,8 @@ interface QuickValuationResponse {
 // Monte Carlo (mismo shape que tu widget actual)
 interface MonteCarloResult {
   paths: number[][];
+}
+
 interface ScoringResponse {
   ticker: string;
   qualityScore: number;

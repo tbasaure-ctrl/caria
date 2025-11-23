@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CariaLogoIcon, LogoutIcon, DashboardIcon } from './Icons';
+import { NavLink } from 'react-router-dom';
+import { CariaLogoIcon, LogoutIcon, DashboardIcon, CommunityIcon, ThesisIcon, ChartIcon } from './Icons';
 import { ChatWindow } from './ChatWindow';
 
 interface SidebarProps {
@@ -9,6 +10,14 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     const [showChat, setShowChat] = useState(false);
 
+    const getLinkClass = ({ isActive }: { isActive: boolean }) => `
+        p-3 rounded-lg block transition-all duration-200
+        ${isActive
+            ? 'bg-[var(--color-primary)] text-[var(--color-cream)]'
+            : 'text-[var(--color-text-muted)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-cream)]'
+        }
+    `;
+
     return (
         <>
             <aside className="hidden md:flex flex-col w-20 p-4 items-center justify-between shrink-0"
@@ -17,22 +26,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
                      borderRight: '1px solid var(--color-bg-tertiary)'
                    }}>
                 <div className="flex flex-col items-center gap-8">
-                    <a href="#" aria-label="Caria Home" className="transition-transform hover:scale-110">
+                    <NavLink to="/dashboard" aria-label="Caria Home" className="transition-transform hover:scale-110">
                         <CariaLogoIcon className="w-9 h-9" style={{color: 'var(--color-secondary)'}} />
-                    </a>
+                    </NavLink>
                     <nav aria-label="Main navigation">
                         <ul className="flex flex-col gap-4">
                             <li>
-                                <a href="#"
-                                   aria-current="page"
-                                   className="p-3 rounded-lg block transition-all duration-200"
+                                <NavLink
+                                   to="/dashboard"
+                                   className={getLinkClass}
                                    title="Dashboard"
-                                   style={{
-                                     backgroundColor: 'var(--color-primary)',
-                                     color: 'var(--color-cream)'
-                                   }}>
+                                >
                                     <DashboardIcon className="w-6 h-6" />
-                                </a>
+                                </NavLink>
+                            </li>
+                             <li>
+                                <NavLink
+                                   to="/community"
+                                   className={getLinkClass}
+                                   title="Community"
+                                >
+                                    <CommunityIcon className="w-6 h-6" />
+                                </NavLink>
+                            </li>
+                             <li>
+                                <NavLink
+                                   to="/resources"
+                                   className={getLinkClass}
+                                   title="Resources"
+                                >
+                                    <ThesisIcon className="w-6 h-6" />
+                                </NavLink>
                             </li>
                             <li>
                                 <button

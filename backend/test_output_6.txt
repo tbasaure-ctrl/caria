@@ -1,0 +1,7 @@
+﻿Fetching AAPL data via get_ticker_data...
+Keys: dict_keys(['symbol', 'price_history', 'multiples', 'financials', 'key_metrics', 'growth', 'current_price'])
+Current Price: 0.0
+
+Debugging Quote...
+Quote Columns: ['symbol', 'name', 'exchange', 'last_price', 'last_timestamp', 'open', 'high', 'low', 'volume', 'prev_close', 'change', 'change_percent', 'year_high', 'year_low', 'ma50', 'ma200', 'market_cap']
+Quote Row: {'symbol': 'AAPL', 'name': 'Apple Inc.', 'exchange': 'NASDAQ', 'last_price': 271.49, 'last_timestamp': Timestamp('2025-11-21 21:00:02'), 'open': 265.88, 'high': 273.315, 'low': 265.82, 'volume': 59030832, 'prev_close': 266.25, 'change': 5.24, 'change_percent': 0.019680800000000002, 'year_high': 277.32, 'year_low': 169.21, 'ma50': 259.488, 'ma200': 226.2693, 'market_cap': 4011632075970.0}

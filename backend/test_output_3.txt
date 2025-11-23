@@ -1,0 +1,13 @@
+﻿Fetching AAPL data...
+
+Testing Price History (yfinance)...
+Price History Error: 
+[Unexpected Error] -> YFDataException -> Yahoo API requires curl_cffi session not <class 'requests.sessions.Session'>. Solution: stop setting session, let YF handle.
+
+Exploring obb.equity.fundamental...
+Dir(obb.equity.fundamental): ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_check_credentials', '_command_runner', '_get_provider', '_run', 'balance', 'balance_growth', 'cash', 'cash_growth', 'dividends', 'employee_count', 'esg_score', 'filings', 'historical_attributes', 'historical_eps', 'historical_splits', 'income', 'income_growth', 'latest_attributes', 'management', 'management_compensation', 'management_discussion_analysis', 'metrics', 'ratios', 'reported_financials', 'revenue_per_geography', 'revenue_per_segment', 'search_attributes', 'trailing_dividend_yield', 'transcript']
+
+Testing Ratios (yfinance)...
+Fundamental Error: 
+[Error] -> 1 validations error(s)
+[Arg] provider -> input: yfinance -> Input should be 'fmp' or 'intrinio'

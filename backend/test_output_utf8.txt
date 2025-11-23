@@ -1,0 +1,65 @@
+﻿Fetching AAPL data...
+
+Keys: dict_keys(['symbol', 'price_history', 'multiples', 'financials', 'current_price'])
+python : Error 
+fetching price 
+history for AAPL: 
+En línea: 1 
+Carácter: 1
++ python backend/tes
+t_openbb.py > backen
+d/test_output.txt 
+2>&1
++ ~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo  
+            : NotS  
+  pecified: (Erro   
+ r fetching pric    
+e history for A    
+APL: :String) [    
+], RemoteExcept    
+ion
+    + FullyQualifie 
+   dErrorId : Nati  
+  veCommandError
+ 
+[Error] -> 1 
+validations error(s)
+[Arg] provider -> 
+input: yahoo -> 
+Input should be 
+'alpha_vantage', 
+'cboe', 'fmp', 
+'intrinio', 
+'polygon', 
+'tiingo', 'tmx', 
+'tradier' or 
+'yfinance'
+Error fetching 
+multiples for AAPL: 
+'ROUTER_equity_funda
+mental' object has 
+no attribute 
+'multiples'
+Error fetching 
+financials for 
+AAPL: 'ROUTER_equity
+_fundamental' 
+object has no 
+attribute 
+'financials'
+Error fetching 
+current price for 
+AAPL: 
+[Error] -> 1 
+validations error(s)
+[Arg] provider -> 
+input: yahoo -> 
+Input should be 
+'cboe', 'fmp', 
+'intrinio', 'tmx', 
+'tradier' or 
+'yfinance'

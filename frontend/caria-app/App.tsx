@@ -21,9 +21,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 // Dashboard Layout (Sidebar + Content)
 const DashboardLayout: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   return (
-    <div className="flex h-screen w-full">
+    <div className="flex h-screen w-full bg-[var(--color-bg-primary)]">
       <Sidebar onLogout={onLogout} />
-      <Outlet />
+      <div className="flex-1 overflow-y-auto bg-[var(--color-bg-primary)]">
+        <Outlet />
+      </div>
     </div>
   );
 };
@@ -32,7 +34,7 @@ const App: React.FC = () => {
   const [authToken, setAuthToken] = useState<string | null>(getToken());
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
-  
+
   // Effect to check for token on initial load
   useEffect(() => {
     const token = getToken();
@@ -50,7 +52,7 @@ const App: React.FC = () => {
     setRegisterModalOpen(true);
     setLoginModalOpen(false);
   };
-  
+
   const handleLoginSuccess = (token: string) => {
     saveToken(token);
     setAuthToken(token);
@@ -59,7 +61,7 @@ const App: React.FC = () => {
     // Navigation will happen automatically if we are on landing page and now have token?
     // Actually, LandingPage is at "/", Dashboard is at "/dashboard".
     // We need to navigate to dashboard.
-    window.location.href = '/dashboard'; 
+    window.location.href = '/dashboard';
   };
 
   const handleLogout = () => {
@@ -70,7 +72,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen text-[var(--color-text-primary)] font-sans antialiased" style={{backgroundColor: 'var(--color-bg-primary)'}}>
+    <div className="min-h-screen text-[var(--color-text-primary)] font-sans antialiased" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <Router>
         <Routes>
           {/* Public Routes */}

@@ -9,17 +9,19 @@ export const DashboardPage: React.FC = () => {
     const [isAnalysisOpen, setAnalysisOpen] = useState(false);
 
     return (
-        <>
+        <div className="min-h-screen w-full bg-[var(--color-bg-primary)] p-4 md:p-6 lg:p-8">
             <Dashboard onStartAnalysis={() => setAnalysisOpen(true)} />
-            
-            {/* Phase 2: Advanced Features Section (Optional, can be integrated into Dashboard.tsx too) */}
-            <div className="p-6 max-w-[1920px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
-                 <CrisisSimulator />
-                 <MacroSimulator />
-                 <MindMap />
+
+            {/* Phase 2: Advanced Features Section */}
+            <div className="max-w-[1920px] mx-auto mt-6 grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
+                <CrisisSimulator />
+                <MacroSimulator />
+                <div className="xl:col-span-2">
+                    <MindMap />
+                </div>
             </div>
 
             {isAnalysisOpen && <AnalysisTool onClose={() => setAnalysisOpen(false)} />}
-        </>
+        </div>
     );
 };

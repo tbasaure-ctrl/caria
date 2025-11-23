@@ -5,7 +5,8 @@ const REFRESH_TOKEN_KEY = 'caria-refresh-token';
 // INCORRECT: "/api/login" or "localhost:8000/api/login"
 // CORRECT: "http://localhost:8000/api/login"
 export const API_BASE_URL =
-    import.meta.env.VITE_API_URL || 'https://caria-production.up.railway.app';
+    (import.meta.env.VITE_API_URL || 'https://caria-production.up.railway.app').replace(/\/$/, '');
+
 
 // Use API_BASE_URL consistently everywhere (per audit document 1.1)
 const API_URL = API_BASE_URL;

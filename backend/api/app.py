@@ -231,7 +231,7 @@ app = FastAPI(
 # Configurar CORS
 # Accept specific origins from env + all Vercel deployments via regex
 # Support both comma and semicolon separators (gcloud may use semicolon)
-cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
+cors_origins_env = os.getenv("CORS_ORIGINS", "https://caria-way.com,http://localhost:3000,http://localhost:5173")
 # Split by comma or semicolon, then flatten
 cors_origins_raw = []
 for sep in [",", ";"]:

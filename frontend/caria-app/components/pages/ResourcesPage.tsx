@@ -1,5 +1,4 @@
 import React from 'react';
-import { Resources } from '../widgets/Resources';
 import { ResearchSection } from '../ResearchSection';
 
 export const ResourcesPage: React.FC = () => {
@@ -16,7 +15,6 @@ export const ResourcesPage: React.FC = () => {
                 </p>
             </div>
             <div className="space-y-8">
-                 <Resources />
                  <ResearchSection />
             </div>
         </main>

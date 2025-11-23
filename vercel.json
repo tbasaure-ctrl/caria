@@ -1,16 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": "vite",
   "rootDirectory": "frontend/caria-app",
   "git": {
     "deploymentEnabled": {
       "cursor/*": true,
       "main": true,
-      "master": true
+      "master": true,
+      "*": true
     }
   }
 }

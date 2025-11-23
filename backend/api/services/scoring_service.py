@@ -59,12 +59,10 @@ class ScoringService:
 
         return {
             "ticker": ticker,
-            "qualityScore": round(quality_score, 2),
-            "valuationScore": round(valuation_score, 2),
-            "momentumScore": round(momentum_score, 2),
-            "qualitativeMoatScore": round(qualitative_moat, 2),
+            "qualityScore": round(quality_score, 0),
+            "valuationScore": round(valuation_score, 0),
+            "momentumScore": round(momentum_score, 0),
             "compositeScore": composite,
-            "classification": self._classify_c_score(composite),
             "current_price": latest_price,
             "fair_value": valuation_details.get("fair_value"),
             "valuation_upside_pct": valuation_details.get("upside_pct"),

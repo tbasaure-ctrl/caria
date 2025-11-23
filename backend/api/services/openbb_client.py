@@ -159,3 +159,6 @@ class OpenBBClient:
         except Exception as e:
             LOGGER.error(f"Error aggregating data for {symbol}: {e}")
             return {}
+
+# Singleton instance for easy import
+openbb_client = OpenBBClient()

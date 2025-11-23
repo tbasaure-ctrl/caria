@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import logging
 import os
@@ -19,20 +19,28 @@ USE_FMP_SCORING = os.getenv("USE_FMP_SCORING", "true").lower() == "true"
 
 try:
     if USE_FMP_SCORING:
-        from api.services.fmp_scoring_service import FMPScoringService
-        scoring_service = FMPScoringService()
-        LOGGER.info("Using FMP-based scoring service")
+        try:
+            from api.services.fmp_scoring_service import FMPScoringService
+            scoring_service = FMPScoringService()
+            LOGGER.info("Using FMP-based scoring service")
+        except ImportError:
+            # Fallback to regular ScoringService if FMP version doesn't exist
+            LOGGER.warning("FMPScoringService not found, falling back to ScoringService")
+            from api.services.scoring_service import ScoringService
+            scoring_service = ScoringService()
+            LOGGER.info("Using OpenBB-based scoring service (fallback)")
     else:
         from api.services.scoring_service import ScoringService
         scoring_service = ScoringService()
         LOGGER.info("Using OpenBB-based scoring service")
 except Exception as e:
     LOGGER.error("Failed to initialize scoring service: %s", e)
-    # Try fallback
+    # Final fallback - use ScoringService
     try:
-        from api.services.fmp_scoring_service import FMPScoringService
-        scoring_service = FMPScoringService()
-        LOGGER.warning("Fell back to FMP scoring service")
+        from api.services.scoring_service import ScoringService
+        scoring_service = ScoringService()
+        LOGGER.warning("Using ScoringService as final fallback")
     except Exception as e2:
-        LOGGER.error("Failed to initialize FMP scoring service: %s", e2)
-        raise
+        LOGGER.error("Failed to initialize any scoring service: %s", e2)
+        # Don't raise - allow app to start without scoring service
+        scoring_service = None

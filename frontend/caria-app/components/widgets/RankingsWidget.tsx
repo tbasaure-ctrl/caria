@@ -106,7 +106,7 @@ export const RankingsWidget: React.FC = () => {
             <WidgetCard
                 title="Community Rankings"
                 id="rankings-widget"
-                tooltip="Rankings de la comunidad: comunidades más activas, tesis más populares, y tesis con mayor convicción sostenida."
+                tooltip="Community rankings: most active communities, popular theses, and theses with highest sustained conviction."
             >
                 <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     Loading rankings...
@@ -120,7 +120,7 @@ export const RankingsWidget: React.FC = () => {
             <WidgetCard
                 title="Community Rankings"
                 id="rankings-widget"
-                tooltip="Rankings de la comunidad: comunidades más activas, tesis más populares, y tesis con mayor convicción sostenida."
+                tooltip="Community rankings: most active communities, popular theses, and theses with highest sustained conviction."
             >
                 <div className="text-sm" style={{ color: '#ef4444' }}>{error}</div>
                 <button

@@ -269,9 +269,9 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             <WidgetCard
                 id={id}
                 title="PORTFOLIO SNAPSHOT"
-                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
+                tooltip="Overview of your investment portfolio with current holdings, market values, and historical performance."
             >
-                <div className="text-slate-400 text-sm">Cargando portfolio...</div>
+                <div className="text-slate-400 text-sm">Loading portfolio...</div>
             </WidgetCard>
         );
     }
@@ -281,31 +281,17 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             <WidgetCard
                 id={id}
                 title="PORTFOLIO SNAPSHOT"
-                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
+                tooltip="Overview of your investment portfolio with current holdings, market values, and historical performance."
             >
                 <div className="text-red-400 text-sm">{error}</div>
-                <div className="text-slate-500 text-xs mt-1">Inicia sesión para ver tu portfolio</div>
+                <div className="text-slate-500 text-xs mt-1">Sign in to view your portfolio</div>
             </WidgetCard>
         );
     }
 
     if (!portfolioData || portfolioData.holdings.length === 0) {
-        return (
-            <WidgetCard
-                id={id}
-                title="PORTFOLIO SNAPSHOT"
-                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
-            >
-                <div className="space-y-4">
-                    <div className="text-slate-400 text-sm">
-                        No hay holdings. Agrega posiciones para ver tu portfolio.
-                    </div>
-                    <div className="text-xs text-slate-500">
-                        Usa el endpoint /api/holdings para agregar posiciones.
-                    </div>
-                </div>
-            </WidgetCard>
-        );
+        // Don't show the widget at all if there are no holdings
+        return null;
     }
 
     // Calculate performance data based on holdings and time range
@@ -384,26 +370,26 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
     });
 
     return (
-        <WidgetCard
-            id={id}
-            title="PORTFOLIO SNAPSHOT"
-            tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
-        >
+            <WidgetCard
+                id={id}
+                title="PORTFOLIO SNAPSHOT"
+                tooltip="Overview of your investment portfolio with current holdings, market values, and historical performance."
+            >
             <div className="space-y-6">
-                {/* Resumen */}
+                {/* Summary */}
                 <div>
-                    <h4 className="text-xs text-slate-400 mb-2">Resumen</h4>
+                    <h4 className="text-xs text-slate-400 mb-2">Summary</h4>
                     <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                            <span className="text-slate-300">Valor Total:</span>
+                            <span className="text-slate-300">Total Value:</span>
                             <span className="font-mono text-slate-100">${portfolioData.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-slate-300">Costo Total:</span>
+                            <span className="text-slate-300">Total Cost:</span>
                             <span className="font-mono text-slate-300">${portfolioData.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                         <div className={`flex justify-between text-sm ${portfolioData.total_gain_loss >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                            <span>Ganancia/Pérdida:</span>
+                            <span>Gain/Loss:</span>
                             <span className="font-mono">
                                 ${portfolioData.total_gain_loss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({portfolioData.total_gain_loss_pct >= 0 ? '+' : ''}{portfolioData.total_gain_loss_pct.toFixed(2)}%)
                             </span>
@@ -439,13 +425,13 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
 
                 {/* Holdings List */}
                 <div>
-                    <h4 className="text-xs text-slate-400 mb-2">Posiciones</h4>
+                    <h4 className="text-xs text-slate-400 mb-2">Holdings</h4>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                         {portfolioData.holdings.map((holding: HoldingWithPrice) => (
                             <div key={holding.ticker} className="flex justify-between items-center text-sm border-b border-slate-800 pb-2">
                                 <div>
                                     <span className="text-slate-200 font-semibold">{holding.ticker}</span>
-                                    <span className="text-slate-400 ml-2">{holding.quantity.toFixed(2)} acciones</span>
+                                    <span className="text-slate-400 ml-2">{holding.quantity.toFixed(2)} shares</span>
                                 </div>
                                 <div className="text-right">
                                     <div className="font-mono text-slate-100">${holding.current_price.toFixed(2)}</div>

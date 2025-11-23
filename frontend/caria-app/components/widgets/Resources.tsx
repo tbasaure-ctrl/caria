@@ -12,6 +12,20 @@ interface Resource {
 
 const STATIC_RESOURCES: Resource[] = [
     {
+        title: "Charlie Munger - Face the Drawdowns with Equanimity",
+        description: "Philosophy and wisdom on handling market volatility with composure",
+        type: "lecture",
+        url: "https://youtu.be/7sNUg2kPJwI?si=wZfqg2mKkVD8HN4w",
+        tags: ["philosophy", "wisdom", "munger"]
+    },
+    {
+        title: "Weekly Investment Podcast",
+        description: "Top investment insights and market analysis of the week",
+        type: "lecture",
+        url: "https://open.spotify.com/episode/0SCiHYyz9eQCD4bDmK86ps?si=86b3dc842c4e442c",
+        tags: ["podcast", "weekly", "analysis"]
+    },
+    {
         title: "The Psychology of Money",
         description: "Understanding behavioral finance and cognitive biases in investing",
         type: "book",

@@ -85,13 +85,13 @@ export const CommunityFeed: React.FC = () => {
                 hydrateFromCache();
                 const message = err?.message || '';
                 if (message.includes('401') || message.includes('Session expired')) {
-                    setError('Inicia sesión para ver las publicaciones de la comunidad.');
+                    setError('Sign in to view community posts.');
                 } else if (message.includes('connect')) {
-                    setError('Servicio de comunidad no disponible. Reintentando...');
+                    setError('Community service unavailable. Retrying...');
                 } else if (!postsRef.current.length) {
                     setError('Unable to load community posts. Please try again later.');
                 } else {
-                    setStatusMessage('Mostrando datos guardados. Último refresh falló.');
+                    setStatusMessage('Showing cached data. Last refresh failed.');
                 }
             } finally {
                 setLoading(false);
@@ -210,7 +210,7 @@ export const CommunityFeed: React.FC = () => {
             <WidgetCard
                 title="Community Feed"
                 id="community-feed-widget"
-                tooltip="Feed de tesis e ideas de inversión de la comunidad. Busca, vota y descubre insights compartidos por otros usuarios."
+                tooltip="Community investment thesis and ideas feed. Search, vote, and discover insights shared by other users."
             >
                 <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     Loading community posts...
@@ -224,7 +224,7 @@ export const CommunityFeed: React.FC = () => {
             <WidgetCard
                 title="Community Feed"
                 id="community-feed-widget"
-                tooltip="Feed de tesis e ideas de inversión de la comunidad. Busca, vota y descubre insights compartidos por otros usuarios."
+                tooltip="Community investment thesis and ideas feed. Search, vote, and discover insights shared by other users."
             >
                 <div className="text-sm" style={{ color: '#ef4444' }}>{error}</div>
                 <button

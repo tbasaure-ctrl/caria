@@ -10,7 +10,11 @@ import logging
 from typing import Optional
 
 import numpy as np
-from api.services.openbb_client import openbb_client
+from api.services.openbb_client import OpenBBClient
+
+# Instantiate OpenBBClient
+openbb_client = OpenBBClient()
+
 
 LOGGER = logging.getLogger("caria.api.monte_carlo")
 

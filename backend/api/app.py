@@ -239,9 +239,9 @@ for sep in [",", ";"]:
     cors_origins_raw.extend(cors_origins_env.split(sep))
 cors_origins = [origin.strip().lower() for origin in cors_origins_raw if origin.strip()]
 
-# Allow all Vercel deployments (*.vercel.app) using regex
+# Allow all Vercel deployments (*.vercel.app) and caria-way.com using regex
 # This matches both preview and production deployments
-vercel_regex = r"https://.*\.vercel\.app"
+vercel_regex = r"https://.*\.vercel\.app|https://caria-way\.com"
 
 # Logging para debugging
 LOGGER.info(f"CORS configured with origins: {cors_origins}")
@@ -265,7 +265,7 @@ async def cors_logging_middleware(request: Request, call_next):
         if origin:
             origin_lower = origin.lower()
             is_exact_match = origin_lower in cors_origins
-            is_regex_match = bool(re.match(vercel_regex, origin))
+            is_regex_match = bool(re.match(vercel_regex, origin_lower))
             LOGGER.info(
                 f"Origin '{origin}' - Exact match: {is_exact_match}, Regex match: {is_regex_match}"
             )
@@ -350,8 +350,8 @@ def is_origin_allowed(origin: str) -> bool:
     # Check exact match
     if origin.lower() in cors_origins:
         return True
-    # Check regex pattern for Vercel
-    if re.match(vercel_regex, origin):
+    # Check regex pattern for Vercel and caria-way.com
+    if re.match(vercel_regex, origin.lower()):
         return True
     return False
 

@@ -106,63 +106,17 @@ interface MonteCarloResult {
   };
 }
 
-<<<<<<< HEAD
-interface ScoringDetails {
-  quality?: Record<string, any>;
-  valuation?: Record<string, any>;
-  momentum?: Record<string, any>;
-  moat?: Record<string, any>;
-}
-
-interface FactorAttribution {
-  quality?: Record<string, number>;
-  valuation?: Record<string, number>;
-  momentum?: Record<string, number>;
-  moat?: Record<string, number>;
-}
-
-interface ScoringExplanations {
-  quality?: string;
-  valuation?: string;
-  momentum?: string;
-  moat?: string;
-}
-
-=======
->>>>>>> cursor/diagnose-and-restore-broken-next-js-ui-gemini-3-pro-preview-049d
 interface ScoringResponse {
   ticker: string;
   qualityScore: number;
   valuationScore: number;
   momentumScore: number;
-<<<<<<< HEAD
-  qualitativeMoatScore?: number | null;
-  cScore: number;
-  classification?: string;
-  current_price: number;
-  fair_value: number | null;
-  valuation_upside_pct: number | null;
-  details?: ScoringDetails;
-  factorAttribution?: FactorAttribution;
-  explanations?: ScoringExplanations;
-=======
   compositeScore: number;
   valuation_upside_pct: number | null;
->>>>>>> cursor/diagnose-and-restore-broken-next-js-ui-gemini-3-pro-preview-049d
 }
 
 const formatMoney = (v: number) =>
   `$${v.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
-
-const getCScoreTheme = (score: number) => {
-  if (score >= 80) {
-    return { label: "Probable Outlier", color: "#10b981", background: "rgba(16,185,129,0.1)" };
-  }
-  if (score >= 60) {
-    return { label: "High-Quality Compounder", color: "#fbbf24", background: "rgba(251,191,36,0.12)" };
-  }
-  return { label: "Standard / Non-Outlier", color: "#f87171", background: "rgba(248,113,113,0.12)" };
-};
 
 export const ValuationTool: React.FC = () => {
   const [ticker, setTicker] = useState("AAPL");
@@ -183,8 +137,6 @@ export const ValuationTool: React.FC = () => {
   const [mcResult, setMcResult] = useState<MonteCarloResult | null>(null);
   const [isLoadingMC, setIsLoadingMC] = useState(false);
   const [mcError, setMcError] = useState<string | null>(null);
-
-  const cScoreTheme = scoring ? getCScoreTheme(scoring.cScore) : null;
 
   const handleAnalyze = async () => {
     setIsLoadingValuation(true);
@@ -387,97 +339,6 @@ export const ValuationTool: React.FC = () => {
           )}
         </section>
 
-<<<<<<< HEAD
-        {scoring && cScoreTheme && (
-          <section className="space-y-4">
-            <div
-              className="rounded-lg border px-4 py-4"
-              style={{
-                backgroundColor: cScoreTheme.background,
-                borderColor: cScoreTheme.color,
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-slate-400">C-Score</p>
-                  <div className="text-4xl font-bold" style={{ color: cScoreTheme.color }}>
-                    {scoring.cScore.toFixed(0)}
-                  </div>
-                  <p className="text-sm mt-1 text-slate-300">
-                    {scoring.classification || cScoreTheme.label}
-                  </p>
-                  {scoring.fair_value && (
-                    <p className="text-xs text-slate-400 mt-1">
-                      FV ${scoring.fair_value.toFixed(2)} vs. Price ${scoring.current_price.toFixed(2)}
-                    </p>
-                  )}
-                </div>
-                <div className="text-right text-xs text-slate-400">
-                  <p>Quality 35%</p>
-                  <p>Valuation 25%</p>
-                  <p>Momentum 20%</p>
-                  <p>Moat 20%</p>
-                </div>
-              </div>
-              <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-300">
-                {[
-                  { label: 'Quality', value: scoring.qualityScore },
-                  { label: 'Valuation', value: scoring.valuationScore, hint: scoring.valuation_upside_pct !== null ? `Upside ${scoring.valuation_upside_pct.toFixed(1)}%` : undefined },
-                  { label: 'Momentum', value: scoring.momentumScore },
-                  { label: 'Moat', value: scoring.qualitativeMoatScore ?? 0 },
-                ].map((item) => (
-                  <div key={item.label}>
-                    <p className="uppercase tracking-wide text-slate-500">{item.label}</p>
-                    <p className="text-lg font-semibold text-slate-100">{item.value.toFixed(0)}</p>
-                    {item.hint && <p className="text-[11px] text-slate-400">{item.hint}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {scoring.factorAttribution && (
-              <div className="border border-slate-800 rounded-lg p-4 bg-gray-950/30 space-y-3">
-                <div className="text-xs text-slate-400 uppercase tracking-wider">Factor attribution</div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(scoring.factorAttribution).map(([pillar, drivers]) => (
-                    drivers && (
-                      <div key={pillar}>
-                        <p className="text-xs text-slate-500 mb-2">{pillar.toUpperCase()}</p>
-                        <div className="space-y-2">
-                          {Object.entries(drivers).map(([name, value]) => {
-                            const safeValue = typeof value === "number" ? value : 0;
-                            return (
-                              <div key={name}>
-                                <div className="flex justify-between text-[11px] text-slate-400">
-                                  <span>{name}</span>
-                                  <span>{safeValue.toFixed(0)} / 100</span>
-                                </div>
-                                <div className="h-1.5 bg-slate-900 rounded-full overflow-hidden">
-                                  <div className="h-full bg-slate-500" style={{ width: `${Math.min(100, Math.max(0, safeValue))}%` }} />
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {scoring.explanations && (
-              <div className="text-xs text-slate-400 space-y-1 border border-slate-800 rounded-lg p-3 bg-slate-900/40">
-                {Object.entries(scoring.explanations).map(([pillar, text]) => (
-                  text && (
-                    <p key={pillar}>
-                      <span className="text-slate-300 font-semibold">{pillar}:</span> {text}
-                    </p>
-                  )
-                ))}
-              </div>
-            )}
-=======
         {scoring && (
           <section className="border border-slate-800 rounded-lg p-6 bg-gray-950/50 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full pointer-events-none"></div>
@@ -551,7 +412,6 @@ export const ValuationTool: React.FC = () => {
                 </div>
               </div>
             </div>
->>>>>>> cursor/diagnose-and-restore-broken-next-js-ui-gemini-3-pro-preview-049d
           </section>
         )}
 

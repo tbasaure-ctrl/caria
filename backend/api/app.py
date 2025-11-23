@@ -238,6 +238,13 @@ for sep in [",", ";"]:
     cors_origins_raw.extend(cors_origins_env.split(sep))
 cors_origins = [origin.strip().lower() for origin in cors_origins_raw if origin.strip()]
 
+# FORCE ADD caria-way.com just in case env var overwrote it without including it
+required_origins = ["https://caria-way.com", "https://www.caria-way.com"]
+for origin in required_origins:
+    if origin not in cors_origins:
+        cors_origins.append(origin)
+
+
 # Allow all Vercel deployments (*.vercel.app) using regex
 # This matches both preview and production deployments
 vercel_regex = r"https://.*\.vercel\.app"

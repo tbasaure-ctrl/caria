@@ -25,6 +25,8 @@ let auth: Auth;
 let messaging: Messaging | null = null;
 let analytics: Analytics | null = null;
 
+// Firebase initialization with graceful error handling
+// Temporarily disabled due to API key suspension - waiting for appeal
 try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
@@ -34,7 +36,7 @@ try {
     try {
       analytics = getAnalytics(app);
     } catch (error) {
-      console.warn('Firebase Analytics no disponible:', error);
+      console.warn('Firebase Analytics no disponible (API key suspended):', error);
     }
   }
   
@@ -43,12 +45,16 @@ try {
     try {
       messaging = getMessaging(app);
     } catch (error) {
-      console.warn('Firebase Messaging no disponible:', error);
+      console.warn('Firebase Messaging no disponible (API key suspended):', error);
     }
   }
 } catch (error) {
-  console.error('Error inicializando Firebase:', error);
-  throw error;
+  // Graceful degradation - app should still work without Firebase
+  console.warn('Firebase initialization failed (API key suspended - waiting for appeal):', error);
+  // Don't throw - allow app to continue without Firebase features
+  // Create dummy objects to prevent crashes
+  app = null as any;
+  auth = null as any;
 }
 
 // Función para obtener FCM token (para notificaciones push)

@@ -3,7 +3,8 @@
  * Tracks user journeys: clicks and seconds per task.
  */
 
-import { API_BASE_URL, fetchWithAuth } from './apiService';
+import { fetchWithAuth } from './apiService';
+import { API_BASE_URL } from './apiConfig';
 
 export interface TaskTracking {
     task_name: string;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { API_BASE_URL } from '../services/apiService';
+import { API_BASE_URL } from '../services/apiConfig';
 import { getAuthToken } from '../services/apiService';
 
 // Import socket.io-client - if it fails, the app will still work without chat
@@ -50,16 +50,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 setConnectionMessage('Conectando con Caria...');
 
                 // Connect with JWT token in auth object (per audit document Problem #1)
-                // Socket.IO connects to the base URL (without /api), e.g., http://localhost:8000
-                let socketBaseUrl = API_BASE_URL;
-                if (socketBaseUrl.includes('/api')) {
-                    socketBaseUrl = socketBaseUrl.replace('/api', '');
-                }
-                if (!socketBaseUrl || socketBaseUrl === '') {
-                    socketBaseUrl = 'http://localhost:8000';
-                }
+                // Socket.IO connects to the base URL (without /api)
+                const { WS_BASE_URL } = await import('../services/apiConfig');
                 
-                const socket = socketIO(socketBaseUrl, {
+                const socket = socketIO(WS_BASE_URL, {
                     auth: {
                         token: token
                     },

@@ -13,7 +13,8 @@ export default defineConfig(({ mode }) => {
       define: {
         'process.env.API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY),
-        'process.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || 'http://localhost:8000'),
+        'process.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || env.NEXT_PUBLIC_API_URL || ''),
+        'process.env.NEXT_PUBLIC_API_URL': JSON.stringify(env.NEXT_PUBLIC_API_URL || env.VITE_API_URL || ''),
       },
       resolve: {
         alias: {

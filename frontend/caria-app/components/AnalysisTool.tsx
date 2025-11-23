@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types';
 import { CariaLogoIcon, XIcon, SendIcon } from './Icons';
-import { API_BASE_URL, fetchWithAuth } from '../services/apiService';
+import { fetchWithAuth } from '../services/apiService';
+import { API_BASE_URL } from '../services/apiConfig';
 
 
 // -----------------------------------------------

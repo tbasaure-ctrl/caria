@@ -52,7 +52,7 @@ export const LoginModalFirebase: React.FC<LoginModalFirebaseProps> = ({
 
             // Opción 2: Enviar token a tu backend para obtener token JWT
             try {
-                const { API_BASE_URL } = await import('../services/apiService');
+                const { API_BASE_URL } = await import('../services/apiConfig');
                 const response = await fetch(`${API_BASE_URL}/api/auth/firebase/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -124,7 +124,7 @@ export const LoginModalFirebase: React.FC<LoginModalFirebaseProps> = ({
 
             // Intentar obtener token JWT del backend
             try {
-                const { API_BASE_URL } = await import('../services/apiService');
+                const { API_BASE_URL } = await import('../services/apiConfig');
                 const response = await fetch(`${API_BASE_URL}/api/auth/firebase/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

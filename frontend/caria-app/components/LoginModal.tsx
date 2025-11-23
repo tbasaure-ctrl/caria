@@ -29,7 +29,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSuccess, onSw
 
         try {
             // Use centralized API_BASE_URL per audit document (must be absolute URL)
-            const { API_BASE_URL } = await import('../services/apiService');
+            const { API_BASE_URL } = await import('../services/apiConfig');
             const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -60,7 +60,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSuccess, onSw
         } catch (err: any) {
             // Manejar diferentes tipos de errores per audit document
             if (err.message === 'Failed to fetch' || err.name === 'TypeError' || err.message.includes('Failed to connect')) {
-                const { API_BASE_URL } = await import('../services/apiService');
+                const { API_BASE_URL } = await import('../services/apiConfig');
                 setError(`Unable to connect to the server. Please check that the API is running at ${API_BASE_URL}`);
             } else {
                 setError(err.message || 'Login failed. Please try again.');

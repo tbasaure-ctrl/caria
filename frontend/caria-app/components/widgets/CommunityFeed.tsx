@@ -5,7 +5,8 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { WidgetCard } from './WidgetCard';
-import { API_BASE_URL, fetchWithAuth } from '../../services/apiService';
+import { fetchWithAuth } from '../../services/apiService';
+import { API_BASE_URL } from '../../services/apiConfig';
 import {
     CommunityPost,
     CommunityPostSort,

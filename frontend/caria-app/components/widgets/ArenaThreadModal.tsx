@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { WidgetCard } from './WidgetCard';
-import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
+import { fetchWithAuth } from '../../services/apiService';
+import { API_BASE_URL } from '../../services/apiConfig';
 import { CommunityCard } from './CommunityCard';
 import { CommunityTooltip } from './CommunityTooltip';
 

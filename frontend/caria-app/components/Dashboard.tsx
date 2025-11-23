@@ -16,7 +16,8 @@ import { RegimeTestWidget } from './widgets/RegimeTestWidget';
 import { ThesisArena } from './widgets/ThesisArena';
 import { OnboardingTour } from './OnboardingTour';
 import { ResearchSection } from './ResearchSection';
-import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
+import { fetchWithAuth } from '../services/apiService';
+import { API_BASE_URL } from '../services/apiConfig';
 
 const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void; id?: string }> = ({ onStartAnalysis, onEnterArena, id }) => (
     <div id={id}

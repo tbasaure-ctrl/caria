@@ -1,11 +1,11 @@
+import { API_BASE_URL } from './apiConfig';
+
 const TOKEN_KEY = 'caria-auth-token';
 const REFRESH_TOKEN_KEY = 'caria-refresh-token';
 
-// Get API URL from environment or default - MUST be absolute URL per audit document
-// INCORRECT: "/api/login" or "localhost:8000/api/login"
-// CORRECT: "http://localhost:8000/api/login"
-export const API_BASE_URL =
-    import.meta.env.VITE_API_URL || 'https://caria-production.up.railway.app';
+// Re-export API_BASE_URL for backward compatibility
+export { API_BASE_URL };
+
 // Use API_BASE_URL consistently everywhere (per audit document 1.1)
 const API_URL = API_BASE_URL;
 

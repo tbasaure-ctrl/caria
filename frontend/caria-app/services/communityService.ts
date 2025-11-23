@@ -1,4 +1,5 @@
-import { API_BASE_URL, fetchWithAuth } from './apiService';
+import { fetchWithAuth } from './apiService';
+import { API_BASE_URL } from './apiConfig';
 
 export type CommunityPostSort = 'upvotes' | 'created_at' | 'analysis_merit_score';
 

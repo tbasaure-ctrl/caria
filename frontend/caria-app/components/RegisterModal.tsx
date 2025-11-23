@@ -110,7 +110,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
 
         try {
             // Use centralized API_BASE_URL per audit document (must be absolute URL)
-            const { API_BASE_URL } = await import('../services/apiService');
+            const { API_BASE_URL } = await import('../services/apiConfig');
             const registerUrl = `${API_BASE_URL}/api/auth/register`;
             
             // Detailed diagnostic logging
@@ -167,7 +167,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
             console.error('Error stack:', err.stack);
             console.error('Error cause:', err.cause);
             
-            const { API_BASE_URL } = await import('../services/apiService');
+            const { API_BASE_URL } = await import('../services/apiConfig');
             console.error('API_BASE_URL:', API_BASE_URL);
             console.error('Current origin:', window.location.origin);
             console.error('Full error object:', err);

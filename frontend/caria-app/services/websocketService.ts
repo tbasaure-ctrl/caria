@@ -7,7 +7,8 @@
  */
 
 import { io, Socket } from 'socket.io-client';
-import { API_BASE_URL, getToken } from './apiService';
+import { getToken } from './apiService';
+import { WS_BASE_URL } from './apiConfig';
 
 export interface ChatMessage {
     id: string;
@@ -44,14 +45,11 @@ class WebSocketService {
             return;
         }
 
-        // Extract base URL without /api suffix
-        const wsBaseUrl = API_BASE_URL.replace('/api', '');
-
-        console.log(`Connecting to WebSocket at ${wsBaseUrl}...`);
+        console.log(`Connecting to WebSocket at ${WS_BASE_URL}...`);
 
         // Create Socket.IO client with authentication in handshake
         // Per audit document: token must be sent in the initial handshake
-        this.socket = io(wsBaseUrl, {
+        this.socket = io(WS_BASE_URL, {
             auth: {
                 token: token,  // Problem #1: JWT token in handshake
             },
@@ -135,6 +133,7 @@ class WebSocketService {
                 return;
             }
 
+            const { API_BASE_URL } = await import('./apiConfig');
             const url = new URL(`${API_BASE_URL}/api/chat/history`);
             if (since) {
                 url.searchParams.append('since', since);

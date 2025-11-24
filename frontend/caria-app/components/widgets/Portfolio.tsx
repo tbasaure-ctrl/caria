@@ -513,19 +513,19 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                     <>
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span className="text-slate-300">Valor Total:</span>
+                                <span className="text-slate-300">Total Value:</span>
                                 <span className="font-mono text-slate-100">
                                     ${portfolioData.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-slate-300">Costo Total:</span>
+                                <span className="text-slate-300">Total Cost:</span>
                                 <span className="font-mono text-slate-300">
                                     ${portfolioData.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </div>
                             <div className={`flex justify-between text-sm ${portfolioData.total_gain_loss >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                                <span>Ganancia/Pérdida:</span>
+                                <span>Gain/Loss:</span>
                                 <span className="font-mono">
                                     ${portfolioData.total_gain_loss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({portfolioData.total_gain_loss_pct >= 0 ? '+' : ''}{portfolioData.total_gain_loss_pct.toFixed(2)}%)
                                 </span>

@@ -32,16 +32,7 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
         }}
       />
 
-      {/* Animated grid overlay */}
-      <div
-        className="absolute inset-0 opacity-5"
-        style={{
-          backgroundImage: `linear-gradient(var(--color-blue-light) 1px, transparent 1px),
-                           linear-gradient(90deg, var(--color-blue-light) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px',
-          animation: 'gridSlide 20s linear infinite',
-        }}
-      />
+      {/* Removed animated grid to show legends background better */}
 
       {/* Investing Legends Background - faded and artistic */}
       <div className="legends-background opacity-20">

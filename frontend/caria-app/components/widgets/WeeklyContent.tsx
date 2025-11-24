@@ -15,19 +15,19 @@ interface ContentItem {
 const WEEKLY_CONTENT: ContentItem[] = [
     {
         id: 'pod-1',
-        title: 'The Memo by Howard Marks: Sea Change',
-        description: 'Howard Marks discusses the fundamental shifts in the investment landscape and why the strategies of the last decade may not work in the next.',
+        title: 'The Knowledge Project - Morgan Housel',
+        description: 'Insights on investing, decision-making, and understanding human behavior in markets.',
         type: 'podcast',
-        youtubeUrl: 'https://www.youtube.com/watch?v=example',
-        spotifyUrl: 'https://open.spotify.com/episode/example',
+        youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        spotifyUrl: 'https://open.spotify.com/episode/00ll36IR6rEoigiqFRwBzW?si=Qa78MY88QjWilhw4lJjQCA',
     },
     {
         id: 'vid-1',
-        title: 'Aswath Damodaran: Valuing the Magnificent Seven',
-        description: 'The "Dean of Valuation" breaks down the numbers behind the biggest tech stocks and whether they are still a buy.',
+        title: 'Munger on Philosophy & Equanimity in Markets',
+        description: 'Wisdom on handling market downturns with philosophical perspective and calm composure.',
         type: 'video',
-        youtubeUrl: 'https://www.youtube.com/watch?v=example',
-        // thumbnailUrl: 'https://img.youtube.com/vi/uWj6is1ae_0/maxresdefault.jpg' // Removed broken link
+        youtubeUrl: 'https://youtu.be/7sNUg2kPJwI?si=wZfqg2mKkVD8HN4w',
+        thumbnailUrl: 'https://img.youtube.com/vi/7sNUg2kPJwI/hqdefault.jpg'
     }
 ];
 
@@ -39,7 +39,7 @@ export const WeeklyContent: React.FC = () => {
         <div className="space-y-6">
             {/* Weekly Podcast Section */}
             {podcast && (
-                <WidgetCard title="🎧 Weekly Podcast" tooltip="Curated investment podcast of the week">
+                <WidgetCard title="Weekly Podcast" tooltip="Curated investment podcast of the week">
                     <div className="flex flex-col gap-4">
                         <div>
                             <h4 className="font-bold text-lg text-[var(--color-cream)] leading-tight mb-2">
@@ -77,7 +77,7 @@ export const WeeklyContent: React.FC = () => {
 
             {/* Weekly Video Section */}
             {video && (
-                <WidgetCard title="📺 Weekly Video" tooltip="Must-watch investment video of the week">
+                <WidgetCard title="Weekly Video" tooltip="Must-watch investment video of the week">
                     <div className="flex flex-col gap-4">
                         {video.thumbnailUrl && (
                             <div className="relative aspect-video w-full rounded-lg overflow-hidden group">

@@ -137,62 +137,99 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     }, []);
 
     return (
-        <main className="flex-1 overflow-y-auto p-6 max-w-[1920px] mx-auto"
+        <main className="flex-1 overflow-y-auto p-8 md:p-12 max-w-[1920px] mx-auto"
             style={{ backgroundColor: 'var(--color-bg-primary)' }}>
             {/* OnboardingTour removed */}
 
-            {/* Dashboard Header */}
-            <div className="mb-8 fade-in">
-                <h1 className="text-4xl font-bold mb-2"
-                    style={{ fontFamily: 'var(--font-display)', color: 'var(--color-cream)' }}>
+            {/* Dashboard Header with modern styling */}
+            <div className="mb-12 fade-in">
+                <h1 className="text-5xl md:text-6xl font-black mb-3"
+                    style={{
+                        fontFamily: "'Instrument Serif', Georgia, serif",
+                        color: 'var(--color-cream)',
+                        letterSpacing: '-0.02em'
+                    }}>
                     Investment Dashboard
                 </h1>
-                <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)' }}>
+                <p className="text-lg"
+                   style={{
+                       fontFamily: "'Crimson Pro', Georgia, serif",
+                       color: 'rgba(232, 230, 227, 0.6)',
+                       lineHeight: '1.6'
+                   }}>
                     Your comprehensive view of market insights and portfolio analysis
                 </p>
             </div>
 
-            {/* Global Market Bar - Full Width */}
-            <div className="mb-6 fade-in delay-100">
+            {/* Global Market Bar - Full Width with better spacing */}
+            <div className="mb-10 fade-in delay-100">
                 <GlobalMarketBar id="market-bar-widget" />
             </div>
 
-            {/* TOP ROW: Market Indicators - Full Width */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 fade-in delay-200">
-                <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
-                <FearGreedIndex />
-            </div>
-
-            {/* MAIN CONTENT: 3 Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                {/* LEFT COLUMN: Portfolio Management */}
-                <div className="space-y-6 fade-in delay-300">
-                    <Portfolio id="portfolio-widget" />
-                    <PortfolioAnalytics />
-                    <HoldingsManager />
+            {/* MASONRY/BENTO BOX LAYOUT - Modern and Flexible */}
+            <div className="masonry-grid gap-8 mb-10">
+                {/* Market Outlook - Medium size, spans 1 column */}
+                <div className="widget-medium fade-in delay-200">
+                    <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
                 </div>
 
-                {/* CENTER COLUMN: Analysis & Simulation */}
-                <div className="space-y-6 fade-in delay-400">
+                {/* Fear & Greed Index - Medium size */}
+                <div className="widget-medium fade-in delay-200">
+                    <FearGreedIndex />
+                </div>
+
+                {/* Portfolio - Large widget, prominent placement */}
+                <div className="widget-large fade-in delay-300">
+                    <Portfolio id="portfolio-widget" />
+                </div>
+
+                {/* Start Analysis CTA - Medium size, eye-catching */}
+                <div className="widget-medium fade-in delay-400">
                     <StartAnalysisCTA
                         onStartAnalysis={onStartAnalysis}
                         onEnterArena={() => setShowArena(true)}
                         id="analysis-cta-widget"
                     />
-                    <ModelPortfolioWidget />
-                    <RegimeTestWidget />
-                    <MonteCarloSimulation />
                 </div>
 
-                {/* RIGHT COLUMN: Community & Rankings */}
-                <div className="space-y-6 fade-in delay-500">
+                {/* Community Feed - Large widget for engagement */}
+                <div className="widget-large fade-in delay-500">
                     <CommunityFeed />
+                </div>
+
+                {/* Portfolio Analytics - Medium size */}
+                <div className="widget-medium fade-in delay-300">
+                    <PortfolioAnalytics />
+                </div>
+
+                {/* Model Portfolio - Medium size */}
+                <div className="widget-medium fade-in delay-400">
+                    <ModelPortfolioWidget />
+                </div>
+
+                {/* Rankings Widget - Medium size */}
+                <div className="widget-medium fade-in delay-500">
                     <RankingsWidget />
+                </div>
+
+                {/* Holdings Manager - Medium size */}
+                <div className="widget-medium fade-in delay-300">
+                    <HoldingsManager />
+                </div>
+
+                {/* Regime Test - Small widget */}
+                <div className="widget-small fade-in delay-400">
+                    <RegimeTestWidget />
+                </div>
+
+                {/* Monte Carlo - Medium size */}
+                <div className="widget-medium fade-in delay-400">
+                    <MonteCarloSimulation />
                 </div>
             </div>
 
-            {/* RESEARCH SECTION: Full Width Row */}
-            <div className="mb-8 fade-in delay-600">
+            {/* RESEARCH SECTION: Full Width Row with better spacing */}
+            <div className="mb-10 fade-in delay-600">
                 <ResearchSection />
             </div>
 

@@ -305,7 +305,7 @@
         color: var(--color-cream);
       }
 
-      /* Responsive Design */
+      /* Responsive Design - Removed aggressive !important rules for better spacing */
       /* Mobile (320px - 768px) */
       @media (max-width: 768px) {
         body {
@@ -313,93 +313,93 @@
         }
 
         h1 {
-          font-size: 2rem !important;
+          font-size: 2rem;
         }
 
         h2 {
-          font-size: 1.5rem !important;
+          font-size: 1.5rem;
         }
 
         h3 {
-          font-size: 1.25rem !important;
+          font-size: 1.25rem;
         }
 
-        /* Reduce padding on main container */
+        /* Comfortable mobile spacing */
         main {
-          padding: 1rem !important;
+          padding: 1.5rem;
         }
 
-        /* Stack grid to single column */
-        .grid {
-          grid-template-columns: 1fr !important;
+        /* Allow natural grid behavior */
+        .masonry-grid {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
         }
 
-        /* Adjust widget padding */
-        .rounded-lg {
-          padding: 1rem !important;
+        /* Maintain widget breathing room */
+        .rounded-lg, .rounded-2xl {
+          padding: 1.5rem;
         }
 
-        /* Smaller gaps */
-        .space-y-7 > * + * {
-          margin-top: 1.5rem !important;
+        /* Comfortable vertical spacing */
+        .space-y-6 > * + * {
+          margin-top: 1.5rem;
         }
 
-        .gap-7 {
-          gap: 1.5rem !important;
+        .space-y-8 > * + * {
+          margin-top: 2rem;
         }
 
-        /* Make text more readable on mobile */
+        /* Allow text to be readable */
         .text-4xl {
-          font-size: 1.875rem !important;
+          font-size: 2rem;
         }
 
         .text-2xl {
-          font-size: 1.5rem !important;
-        }
-
-        /* Adjust GlobalMarketBar grid */
-        .grid-cols-1.md\\:grid-cols-3 {
-          grid-template-columns: 1fr !important;
-        }
-
-        /* Make CTA smaller on mobile */
-        .p-8 {
-          padding: 1.5rem !important;
+          font-size: 1.5rem;
         }
       }
 
       /* Tablet (768px - 1024px) */
       @media (min-width: 768px) and (max-width: 1024px) {
-        /* Two-column layout for tablets */
-        .lg\\:col-span-2 {
-          grid-column: span 1 !important;
+        /* Comfortable two-column layout for tablets */
+        .masonry-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 2rem;
         }
 
-        .lg\\:grid-cols-3 {
-          grid-template-columns: repeat(2, 1fr) !important;
-        }
-
-        /* Adjust GlobalMarketBar to 2 columns */
-        .grid-cols-1.md\\:grid-cols-3 {
-          grid-template-columns: repeat(2, 1fr) !important;
+        main {
+          padding: 2rem;
         }
       }
 
       /* Desktop optimization (1024px+) */
       @media (min-width: 1024px) {
-        /* Ensure tooltips don't overflow */
+        /* Allow tooltips natural positioning */
         .absolute.left-0.top-6 {
           left: auto;
           right: 0;
+        }
+
+        /* Generous spacing on desktop */
+        .masonry-grid {
+          gap: 2rem;
+        }
+
+        main {
+          padding: 3rem;
         }
       }
 
       /* Large desktop (1440px+) */
       @media (min-width: 1440px) {
         main {
-          max-width: 1400px;
+          max-width: 1600px;
           margin-left: auto;
           margin-right: auto;
+        }
+
+        .masonry-grid {
+          gap: 2.5rem;
         }
       }
     </style>

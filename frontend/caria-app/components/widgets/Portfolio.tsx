@@ -10,9 +10,9 @@ type AllocationData = { name: string; value: number; color: string };
 const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
     // ... (unchanged)
     const [activeSlice, setActiveSlice] = useState<AllocationData | null>(data.length > 0 ? data[0] : null);
-    const total = data.reduce((acc, item) => acc + item.value, 0);
+    const total = data.reduce((acc, item) => acc + (item.value || 0), 0);
 
-    if (!data.length || total <= 0) {
+    if (!data.length || total <= 0 || !Number.isFinite(total)) {
         return (
             <div className="flex flex-col gap-2 text-slate-400 text-sm">
                 <p>No allocation data yet.</p>
@@ -105,23 +105,27 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[] }> = ({ data })
     const padding = { top: 20, right: 10, bottom: 20, left: 10 };
 
     const { dataPoints, path, areaPath, lastValue, valueChange, percentChange, isPositive } = useMemo(() => {
-        if (data.length === 0) return { dataPoints: [], path: '', areaPath: '', lastValue: 0, valueChange: 0, percentChange: 0, isPositive: true };
+        if (!data || data.length === 0) return { dataPoints: [], path: '', areaPath: '', lastValue: 0, valueChange: 0, percentChange: 0, isPositive: true };
 
-        const maxValue = Math.max(...data.map(p => p.value));
-        const minValue = Math.min(...data.map(p => p.value));
+        // Filter out invalid data points
+        const validData = data.filter(p => Number.isFinite(p.value));
+        if (validData.length === 0) return { dataPoints: [], path: '', areaPath: '', lastValue: 0, valueChange: 0, percentChange: 0, isPositive: true };
+
+        const maxValue = Math.max(...validData.map(p => p.value));
+        const minValue = Math.min(...validData.map(p => p.value));
         const valueRange = maxValue - minValue > 0 ? maxValue - minValue : 1;
 
-        const points: MappedPoint[] = data.map((point, i) => {
-            const x = (i / (data.length - 1)) * (width - padding.left - padding.right) + padding.left;
+        const points: MappedPoint[] = validData.map((point, i) => {
+            const x = (i / (validData.length - 1)) * (width - padding.left - padding.right) + padding.left;
             const y = height - padding.bottom - ((point.value - minValue) / valueRange * (height - padding.top - padding.bottom));
-            return { ...point, x, y };
+            return { ...point, x: Number.isFinite(x) ? x : 0, y: Number.isFinite(y) ? y : 0 };
         });
 
         const pathD = points.map((p, i) => (i === 0 ? 'M' : 'L') + `${p.x},${p.y}`).join(' ');
         const areaPathD = `M ${padding.left},${height - padding.bottom} ` + pathD + ` L ${width - padding.right},${height - padding.bottom} Z`;
 
-        const startValue = data[0].value;
-        const endValue = data[data.length - 1].value;
+        const startValue = validData[0].value;
+        const endValue = validData[validData.length - 1].value;
         const valChange = endValue - startValue;
         const pctChange = startValue !== 0 ? (valChange / startValue) * 100 : 0;
 

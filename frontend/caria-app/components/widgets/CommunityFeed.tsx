@@ -133,8 +133,8 @@ export const CommunityFeed: React.FC = () => {
         const query = searchQuery.toLowerCase();
         return posts.filter(
             (post) =>
-                post.title.toLowerCase().includes(query) ||
-                post.thesis_preview.toLowerCase().includes(query) ||
+                (post.title && post.title.toLowerCase().includes(query)) ||
+                (post.thesis_preview && post.thesis_preview.toLowerCase().includes(query)) ||
                 (post.ticker && post.ticker.toLowerCase().includes(query)) ||
                 (post.username && post.username.toLowerCase().includes(query))
         );

@@ -97,7 +97,6 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
               className="block mb-2 gradient-text"
               style={{
                 opacity: 0,
-                animation: 'fadeIn 0.8s ease-out 0.5s forwards',
                 background: 'linear-gradient(135deg, #4A90E2 0%, #E8E6E3 50%, #4A90E2 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',

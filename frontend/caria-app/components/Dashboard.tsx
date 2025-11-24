@@ -1,20 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { Portfolio } from './widgets/Portfolio';
-// import { TopMovers } from './widgets/TopMovers'; // Removed - using mock data
 import { ModelOutlook } from './widgets/ModelOutlook';
 import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
 import { FearGreedIndex } from './widgets/FearGreedIndex';
 import { ThesisIcon } from './Icons';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
-import { HoldingsManager } from './widgets/HoldingsManager';
 import { CommunityFeed } from './widgets/CommunityFeed';
 import { RankingsWidget } from './widgets/RankingsWidget';
 import { MonteCarloSimulation } from './widgets/MonteCarloSimulation';
 import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
 import { ThesisArena } from './widgets/ThesisArena';
-import { OnboardingTour } from './OnboardingTour';
 import { ResearchSection } from './ResearchSection';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
@@ -210,11 +207,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {/* Rankings Widget - Medium size */}
                 <div className="widget-medium fade-in delay-500">
                     <RankingsWidget />
-                </div>
-
-                {/* Holdings Manager - Medium size */}
-                <div className="widget-medium fade-in delay-300">
-                    <HoldingsManager />
                 </div>
 
                 {/* Regime Test - Small widget */}

@@ -167,7 +167,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             </div>
 
             {/* MAIN CONTENT: 3 Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 items-start">
                 {/* LEFT COLUMN: Portfolio Management */}
                 <div className="space-y-6 fade-in delay-300">
                     <SafeWidget>

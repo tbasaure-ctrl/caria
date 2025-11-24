@@ -76,7 +76,7 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
           </div>
 
           {/* Subtitle with refined typography */}
-          <p className="text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto mb-12 fade-in delay-400 font-body text-[var(--color-text-secondary)] font-normal">
+          <p className="text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto mb-12 fade-in delay-400 font-body text-[var(--color-text-secondary)] font-normal text-center">
             We merge timeless investment wisdom with the analytical power of deep learning,
             creating an invaluable partner for your financial journey.
           </p>

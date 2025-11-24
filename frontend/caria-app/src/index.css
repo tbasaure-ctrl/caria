@@ -1,7 +1,4 @@
-/* Tailwind Directives */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* Global styles can also go here if needed */
 body {

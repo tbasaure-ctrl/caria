@@ -4,6 +4,7 @@ import os
 import requests
 from fastapi import APIRouter, HTTPException
 
+from api.dependencies import open_db_connection
 from api.services.llm_service import LLMService
 
 router = APIRouter(prefix="/api/debug", tags=["debug"])
@@ -76,3 +77,23 @@ async def debug_llm():
     except Exception as exc:  # pragma: no cover - defensive
         LOGGER.exception("Debug LLM failed")
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+@router.get("/db/ping")
+async def debug_db_ping():
+    """Quickly validate database connectivity and surface underlying errors."""
+    try:
+        conn = open_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                value = cursor.fetchone()[0]
+        finally:
+            conn.close()
+        return {"status": "ok", "result": value}
+    except Exception as exc:  # noqa: BLE001
+        LOGGER.exception("DB ping failed: %s", exc)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database ping failed: {exc.__class__.__name__}: {exc}",
+        ) from exc

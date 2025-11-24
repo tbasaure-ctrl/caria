@@ -40,17 +40,18 @@ LOGGER = logging.getLogger("caria.api.auth")
 # Security scheme for Bearer token
 security = HTTPBearer()
 
+_ENV_LOADED = False
 
-def get_db_connection():
-    """Get database connection from app state."""
+
+def _ensure_env_loaded():
+    """Load backend .env file once so local development has credentials."""
+    global _ENV_LOADED
+    if _ENV_LOADED:
+        return
+
     import os
-    import logging
     from pathlib import Path
-    from urllib.parse import urlparse, parse_qs
-    
-    logger = logging.getLogger("caria.api.dependencies")
-    
-    # Intentar cargar desde .env si existe
+
     env_file = Path(__file__).parent / ".env"
     if env_file.exists():
         try:
@@ -60,88 +61,55 @@ def get_db_connection():
                     key, value = line.split("=", 1)
                     key = key.strip()
                     value = value.strip()
-                    if key not in os.environ:  # No sobrescribir si ya está configurado
+                    if key not in os.environ:
                         os.environ[key] = value
                         if key == "POSTGRES_PASSWORD":
-                            logger.debug(f"Cargado POSTGRES_PASSWORD desde .env (longitud: {len(value)})")
-        except Exception as e:
-            logger.warning(f"Error cargando .env: {e}")
+                            LOGGER.debug("Loaded POSTGRES_PASSWORD from .env (len=%s)", len(value))
+        except Exception as exc:  # noqa: BLE001
+            LOGGER.warning("Error loading backend .env: %s", exc)
 
-    # Railway proporciona DATABASE_URL automáticamente cuando agregas PostgreSQL
-    # Intentar usar DATABASE_URL primero (formato: postgresql://user:password@host:port/dbname)
-    # Cloud SQL usa formato: postgresql://user:password@/dbname?host=/cloudsql/instance
+    _ENV_LOADED = True
+
+
+def open_db_connection() -> psycopg2.extensions.connection:
+    """Return a synchronous psycopg2 connection honoring DATABASE_URL + SSL."""
+    import os
+
+    _ensure_env_loaded()
+
     database_url = os.getenv("DATABASE_URL")
     if database_url:
-        conn = None
         try:
-            # Parsear DATABASE_URL
-            parsed = urlparse(database_url)
+            # psycopg2 supports libpq-style URIs (including sslmode & cloudsql host)
+            return psycopg2.connect(database_url)
+        except psycopg2.Error as exc:
+            LOGGER.warning("Failed connecting with DATABASE_URL (%s). Falling back to discrete vars.", exc)
 
-            # Extraer parámetros de query string
-            query_params = parse_qs(parsed.query)
-
-            # Verificar si hay un socket Unix de Cloud SQL en el query string
-            unix_socket_host = None
-            if 'host' in query_params:
-                unix_socket_host = query_params['host'][0]
-
-            # Si hay socket Unix (Cloud SQL), usarlo
-            if unix_socket_host:
-                conn = psycopg2.connect(
-                    host=unix_socket_host,
-                    user=parsed.username,
-                    password=parsed.password,
-                    database=parsed.path.lstrip('/'),
-                )
-            # Si no, usar conexión normal con hostname y port
-            # Verificar que hostname no sea None (puede pasar con Cloud SQL sin socket explícito)
-            elif parsed.hostname:
-                conn = psycopg2.connect(
-                    host=parsed.hostname,
-                    port=parsed.port or 5432,
-                    user=parsed.username,
-                    password=parsed.password,
-                    database=parsed.path.lstrip('/'),
-                )
-            else:
-                # Si no hay hostname ni socket, intentar con localhost (puede ser Cloud SQL con socket implícito)
-                logger.warning("No hostname or Unix socket found in DATABASE_URL, trying localhost")
-                conn = psycopg2.connect(
-                    host="localhost",
-                    port=parsed.port or 5432,
-                    user=parsed.username,
-                    password=parsed.password,
-                    database=parsed.path.lstrip('/'),
-                )
-        except (psycopg2.Error, ValueError, KeyError) as e:
-            # Only catch database connection setup errors
-            logger.warning(f"Error conectando con DATABASE_URL: {e}. Intentando variables individuales...")
-            conn = None  # Signal to use fallback
-
-        # If connection was successful, yield it
-        if conn is not None:
-            try:
-                yield conn
-            except Exception:
-                conn.rollback()
-                raise
-            finally:
-                conn.close()
-            return
-
-    # Fallback a variables individuales
     postgres_password = os.getenv("POSTGRES_PASSWORD")
     if not postgres_password:
-        logger.error(f"POSTGRES_PASSWORD no encontrado. Variables disponibles: {[k for k in os.environ.keys() if 'POSTGRES' in k or 'DATABASE' in k]}")
-        raise RuntimeError("POSTGRES_PASSWORD o DATABASE_URL environment variable is required. Configúrala en .env o como variable de entorno.")
+        available = [k for k in os.environ.keys() if "POSTGRES" in k or "DATABASE" in k]
+        raise RuntimeError(
+            f"POSTGRES_PASSWORD or DATABASE_URL must be configured. Available env vars: {available}"
+        )
 
-    conn = psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "localhost"),
+    host = os.getenv("POSTGRES_HOST", "localhost")
+    sslmode = os.getenv("POSTGRES_SSLMODE")
+    if not sslmode:
+        sslmode = "require" if "neon.tech" in host else "prefer"
+
+    return psycopg2.connect(
+        host=host,
         port=int(os.getenv("POSTGRES_PORT", "5432")),
         user=os.getenv("POSTGRES_USER", "caria_user"),
         password=postgres_password,
-        database=os.getenv("POSTGRES_DB", "caria"),
+        dbname=os.getenv("POSTGRES_DB", "caria"),
+        sslmode=sslmode,
     )
+
+
+def get_db_connection():
+    """Yield a managed database connection for FastAPI dependencies."""
+    conn = open_db_connection()
     try:
         yield conn
     except Exception:

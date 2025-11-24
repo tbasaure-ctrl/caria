@@ -61,6 +61,7 @@ from api.domains.portfolio import portfolio_router
 from api.domains.social import social_router
 from api.domains.analysis import analysis_router as analysis_domain_router
 from api.domains.market_data import market_data_router
+from api.dependencies import open_db_connection
 
 # Legacy routes (kept for backward compatibility)
 # These are now organized under domain routers above
@@ -87,6 +88,8 @@ from api.routes.reddit import router as reddit_router
 from api.routes.cors_test import router as cors_test_router
 from api.routes.lectures import router as lectures_router
 from api.routes.debug_secrets import router as debug_secrets_router
+from api.routes.scoring import router as scoring_router, score_router as score_public_router
+from api.routes.screener import router as screener_router
 
 
 # WebSocket support per audit document
@@ -230,16 +233,35 @@ app = FastAPI(
 # Configurar CORS
 # Accept specific origins from env + all Vercel deployments via regex
 # Support both comma and semicolon separators (gcloud may use semicolon)
-cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
+cors_origins_env = os.getenv("CORS_ORIGINS", "https://caria-way.com,https://www.caria-way.com,http://localhost:3000,http://localhost:5173")
 # Split by comma or semicolon, then flatten
 cors_origins_raw = []
 for sep in [",", ";"]:
     cors_origins_raw.extend(cors_origins_env.split(sep))
 cors_origins = [origin.strip().lower() for origin in cors_origins_raw if origin.strip()]
 
+# FORCE ADD caria-way.com just in case env var overwrote it without including it
+required_origins = ["https://caria-way.com", "https://www.caria-way.com"]
+for origin in required_origins:
+    if origin not in cors_origins:
+        cors_origins.append(origin)
+
+
 # Allow all Vercel deployments (*.vercel.app) using regex
 # This matches both preview and production deployments
 vercel_regex = r"https://.*\.vercel\.app"
+
+# --- DEBUG ENDPOINT FOR CORS ---
+@app.get("/api/debug/cors")
+def debug_cors():
+    """Returns the list of allowed origins for debugging deployment status."""
+    return {
+        "allowed_origins": cors_origins,
+        "vercel_regex": vercel_regex,
+        "env_cors": os.getenv("CORS_ORIGINS"),
+        "deployment_version": "2.1.0-cors-fix" 
+    }
+# -------------------------------
 
 # Logging para debugging
 LOGGER.info(f"CORS configured with origins: {cors_origins}")
@@ -332,6 +354,9 @@ app.include_router(lectures_router)  # Recommended lectures
 app.include_router(debug_secrets_router)  # Debug endpoint to check secrets status
 from api.routes.debug import router as debug_router
 app.include_router(debug_router) # LLM Debug endpoint
+app.include_router(scoring_router)
+app.include_router(score_public_router)
+app.include_router(screener_router)
 
 
 # Mount SocketIO app for WebSocket support per audit document
@@ -457,49 +482,18 @@ def healthcheck() -> dict[str, str]:
 
     # Database / Authentication
     try:
-        import psycopg2
-        from urllib.parse import urlparse, parse_qs
-
-        # Try DATABASE_URL first (Neon/Railway format)
-        database_url = os.getenv("DATABASE_URL")
-        if database_url:
-            parsed = urlparse(database_url)
-            
-            # Use normal TCP connection (Neon uses standard PostgreSQL connection strings)
-            if parsed.hostname:
-                conn = psycopg2.connect(
-                    host=parsed.hostname,
-                    port=parsed.port or 5432,
-                    user=parsed.username,
-                    password=parsed.password,
-                    database=parsed.path.lstrip('/'),
-                    sslmode='require' if 'sslmode=require' in parsed.query else None,
-                )
-            else:
-                raise ValueError("Invalid DATABASE_URL format")
-            conn.close()
-            status["database"] = "available"
-            status["auth"] = "available"
-        elif os.getenv("POSTGRES_PASSWORD"):
-            # Fallback to individual variables
-            conn = psycopg2.connect(
-                host=os.getenv("POSTGRES_HOST", "localhost"),
-                port=int(os.getenv("POSTGRES_PORT", "5432")),
-                user=os.getenv("POSTGRES_USER", "caria_user"),
-                password=os.getenv("POSTGRES_PASSWORD"),
-                database=os.getenv("POSTGRES_DB", "caria"),
-            )
-            conn.close()
-            status["database"] = "available"
-            status["auth"] = "available"
-        else:
-            LOGGER.warning("Neither DATABASE_URL nor POSTGRES_PASSWORD set, database check skipped")
-            status["database"] = "unconfigured"
-            status["auth"] = "unconfigured"
+        conn = open_db_connection()
+        conn.close()
+        status["database"] = "available"
+        status["auth"] = "available"
     except Exception as exc:  # noqa: BLE001
         LOGGER.warning("Database connection failed: %s", exc)
-        status["database"] = "unavailable"
-        status["auth"] = "unavailable"
+        if os.getenv("DATABASE_URL") or os.getenv("POSTGRES_PASSWORD"):
+            status["database"] = "unavailable"
+            status["auth"] = "unavailable"
+        else:
+            status["database"] = "unconfigured"
+            status["auth"] = "unconfigured"
 
     # RAG (Sistema II)
     if app.state.vector_store is None:

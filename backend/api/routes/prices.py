@@ -18,7 +18,7 @@ from pydantic import BaseModel, Field
 
 from api.dependencies import get_current_user
 from caria.models.auth import UserInDB
-from caria.ingestion.clients.fmp_client import FMPClient
+from api.services.openbb_client import OpenBBClient
 
 router = APIRouter(prefix="/api/prices", tags=["prices"])
 
@@ -33,9 +33,9 @@ class RealtimePriceResponse(BaseModel):
     prices: dict[str, dict[str, Any]]  # ticker -> datos de precio
 
 
-def _get_fmp_client() -> FMPClient:
-    """Obtiene cliente FMP."""
-    return FMPClient()
+def _get_openbb_client() -> OpenBBClient:
+    """Obtiene cliente OpenBB."""
+    return OpenBBClient()
 
 
 @router.post("/realtime", response_model=RealtimePriceResponse)
@@ -48,8 +48,8 @@ def get_realtime_prices(
     Usa FMP API para obtener datos actualizados de precios, cambios y porcentajes.
     """
     try:
-        client = _get_fmp_client()
-        prices = client.get_realtime_prices_batch(request.tickers)
+        client = _get_openbb_client()
+        prices = client.get_current_prices(request.tickers)
         
         return RealtimePriceResponse(prices=prices)
     except Exception as exc:
@@ -66,8 +66,14 @@ def get_realtime_price_single(
 ) -> dict[str, Any]:
     """Obtiene precio en tiempo real para un solo ticker."""
     try:
-        client = _get_fmp_client()
-        price_data = client.get_realtime_price(ticker.upper())
+        client = _get_openbb_client()
+        # Use batch method for single ticker to get full dict structure
+        prices = client.get_current_prices([ticker.upper()])
+        price_data = prices.get(ticker.upper())
+        
+        if price_data is None or price_data.get("price") == 0:
+             # Try fallback if 0
+             pass
         
         if price_data is None:
             raise HTTPException(

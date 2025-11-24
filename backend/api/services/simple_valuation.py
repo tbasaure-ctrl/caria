@@ -1,21 +1,22 @@
 import logging
 import os
+import statistics
 from typing import Any, Dict, Optional
 
-from caria.ingestion.clients.fmp_client import FMPClient
+from api.services.openbb_client import OpenBBClient
 
 LOGGER = logging.getLogger("caria.services.simple_valuation")
 
 class SimpleValuationService:
     """
     A robust, simplified valuation service that:
-    1. Fetches key metrics from FMP.
+    1. Fetches key metrics from OpenBB (FMP provider).
     2. Performs basic DCF and Multiples calculations.
     3. Handles errors gracefully and returns partial data if possible.
     """
 
-    def __init__(self, fmp_client: Optional[FMPClient] = None):
-        self.fmp_client = fmp_client or FMPClient(api_key=os.getenv("FMP_API_KEY", "").strip())
+    def __init__(self, obb_client: Optional[OpenBBClient] = None):
+        self.obb_client = obb_client or OpenBBClient()
 
     def get_valuation(self, ticker: str, current_price: float) -> Dict[str, Any]:
         """
@@ -35,7 +36,7 @@ class SimpleValuationService:
             reverse_dcf = self._calculate_reverse_dcf(metrics, current_price, dcf["assumptions"])
 
             # 4. Calculate Multiples Valuation (Fair Value based on Hist Avg)
-            multiples_val = self._calculate_historical_multiples_valuation(ticker, metrics)
+            multiples_val = self._calculate_historical_multiples_valuation(ticker, metrics, current_price)
 
             # 5. Current Multiples
             current_multiples = self._calculate_multiples(metrics)
@@ -55,25 +56,58 @@ class SimpleValuationService:
             return self._fallback_response(ticker, current_price, str(e))
 
     def _fetch_metrics(self, ticker: str) -> Optional[Dict[str, Any]]:
-        """Fetch necessary metrics from FMP."""
+        """Fetch necessary metrics from OpenBB."""
         try:
-            # Get Key Metrics (Annual/Quarterly)
-            key_metrics = self.fmp_client.get_key_metrics(ticker, period="quarter")
+            data = self.obb_client.get_ticker_data(ticker)
             
-            # Get Financial Ratios
-            ratios = self.fmp_client.get_financial_ratios(ticker, period="quarter")
-            
-            # Get Growth
-            growth = self.fmp_client.get_financial_growth(ticker, period="quarter")
+            # Extract Data
+            key_metrics = self._extract_first(data.get("key_metrics"))
+            ratios = self._extract_first(data.get("multiples"))
+            financials = self._extract_first(data.get("financials"))
+            growth = self._extract_first(data.get("growth"))
 
-            return {
-                **(key_metrics[0] if key_metrics else {}),
-                **(ratios[0] if ratios else {}),
-                "growth": growth[0] if growth else {}
+            # Map fields to expected format if necessary
+            # FMP Key Metrics usually match well, but we might need to alias some
+            mapped_metrics = {
+                **(key_metrics or {}),
+                **(ratios or {}),
+                **(financials or {}),
+                "growth": growth or {}
             }
+            
+            # Ensure critical fields exist (aliases)
+            if "freeCashFlowPerShare" in mapped_metrics and "freeCashFlowPerShareTTM" not in mapped_metrics:
+                mapped_metrics["freeCashFlowPerShareTTM"] = mapped_metrics["freeCashFlowPerShare"]
+            
+            if "netIncomePerShare" in mapped_metrics and "netIncomePerShareTTM" not in mapped_metrics:
+                mapped_metrics["netIncomePerShareTTM"] = mapped_metrics["netIncomePerShare"]
+
+            return mapped_metrics
         except Exception as e:
-            LOGGER.error(f"Error fetching FMP data: {e}")
+            LOGGER.error(f"Error fetching OpenBB data: {e}")
             return None
+
+    def _extract_first(self, obb_object: Any) -> Dict[str, Any]:
+        """Helper to extract the first row/result from an OBBject."""
+        if not obb_object:
+            return {}
+        try:
+            if hasattr(obb_object, 'to_df'):
+                df = obb_object.to_df()
+                if not df.empty:
+                    # Convert to dict, handling potential NaN
+                    return df.iloc[0].replace({float('nan'): None}).to_dict()
+            if hasattr(obb_object, 'results'):
+                if isinstance(obb_object.results, list) and obb_object.results:
+                    res = obb_object.results[0]
+                    if hasattr(res, 'model_dump'):
+                        return res.model_dump()
+                    if isinstance(res, dict):
+                        return res
+                    return res.__dict__
+        except Exception as e:
+            LOGGER.warning(f"Error extracting data from OBBject: {e}")
+        return {}
 
     def _calculate_dcf(self, metrics: Dict[str, Any], current_price: float) -> Dict[str, Any]:
         """Perform a simplified DCF calculation."""
@@ -191,60 +225,131 @@ class SimpleValuationService:
             LOGGER.error(f"Reverse DCF error: {e}")
             return {"implied_growth_rate": 0, "explanation": "Calculation failed"}
 
-    def _calculate_historical_multiples_valuation(self, ticker: str, current_metrics: Dict[str, Any]) -> Dict[str, Any]:
+    def _calculate_historical_multiples_valuation(
+        self,
+        ticker: str,
+        current_metrics: Dict[str, Any],
+        current_price: float,
+    ) -> Dict[str, Any]:
         """
         Valuation based on 5-year historical average multiples.
         """
         try:
-            # We need historical ratios. FMPClient has get_financial_ratios(period='annual')
-            # We'll fetch last 5 years annual
-            hist_ratios = self.fmp_client.get_financial_ratios(ticker, period="annual")
+            # Fetch historical ratios (last 5 years annual)
+            hist_ratios_obj = self.obb_client.get_multiples(ticker, limit=5, period="annual")
+            hist_ratios = self._extract_list(hist_ratios_obj)
+            
             if not hist_ratios:
-                return {"method": "N/A", "fair_value": 0, "explanation": "No historical data"}
+                return {"method": "N/A", "fair_value": 0, "explanation": "No historical EV multiples"}
 
-            # Take last 5 entries (assuming sorted desc date)
-            last_5 = hist_ratios[:5]
-            
-            avg_pe = sum(x.get("peRatio", 0) for x in last_5) / len(last_5)
-            avg_pb = sum(x.get("priceToBookRatio", 0) for x in last_5) / len(last_5)
-            
-            # Current metrics
-            eps = current_metrics.get("netIncomePerShareTTM") or current_metrics.get("netIncomePerShare") or 0
-            bps = current_metrics.get("bookValuePerShareTTM") or current_metrics.get("bookValuePerShare") or 0
-            
-            vals = []
-            if avg_pe > 0 and eps > 0:
-                vals.append(avg_pe * eps)
-            if avg_pb > 0 and bps > 0:
-                vals.append(avg_pb * bps)
-            
-            if not vals:
-                return {"method": "N/A", "fair_value": 0, "explanation": "Negative earnings/book value"}
-            
-            fair_value = sum(vals) / len(vals)
-            
+            last_entries = hist_ratios[:5]
+            ev_sales_samples = [
+                x.get("enterpriseValueOverRevenue") or x.get("enterprise_value_to_revenue")
+                for x in last_entries
+                if x.get("enterpriseValueOverRevenue") or x.get("enterprise_value_to_revenue")
+            ]
+            ev_ebitda_samples = [
+                x.get("enterpriseValueOverEBITDA") or x.get("enterprise_value_to_ebitda")
+                for x in last_entries
+                if x.get("enterpriseValueOverEBITDA") or x.get("enterprise_value_to_ebitda")
+            ]
+
+            ev_sales_median = statistics.median(ev_sales_samples) if ev_sales_samples else None
+            ev_ebitda_median = statistics.median(ev_ebitda_samples) if ev_ebitda_samples else None
+
+            shares = current_metrics.get("sharesOutstanding") or current_metrics.get("weightedAverageShsOutDil")
+            if not shares:
+                market_cap = current_metrics.get("marketCap")
+                if market_cap and current_price:
+                    shares = market_cap / current_price
+
+            revenue = current_metrics.get("revenueTTM") or current_metrics.get("revenue")
+            if not revenue and shares and current_metrics.get("revenuePerShareTTM"):
+                revenue = current_metrics["revenuePerShareTTM"] * shares
+
+            ebitda = current_metrics.get("ebitdaTTM") or current_metrics.get("ebitda")
+            if not ebitda and shares and current_metrics.get("ebitdaPerShareTTM"):
+                ebitda = current_metrics["ebitdaPerShareTTM"] * shares
+
+            net_debt = current_metrics.get("netDebt")
+            if net_debt is None:
+                debt = current_metrics.get("totalDebt")
+                cash = current_metrics.get("cashAndShortTermInvestments")
+                if debt is not None and cash is not None:
+                    net_debt = debt - cash
+                else:
+                    net_debt = 0
+
+            fair_values = []
+            breakdown: Dict[str, float] = {}
+
+            if ev_sales_median and revenue and shares:
+                enterprise_value_sales = ev_sales_median * revenue
+                equity_value_sales = enterprise_value_sales - (net_debt or 0)
+                if equity_value_sales > 0:
+                    fair_value_sales = equity_value_sales / shares
+                    fair_values.append(fair_value_sales)
+                    breakdown["ev_sales"] = round(fair_value_sales, 2)
+
+            if ev_ebitda_median and ebitda and shares:
+                enterprise_value_ebitda = ev_ebitda_median * ebitda
+                equity_value_ebitda = enterprise_value_ebitda - (net_debt or 0)
+                if equity_value_ebitda > 0:
+                    fair_value_ebitda = equity_value_ebitda / shares
+                    fair_values.append(fair_value_ebitda)
+                    breakdown["ev_ebitda"] = round(fair_value_ebitda, 2)
+
+            if not fair_values:
+                return {
+                    "method": "EV Multiples (3-5y median)",
+                    "fair_value": 0,
+                    "ev_sales_median": ev_sales_median,
+                    "ev_ebitda_median": ev_ebitda_median,
+                    "breakdown": breakdown,
+                    "explanation": "Insufficient revenue/EBITDA data to compute EV multiples.",
+                }
+
+            fair_value = sum(fair_values) / len(fair_values)
             return {
-                "method": "5y Avg Multiples (PE & PB)",
+                "method": "EV Multiples (3-5y median)",
                 "fair_value": round(fair_value, 2),
-                "avg_pe": round(avg_pe, 2),
-                "avg_pb": round(avg_pb, 2),
-                "explanation": f"Fair value derived from 5y Avg PE ({avg_pe:.1f}x) and PB ({avg_pb:.1f}x)."
+                "ev_sales_median": round(ev_sales_median, 2) if ev_sales_median else None,
+                "ev_ebitda_median": round(ev_ebitda_median, 2) if ev_ebitda_median else None,
+                "breakdown": breakdown,
+                "explanation": "Fair value calculated using median EV/Sales and EV/EBITDA over the last 3-5 years.",
             }
 
         except Exception as e:
             LOGGER.error(f"Multiples Valuation error: {e}")
-            return {"method": "Error", "fair_value": 0, "explanation": "Calculation failed"}
+            return {"method": "Error", "fair_value": 0, "explanation": "EV multiple calculation failed"}
+
+    def _extract_list(self, obb_object: Any) -> list:
+        """Helper to extract a list of dicts from an OBBject."""
+        if not obb_object:
+            return []
+        try:
+            if hasattr(obb_object, 'to_df'):
+                df = obb_object.to_df()
+                if not df.empty:
+                    return df.replace({float('nan'): None}).to_dict(orient='records')
+            if hasattr(obb_object, 'results'):
+                if isinstance(obb_object.results, list):
+                    return [
+                        res.model_dump() if hasattr(res, 'model_dump') else (res if isinstance(res, dict) else res.__dict__)
+                        for res in obb_object.results
+                    ]
+        except Exception as e:
+            LOGGER.warning(f"Error extracting list from OBBject: {e}")
+        return []
 
     def _calculate_multiples(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "method": "Market Multiples",
             "multiples": {
-                "PE": metrics.get("peRatioTTM") or metrics.get("peRatio") or 0,
-                "PB": metrics.get("pbRatioTTM") or metrics.get("pbRatio") or 0,
+                "EV/Sales": metrics.get("enterpriseValueOverRevenueTTM") or metrics.get("enterpriseValueOverRevenue") or 0,
                 "EV/EBITDA": metrics.get("enterpriseValueOverEBITDATTM") or metrics.get("enterpriseValueOverEBITDA") or 0,
-                "Div Yield": metrics.get("dividendYieldPercentageTTM") or metrics.get("dividendYieldPercentage") or 0
             },
-            "explanation": "Current market multiples."
+            "explanation": "Enterprise value multiples vs. sales and EBITDA."
         }
 
     def _default_assumptions(self):

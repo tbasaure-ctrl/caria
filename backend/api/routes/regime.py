@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import math
+import statistics
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
 
 # Configurar paths para encontrar caria
@@ -16,6 +19,11 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
 from api.dependencies import check_rate_limit, get_optional_current_user
+from api.services.openbb_client import OpenBBClient
+
+# Instantiate OpenBBClient for fallback
+openbb_client = OpenBBClient()
+
 from caria.models.auth import UserInDB
 from caria.services.regime_service import RegimeService
 
@@ -43,6 +51,104 @@ def _guard_regime_service(request: Request) -> RegimeService:
     return regime_service
 
 
+def _quick_regime_from_prices(symbol: str = "SPY") -> RegimeResponse | None:
+    """Fallback regime classification using price momentum & volatility."""
+    try:
+        start_date = (datetime.utcnow() - timedelta(days=420)).date().isoformat()
+        history = openbb_client.get_price_history(symbol, start_date=start_date)
+        closes = [
+            entry.get("close") or entry.get("adj_close")
+            for entry in history
+            if entry.get("close") or entry.get("adj_close")
+        ]
+        closes = [float(price) for price in closes if price is not None]
+
+        if len(closes) < 60:
+            return None
+
+        def pct_change(days: int) -> float:
+            if len(closes) <= days:
+                return 0.0
+            return (closes[-1] / closes[-days] - 1) * 100
+
+        ma50 = statistics.fmean(closes[-50:]) if len(closes) >= 50 else closes[-1]
+        ma200 = statistics.fmean(closes[-200:]) if len(closes) >= 200 else statistics.fmean(closes)
+        r1m = pct_change(21)
+        r3m = pct_change(63)
+        r6m = pct_change(126)
+        r12m = pct_change(252)
+
+        vol = 0.0
+        if len(closes) >= 63:
+            returns = [
+                (closes[i] / closes[i - 1]) - 1
+                for i in range(len(closes) - 62, len(closes))
+            ]
+            if returns:
+                vol = statistics.pstdev(returns) * math.sqrt(252) * 100
+
+        score = 0
+        if ma50 > ma200:
+            score += 1
+        if r3m > 0:
+            score += 1
+        if r6m > 0:
+            score += 1
+        if r12m > 0:
+            score += 1
+
+        stress_trigger = r1m <= -7 or vol >= 28
+        if stress_trigger:
+            regime = "stress"
+        elif score >= 3:
+            regime = "expansion"
+        elif score == 2:
+            regime = "slowdown"
+        else:
+            regime = "recession"
+
+        confidence = min(0.95, max(0.2, 0.35 + (score / 4) * 0.4))
+        if stress_trigger:
+            confidence = min(0.9, confidence + 0.1)
+
+        base_probs = {
+            "expansion": 0.2,
+            "slowdown": 0.25,
+            "recession": 0.3,
+            "stress": 0.25,
+        }
+        dominant = min(0.75, 0.45 + confidence / 2)
+        base_probs[regime] = dominant
+        total_other = sum(v for k, v in base_probs.items() if k != regime)
+        remainder = 1 - dominant
+        if total_other > 0:
+            for key in base_probs:
+                if key == regime:
+                    continue
+                base_probs[key] = remainder * (base_probs[key] / total_other)
+
+        features_used = {
+            "symbol": symbol,
+            "ma50": round(ma50, 2),
+            "ma200": round(ma200, 2),
+            "return_1m_pct": round(r1m, 2),
+            "return_3m_pct": round(r3m, 2),
+            "return_6m_pct": round(r6m, 2),
+            "return_12m_pct": round(r12m, 2),
+            "volatility_pct": round(vol, 2),
+        }
+
+        return RegimeResponse(
+            regime=regime,
+            probabilities={key: float(value) for key, value in base_probs.items()},
+            confidence=float(confidence),
+            features_used=features_used,
+        )
+    except Exception as exc:  # noqa: BLE001
+        LOGGER.warning("Fallback regime computation failed: %s", exc)
+        return None
+
+
 @router.get("/current", response_model=RegimeResponse)
 def get_current_regime(
     request: Request,
@@ -61,7 +167,10 @@ def get_current_regime(
     
     # Si el servicio no está disponible, retornar régimen por defecto
     if regime_service is None or not regime_service.is_available():
-        LOGGER.warning("Regime service not available, returning default regime")
+        LOGGER.warning("Regime service not available, using OpenBB fallback")
+        fallback = _quick_regime_from_prices()
+        if fallback:
+            return fallback
         return RegimeResponse(
             regime="slowdown",
             confidence=0.5,
@@ -71,13 +180,15 @@ def get_current_regime(
                 "recession": 0.2,
                 "stress": 0.1,
             },
-            features_used={}  # Features vacías cuando no hay datos
+            features_used={},
         )
     
     result = regime_service.get_regime_probabilities()
     if result is None:
-        # Si no se puede detectar, retornar régimen por defecto en lugar de error
-        LOGGER.warning("Could not detect regime, returning default")
+        LOGGER.warning("Could not detect regime with trained model, using fallback heuristics")
+        fallback = _quick_regime_from_prices()
+        if fallback:
+            return fallback
         return RegimeResponse(
             regime="slowdown",
             confidence=0.5,
@@ -87,7 +198,7 @@ def get_current_regime(
                 "recession": 0.2,
                 "stress": 0.1,
             },
-            features_used={}  # Features vacías cuando no hay datos
+            features_used={},
         )
     
     # Asegurar que features_used esté presente

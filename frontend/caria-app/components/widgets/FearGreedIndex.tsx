@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 interface FearGreedData {
     value: number; // 0-100
@@ -47,8 +48,8 @@ export const FearGreedIndex: React.FC = () => {
 
             const fearGreedData: FearGreedData = await response.json();
             setData(fearGreedData);
-        } catch (err: any) {
-            console.error('Error loading Fear and Greed Index:', err);
+        } catch (err: unknown) {
+            const errorMsg = getErrorMessage(err);
             setError('Coming soon... Fear & Greed Index is being enhanced with real-time updates.');
         } finally {
             setLoading(false);
@@ -136,7 +137,17 @@ export const FearGreedIndex: React.FC = () => {
     }
 
     if (!data) {
-        return null;
+        return (
+            <WidgetCard
+                title="FEAR & GREED"
+                id="fear-greed-widget"
+                tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
+            >
+                <div className="text-center h-[124px] flex items-center justify-center">
+                    <p className="text-slate-500">No data available</p>
+                </div>
+            </WidgetCard>
+        );
     }
 
     const config = CLASSIFICATION_CONFIG[data.classification] || {

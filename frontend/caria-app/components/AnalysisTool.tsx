@@ -8,8 +8,13 @@ import { API_BASE_URL, fetchWithAuth } from '../services/apiService';
 // LocalStorage Helpers
 // -----------------------------------------------
 const getChatHistory = (): ChatMessage[] => {
-    const saved = localStorage.getItem('cariaChatHistory');
-    return saved ? JSON.parse(saved) : [];
+    try {
+        const saved = localStorage.getItem('cariaChatHistory');
+        return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+        console.warn('Failed to parse chat history', e);
+        return [];
+    }
 };
 
 const saveChatHistory = (messages: ChatMessage[]) => {
@@ -183,11 +188,14 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
 
         } catch (err: any) {
             console.error('Chat error:', err);
+            const friendlyMessage =
+                err?.message ||
+                'No se pudo completar el análisis en este momento. Intenta nuevamente en unos segundos.';
             const errorMsg: ChatMessage = {
                 role: 'error',
-                content: 'Coming soon... This feature is currently being enhanced to provide you with the best analysis experience.'
+                content: friendlyMessage,
             };
-            setMessages(prev => [...prev, errorMsg]);
+            setMessages((prev) => [...prev, errorMsg]);
         } finally {
             setIsLoading(false);
         }

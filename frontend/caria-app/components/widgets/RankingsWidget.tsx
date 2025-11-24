@@ -3,43 +3,10 @@
  * Shows community rankings from the Arena system.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { WidgetCard } from './WidgetCard';
-import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
-
-interface TopCommunity {
-    community: string;
-    post_count: number;
-    total_upvotes: number;
-    unique_users: number;
-}
-
-interface HotThesis {
-    id: string;
-    title: string;
-    thesis_preview: string;
-    ticker: string | null;
-    upvotes: number;
-    created_at: string;
-    username: string | null;
-}
-
-interface Survivor {
-    thread_id: string;
-    thesis: string;
-    ticker: string | null;
-    initial_conviction: number;
-    current_conviction: number;
-    round_count: number;
-    created_at: string;
-    username: string | null;
-}
-
-interface RankingsData {
-    top_communities: TopCommunity[];
-    hot_theses: HotThesis[];
-    survivors: Survivor[];
-}
+import { fetchCommunityRankings, CommunityRankings } from '../../services/communityService';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 const COMMUNITY_LABELS: Record<string, string> = {
     value_investor: 'Value Investor',
@@ -49,41 +16,90 @@ const COMMUNITY_LABELS: Record<string, string> = {
 };
 
 export const RankingsWidget: React.FC = () => {
-    const [rankings, setRankings] = useState<RankingsData | null>(null);
+    const [rankings, setRankings] = useState<CommunityRankings | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'communities' | 'hot' | 'survivors'>('communities');
+    const [statusMessage, setStatusMessage] = useState<string | null>(null);
+    const cacheHydrated = useRef(false);
+    const rankingsRef = useRef<CommunityRankings | null>(null);
+    const CACHE_KEY = 'caria.community.rankings.cache.v1';
 
     useEffect(() => {
-        loadRankings();
+        rankingsRef.current = rankings;
+    }, [rankings]);
+
+    useEffect(() => {
+        if (!rankings) return;
+        sessionStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({ data: rankings, savedAt: Date.now() })
+        );
+    }, [rankings]);
+
+    const hydrateFromCache = useCallback(() => {
+        if (cacheHydrated.current) return;
+        try {
+            const cachedRaw = sessionStorage.getItem(CACHE_KEY);
+            if (!cachedRaw) return;
+            const cached = JSON.parse(cachedRaw);
+            if (cached?.data) {
+                setRankings(cached.data);
+                setStatusMessage('Mostrando rankings guardados mientras se sincroniza.');
+            }
+        } catch (cacheError) {
+            console.warn('No se pudo hidratar cache de rankings', cacheError);
+        } finally {
+            cacheHydrated.current = true;
+        }
     }, []);
 
-    const loadRankings = async () => {
-        try {
+    const loadRankings = useCallback(
+        async (signal?: AbortSignal) => {
             setLoading(true);
             setError(null);
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/community/rankings`);
-
-            if (!response.ok) {
-                throw new Error('Failed to load rankings');
+            try {
+                const data = await fetchCommunityRankings(signal);
+                setRankings(data);
+                setStatusMessage(null);
+            } catch (err: unknown) {
+                if (err instanceof Error && err.name === 'AbortError') return;
+                hydrateFromCache();
+                const message = getErrorMessage(err);
+                if (message.includes('401') || message.includes('403')) {
+                    setError('Please log in to view community rankings');
+                } else if (message.includes('connect')) {
+                    setError('Unable to connect to rankings service');
+                } else if (!rankingsRef.current) {
+                    setError('Unable to load rankings. Please try again later.');
+                } else {
+                    setStatusMessage('Mostrando rankings guardados. Último refresh falló.');
+                }
+            } finally {
+                setLoading(false);
             }
+        },
+        [hydrateFromCache]
+    );
 
-            const data: RankingsData = await response.json();
-            setRankings(data);
-        } catch (err: any) {
-            console.error('Error loading rankings:', err);
-            // Provide more specific error messages
-            if (err.message?.includes('401') || err.message?.includes('403')) {
-                setError('Please log in to view community rankings');
-            } else if (err.message?.includes('Failed to connect')) {
-                setError('Unable to connect to rankings service');
-            } else {
-                setError('Unable to load rankings. Please try again later.');
-            }
-        } finally {
-            setLoading(false);
+    useEffect(() => {
+        hydrateFromCache();
+        const controller = new AbortController();
+        loadRankings(controller.signal);
+        return () => controller.abort();
+    }, [hydrateFromCache, loadRankings]);
+
+    useEffect(() => {
+        const handleRefresh = () => loadRankings();
+        if (typeof window !== 'undefined') {
+            window.addEventListener('caria-community-refresh', handleRefresh);
         }
-    };
+        return () => {
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('caria-community-refresh', handleRefresh);
+            }
+        };
+    }, [loadRankings]);
 
     if (loading) {
         return (
@@ -108,7 +124,7 @@ export const RankingsWidget: React.FC = () => {
             >
                 <div className="text-sm" style={{ color: '#ef4444' }}>{error}</div>
                 <button
-                    onClick={loadRankings}
+                    onClick={() => loadRankings()}
                     className="mt-2 text-xs underline"
                     style={{ color: 'var(--color-primary)' }}
                 >
@@ -119,7 +135,17 @@ export const RankingsWidget: React.FC = () => {
     }
 
     if (!rankings) {
-        return null;
+        return (
+            <WidgetCard
+                title="Community Rankings"
+                id="rankings-widget"
+                tooltip="Rankings de la comunidad: comunidades más activas, tesis más populares, y tesis con mayor convicción sostenida."
+            >
+                <div className="text-center h-[124px] flex items-center justify-center">
+                    <p className="text-slate-500">No rankings available</p>
+                </div>
+            </WidgetCard>
+        );
     }
 
     return (
@@ -130,7 +156,13 @@ export const RankingsWidget: React.FC = () => {
         >
             <div className="space-y-4">
                 {/* Tabs */}
-                <div className="flex gap-2 border-b" style={{ borderColor: 'var(--color-bg-tertiary)' }}>
+                <div className="flex flex-col gap-2 border-b" style={{ borderColor: 'var(--color-bg-tertiary)' }}>
+                    {statusMessage && (
+                        <div className="text-xs" style={{ color: '#fbbf24' }}>
+                            {statusMessage}
+                        </div>
+                    )}
+                    <div className="flex gap-2">
                     <button
                         onClick={() => setActiveTab('communities')}
                         className={`px-3 py-2 text-sm font-medium transition-colors ${
@@ -173,6 +205,7 @@ export const RankingsWidget: React.FC = () => {
                     >
                         Survivors
                     </button>
+                    </div>
                 </div>
 
                 {/* Content */}

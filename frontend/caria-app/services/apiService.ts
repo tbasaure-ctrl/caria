@@ -4,7 +4,17 @@ const REFRESH_TOKEN_KEY = 'caria-refresh-token';
 // Get API URL from environment or default - MUST be absolute URL per audit document
 // INCORRECT: "/api/login" or "localhost:8000/api/login"
 // CORRECT: "http://localhost:8000/api/login"
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+export const API_BASE_URL = (() => {
+    let url = import.meta.env.VITE_API_URL || 'https://caria-production.up.railway.app';
+    // Ensure it starts with http:// or https://
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+    }
+    // Remove trailing slash
+    return url.replace(/\/$/, '');
+})();
+
+
 // Use API_BASE_URL consistently everywhere (per audit document 1.1)
 const API_URL = API_BASE_URL;
 
@@ -151,14 +161,30 @@ export interface RealtimePrice {
 }
 
 export const fetchPrices = async (tickers: string[]): Promise<Record<string, RealtimePrice>> => {
-    const response = await fetchWithAuth(`${API_URL}/api/prices/realtime`, {
+    // Prices endpoint now supports optional auth - try with auth first, fallback without
+    const token = getToken();
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`${API_URL}/api/prices/realtime`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ tickers }),
     });
 
     if (!response.ok) {
-        throw new Error(`Error fetching prices: ${response.statusText}`);
+        const errorText = await response.text();
+        let errorMessage = `Error fetching prices: ${response.statusText}`;
+        try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.detail || errorMessage;
+        } catch {
+            // If not JSON, use status text
+        }
+        throw new Error(errorMessage);
     }
 
     const data = await response.json();

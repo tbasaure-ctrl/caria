@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 interface ThesisEditorModalProps {
     isOpen: boolean;
@@ -89,8 +90,7 @@ export const ThesisEditorModal: React.FC<ThesisEditorModalProps> = ({
 
             const result: ValidationResult = await response.json();
             setValidationResult(result);
-        } catch (err: any) {
-            console.error('Error validating post:', err);
+        } catch (err: unknown) {
             setError('Failed to validate post. You can still submit.');
         } finally {
             setIsValidating(false);
@@ -126,14 +126,15 @@ export const ThesisEditorModal: React.FC<ThesisEditorModalProps> = ({
                 throw new Error(errorData.detail || 'Failed to create post');
             }
 
-            // Success
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('caria-community-refresh'));
+            }
             if (onSuccess) {
                 onSuccess();
             }
             onClose();
-        } catch (err: any) {
-            console.error('Error creating post:', err);
-            setError('Coming soon... Post creation is being enhanced for better sharing capabilities.');
+        } catch (err: unknown) {
+            setError(getErrorMessage(err) || 'No pudimos publicar tu tesis. Intenta nuevamente.');
         } finally {
             setIsSubmitting(false);
         }

@@ -11,6 +11,8 @@ import os
 
 # Import valuation module
 from .valuation import ValuationAnalyzer
+from .routes import simulation, watchlist
+
 
 # Setup
 app = FastAPI(title="Caria API", version="1.0.0")
@@ -23,6 +25,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(simulation.router)
+app.include_router(watchlist.router)
+
 
 # Load models
 BASE_DIR = Path(__file__).resolve().parents[2]

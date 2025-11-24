@@ -3,28 +3,16 @@
  * Replaces CommunityIdeas widget with improved functionality.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { WidgetCard } from './WidgetCard';
-import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
-
-interface CommunityPost {
-    id: string;
-    user_id: string;
-    username: string | null;
-    title: string;
-    thesis_preview: string;
-    full_thesis: string | null;
-    ticker: string | null;
-    analysis_merit_score: number;
-    upvotes: number;
-    user_has_voted: boolean;
-    created_at: string;
-    updated_at: string;
-    is_arena_post: boolean;
-    arena_thread_id: string | null;
-    arena_round_id: string | null;
-    arena_community: string | null;
-}
+import { ArenaThreadModal } from './ArenaThreadModal';
+import { API_BASE_URL, fetchWithAuth } from '../../services/apiService';
+import {
+    CommunityPost,
+    CommunityPostSort,
+    fetchCommunityPosts,
+} from '../../services/communityService';
+import { getErrorMessage, isAbortError, isAuthError, isNetworkError } from '../../src/utils/errorHandling';
 
 const COMMUNITY_LABELS: Record<string, string> = {
     value_investor: 'Value Investor',
@@ -40,40 +28,102 @@ export const CommunityFeed: React.FC = () => {
     const [expandedPost, setExpandedPost] = useState<string | null>(null);
     const [voting, setVoting] = useState<Set<string>>(new Set());
     const [searchQuery, setSearchQuery] = useState('');
-    const [sortBy, setSortBy] = useState<'upvotes' | 'created_at' | 'analysis_merit_score'>('upvotes');
+    const [sortBy, setSortBy] = useState<CommunityPostSort>('upvotes');
+    const [statusMessage, setStatusMessage] = useState<string | null>(null);
+    const cacheHydrated = useRef(false);
+    const postsRef = useRef<CommunityPost[]>([]);
+    
+    // Arena Modal State
+    const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+    const [selectedThreadData, setSelectedThreadData] = useState<{thesis: string, ticker: string | null} | null>(null);
+
+    const CACHE_KEY = 'caria.community.feed.cache.v1';
+
 
     useEffect(() => {
-        loadPosts();
+        postsRef.current = posts;
+    }, [posts]);
+
+    useEffect(() => {
+        if (!posts.length) return;
+        sessionStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({
+                posts,
+                savedAt: Date.now(),
+                sortBy,
+            })
+        );
+    }, [posts, sortBy]);
+
+    const hydrateFromCache = useCallback(() => {
+        if (cacheHydrated.current) return;
+        cacheHydrated.current = true;
+        try {
+            const cachedRaw = sessionStorage.getItem(CACHE_KEY);
+            if (!cachedRaw) return;
+            const cached = JSON.parse(cachedRaw);
+            if (cached?.sortBy && cached.sortBy !== sortBy) {
+                return;
+            }
+            if (Array.isArray(cached.posts) && cached.posts.length > 0) {
+                setPosts(cached.posts);
+                setStatusMessage('Mostrando datos guardados mientras actualizamos el feed...');
+            }
+        } catch (cacheError) {
+            console.warn('No se pudo hidratar cache del feed', cacheError);
+        }
     }, [sortBy]);
 
-    const loadPosts = async () => {
-        try {
+    const loadPosts = useCallback(
+        async (signal?: AbortSignal) => {
             setLoading(true);
             setError(null);
-            const response = await fetchWithAuth(
-                `${API_BASE_URL}/api/community/posts?limit=50&sort_by=${sortBy}`
-            );
-
-            if (!response.ok) {
-                throw new Error('Failed to load community posts');
+            try {
+                const data = await fetchCommunityPosts({ sortBy, limit: 50, signal });
+                setPosts(data);
+                setStatusMessage(null);
+            } catch (err: unknown) {
+                if (isAbortError(err)) {
+                    return;
+                }
+                hydrateFromCache();
+                const message = getErrorMessage(err);
+                if (isAuthError(err)) {
+                    setError('Inicia sesión para ver las publicaciones de la comunidad.');
+                } else if (isNetworkError(err)) {
+                    setError('Servicio de comunidad no disponible. Reintentando...');
+                } else if (!postsRef.current.length) {
+                    setError('Unable to load community posts. Please try again later.');
+                } else {
+                    setStatusMessage('Mostrando datos guardados. Último refresh falló.');
+                }
+            } finally {
+                setLoading(false);
             }
+        },
+        [sortBy, hydrateFromCache]
+    );
 
-            const data = await response.json();
-            setPosts(data);
-        } catch (err: any) {
-            console.error('Error loading community posts:', err);
-            // Provide more specific error messages
-            if (err.message?.includes('401') || err.message?.includes('403')) {
-                setError('Please log in to view community posts');
-            } else if (err.message?.includes('Failed to connect')) {
-                setError('Unable to connect to community service');
-            } else {
-                setError('Unable to load community posts. Please try again later.');
-            }
-        } finally {
-            setLoading(false);
+    useEffect(() => {
+        cacheHydrated.current = false;
+        hydrateFromCache();
+        const controller = new AbortController();
+        loadPosts(controller.signal);
+        return () => controller.abort();
+    }, [sortBy, hydrateFromCache, loadPosts]);
+
+    useEffect(() => {
+        const handleExternalRefresh = () => loadPosts();
+        if (typeof window !== 'undefined') {
+            window.addEventListener('caria-community-refresh', handleExternalRefresh);
         }
-    };
+        return () => {
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('caria-community-refresh', handleExternalRefresh);
+            }
+        };
+    }, [loadPosts]);
 
     const filteredPosts = useMemo(() => {
         if (!searchQuery.trim()) {
@@ -83,8 +133,8 @@ export const CommunityFeed: React.FC = () => {
         const query = searchQuery.toLowerCase();
         return posts.filter(
             (post) =>
-                post.title.toLowerCase().includes(query) ||
-                post.thesis_preview.toLowerCase().includes(query) ||
+                (post.title && post.title.toLowerCase().includes(query)) ||
+                (post.thesis_preview && post.thesis_preview.toLowerCase().includes(query)) ||
                 (post.ticker && post.ticker.toLowerCase().includes(query)) ||
                 (post.username && post.username.toLowerCase().includes(query))
         );
@@ -122,8 +172,8 @@ export const CommunityFeed: React.FC = () => {
                         : post
                 )
             );
-        } catch (err: any) {
-            console.error('Error voting:', err);
+        } catch (err: unknown) {
+            // Silently handle voting errors - user can retry
         } finally {
             setVoting((prev) => {
                 const next = new Set(prev);
@@ -154,10 +204,12 @@ export const CommunityFeed: React.FC = () => {
         }
     };
 
-    const handleViewArenaThread = (threadId: string) => {
-        // TODO: Open Arena thread modal or navigate to arena thread view
-        console.log('View arena thread:', threadId);
-        // This could open a modal or navigate to a dedicated arena thread view
+    const handleViewArenaThread = (threadId: string, post: CommunityPost) => {
+        setSelectedThreadData({
+            thesis: post.title, // or post.thesis_preview / post.full_thesis
+            ticker: post.ticker
+        });
+        setSelectedThreadId(threadId);
     };
 
     if (loading) {
@@ -183,7 +235,7 @@ export const CommunityFeed: React.FC = () => {
             >
                 <div className="text-sm" style={{ color: '#ef4444' }}>{error}</div>
                 <button
-                    onClick={loadPosts}
+                    onClick={() => loadPosts()}
                     className="mt-2 text-xs underline"
                     style={{ color: 'var(--color-primary)' }}
                 >
@@ -199,7 +251,7 @@ export const CommunityFeed: React.FC = () => {
             id="community-feed-widget"
             tooltip="Feed de tesis e ideas de inversión de la comunidad. Busca, vota y descubre insights compartidos por otros usuarios."
         >
-            <div className="space-y-4">
+                <div className="space-y-4">
                 {/* Search and Sort Controls */}
                 <div className="space-y-2">
                     <div className="flex gap-2">
@@ -218,7 +270,7 @@ export const CommunityFeed: React.FC = () => {
                         <select
                             value={sortBy}
                             onChange={(e) =>
-                                setSortBy(e.target.value as 'upvotes' | 'created_at' | 'analysis_merit_score')
+                                setSortBy(e.target.value as CommunityPostSort)
                             }
                             className="px-3 py-2 rounded-lg text-sm"
                             style={{
@@ -232,6 +284,11 @@ export const CommunityFeed: React.FC = () => {
                             <option value="analysis_merit_score">Best Analysis</option>
                         </select>
                     </div>
+                    {statusMessage && (
+                        <div className="text-xs" style={{ color: '#fbbf24' }}>
+                            {statusMessage}
+                        </div>
+                    )}
                     {searchQuery && (
                         <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                             Showing {filteredPosts.length} of {posts.length} posts
@@ -329,7 +386,7 @@ export const CommunityFeed: React.FC = () => {
                                         <>
                                             <span>•</span>
                                             <button
-                                                onClick={() => handleViewArenaThread(post.arena_thread_id!)}
+                                                onClick={() => handleViewArenaThread(post.arena_thread_id!, post)}
                                                 className="underline hover:no-underline"
                                                 style={{ color: 'var(--color-primary)' }}
                                             >
@@ -381,6 +438,31 @@ export const CommunityFeed: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {selectedThreadId && selectedThreadData && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+                    onClick={() => setSelectedThreadId(null)}
+                >
+                    <div
+                        className="bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            backgroundColor: 'var(--color-bg-primary)',
+                            border: '1px solid var(--color-bg-tertiary)',
+                        }}
+                    >
+                        <ArenaThreadModal
+                            threadId={selectedThreadId}
+                            initialThesis={selectedThreadData.thesis}
+                            initialTicker={selectedThreadData.ticker}
+                            initialConviction={50}
+                            onClose={() => setSelectedThreadId(null)}
+                        />
+                    </div>
+                </div>
+            )}
         </WidgetCard>
     );
 };

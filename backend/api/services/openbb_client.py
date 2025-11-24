@@ -1,0 +1,246 @@
+import logging
+from typing import Any, Dict, Optional, List
+import os
+import yfinance as yf
+from openbb import obb
+
+LOGGER = logging.getLogger("caria.services.openbb_client")
+DEFAULT_PROVIDER = os.getenv("OPENBB_PROVIDER", "fmp")
+
+class OpenBBClient:
+    """
+    Unified client for OpenBB data integration.
+    Replaces FMP and Yahoo wrappers.
+    Includes robust yfinance fallback for when keys are missing.
+    """
+
+    def __init__(self):
+        self.provider = DEFAULT_PROVIDER
+
+    def get_price_history(self, symbol: str, start_date: str = "2010-01-01") -> Any:
+        """
+        Fetch historical price data.
+        Uses the configured provider (default fmp), falls back to yfinance.
+        """
+        # Try OpenBB first
+        try:
+            result = obb.equity.price.historical(symbol=symbol, provider=self.provider, start_date=start_date)
+            if result and hasattr(result, 'to_df'):
+                df = result.to_df()
+                if not df.empty:
+                    return result
+        except Exception as e:
+            LOGGER.warning(f"OpenBB/FMP history failed for {symbol}: {e}")
+
+        # Fallback to yfinance
+        try:
+            LOGGER.info(f"Falling back to yfinance for {symbol} history")
+            # yfinance returns a DF directly
+            ticker = yf.Ticker(symbol)
+            hist = ticker.history(start=start_date)
+            if not hist.empty:
+                # Wrap it in a simple object to match OpenBB interface if needed, 
+                # or just rely on the caller handling a dataframe-like object.
+                # For now, we return a wrapper that has to_df
+                class YFinanceResult:
+                    def __init__(self, df): self._df = df
+                    def to_df(self): return self._df
+                return YFinanceResult(hist)
+        except Exception as e:
+            LOGGER.error(f"yfinance history failed for {symbol}: {e}")
+        
+        return None
+
+    def get_multiples(self, symbol: str, limit: int = 1, period: str = "annual") -> Any:
+        """
+        Fetch valuation multiples (Ratios).
+        """
+        try:
+            return obb.equity.fundamental.ratios(symbol=symbol, provider="fmp", limit=limit, period=period)
+        except Exception as e:
+            LOGGER.error(f"Error fetching multiples for {symbol}: {e}")
+            return None
+
+    def get_financials(self, symbol: str, limit: int = 1, period: str = "annual") -> Any:
+        """
+        Fetch financial statements.
+        """
+        try:
+            return obb.equity.fundamental.income(symbol=symbol, provider="fmp", limit=limit, period=period)
+        except Exception as e:
+            LOGGER.error(f"Error fetching financials for {symbol}: {e}")
+            return None
+
+    def get_key_metrics(self, symbol: str, limit: int = 1, period: str = "annual") -> Any:
+        """
+        Fetch key metrics.
+        """
+        try:
+            return obb.equity.fundamental.metrics(symbol=symbol, provider="fmp", limit=limit, period=period)
+        except Exception as e:
+            LOGGER.error(f"Error fetching key metrics for {symbol}: {e}")
+            return None
+
+    def get_growth(self, symbol: str, limit: int = 1, period: str = "annual") -> Any:
+        """
+        Fetch growth metrics.
+        """
+        try:
+            return obb.equity.fundamental.cash_growth(symbol=symbol, provider="fmp", limit=limit, period=period)
+        except Exception as e:
+            LOGGER.error(f"Error fetching growth for {symbol}: {e}")
+            return None
+
+    def get_current_price(self, symbol: str) -> float:
+        """
+        Get the latest price for a symbol.
+        """
+        # Try OpenBB/FMP Quote
+        try:
+            quote = obb.equity.price.quote(symbol=symbol, provider="fmp")
+            if quote and hasattr(quote, 'to_df'):
+                df = quote.to_df()
+                if not df.empty:
+                    val = df.iloc[0].get('last_price', df.iloc[0].get('price', 0))
+                    if val > 0: return float(val)
+        except Exception:
+            pass
+            
+        # Fallback to yfinance
+        try:
+            ticker = yf.Ticker(symbol)
+            # fast_info is faster than history
+            price = ticker.fast_info.last_price
+            if price and price > 0:
+                return float(price)
+            # fallback to history if fast_info fails
+            hist = ticker.history(period="1d")
+            if not hist.empty:
+                return float(hist['Close'].iloc[-1])
+        except Exception as e:
+            LOGGER.error(f"Error fetching current price for {symbol}: {e}")
+            
+        return 0.0
+
+    def get_current_prices(self, symbols: List[str]) -> Dict[str, Dict[str, Any]]:
+        """
+        Get latest prices for multiple symbols.
+        Returns dict: {symbol: {price: float, change: float, ...}}
+        """
+        results = {}
+        
+        # 1. Try Batch FMP via OpenBB
+        try:
+            symbols_str = ",".join(symbols)
+            quote = obb.equity.price.quote(symbol=symbols_str, provider="fmp")
+            
+            if quote and hasattr(quote, 'to_df'):
+                df = quote.to_df()
+                if not df.empty:
+                    for _, row in df.iterrows():
+                        sym = row.get('symbol')
+                        if sym:
+                            results[sym] = {
+                                "symbol": sym,
+                                "price": float(row.get('last_price', row.get('price', 0))),
+                                "change": float(row.get('change', 0)),
+                                "changesPercentage": float(row.get('change_percent', row.get('changesPercentage', 0))),
+                                "previousClose": float(row.get('prev_close', row.get('previousClose', 0)))
+                            }
+        except Exception as e:
+            LOGGER.warning(f"Batch FMP fetch failed: {e}")
+
+        # 2. Fill missing with yfinance (Batch)
+        missing_symbols = [s for s in symbols if s not in results]
+        if missing_symbols:
+            try:
+                # yfinance download is efficient for batch
+                # 'download' returns a MultiIndex DataFrame if >1 ticker
+                data = yf.download(missing_symbols, period="1d", progress=False)
+                
+                # Check if we got data. If only 1 ticker, structure is different.
+                if not data.empty:
+                    if len(missing_symbols) == 1:
+                        # Single ticker structure
+                        sym = missing_symbols[0]
+                        close = float(data['Close'].iloc[-1])
+                        # approximate open as prev close for change calc if needed
+                        open_p = float(data['Open'].iloc[-1])
+                        change = close - open_p
+                        change_p = (change / open_p) * 100 if open_p else 0
+                        
+                        results[sym] = {
+                            "symbol": sym,
+                            "price": close,
+                            "change": change,
+                            "changesPercentage": change_p,
+                            "previousClose": open_p 
+                        }
+                    else:
+                        # Multi-ticker
+                        # 'Close' column has sub-columns for each ticker
+                        for sym in missing_symbols:
+                            try:
+                                # Handle different yfinance versions (some use MultiIndex, some don't)
+                                if isinstance(data['Close'], float):
+                                     # Should not happen with multi-ticker
+                                     pass
+                                else:
+                                    # Access column safely
+                                    if sym in data['Close']:
+                                        close = float(data['Close'][sym].iloc[-1])
+                                        open_p = float(data['Open'][sym].iloc[-1])
+                                        change = close - open_p
+                                        change_p = (change / open_p) * 100 if open_p else 0
+                                        
+                                        results[sym] = {
+                                            "symbol": sym,
+                                            "price": close,
+                                            "change": change,
+                                            "changesPercentage": change_p,
+                                            "previousClose": open_p
+                                        }
+                            except Exception:
+                                continue
+            except Exception as e:
+                LOGGER.error(f"yfinance batch fetch failed: {e}")
+
+        # 3. Final cleanup - fill remaining with 0s
+        for sym in symbols:
+            if sym not in results:
+                results[sym] = {
+                    "symbol": sym, 
+                    "price": 0.0, 
+                    "change": 0.0, 
+                    "changesPercentage": 0.0,
+                    "previousClose": 0.0
+                }
+            
+        return results
+
+    def get_ticker_data(self, symbol: str) -> Dict[str, Any]:
+        """
+        Unified aggregator for all metrics.
+        """
+        try:
+            price_history = self.get_price_history(symbol)
+            multiples = self.get_multiples(symbol)
+            financials = self.get_financials(symbol)
+            key_metrics = self.get_key_metrics(symbol)
+            growth = self.get_growth(symbol)
+            current_price = self.get_current_price(symbol)
+
+            return {
+                "symbol": symbol,
+                "price_history": price_history,
+                "multiples": multiples,
+                "financials": financials,
+                "key_metrics": key_metrics,
+                "growth": growth,
+                "current_price": current_price
+            }
+        except Exception as e:
+            LOGGER.error(f"Error aggregating data for {symbol}: {e}")
+            return {}
+
+openbb_client = OpenBBClient()

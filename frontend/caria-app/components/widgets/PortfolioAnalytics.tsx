@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 interface PortfolioMetrics {
     sharpe_ratio?: number;
@@ -41,8 +42,7 @@ export const PortfolioAnalytics: React.FC = () => {
                 
                 const data = await response.json();
                 setAnalytics(data);
-            } catch (err: any) {
-                console.error('Error fetching portfolio analytics:', err);
+            } catch (err: unknown) {
                 setError('Coming soon... Portfolio analytics are being enhanced with more advanced metrics.');
             } finally {
                 setIsLoading(false);

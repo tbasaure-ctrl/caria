@@ -7,13 +7,14 @@ Frontend will use Scattergl (WebGL) for rendering thousands of lines.
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 from typing import Optional
 
 import numpy as np
-import pandas as pd
-import plotly.graph_objects as go
-import yfinance as yf
+from api.services.openbb_client import OpenBBClient
+
+# Instantiate OpenBBClient
+openbb_client = OpenBBClient()
+
 
 LOGGER = logging.getLogger("caria.api.monte_carlo")
 
@@ -187,25 +188,18 @@ class MonteCarloService:
         """
         LOGGER.info(f"Running Monte Carlo forecast for {ticker}")
 
-        # Fetch historical data
         try:
-            stock = yf.Ticker(ticker)
-            hist = stock.history(period="2y")
-            
-            if hist.empty:
+            history = openbb_client.get_price_history(ticker, start_date="2018-01-01")
+            closes = [float(item["close"]) for item in history if item.get("close") is not None]
+            if len(closes) < 30:
                 raise ValueError(f"No historical data available for {ticker}")
 
-            # Calculate returns
-            returns = hist["Close"].pct_change().dropna()
-            
-            # Estimate parameters
-            mu_annual = float(returns.mean() * self.trading_days_per_year)
-            sigma_annual = float(returns.std() * np.sqrt(self.trading_days_per_year))
-            
-            current_price = float(hist["Close"].iloc[-1])
-
+            returns = np.diff(closes) / np.array(closes[:-1])
+            mu_annual = float(np.mean(returns) * self.trading_days_per_year)
+            sigma_annual = float(np.std(returns) * np.sqrt(self.trading_days_per_year))
+            current_price = float(closes[-1])
         except Exception as e:
-            LOGGER.error(f"Error fetching data for {ticker}: {e}")
+            LOGGER.error(f"Error fetching OpenBB data for {ticker}: {e}")
             raise ValueError(f"Could not fetch data for {ticker}: {e}") from e
 
         # Run simulation

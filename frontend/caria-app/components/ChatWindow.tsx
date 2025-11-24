@@ -19,11 +19,17 @@ interface ChatWindowProps {
 export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
-    const [isConnected, setIsConnected] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [lastMessageTimestamp, setLastMessageTimestamp] = useState<string | null>(null);
+    const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'reconnecting' | 'error'>(
+        'connecting'
+    );
+    const [connectionMessage, setConnectionMessage] = useState('Conectando con Caria...');
+    const [showDebug, setShowDebug] = useState(false);
+    const [debugInfo, setDebugInfo] = useState<any>(null);
     const socketRef = useRef<Socket | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const reconnectAttemptsRef = useRef(0);
 
     // Scroll to bottom when messages change
     useEffect(() => {
@@ -37,9 +43,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 const token = getAuthToken();
                 if (!token) {
                     console.warn('No auth token available for WebSocket connection');
-                    setIsConnected(false);
+                    setConnectionStatus('error');
+                    setConnectionMessage('Inicia sesión para chatear con Caria.');
                     return;
                 }
+
+                setConnectionStatus('connecting');
+                setConnectionMessage('Conectando con Caria...');
 
                 // Connect with JWT token in auth object (per audit document Problem #1)
                 // Socket.IO connects to the base URL (without /api), e.g., http://localhost:8000
@@ -50,7 +60,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 if (!socketBaseUrl || socketBaseUrl === '') {
                     socketBaseUrl = 'http://localhost:8000';
                 }
-                
+
                 const socket = socketIO(socketBaseUrl, {
                     auth: {
                         token: token
@@ -60,6 +70,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                     reconnection: true,
                     reconnectionAttempts: 5,
                     reconnectionDelay: 1000,
+                    reconnectionDelayMax: 6000,
+                    randomizationFactor: 0.5,
                 });
 
                 socketRef.current = socket;
@@ -67,7 +79,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 // Handle connection success
                 socket.on('connect', async () => {
                     console.log('WebSocket connected');
-                    setIsConnected(true);
+                    setConnectionStatus('connected');
+                    setConnectionMessage('Conectado');
+                    reconnectAttemptsRef.current = 0;
 
                     // Problem #3: Recover lost messages on reconnection
                     try {
@@ -100,22 +114,51 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 // Handle connection error
                 socket.on('connect_error', (error: any) => {
                     console.error('WebSocket connection error:', error);
-                    setIsConnected(false);
+                    setConnectionStatus('reconnecting');
+                    setConnectionMessage('Error de conexión. Reintentando...');
                 });
 
                 // Handle disconnection
-                socket.on('disconnect', () => {
-                    console.log('WebSocket disconnected');
-                    setIsConnected(false);
+                socket.on('disconnect', (reason: Socket.DisconnectReason) => {
+                    console.log('WebSocket disconnected', reason);
+                    setConnectionStatus('reconnecting');
+                    setConnectionMessage('Conexión perdida. Reintentando...');
+                });
+
+                socket.io.on('reconnect_attempt', (attempt: number) => {
+                    reconnectAttemptsRef.current = attempt;
+                    setConnectionStatus('reconnecting');
+                    setConnectionMessage(`Reintentando conexión (${attempt}/5)...`);
+                });
+
+                socket.io.on('reconnect_failed', () => {
+                    setConnectionStatus('error');
+                    setConnectionMessage('No se pudo reconectar. Intenta nuevamente.');
                 });
 
                 // Handle incoming chat messages
-                socket.on('chat_message', (data: Message) => {
+                socket.on('chat_message', (data: any) => {
+                    const msg: Message = {
+                        id: data.id || Date.now().toString(),
+                        message: data.message || data.response || '',
+                        timestamp: data.timestamp || new Date().toISOString(),
+                        role: data.role || 'assistant'
+                    };
                     setMessages(prev => {
-                        const newMessages = [...prev, data];
-                        setLastMessageTimestamp(data.timestamp);
+                        const newMessages = [...prev, msg];
+                        setLastMessageTimestamp(msg.timestamp);
                         return newMessages;
                     });
+                    // Store debug info if available
+                    if (data.debug) {
+                        setDebugInfo({
+                            request: data.debug.request,
+                            response: data.debug.response,
+                            latency_ms: data.debug.latency_ms,
+                            tokens_used: data.debug.tokens_used,
+                            timestamp: msg.timestamp
+                        });
+                    }
                 });
 
                 // Handle errors
@@ -125,7 +168,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
 
             } catch (error) {
                 console.error('Error initializing WebSocket:', error);
-                setIsConnected(false);
+                setConnectionStatus('error');
+                setConnectionMessage('No se pudo inicializar la conexión.');
             }
         };
 
@@ -146,7 +190,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
     }, []);
 
     const handleSendMessage = async () => {
-        if (!inputValue.trim() || !socketRef.current || !isConnected) return;
+        const isReady = connectionStatus === 'connected';
+        if (!inputValue.trim() || !socketRef.current || !isReady) return;
 
         const userMessage: Message = {
             id: Date.now().toString(),
@@ -179,14 +224,47 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
         }
     };
 
+    const handleManualReconnect = () => {
+        if (socketRef.current) {
+            setConnectionStatus('connecting');
+            setConnectionMessage('Reconectando...');
+            reconnectAttemptsRef.current = 0;
+            socketRef.current.connect();
+        }
+    };
+
+    const isReady = connectionStatus === 'connected';
+    const statusLabel =
+        connectionStatus === 'connected'
+            ? 'Connected'
+            : connectionStatus === 'connecting'
+                ? 'Connecting...'
+                : connectionStatus === 'reconnecting'
+                    ? 'Reconnecting...'
+                    : 'Disconnected';
+    const statusColor =
+        connectionStatus === 'connected'
+            ? 'bg-green-500'
+            : connectionStatus === 'error'
+                ? 'bg-red-500'
+                : 'bg-yellow-400';
+
     return (
         <div className="flex flex-col h-full bg-gray-950 border border-slate-800 rounded-lg">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-slate-800">
                 <h3 className="text-lg font-bold text-slate-200">Chat with Caria</h3>
                 <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                    <span className="text-xs text-slate-400">{isConnected ? 'Connected' : 'Disconnected'}</span>
+                    <div className={`w-2 h-2 rounded-full ${statusColor}`}></div>
+                    <span className="text-xs text-slate-400">{statusLabel}</span>
+                    {connectionStatus !== 'connected' && (
+                        <button
+                            onClick={handleManualReconnect}
+                            className="text-xs text-slate-400 border border-slate-600 rounded px-2 py-1 hover:text-slate-100"
+                        >
+                            Retry
+                        </button>
+                    )}
                     {onClose && (
                         <button
                             onClick={onClose}
@@ -203,7 +281,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 {messages.length === 0 && (
                     <div className="text-center text-slate-500 py-8">
                         <p>Start a conversation with Caria</p>
-                        <p className="text-xs mt-2">Ask about investments, market analysis, or portfolio advice</p>
+                        <p className="text-xs mt-2">
+                            {connectionStatus === 'connected'
+                                ? 'Ask about investments, market analysis, or portfolio advice'
+                                : connectionMessage}
+                        </p>
                     </div>
                 )}
                 {messages.map((msg) => (
@@ -212,11 +294,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                         className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                         <div
-                            className={`max-w-[80%] rounded-lg p-3 ${
-                                msg.role === 'user'
+                            className={`max-w-[80%] rounded-lg p-3 ${msg.role === 'user'
                                     ? 'bg-slate-700 text-slate-100'
                                     : 'bg-slate-800 text-slate-200'
-                            }`}
+                                }`}
                         >
                             <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
                             <p className="text-xs text-slate-400 mt-1">
@@ -241,24 +322,72 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
 
             {/* Input */}
             <div className="p-4 border-t border-slate-800">
+                {connectionMessage && (
+                    <div className="text-xs text-slate-400 mb-2">{connectionMessage}</div>
+                )}
                 <div className="flex gap-2">
                     <input
                         type="text"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyPress={handleKeyPress}
-                        placeholder={isConnected ? "Type your message..." : "Connecting..."}
-                        disabled={!isConnected || isLoading}
+                        placeholder={isReady ? 'Type your message...' : connectionMessage}
+                        disabled={!isReady || isLoading}
                         className="flex-1 bg-gray-800 border border-slate-700 rounded-md py-2 px-3 focus:outline-none focus:ring-1 focus:ring-slate-600 text-sm text-slate-200 disabled:opacity-50"
                     />
                     <button
                         onClick={handleSendMessage}
-                        disabled={!isConnected || isLoading || !inputValue.trim()}
+                        disabled={!isReady || isLoading || !inputValue.trim()}
                         className="bg-slate-700 text-white font-bold px-4 rounded-md hover:bg-slate-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                     >
                         Send
                     </button>
                 </div>
+
+                {/* Debug Panel Toggle */}
+                <button
+                    onClick={() => setShowDebug(!showDebug)}
+                    className="text-xs text-slate-500 hover:text-slate-300 transition-colors mt-2"
+                >
+                    Debug {showDebug ? '▴' : '▾'}
+                </button>
+
+                {/* Debug Panel */}
+                {showDebug && debugInfo && (
+                    <div className="mt-3 p-3 bg-gray-900 border border-slate-800 rounded-md text-xs space-y-2">
+                        <div className="text-slate-400 font-semibold">Debug Information</div>
+                        <div>
+                            <span className="text-slate-500">Latency:</span>
+                            <span className="text-slate-300 ml-2">{debugInfo.latency_ms || 'N/A'} ms</span>
+                        </div>
+                        <div>
+                            <span className="text-slate-500">Tokens Used:</span>
+                            <span className="text-slate-300 ml-2">
+                                {debugInfo.tokens_used ? `${debugInfo.tokens_used.prompt || 0} + ${debugInfo.tokens_used.completion || 0}` : 'N/A'}
+                            </span>
+                        </div>
+                        <div>
+                            <span className="text-slate-500">Timestamp:</span>
+                            <span className="text-slate-300 ml-2">{debugInfo.timestamp ? new Date(debugInfo.timestamp).toLocaleString() : 'N/A'}</span>
+                        </div>
+                        {debugInfo.request && (
+                            <div>
+                                <div className="text-slate-500 mb-1">Request Payload:</div>
+                                <pre className="bg-gray-950 p-2 rounded overflow-x-auto text-slate-400">
+                                    {JSON.stringify(debugInfo.request, null, 2)}
+                                </pre>
+                            </div>
+                        )}
+                        {debugInfo.response && (
+                            <div>
+                                <div className="text-slate-500 mb-1">Raw LLM Response:</div>
+                                <pre className="bg-gray-950 p-2 rounded overflow-x-auto text-slate-400 max-h-40 overflow-y-auto">
+                                    {JSON.stringify(debugInfo.response, null, 2)}
+                                </pre>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

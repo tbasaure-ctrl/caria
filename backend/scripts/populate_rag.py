@@ -32,23 +32,6 @@ def main():
     # Initialize settings and components
     settings = Settings()
     
-    # Ensure database connection string is set
-    if not settings.get("vector_store", "connection"):
-        # Fallback to env vars if not in settings
-        db_url = os.getenv("DATABASE_URL")
-        if not db_url:
-            user = os.getenv("POSTGRES_USER", "caria_user")
-            password = os.getenv("POSTGRES_PASSWORD", "password")
-            host = os.getenv("POSTGRES_HOST", "localhost")
-            port = os.getenv("POSTGRES_PORT", "5432")
-            db = os.getenv("POSTGRES_DB", "caria")
-            db_url = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}"
-        
-        # Hack: Inject into settings if missing (Settings class might not support set, but let's try or mock)
-        # Actually, VectorStore takes connection_uri directly in __init__, but from_settings reads from settings.
-        # We can instantiate directly if needed.
-        pass
-
     # Instantiate directly to be safe
     db_url = os.getenv("DATABASE_URL") or settings.get("vector_store", "connection")
     if not db_url:
@@ -73,14 +56,14 @@ def main():
         return
 
     # Path to data
-    # c:\key\wise_adviser_cursor_context\notebooks\data\raw\wisdom\wisdom_corpus_unified_final.jsonl
+    # c:\key\wise_adviser_cursor_context\notebooks\data\raw\wisdom\2025-11-08\wisdom_corpus_unified_final.jsonl
     # We are in backend/scripts, so ../../../data/raw/wisdom...
-    data_path = Path(__file__).resolve().parents[2] / "data" / "raw" / "wisdom" / "wisdom_corpus_unified_final.jsonl"
+    data_path = Path(__file__).resolve().parents[2] / "data" / "raw" / "wisdom" / "2025-11-08" / "wisdom_corpus_unified_final.jsonl"
     
     if not data_path.exists():
         LOGGER.error(f"Data file not found: {data_path}")
         # Try absolute path from user info if relative fails
-        data_path = Path(r"c:\key\wise_adviser_cursor_context\notebooks\data\raw\wisdom\wisdom_corpus_unified_final.jsonl")
+        data_path = Path(r"c:\key\wise_adviser_cursor_context\notebooks\data\raw\wisdom\2025-11-08\wisdom_corpus_unified_final.jsonl")
         if not data_path.exists():
              LOGGER.error(f"Data file really not found: {data_path}")
              return

@@ -562,7 +562,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                             </>
                         ) : (
                             <div className="rounded-lg border border-dashed border-slate-700 p-4 text-sm text-slate-400">
-                                Tu portfolio está vacío. Agrega tu primera posición para comenzar a trackear el desempeño.
+                                Your portfolio is empty. Add your first position to start tracking performance.
                             </div>
                         )}
                     </>
@@ -572,9 +572,9 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                     <div className="flex flex-wrap items-center gap-4 justify-between">
                         <div>
                             <h4 className="text-sm font-semibold" style={{ color: 'var(--color-cream)' }}>
-                                Gestión de posiciones
+                                Position Management
                             </h4>
-                            <p className="text-xs text-slate-500">Registra compras, ventas y notas clave.</p>
+                            <p className="text-xs text-slate-500">Track purchases, sales, and key notes.</p>
                         </div>
                         <div className="flex bg-slate-900/70 rounded-md overflow-hidden">
                             <button
@@ -604,7 +604,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                 color: 'var(--color-cream)',
                             }}
                         >
-                            {showForm ? 'Cerrar formulario' : 'Agregar posición'}
+                            {showForm ? 'Close Form' : 'Add Position'}
                         </button>
                     </div>
 

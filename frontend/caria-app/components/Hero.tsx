@@ -124,7 +124,7 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
 
           {/* Subtitle - elegant and spacious */}
           <p
-            className="text-lg md:text-xl lg:text-2xl leading-relaxed max-w-4xl mx-auto text-center mb-14 fade-in delay-400"
+            className="text-lg md:text-xl lg:text-2xl leading-relaxed max-w-6xl mx-auto text-center mb-14 fade-in delay-400 px-4"
             style={{
               fontFamily: "'Crimson Pro', Georgia, serif",
               color: 'rgba(232, 230, 227, 0.85)',

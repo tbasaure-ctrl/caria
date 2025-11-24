@@ -13,6 +13,9 @@ import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
 import { ThesisArena } from './widgets/ThesisArena';
 import { ResearchSection } from './ResearchSection';
+import { CrisisSimulator } from './widgets/CrisisSimulator';
+import { MacroSimulator } from './widgets/MacroSimulator';
+import { MindMap } from './widgets/MindMap';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
 const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void; id?: string }> = ({ onStartAnalysis, onEnterArena, id }) => (
@@ -137,11 +140,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     }, []);
 
     const tabs = [
-        { id: 'overview' as DashboardTab, label: 'Overview', icon: '📊' },
-        { id: 'portfolio' as DashboardTab, label: 'Portfolio', icon: '💼' },
-        { id: 'analysis' as DashboardTab, label: 'Analysis', icon: '🔬' },
-        { id: 'research' as DashboardTab, label: 'Research', icon: '📚' },
-        { id: 'community' as DashboardTab, label: 'Community', icon: '👥' },
+        { id: 'overview' as DashboardTab, label: 'Overview' },
+        { id: 'portfolio' as DashboardTab, label: 'Portfolio' },
+        { id: 'analysis' as DashboardTab, label: 'Analysis' },
+        { id: 'research' as DashboardTab, label: 'Research' },
+        { id: 'community' as DashboardTab, label: 'Community' },
     ];
 
     return (
@@ -196,7 +199,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                 }
                             }}
                         >
-                            <span className="mr-2">{tab.icon}</span>
                             {tab.label}
                         </button>
                     ))}
@@ -251,6 +253,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             <RegimeTestWidget />
                             <MonteCarloSimulation />
                         </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <CrisisSimulator />
+                            <MacroSimulator />
+                        </div>
+                        <MindMap />
                     </div>
                 )}
 

@@ -25,7 +25,7 @@ export const ResearchSection: React.FC = () => {
                         fontFamily: 'var(--font-display)',
                         color: 'var(--color-cream)'
                     }}>
-                    🔬 Research & Analysis
+                    Research & Analysis
                 </h2>
                 <p className="text-sm mb-4"
                    style={{
@@ -42,17 +42,18 @@ export const ResearchSection: React.FC = () => {
             </div>
 
             {/* Research Widgets - Grid Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-2">
-                    <ValuationTool />
-                </div>
-                <div className="lg:col-span-1 space-y-6">
-                    <Resources />
+            <div className="space-y-6">
+                {/* Valuation Tool - Full Width */}
+                <ValuationTool />
+
+                {/* Two Column Layout for Community Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <RedditSentiment />
+                    <Resources />
                 </div>
-                <div className="lg:col-span-1">
-                    <WeeklyContent />
-                </div>
+
+                {/* Weekly Content - Full Width */}
+                <WeeklyContent />
             </div>
         </div>
     );

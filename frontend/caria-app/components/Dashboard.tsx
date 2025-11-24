@@ -8,7 +8,7 @@ import { FearGreedIndex } from './widgets/FearGreedIndex';
 import { ThesisIcon } from './Icons';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
 import { CommunityFeed } from './widgets/CommunityFeed';
-import { RankingsWidget } from './widgets/RankingsWidget';
+// import { RankingsWidget } from './widgets/RankingsWidget'; // Commented out - requires thesis_arena_threads table
 import { MonteCarloSimulation } from './widgets/MonteCarloSimulation';
 import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
@@ -185,7 +185,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {/* RIGHT COLUMN: Community & Rankings */}
                 <div className="space-y-6 fade-in delay-500">
                     <CommunityFeed />
-                    <RankingsWidget />
+                    {/* <RankingsWidget /> */} {/* Commented out - requires thesis_arena_threads table */}
                 </div>
             </div>
 

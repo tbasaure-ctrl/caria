@@ -106,10 +106,13 @@ interface RegimeData {
     confidence: number;
 }
 
+type DashboardTab = 'overview' | 'portfolio' | 'analysis' | 'research' | 'community';
+
 export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     const [regimeData, setRegimeData] = useState<RegimeData | null>(null);
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
     const [showArena, setShowArena] = useState(false);
+    const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
 
     useEffect(() => {
         const fetchRegimeData = async () => {
@@ -133,14 +136,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
         fetchRegimeData();
     }, []);
 
-    return (
-        <main className="flex-1 overflow-y-auto p-8 md:p-12 max-w-[1920px] mx-auto"
-            style={{ backgroundColor: 'var(--color-bg-primary)' }}>
-            {/* OnboardingTour removed */}
+    const tabs = [
+        { id: 'overview' as DashboardTab, label: 'Overview', icon: '📊' },
+        { id: 'portfolio' as DashboardTab, label: 'Portfolio', icon: '💼' },
+        { id: 'analysis' as DashboardTab, label: 'Analysis', icon: '🔬' },
+        { id: 'research' as DashboardTab, label: 'Research', icon: '📚' },
+        { id: 'community' as DashboardTab, label: 'Community', icon: '👥' },
+    ];
 
-            {/* Dashboard Header with modern styling */}
-            <div className="mb-12 fade-in">
-                <h1 className="text-5xl md:text-6xl font-black mb-3"
+    return (
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 max-w-[1600px] mx-auto"
+            style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+
+            {/* Dashboard Header */}
+            <div className="mb-8 fade-in">
+                <h1 className="text-3xl md:text-5xl font-black mb-2"
                     style={{
                         fontFamily: "'Instrument Serif', Georgia, serif",
                         color: 'var(--color-cream)',
@@ -148,7 +158,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     }}>
                     Investment Dashboard
                 </h1>
-                <p className="text-lg"
+                <p className="text-base md:text-lg"
                    style={{
                        fontFamily: "'Crimson Pro', Georgia, serif",
                        color: 'rgba(232, 230, 227, 0.6)',
@@ -158,71 +168,108 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 </p>
             </div>
 
-            {/* Global Market Bar - Full Width with better spacing */}
-            <div className="mb-10 fade-in delay-100">
-                <GlobalMarketBar id="market-bar-widget" />
-            </div>
-
-            {/* MASONRY/BENTO BOX LAYOUT - Modern and Flexible */}
-            <div className="masonry-grid gap-8 mb-10">
-                {/* Market Outlook - Medium size, spans 1 column */}
-                <div className="widget-medium fade-in delay-200">
-                    <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
-                </div>
-
-                {/* Fear & Greed Index - Medium size */}
-                <div className="widget-medium fade-in delay-200">
-                    <FearGreedIndex />
-                </div>
-
-                {/* Portfolio - Large widget, prominent placement */}
-                <div className="widget-large fade-in delay-300">
-                    <Portfolio id="portfolio-widget" />
-                </div>
-
-                {/* Start Analysis CTA - Medium size, eye-catching */}
-                <div className="widget-medium fade-in delay-400">
-                    <StartAnalysisCTA
-                        onStartAnalysis={onStartAnalysis}
-                        onEnterArena={() => setShowArena(true)}
-                        id="analysis-cta-widget"
-                    />
-                </div>
-
-                {/* Community Feed - Large widget for engagement */}
-                <div className="widget-large fade-in delay-500">
-                    <CommunityFeed />
-                </div>
-
-                {/* Portfolio Analytics - Medium size */}
-                <div className="widget-medium fade-in delay-300">
-                    <PortfolioAnalytics />
-                </div>
-
-                {/* Model Portfolio - Medium size */}
-                <div className="widget-medium fade-in delay-400">
-                    <ModelPortfolioWidget />
-                </div>
-
-                {/* Rankings Widget - Medium size */}
-                <div className="widget-medium fade-in delay-500">
-                    <RankingsWidget />
-                </div>
-
-                {/* Regime Test - Small widget */}
-                <div className="widget-small fade-in delay-400">
-                    <RegimeTestWidget />
-                </div>
-
-                {/* Monte Carlo - Medium size */}
-                <div className="widget-medium fade-in delay-400">
-                    <MonteCarloSimulation />
+            {/* Tab Navigation */}
+            <div className="mb-8 fade-in delay-100">
+                <div className="flex flex-wrap gap-3 md:gap-4 border-b pb-4"
+                     style={{ borderColor: 'rgba(74, 144, 226, 0.2)' }}>
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className="px-4 md:px-6 py-2 md:py-3 rounded-lg font-semibold text-sm md:text-base transition-all duration-300"
+                            style={{
+                                backgroundColor: activeTab === tab.id ? 'rgba(74, 144, 226, 0.2)' : 'transparent',
+                                color: activeTab === tab.id ? 'var(--color-blue-light)' : 'rgba(232, 230, 227, 0.6)',
+                                border: `1px solid ${activeTab === tab.id ? 'rgba(74, 144, 226, 0.4)' : 'transparent'}`,
+                                fontFamily: "'Crimson Pro', Georgia, serif",
+                            }}
+                            onMouseEnter={(e) => {
+                                if (activeTab !== tab.id) {
+                                    e.currentTarget.style.backgroundColor = 'rgba(74, 144, 226, 0.1)';
+                                    e.currentTarget.style.color = 'var(--color-cream)';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (activeTab !== tab.id) {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                    e.currentTarget.style.color = 'rgba(232, 230, 227, 0.6)';
+                                }
+                            }}
+                        >
+                            <span className="mr-2">{tab.icon}</span>
+                            {tab.label}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            {/* RESEARCH SECTION: Full Width Row with better spacing */}
-            <div className="mb-10 fade-in delay-600">
-                <ResearchSection />
+            {/* Tab Content */}
+            <div className="fade-in delay-200">
+                {/* OVERVIEW TAB - Default view with market data and portfolio snapshot */}
+                {activeTab === 'overview' && (
+                    <div className="space-y-6">
+                        {/* Global Market Bar - Full Width */}
+                        <GlobalMarketBar id="market-bar-widget" />
+
+                        {/* Market Indicators Row */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                            <FearGreedIndex />
+                        </div>
+
+                        {/* Portfolio Snapshot */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <Portfolio id="portfolio-widget" />
+                            <PortfolioAnalytics />
+                        </div>
+                    </div>
+                )}
+
+                {/* PORTFOLIO TAB - Detailed portfolio management */}
+                {activeTab === 'portfolio' && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <Portfolio id="portfolio-widget" />
+                            <PortfolioAnalytics />
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <ModelPortfolioWidget />
+                            <MonteCarloSimulation />
+                        </div>
+                    </div>
+                )}
+
+                {/* ANALYSIS TAB - Investment analysis tools */}
+                {activeTab === 'analysis' && (
+                    <div className="space-y-6">
+                        <StartAnalysisCTA
+                            onStartAnalysis={onStartAnalysis}
+                            onEnterArena={() => setShowArena(true)}
+                            id="analysis-cta-widget"
+                        />
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <RegimeTestWidget />
+                            <MonteCarloSimulation />
+                        </div>
+                    </div>
+                )}
+
+                {/* RESEARCH TAB - Educational content */}
+                {activeTab === 'research' && (
+                    <div className="space-y-6">
+                        <ResearchSection />
+                    </div>
+                )}
+
+                {/* COMMUNITY TAB - Social features */}
+                {activeTab === 'community' && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <CommunityFeed />
+                            <RankingsWidget />
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Thesis Arena Modal */}

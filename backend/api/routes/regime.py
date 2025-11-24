@@ -19,7 +19,11 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
 from api.dependencies import check_rate_limit, get_optional_current_user
-from api.services.openbb_client import openbb_client
+from api.services.openbb_client import OpenBBClient
+
+# Instantiate OpenBBClient for fallback
+openbb_client = OpenBBClient()
+
 from caria.models.auth import UserInDB
 from caria.services.regime_service import RegimeService
 

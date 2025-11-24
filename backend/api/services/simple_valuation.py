@@ -1,195 +1,137 @@
 import logging
+import os
 import statistics
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-from api.services.openbb_client import openbb_client
+from api.services.openbb_client import OpenBBClient
 
 LOGGER = logging.getLogger("caria.services.simple_valuation")
 
-
-def _sorted_by_date(data: List[Dict[str, Any]], reverse: bool = True) -> List[Dict[str, Any]]:
-    def _key(item: Dict[str, Any]) -> str:
-        return item.get("date") or item.get("period_ending") or item.get("period") or ""
-
-    return sorted(data, key=_key, reverse=reverse)
-
-
-def _first_value(record: Dict[str, Any], keys: List[str]) -> Optional[float]:
-    for key in keys:
-        if record is None:
-            break
-        value = record.get(key)
-        if value not in (None, "", "NA"):
-            return value
-    return None
-
-
 class SimpleValuationService:
     """
-    Valuation toolkit backed by OpenBB data.
+    A robust, simplified valuation service that:
+    1. Fetches key metrics from OpenBB (FMP provider).
+    2. Performs basic DCF and Multiples calculations.
+    3. Handles errors gracefully and returns partial data if possible.
     """
 
-    def __init__(self) -> None:
-        self.client = openbb_client
+    def __init__(self, obb_client: Optional[OpenBBClient] = None):
+        self.obb_client = obb_client or OpenBBClient()
 
     def get_valuation(self, ticker: str, current_price: float) -> Dict[str, Any]:
+        """
+        Get a comprehensive valuation for a ticker.
+        """
         try:
-            dataset = self._fetch_dataset(ticker)
-            if not dataset:
-                LOGGER.warning("Dataset missing for %s", ticker)
-                return self._fallback_response(ticker, current_price, "OpenBB data unavailable")
-
-            latest_price = dataset.get("latest_price") or current_price
-            if not latest_price:
-                return self._fallback_response(ticker, current_price, "No price data")
-
-            metrics = self._build_metrics(dataset)
+            # 1. Fetch Data
+            metrics = self._fetch_metrics(ticker)
             if not metrics:
-                return self._fallback_response(ticker, latest_price, "Metrics unavailable")
+                LOGGER.warning(f"Could not fetch metrics for {ticker}")
+                return self._fallback_response(ticker, current_price, "Data unavailable")
 
-            dcf = self._calculate_dcf(metrics, latest_price)
-            reverse_dcf = self._calculate_reverse_dcf(metrics, latest_price, dcf["assumptions"])
-            multiples_val = self._calculate_historical_multiples_valuation(metrics, latest_price)
+            # 2. Calculate DCF
+            dcf = self._calculate_dcf(metrics, current_price)
+
+            # 3. Calculate Reverse DCF (Implied Growth)
+            reverse_dcf = self._calculate_reverse_dcf(metrics, current_price, dcf["assumptions"])
+
+            # 4. Calculate Multiples Valuation (Fair Value based on Hist Avg)
+            multiples_val = self._calculate_historical_multiples_valuation(ticker, metrics, current_price)
+
+            # 5. Current Multiples
             current_multiples = self._calculate_multiples(metrics)
 
             return {
-                "ticker": ticker.upper(),
+                "ticker": ticker,
                 "currency": metrics.get("currency", "USD"),
-                "current_price": latest_price,
+                "current_price": current_price,
                 "dcf": dcf,
                 "reverse_dcf": reverse_dcf,
                 "multiples_valuation": multiples_val,
-                "multiples": current_multiples,
+                "multiples": current_multiples
             }
-        except Exception as exc:  # noqa: BLE001
-            LOGGER.exception("Error in simple valuation for %s: %s", ticker, exc)
-            return self._fallback_response(ticker, current_price, str(exc))
 
-    def _fetch_dataset(self, ticker: str) -> Optional[Dict[str, Any]]:
+        except Exception as e:
+            LOGGER.exception(f"Error in simple valuation for {ticker}: {e}")
+            return self._fallback_response(ticker, current_price, str(e))
+
+    def _fetch_metrics(self, ticker: str) -> Optional[Dict[str, Any]]:
+        """Fetch necessary metrics from OpenBB."""
         try:
-            return self.client.get_ticker_data(ticker)
-        except Exception as exc:  # noqa: BLE001
-            LOGGER.error("OpenBB fetch failed for %s: %s", ticker, exc)
+            data = self.obb_client.get_ticker_data(ticker)
+            
+            # Extract Data
+            key_metrics = self._extract_first(data.get("key_metrics"))
+            ratios = self._extract_first(data.get("multiples"))
+            financials = self._extract_first(data.get("financials"))
+            growth = self._extract_first(data.get("growth"))
+
+            # Map fields to expected format if necessary
+            # FMP Key Metrics usually match well, but we might need to alias some
+            mapped_metrics = {
+                **(key_metrics or {}),
+                **(ratios or {}),
+                **(financials or {}),
+                "growth": growth or {}
+            }
+            
+            # Ensure critical fields exist (aliases)
+            if "freeCashFlowPerShare" in mapped_metrics and "freeCashFlowPerShareTTM" not in mapped_metrics:
+                mapped_metrics["freeCashFlowPerShareTTM"] = mapped_metrics["freeCashFlowPerShare"]
+            
+            if "netIncomePerShare" in mapped_metrics and "netIncomePerShareTTM" not in mapped_metrics:
+                mapped_metrics["netIncomePerShareTTM"] = mapped_metrics["netIncomePerShare"]
+
+            return mapped_metrics
+        except Exception as e:
+            LOGGER.error(f"Error fetching OpenBB data: {e}")
             return None
 
-    def _build_metrics(self, dataset: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        income = _sorted_by_date(dataset["financials"].get("income_statement", []))
-        balance = _sorted_by_date(dataset["financials"].get("balance_sheet", []))
-        cash = _sorted_by_date(dataset["financials"].get("cash_flow", []))
-        multiples_history = dataset.get("multiples", [])
-
-        if not income or not cash:
-            return None
-
-        latest_income = income[0]
-        latest_cash = cash[0]
-        latest_balance = balance[0] if balance else {}
-        latest_multiples = multiples_history[0] if multiples_history else {}
-
-        shares = (
-            _first_value(latest_income, ["weightedAverageShsOutDil", "weightedAverageShsOut"])
-            or _first_value(latest_multiples, ["shares_outstanding", "sharesOutstanding"])
-            or _first_value(latest_balance, ["commonStockSharesOutstanding"])
-        )
-
-        revenue = _first_value(latest_income, ["totalRevenue", "revenue"])
-        gross_profit = _first_value(latest_income, ["grossProfit"])
-        operating_income = _first_value(latest_income, ["operatingIncome", "ebit"])
-        ebitda = _first_value(latest_income, ["ebitda"])
-        fcf = _first_value(latest_cash, ["freeCashFlow", "fcf"])
-        currency = latest_income.get("currency") or latest_multiples.get("currency") or "USD"
-
-        fcf_per_share = None
-        if fcf and shares not in (None, 0):
-            fcf_per_share = fcf / shares
-
-        revenue_growth = None
-        if len(income) >= 2:
-            prev_revenue = _first_value(income[1], ["totalRevenue", "revenue"])
-            if revenue and prev_revenue and prev_revenue != 0:
-                revenue_growth = (revenue - prev_revenue) / abs(prev_revenue)
-
-        fcf_growth = None
-        if len(cash) >= 2 and len(income) >= 2:
-            prev_fcf = _first_value(cash[1], ["freeCashFlow", "fcf"])
-            prev_shares = (
-                _first_value(income[1], ["weightedAverageShsOutDil", "weightedAverageShsOut"])
-                or shares
-            )
-            if prev_fcf and prev_shares and fcf_per_share and prev_shares != 0:
-                prev_fcf_per_share = prev_fcf / prev_shares
-                if prev_fcf_per_share != 0:
-                    fcf_growth = (fcf_per_share - prev_fcf_per_share) / abs(prev_fcf_per_share)
-
-        net_debt = (
-            _first_value(latest_balance, ["totalDebt", "shortLongTermDebtTotal", "longTermDebtTotal"])
-            or 0
-        ) - (_first_value(latest_balance, ["cashAndCashEquivalents", "cash"]) or 0)
-
-        revenue_series = [x for x in (revenue,) if x is not None]
-
-        return {
-            "currency": currency,
-            "freeCashFlowPerShare": fcf_per_share,
-            "growth": {"freeCashFlowGrowth": fcf_growth or revenue_growth or 0.05},
-            "enterpriseValueOverRevenue": _first_value(
-                latest_multiples,
-                ["ev_to_revenue", "enterpriseValueRevenueMultiple", "evSales", "enterpriseValueOverRevenue"],
-            ),
-            "enterpriseValueOverEBITDA": _first_value(
-                latest_multiples,
-                ["ev_to_ebitda", "enterpriseValueToEbitda", "evEbitda", "enterpriseValueOverEBITDA"],
-            ),
-            "enterpriseValueOverRevenueTTM": _first_value(
-                latest_multiples,
-                ["enterpriseValueOverRevenueTTM", "ev_to_revenue"],
-            ),
-            "enterpriseValueOverEBITDATTM": _first_value(
-                latest_multiples,
-                ["enterpriseValueOverEBITDATTM", "ev_to_ebitda"],
-            ),
-            "netDebt": net_debt,
-            "sharesOutstanding": shares,
-            "revenueTTM": revenue,
-            "ebitdaTTM": ebitda,
-            "gross_margin": (gross_profit / revenue) if revenue and gross_profit else None,
-            "operating_margin": (operating_income / revenue) if revenue and operating_income else None,
-            "multiples_history": multiples_history,
-            "income_statements": income,
-            "cash_flow_statements": cash,
-            "revenue_series": revenue_series,
-        }
+    def _extract_first(self, obb_object: Any) -> Dict[str, Any]:
+        """Helper to extract the first row/result from an OBBject."""
+        if not obb_object:
+            return {}
+        try:
+            if hasattr(obb_object, 'to_df'):
+                df = obb_object.to_df()
+                if not df.empty:
+                    # Convert to dict, handling potential NaN
+                    return df.iloc[0].replace({float('nan'): None}).to_dict()
+            if hasattr(obb_object, 'results'):
+                if isinstance(obb_object.results, list) and obb_object.results:
+                    res = obb_object.results[0]
+                    if hasattr(res, 'model_dump'):
+                        return res.model_dump()
+                    if isinstance(res, dict):
+                        return res
+                    return res.__dict__
+        except Exception as e:
+            LOGGER.warning(f"Error extracting data from OBBject: {e}")
+        return {}
 
     def _calculate_dcf(self, metrics: Dict[str, Any], current_price: float) -> Dict[str, Any]:
         """Perform a simplified DCF calculation."""
         try:
-            fcf_per_share = metrics.get("freeCashFlowPerShare")
+            fcf_per_share = metrics.get("freeCashFlowPerShareTTM") or metrics.get("freeCashFlowPerShare")
             if not fcf_per_share:
                  # Fallback to EPS
-                return {
-                    "method": "N/A",
-                    "fair_value_per_share": 0,
-                    "upside_percent": 0,
-                    "implied_return_cagr": 0,
-                    "assumptions": self._default_assumptions(),
-                    "explanation": "Cannot calculate DCF without Free Cash Flow.",
-                }
+                fcf_per_share = metrics.get("netIncomePerShareTTM") or metrics.get("netIncomePerShare") or 0
             
             if fcf_per_share <= 0:
-                return {
-                    "method": "N/A (Negative FCF)",
+                 return {
+                    "method": "N/A (Negative FCF/Earnings)",
                     "fair_value_per_share": 0,
                     "upside_percent": 0,
                     "implied_return_cagr": 0,
                     "assumptions": self._default_assumptions(),
-                    "explanation": "Cannot calculate DCF with negative Free Cash Flow.",
+                    "explanation": "Cannot calculate DCF with negative Free Cash Flow or Earnings."
                 }
 
             # Assumptions
-            growth_rate = metrics.get("growth", {}).get("freeCashFlowGrowth") or 0.08
-            growth_rate = max(min(growth_rate, 0.18), 0.03)
+            growth_rate = min(metrics.get("growth", {}).get("freeCashFlowGrowth", 0.10), 0.15) # Cap at 15%
+            if growth_rate < 0.02: growth_rate = 0.05 # Min 5%
             
-            discount_rate = 0.10  # Simplified WACC
+            discount_rate = 0.10 # Simplified WACC
             terminal_growth = 0.03
             years = 5
 
@@ -283,56 +225,60 @@ class SimpleValuationService:
             LOGGER.error(f"Reverse DCF error: {e}")
             return {"implied_growth_rate": 0, "explanation": "Calculation failed"}
 
-    def _calculate_historical_multiples_valuation(self, metrics: Dict[str, Any], current_price: float) -> Dict[str, Any]:
+    def _calculate_historical_multiples_valuation(
+        self,
+        ticker: str,
+        current_metrics: Dict[str, Any],
+        current_price: float,
+    ) -> Dict[str, Any]:
         """
-        Valuation based on 3-5 year median EV/Sales and EV/EBITDA using OpenBB history.
+        Valuation based on 5-year historical average multiples.
         """
         try:
-            hist_ratios = metrics.get("multiples_history") or []
+            # Fetch historical ratios (last 5 years annual)
+            hist_ratios_obj = self.obb_client.get_multiples(ticker, limit=5, period="annual")
+            hist_ratios = self._extract_list(hist_ratios_obj)
+            
             if not hist_ratios:
                 return {"method": "N/A", "fair_value": 0, "explanation": "No historical EV multiples"}
 
-            last_entries = hist_ratios[:8]
+            last_entries = hist_ratios[:5]
             ev_sales_samples = [
-                _first_value(
-                    x,
-                    ["ev_to_revenue", "enterpriseValueRevenueMultiple", "evSales", "enterpriseValueOverRevenue"],
-                )
+                x.get("enterpriseValueOverRevenue") or x.get("enterprise_value_to_revenue")
                 for x in last_entries
-                if _first_value(
-                    x,
-                    ["ev_to_revenue", "enterpriseValueRevenueMultiple", "evSales", "enterpriseValueOverRevenue"],
-                )
+                if x.get("enterpriseValueOverRevenue") or x.get("enterprise_value_to_revenue")
             ]
             ev_ebitda_samples = [
-                _first_value(
-                    x,
-                    ["ev_to_ebitda", "enterpriseValueToEbitda", "evEbitda", "enterpriseValueOverEBITDA"],
-                )
+                x.get("enterpriseValueOverEBITDA") or x.get("enterprise_value_to_ebitda")
                 for x in last_entries
-                if _first_value(
-                    x,
-                    ["ev_to_ebitda", "enterpriseValueToEbitda", "evEbitda", "enterpriseValueOverEBITDA"],
-                )
+                if x.get("enterpriseValueOverEBITDA") or x.get("enterprise_value_to_ebitda")
             ]
 
             ev_sales_median = statistics.median(ev_sales_samples) if ev_sales_samples else None
             ev_ebitda_median = statistics.median(ev_ebitda_samples) if ev_ebitda_samples else None
 
-            shares = metrics.get("sharesOutstanding")
+            shares = current_metrics.get("sharesOutstanding") or current_metrics.get("weightedAverageShsOutDil")
             if not shares:
-                return {
-                    "method": "EV Multiples (3-5y median)",
-                    "fair_value": 0,
-                    "ev_sales_median": ev_sales_median,
-                    "ev_ebitda_median": ev_ebitda_median,
-                    "breakdown": {},
-                    "explanation": "Shares outstanding unavailable",
-                }
+                market_cap = current_metrics.get("marketCap")
+                if market_cap and current_price:
+                    shares = market_cap / current_price
 
-            revenue = metrics.get("revenueTTM")
-            ebitda = metrics.get("ebitdaTTM")
-            net_debt = metrics.get("netDebt") or 0
+            revenue = current_metrics.get("revenueTTM") or current_metrics.get("revenue")
+            if not revenue and shares and current_metrics.get("revenuePerShareTTM"):
+                revenue = current_metrics["revenuePerShareTTM"] * shares
+
+            ebitda = current_metrics.get("ebitdaTTM") or current_metrics.get("ebitda")
+            if not ebitda and shares and current_metrics.get("ebitdaPerShareTTM"):
+                ebitda = current_metrics["ebitdaPerShareTTM"] * shares
+
+            net_debt = current_metrics.get("netDebt")
+            if net_debt is None:
+                debt = current_metrics.get("totalDebt")
+                cash = current_metrics.get("cashAndShortTermInvestments")
+                if debt is not None and cash is not None:
+                    net_debt = debt - cash
+                else:
+                    net_debt = 0
 
             fair_values = []
             breakdown: Dict[str, float] = {}
@@ -376,6 +322,25 @@ class SimpleValuationService:
         except Exception as e:
             LOGGER.error(f"Multiples Valuation error: {e}")
             return {"method": "Error", "fair_value": 0, "explanation": "EV multiple calculation failed"}
+
+    def _extract_list(self, obb_object: Any) -> list:
+        """Helper to extract a list of dicts from an OBBject."""
+        if not obb_object:
+            return []
+        try:
+            if hasattr(obb_object, 'to_df'):
+                df = obb_object.to_df()
+                if not df.empty:
+                    return df.replace({float('nan'): None}).to_dict(orient='records')
+            if hasattr(obb_object, 'results'):
+                if isinstance(obb_object.results, list):
+                    return [
+                        res.model_dump() if hasattr(res, 'model_dump') else (res if isinstance(res, dict) else res.__dict__)
+                        for res in obb_object.results
+                    ]
+        except Exception as e:
+            LOGGER.warning(f"Error extracting list from OBBject: {e}")
+        return []
 
     def _calculate_multiples(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
         return {

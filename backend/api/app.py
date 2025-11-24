@@ -233,16 +233,35 @@ app = FastAPI(
 # Configurar CORS
 # Accept specific origins from env + all Vercel deployments via regex
 # Support both comma and semicolon separators (gcloud may use semicolon)
-cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
+cors_origins_env = os.getenv("CORS_ORIGINS", "https://caria-way.com,https://www.caria-way.com,http://localhost:3000,http://localhost:5173")
 # Split by comma or semicolon, then flatten
 cors_origins_raw = []
 for sep in [",", ";"]:
     cors_origins_raw.extend(cors_origins_env.split(sep))
 cors_origins = [origin.strip().lower() for origin in cors_origins_raw if origin.strip()]
 
+# FORCE ADD caria-way.com just in case env var overwrote it without including it
+required_origins = ["https://caria-way.com", "https://www.caria-way.com"]
+for origin in required_origins:
+    if origin not in cors_origins:
+        cors_origins.append(origin)
+
+
 # Allow all Vercel deployments (*.vercel.app) using regex
 # This matches both preview and production deployments
 vercel_regex = r"https://.*\.vercel\.app"
+
+# --- DEBUG ENDPOINT FOR CORS ---
+@app.get("/api/debug/cors")
+def debug_cors():
+    """Returns the list of allowed origins for debugging deployment status."""
+    return {
+        "allowed_origins": cors_origins,
+        "vercel_regex": vercel_regex,
+        "env_cors": os.getenv("CORS_ORIGINS"),
+        "deployment_version": "2.1.0-cors-fix" 
+    }
+# -------------------------------
 
 # Logging para debugging
 LOGGER.info(f"CORS configured with origins: {cors_origins}")

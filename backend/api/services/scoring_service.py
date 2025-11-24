@@ -38,12 +38,15 @@ class ScoringService:
         momentum_score, momentum_details = self._momentum_model(price_history)
         qualitative_moat, moat_details = self._qualitative_moat_score(dataset, quality_details)
 
-        c_score = round(
-            0.35 * quality_score
-            + 0.25 * valuation_score
-            + 0.20 * momentum_score
-            + 0.20 * qualitative_moat,
-            2,
+        # Composite Score Formula (C-Score)
+        # Target weights: Quality (35%), Valuation (25%), Momentum (20%), Moat (20%)
+        # Since Moat is missing, we re-normalize: 35+25+20 = 80
+        # Quality: 0.35 / 0.8 = 0.4375
+        # Valuation: 0.25 / 0.8 = 0.3125
+        # Momentum: 0.20 / 0.8 = 0.25
+        composite = round(
+            (quality_score * 0.4375) + (valuation_score * 0.3125) + (momentum_score * 0.25),
+            0, # Round to integer for cleaner UI
         )
 
         explanations = self._build_explanations(quality_details, valuation_details, momentum_details, moat_details)
@@ -56,12 +59,10 @@ class ScoringService:
 
         return {
             "ticker": ticker,
-            "qualityScore": round(quality_score, 2),
-            "valuationScore": round(valuation_score, 2),
-            "momentumScore": round(momentum_score, 2),
-            "qualitativeMoatScore": round(qualitative_moat, 2),
-            "cScore": c_score,
-            "classification": self._classify_c_score(c_score),
+            "qualityScore": round(quality_score, 0),
+            "valuationScore": round(valuation_score, 0),
+            "momentumScore": round(momentum_score, 0),
+            "compositeScore": composite,
             "current_price": latest_price,
             "fair_value": valuation_details.get("fair_value"),
             "valuation_upside_pct": valuation_details.get("upside_pct"),
@@ -440,4 +441,3 @@ class ScoringService:
             if record.get(key) not in (None, "", "NA"):
                 return record[key]
         return None
-

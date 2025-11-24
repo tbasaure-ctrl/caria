@@ -1,8 +1,8 @@
 import React from 'react';
 import { Header } from './Header';
 import { Hero } from './Hero';
-import { Features } from './Message';
-import { Footer } from './ChatInput';
+import { Features } from './Features';
+import { Footer } from './Footer';
 
 interface LandingPageProps {
     onLogin: () => void;

@@ -27,7 +27,7 @@ const WEEKLY_CONTENT: ContentItem[] = [
         description: 'The "Dean of Valuation" breaks down the numbers behind the biggest tech stocks and whether they are still a buy.',
         type: 'video',
         youtubeUrl: 'https://www.youtube.com/watch?v=example',
-        thumbnailUrl: 'https://img.youtube.com/vi/uWj6is1ae_0/maxresdefault.jpg' // Example thumbnail
+        // thumbnailUrl: 'https://img.youtube.com/vi/uWj6is1ae_0/maxresdefault.jpg' // Removed broken link
     }
 ];
 
@@ -51,9 +51,9 @@ export const WeeklyContent: React.FC = () => {
                         </div>
                         <div className="flex gap-3">
                             {podcast.spotifyUrl && (
-                                <a 
-                                    href={podcast.spotifyUrl} 
-                                    target="_blank" 
+                                <a
+                                    href={podcast.spotifyUrl}
+                                    target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1DB954]/10 hover:bg-[#1DB954]/20 text-[#1DB954] transition-colors text-sm font-bold"
                                 >
@@ -61,9 +61,9 @@ export const WeeklyContent: React.FC = () => {
                                 </a>
                             )}
                             {podcast.youtubeUrl && (
-                                <a 
-                                    href={podcast.youtubeUrl} 
-                                    target="_blank" 
+                                <a
+                                    href={podcast.youtubeUrl}
+                                    target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FF0000]/10 hover:bg-[#FF0000]/20 text-[#FF0000] transition-colors text-sm font-bold"
                                 >
@@ -81,12 +81,12 @@ export const WeeklyContent: React.FC = () => {
                     <div className="flex flex-col gap-4">
                         {video.thumbnailUrl && (
                             <div className="relative aspect-video w-full rounded-lg overflow-hidden group">
-                                <img 
-                                    src={video.thumbnailUrl} 
-                                    alt={video.title} 
+                                <img
+                                    src={video.thumbnailUrl}
+                                    alt={video.title}
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 opacity-80 group-hover:opacity-100"
                                 />
-                                <a 
+                                <a
                                     href={video.youtubeUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"

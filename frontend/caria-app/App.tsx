@@ -1,82 +1,40 @@
-import React, { useState, useEffect, Component, ErrorInfo, ReactNode } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { LandingPage } from './components/LandingPage';
-import { AnalysisTool } from './components/AnalysisTool';
 import { Sidebar } from './components/Sidebar';
-import { Dashboard } from './components/Dashboard';
 import { LoginModal } from './components/LoginModal';
 import { RegisterModal } from './components/RegisterModal';
+import { DashboardPage } from './components/pages/DashboardPage';
+import { CommunityPage } from './components/pages/CommunityPage';
+import { ResourcesPage } from './components/pages/ResourcesPage';
 import { getToken, saveToken, removeToken } from './services/apiService';
 
-interface ErrorBoundaryState {
-  hasError: boolean;
-  error: Error | null;
-}
-
-class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
-  constructor(props: { children: ReactNode }) {
-    super(props);
-    this.state = { hasError: false, error: null };
+// Protected Route Component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const token = getToken();
+  if (!token) {
+    return <Navigate to="/" replace />;
   }
+  return <>{children}</>;
+};
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      const error = this.state.error;
-      const isHooksError = error?.message?.includes('310') || error?.message?.includes('Rendered more hooks');
-      
-      return (
-        <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: 'var(--color-bg-primary)'}}>
-          <div className="text-center p-8 max-w-2xl">
-            <h1 className="text-2xl font-bold mb-4" style={{color: 'var(--color-cream)'}}>Something went wrong</h1>
-            <p className="mb-4" style={{color: 'var(--color-text-secondary)'}}>
-              {error?.message || 'An unexpected error occurred'}
-            </p>
-            {isHooksError && (
-              <div className="mb-4 p-4 rounded" style={{backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text-secondary)'}}>
-                <p className="text-sm mb-2">This error usually means:</p>
-                <ul className="text-sm text-left list-disc list-inside space-y-1">
-                  <li>Hooks are being called conditionally</li>
-                  <li>Hooks are called in different orders between renders</li>
-                  <li>A component is using hooks incorrectly</li>
-                </ul>
-                <p className="text-sm mt-2">Check the browser console for more details.</p>
-              </div>
-            )}
-            <button
-              onClick={() => {
-                this.setState({ hasError: false, error: null });
-                window.location.reload();
-              }}
-              className="px-4 py-2 rounded"
-              style={{
-                backgroundColor: 'var(--color-primary)',
-                color: 'var(--color-cream)'
-              }}
-            >
-              Reload Page
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
+// Dashboard Layout (Sidebar + Content)
+const DashboardLayout: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
+  return (
+    <div className="flex h-screen w-full bg-[var(--color-bg-primary)]">
+      <Sidebar onLogout={onLogout} />
+      <div className="flex-1 overflow-y-auto bg-[var(--color-bg-primary)]">
+        <Outlet />
+      </div>
+    </div>
+  );
+};
 
 const App: React.FC = () => {
   const [authToken, setAuthToken] = useState<string | null>(getToken());
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
-  const [isAnalysisOpen, setAnalysisOpen] = useState(false);
-  
+
   // Effect to check for token on initial load
   useEffect(() => {
     const token = getToken();
@@ -94,52 +52,67 @@ const App: React.FC = () => {
     setRegisterModalOpen(true);
     setLoginModalOpen(false);
   };
-  
+
   const handleLoginSuccess = (token: string) => {
     saveToken(token);
     setAuthToken(token);
     setLoginModalOpen(false);
+    // Force reload to ensure everything syncs or just navigate?
+    // Navigation will happen automatically if we are on landing page and now have token?
+    // Actually, LandingPage is at "/", Dashboard is at "/dashboard".
+    // We need to navigate to dashboard.
+    window.location.href = '/dashboard';
   };
 
   const handleLogout = () => {
     removeToken();
     localStorage.removeItem('cariaChatHistory');
     setAuthToken(null);
-    setAnalysisOpen(false); // Close modal on logout
+    window.location.href = '/';
   };
 
   return (
-    <ErrorBoundary>
-      <div className="min-h-screen text-[var(--color-text-primary)] font-sans antialiased" style={{backgroundColor: 'var(--color-bg-primary)'}}>
-        {authToken ? (
-          <div className="flex h-screen w-full">
-            <Sidebar onLogout={handleLogout} />
-            <Dashboard onStartAnalysis={() => setAnalysisOpen(true)} />
-            {isAnalysisOpen && (
-              <AnalysisTool onClose={() => setAnalysisOpen(false)} />
-            )}
-          </div>
-        ) : (
-          <>
-              <LandingPage onLogin={handleShowLogin} onRegister={handleShowRegister} />
-              {isLoginModalOpen && (
-                <LoginModal
-                  onClose={() => setLoginModalOpen(false)}
-                  onSuccess={handleLoginSuccess}
-                  onSwitchToRegister={handleShowRegister}
-                />
-              )}
-              {isRegisterModalOpen && (
-                <RegisterModal
-                  onClose={() => setRegisterModalOpen(false)}
-                  onSuccess={handleLoginSuccess}
-                  onSwitchToLogin={handleShowLogin}
-                />
-              )}
-          </>
-        )}
-      </div>
-    </ErrorBoundary>
+    <div className="min-h-screen text-[var(--color-text-primary)] font-sans antialiased" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={
+            authToken ? <Navigate to="/dashboard" replace /> : (
+              <>
+                <LandingPage onLogin={handleShowLogin} onRegister={handleShowRegister} />
+                {isLoginModalOpen && (
+                  <LoginModal
+                    onClose={() => setLoginModalOpen(false)}
+                    onSuccess={handleLoginSuccess}
+                    onSwitchToRegister={handleShowRegister}
+                  />
+                )}
+                {isRegisterModalOpen && (
+                  <RegisterModal
+                    onClose={() => setRegisterModalOpen(false)}
+                    onSuccess={handleLoginSuccess}
+                    onSwitchToLogin={handleShowLogin}
+                  />
+                )}
+              </>
+            )
+          } />
+
+          {/* Protected Routes */}
+          <Route element={
+            <ProtectedRoute>
+              <DashboardLayout onLogout={handleLogout} />
+            </ProtectedRoute>
+          }>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/resources" element={<ResourcesPage />} />
+            {/* Fallback for unknown protected routes */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Route>
+        </Routes>
+      </Router>
+    </div>
   );
 };
 

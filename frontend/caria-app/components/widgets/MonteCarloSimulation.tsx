@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
 
@@ -221,12 +222,101 @@ export const MonteCarloSimulation: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Charts placeholder - would use Recharts or similar */}
-                        <div className="bg-gray-900/50 p-4 rounded-md border border-slate-800">
-                            <p className="text-sm text-slate-400 text-center">
-                                Charts will display here (Price over time and histogram)
-                            </p>
-                        </div>
+                        {/* Price Path Chart */}
+                        {result.price_paths && result.price_paths.length > 0 && (
+                            <div className="bg-gray-900/50 p-4 rounded-md border border-slate-800">
+                                <h4 className="text-sm font-semibold text-slate-300 mb-3">Simulated Price Paths</h4>
+                                <ResponsiveContainer width="100%" height={250}>
+                                    <LineChart
+                                        data={result.price_paths[0].map((_, idx) => ({
+                                            year: idx,
+                                            p10: result.percentiles_over_time?.[idx]?.p10 || 0,
+                                            p50: result.percentiles_over_time?.[idx]?.p50 || 0,
+                                            p90: result.percentiles_over_time?.[idx]?.p90 || 0,
+                                        }))}
+                                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                        <XAxis
+                                            dataKey="year"
+                                            stroke="#94a3b8"
+                                            label={{ value: 'Years', position: 'insideBottom', offset: -5, fill: '#94a3b8' }}
+                                        />
+                                        <YAxis
+                                            stroke="#94a3b8"
+                                            tickFormatter={(value) => `$${value.toFixed(0)}`}
+                                            label={{ value: 'Price', angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
+                                        />
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: '#1e293b',
+                                                border: '1px solid #475569',
+                                                borderRadius: '0.375rem'
+                                            }}
+                                            formatter={(value: number) => `$${value.toFixed(2)}`}
+                                        />
+                                        <Legend />
+                                        <Line type="monotone" dataKey="p90" stroke="#10b981" name="90th Percentile" strokeWidth={2} dot={false} />
+                                        <Line type="monotone" dataKey="p50" stroke="#3b82f6" name="Median" strokeWidth={2} dot={false} />
+                                        <Line type="monotone" dataKey="p10" stroke="#ef4444" name="10th Percentile" strokeWidth={2} dot={false} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
+
+                        {/* Distribution Histogram */}
+                        {result.final_values && result.final_values.length > 0 && (
+                            <div className="bg-gray-900/50 p-4 rounded-md border border-slate-800">
+                                <h4 className="text-sm font-semibold text-slate-300 mb-3">Final Price Distribution</h4>
+                                <ResponsiveContainer width="100%" height={200}>
+                                    <BarChart
+                                        data={(() => {
+                                            // Create histogram bins
+                                            const sortedValues = [...result.final_values].sort((a, b) => a - b);
+                                            const min = sortedValues[0];
+                                            const max = sortedValues[sortedValues.length - 1];
+                                            const binCount = 20;
+                                            const binSize = (max - min) / binCount;
+                                            const bins = Array.from({ length: binCount }, (_, i) => ({
+                                                range: `$${(min + i * binSize).toFixed(0)}`,
+                                                count: 0,
+                                                midpoint: min + (i + 0.5) * binSize
+                                            }));
+
+                                            sortedValues.forEach(value => {
+                                                const binIndex = Math.min(Math.floor((value - min) / binSize), binCount - 1);
+                                                bins[binIndex].count++;
+                                            });
+
+                                            return bins;
+                                        })()}
+                                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                        <XAxis
+                                            dataKey="range"
+                                            stroke="#94a3b8"
+                                            tick={{ fontSize: 10 }}
+                                            angle={-45}
+                                            textAnchor="end"
+                                            height={60}
+                                        />
+                                        <YAxis
+                                            stroke="#94a3b8"
+                                            label={{ value: 'Frequency', angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
+                                        />
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: '#1e293b',
+                                                border: '1px solid #475569',
+                                                borderRadius: '0.375rem'
+                                            }}
+                                        />
+                                        <Bar dataKey="count" fill="#3b82f6" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
 
                         {/* Educational Disclaimer */}
                         <p className="text-xs text-slate-500 text-center italic">

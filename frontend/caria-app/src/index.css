@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@source "../components";
+@source "../App.tsx";
 
 /* Global styles can also go here if needed */
 body {

@@ -2,8 +2,7 @@
 
 /* Global styles can also go here if needed */
 body {
-  margin: 0
-;
+  margin: 0;
   padding: 0;
   font-family: var(--font-body);
   background-color: var(--color-bg-primary);

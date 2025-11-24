@@ -282,13 +282,15 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
 
     const loadPortfolio = useCallback(
         async (showSpinner = true) => {
+            // Always start loading state to prevent hook mismatches
+            if (showSpinner) {
+                setLoading(true);
+            } else {
+                setIsRefreshing(true);
+            }
+            setError(null); // Reset error state
+
             try {
-                setError(null);
-                if (showSpinner) {
-                    setLoading(true);
-                } else {
-                    setIsRefreshing(true);
-                }
                 const data = await fetchHoldingsWithPrices();
                 setPortfolioData(data);
             } catch (err: unknown) {
@@ -315,31 +317,6 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             setShowForm(true);
         }
     }, [portfolioData]);
-
-    if (loading) {
-        return (
-            <WidgetCard
-                id={id}
-                title="PORTFOLIO SNAPSHOT"
-                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
-            >
-                <div className="text-slate-400 text-sm">Cargando portfolio...</div>
-            </WidgetCard>
-        );
-    }
-
-    if (error) {
-        return (
-            <WidgetCard
-                id={id}
-                title="PORTFOLIO SNAPSHOT"
-                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
-            >
-                <div className="text-red-400 text-sm">{error}</div>
-                <div className="text-slate-500 text-xs mt-1">Inicia sesión para ver tu portfolio</div>
-            </WidgetCard>
-        );
-    }
 
     const hasHoldings = Boolean(portfolioData && portfolioData.holdings.length > 0);
 
@@ -435,6 +412,32 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                 return holdings.sort((a, b) => (b.current_value || 0) - (a.current_value || 0));
         }
     }, [portfolioData, sortOption]);
+
+    // Early returns MUST happen AFTER all hooks are declared
+    if (loading) {
+        return (
+            <WidgetCard
+                id={id}
+                title="PORTFOLIO SNAPSHOT"
+                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
+            >
+                <div className="text-slate-400 text-sm">Cargando portfolio...</div>
+            </WidgetCard>
+        );
+    }
+
+    if (error) {
+        return (
+            <WidgetCard
+                id={id}
+                title="PORTFOLIO SNAPSHOT"
+                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
+            >
+                <div className="text-red-400 text-sm">{error}</div>
+                <div className="text-slate-500 text-xs mt-1">Inicia sesión para ver tu portfolio</div>
+            </WidgetCard>
+        );
+    }
 
     const handleAddHolding = async (event: React.FormEvent) => {
         event.preventDefault();

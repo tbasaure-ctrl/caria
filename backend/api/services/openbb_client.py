@@ -1,8 +1,10 @@
 import logging
 from typing import Any, Dict, Optional
+import os
 from openbb import obb
 
 LOGGER = logging.getLogger("caria.services.openbb_client")
+DEFAULT_PROVIDER = os.getenv("OPENBB_PROVIDER", "fmp")
 
 class OpenBBClient:
     """
@@ -12,15 +14,24 @@ class OpenBBClient:
 
     def __init__(self):
         # Initialize any necessary configurations here
-        pass
+        self.provider = DEFAULT_PROVIDER
 
     def get_price_history(self, symbol: str, start_date: str = "2010-01-01") -> Any:
         """
         Fetch historical price data.
-        Using FMP as Yahoo is unstable in this environment.
+        Uses the configured provider (default fmp).
         """
         try:
-            return obb.equity.price.historical(symbol=symbol, provider="fmp", start_date=start_date)
+            result = obb.equity.price.historical(symbol=symbol, provider=self.provider, start_date=start_date)
+            # Verify result contains data
+            if result and hasattr(result, 'to_df'):
+                df = result.to_df()
+                if df.empty:
+                    LOGGER.warning(f"Empty price history for {symbol} returned by provider {self.provider}")
+                    return None
+                return result
+            LOGGER.warning(f"Price history for {symbol} returned unexpected format.")
+            return None
         except Exception as e:
             LOGGER.error(f"Error fetching price history for {symbol}: {e}")
             return None

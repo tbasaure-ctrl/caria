@@ -25,6 +25,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
         'connecting'
     );
     const [connectionMessage, setConnectionMessage] = useState('Conectando con Caria...');
+    const [showDebug, setShowDebug] = useState(false);
+    const [debugInfo, setDebugInfo] = useState<any>(null);
     const socketRef = useRef<Socket | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const reconnectAttemptsRef = useRef(0);
@@ -58,7 +60,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 if (!socketBaseUrl || socketBaseUrl === '') {
                     socketBaseUrl = 'http://localhost:8000';
                 }
-                
+
                 const socket = socketIO(socketBaseUrl, {
                     auth: {
                         token: token
@@ -135,12 +137,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 });
 
                 // Handle incoming chat messages
-                socket.on('chat_message', (data: Message) => {
+                socket.on('chat_message', (data: any) => {
+                    const msg: Message = {
+                        id: data.id || Date.now().toString(),
+                        message: data.message || data.response || '',
+                        timestamp: data.timestamp || new Date().toISOString(),
+                        role: data.role || 'assistant'
+                    };
                     setMessages(prev => {
-                        const newMessages = [...prev, data];
-                        setLastMessageTimestamp(data.timestamp);
+                        const newMessages = [...prev, msg];
+                        setLastMessageTimestamp(msg.timestamp);
                         return newMessages;
                     });
+                    // Store debug info if available
+                    if (data.debug) {
+                        setDebugInfo({
+                            request: data.debug.request,
+                            response: data.debug.response,
+                            latency_ms: data.debug.latency_ms,
+                            tokens_used: data.debug.tokens_used,
+                            timestamp: msg.timestamp
+                        });
+                    }
                 });
 
                 // Handle errors
@@ -220,16 +238,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
         connectionStatus === 'connected'
             ? 'Connected'
             : connectionStatus === 'connecting'
-            ? 'Connecting...'
-            : connectionStatus === 'reconnecting'
-            ? 'Reconnecting...'
-            : 'Disconnected';
+                ? 'Connecting...'
+                : connectionStatus === 'reconnecting'
+                    ? 'Reconnecting...'
+                    : 'Disconnected';
     const statusColor =
         connectionStatus === 'connected'
             ? 'bg-green-500'
             : connectionStatus === 'error'
-            ? 'bg-red-500'
-            : 'bg-yellow-400';
+                ? 'bg-red-500'
+                : 'bg-yellow-400';
 
     return (
         <div className="flex flex-col h-full bg-gray-950 border border-slate-800 rounded-lg">
@@ -276,11 +294,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                         className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                         <div
-                            className={`max-w-[80%] rounded-lg p-3 ${
-                                msg.role === 'user'
+                            className={`max-w-[80%] rounded-lg p-3 ${msg.role === 'user'
                                     ? 'bg-slate-700 text-slate-100'
                                     : 'bg-slate-800 text-slate-200'
-                            }`}
+                                }`}
                         >
                             <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
                             <p className="text-xs text-slate-400 mt-1">
@@ -326,6 +343,51 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                         Send
                     </button>
                 </div>
+
+                {/* Debug Panel Toggle */}
+                <button
+                    onClick={() => setShowDebug(!showDebug)}
+                    className="text-xs text-slate-500 hover:text-slate-300 transition-colors mt-2"
+                >
+                    Debug {showDebug ? '▴' : '▾'}
+                </button>
+
+                {/* Debug Panel */}
+                {showDebug && debugInfo && (
+                    <div className="mt-3 p-3 bg-gray-900 border border-slate-800 rounded-md text-xs space-y-2">
+                        <div className="text-slate-400 font-semibold">Debug Information</div>
+                        <div>
+                            <span className="text-slate-500">Latency:</span>
+                            <span className="text-slate-300 ml-2">{debugInfo.latency_ms || 'N/A'} ms</span>
+                        </div>
+                        <div>
+                            <span className="text-slate-500">Tokens Used:</span>
+                            <span className="text-slate-300 ml-2">
+                                {debugInfo.tokens_used ? `${debugInfo.tokens_used.prompt || 0} + ${debugInfo.tokens_used.completion || 0}` : 'N/A'}
+                            </span>
+                        </div>
+                        <div>
+                            <span className="text-slate-500">Timestamp:</span>
+                            <span className="text-slate-300 ml-2">{debugInfo.timestamp ? new Date(debugInfo.timestamp).toLocaleString() : 'N/A'}</span>
+                        </div>
+                        {debugInfo.request && (
+                            <div>
+                                <div className="text-slate-500 mb-1">Request Payload:</div>
+                                <pre className="bg-gray-950 p-2 rounded overflow-x-auto text-slate-400">
+                                    {JSON.stringify(debugInfo.request, null, 2)}
+                                </pre>
+                            </div>
+                        )}
+                        {debugInfo.response && (
+                            <div>
+                                <div className="text-slate-500 mb-1">Raw LLM Response:</div>
+                                <pre className="bg-gray-950 p-2 rounded overflow-x-auto text-slate-400 max-h-40 overflow-y-auto">
+                                    {JSON.stringify(debugInfo.response, null, 2)}
+                                </pre>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

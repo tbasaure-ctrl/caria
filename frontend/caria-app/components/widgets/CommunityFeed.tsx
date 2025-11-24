@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { WidgetCard } from './WidgetCard';
+import { ArenaThreadModal } from './ArenaThreadModal';
 import { API_BASE_URL, fetchWithAuth } from '../../services/apiService';
 import {
     CommunityPost,
@@ -31,8 +32,13 @@ export const CommunityFeed: React.FC = () => {
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
     const cacheHydrated = useRef(false);
     const postsRef = useRef<CommunityPost[]>([]);
+    
+    // Arena Modal State
+    const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+    const [selectedThreadData, setSelectedThreadData] = useState<{thesis: string, ticker: string | null} | null>(null);
 
     const CACHE_KEY = 'caria.community.feed.cache.v1';
+
 
     useEffect(() => {
         postsRef.current = posts;
@@ -198,10 +204,12 @@ export const CommunityFeed: React.FC = () => {
         }
     };
 
-    const handleViewArenaThread = (threadId: string) => {
-        // TODO: Open Arena thread modal or navigate to arena thread view
-        console.log('View arena thread:', threadId);
-        // This could open a modal or navigate to a dedicated arena thread view
+    const handleViewArenaThread = (threadId: string, post: CommunityPost) => {
+        setSelectedThreadData({
+            thesis: post.title, // or post.thesis_preview / post.full_thesis
+            ticker: post.ticker
+        });
+        setSelectedThreadId(threadId);
     };
 
     if (loading) {
@@ -378,7 +386,7 @@ export const CommunityFeed: React.FC = () => {
                                         <>
                                             <span>•</span>
                                             <button
-                                                onClick={() => handleViewArenaThread(post.arena_thread_id!)}
+                                                onClick={() => handleViewArenaThread(post.arena_thread_id!, post)}
                                                 className="underline hover:no-underline"
                                                 style={{ color: 'var(--color-primary)' }}
                                             >
@@ -430,6 +438,31 @@ export const CommunityFeed: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {selectedThreadId && selectedThreadData && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+                    onClick={() => setSelectedThreadId(null)}
+                >
+                    <div
+                        className="bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            backgroundColor: 'var(--color-bg-primary)',
+                            border: '1px solid var(--color-bg-tertiary)',
+                        }}
+                    >
+                        <ArenaThreadModal
+                            threadId={selectedThreadId}
+                            initialThesis={selectedThreadData.thesis}
+                            initialTicker={selectedThreadData.ticker}
+                            initialConviction={50}
+                            onClose={() => setSelectedThreadId(null)}
+                        />
+                    </div>
+                </div>
+            )}
         </WidgetCard>
     );
 };

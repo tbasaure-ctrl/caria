@@ -189,12 +189,17 @@
 
       .legend-figure {
         position: absolute;
-        opacity: 0.08;
+        opacity: 0.12;
         filter: grayscale(100%);
         mix-blend-mode: luminosity;
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
+        transition: opacity 0.5s ease;
+      }
+
+      .legend-figure:hover {
+        opacity: 0.2;
       }
 
       .legend-figure::after {
@@ -300,6 +305,18 @@
         body {
           font-size: 14px;
         }
+
+        /* Scale down legends on mobile to prevent clutter */
+        .legend-figure {
+            transform: scale(0.6) !important;
+            opacity: 0.08; /* Keep them subtle on mobile */
+        }
+        
+        /* Adjust specific positions for mobile if needed */
+        .legend-buffett { top: 5% !important; left: -10% !important; }
+        .legend-munger { top: 10% !important; right: -10% !important; }
+        .legend-graham { top: 40% !important; right: -15% !important; }
+        .legend-keynes { top: 50% !important; left: -10% !important; }
 
         h1 {
           font-size: 2rem !important;

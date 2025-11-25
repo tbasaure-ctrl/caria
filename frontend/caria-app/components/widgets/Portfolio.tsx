@@ -784,7 +784,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                                 disabled={actionLoading}
                                                 className="text-xs text-red-400 hover:text-red-300"
                                             >
-                                                Eliminar
+                                                Delete
                                             </button>
                                         </div>
                                     </div>

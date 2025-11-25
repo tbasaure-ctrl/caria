@@ -180,13 +180,16 @@ def get_holdings_with_prices(
     current_user: UserInDB = Depends(get_current_user),
     conn = Depends(get_db_connection),
 ) -> HoldingsWithPricesResponse:
-    """Obtiene holdings del usuario con precios en tiempo real.
+    """Get user holdings with real-time prices.
     
-    Calcula valor total, ganancia/pérdida y porcentajes.
+    Calculates total value, gain/loss and percentages.
+    Falls back to average cost if real-time price unavailable.
     """
-    from caria.ingestion.clients.fmp_client import FMPClient
+    import logging
+    logger = logging.getLogger("caria.api.holdings")
+    
     try:
-        # Obtener holdings
+        # Get holdings from database
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -207,14 +210,21 @@ def get_holdings_with_prices(
                 total_gain_loss_pct=0.0,
             )
         
-        # Obtener tickers únicos
+        # Get unique tickers
         tickers = [row[0] for row in rows]
+        logger.info(f"Fetching prices for tickers: {tickers}")
         
-        # Obtener precios en tiempo real
-        fmp_client = FMPClient()
-        prices = fmp_client.get_realtime_prices_batch(tickers)
+        # Try to get real-time prices from FMP
+        prices: dict = {}
+        try:
+            from caria.ingestion.clients.fmp_client import FMPClient
+            fmp_client = FMPClient()
+            prices = fmp_client.get_realtime_prices_batch(tickers)
+            logger.info(f"FMP returned prices for: {list(prices.keys())}")
+        except Exception as fmp_exc:
+            logger.warning(f"FMP price fetch failed: {fmp_exc}. Using fallback prices.")
         
-        # Calcular valores
+        # Calculate values
         holdings_data = []
         total_value = 0.0
         total_cost = 0.0
@@ -225,7 +235,21 @@ def get_holdings_with_prices(
             total_cost += cost_basis
             
             price_data = prices.get(ticker, {})
-            current_price = price_data.get("price", 0.0) or price_data.get("previousClose", 0.0)
+            
+            # Try multiple fields for current price with fallback to average cost
+            current_price = (
+                price_data.get("price") or 
+                price_data.get("previousClose") or
+                price_data.get("close") or
+                avg_cost  # Fallback to average cost if no price available
+            )
+            
+            # Ensure we have a valid number
+            try:
+                current_price = float(current_price) if current_price else avg_cost
+            except (ValueError, TypeError):
+                current_price = avg_cost
+                
             current_value = quantity * current_price
             total_value += current_value
             
@@ -241,8 +265,9 @@ def get_holdings_with_prices(
                 "current_value": current_value,
                 "gain_loss": gain_loss,
                 "gain_loss_pct": gain_loss_pct,
-                "price_change": price_data.get("change", 0.0),
-                "price_change_pct": price_data.get("changesPercentage", 0.0),
+                "price_change": price_data.get("change", 0.0) or 0.0,
+                "price_change_pct": price_data.get("changesPercentage", 0.0) or 0.0,
+                "price_source": "live" if price_data.get("price") else "fallback",
             })
         
         total_gain_loss = total_value - total_cost
@@ -256,8 +281,10 @@ def get_holdings_with_prices(
             total_gain_loss_pct=total_gain_loss_pct,
         )
     except Exception as exc:
+        import traceback
+        logger.error(f"Error fetching holdings with prices: {exc}\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error obteniendo holdings con precios: {str(exc)}",
+            detail=f"Error fetching holdings with prices: {str(exc)}",
         ) from exc
 

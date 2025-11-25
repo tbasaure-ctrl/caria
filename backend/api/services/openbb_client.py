@@ -1,21 +1,152 @@
 import logging
 from typing import Any, Dict, Optional, List
 import os
+import time
 import yfinance as yf
 from openbb import obb
 
 LOGGER = logging.getLogger("caria.services.openbb_client")
 DEFAULT_PROVIDER = os.getenv("OPENBB_PROVIDER", "fmp")
 
+# Simple in-memory cache for prices
+# Key: symbol (or comma-separated symbols for batch)
+# Value: (timestamp, data)
+PRICE_CACHE = {}
+CACHE_TTL = 60  # 1 minute cache
+
 class OpenBBClient:
     """
     Unified client for OpenBB data integration.
     Replaces FMP and Yahoo wrappers.
     Includes robust yfinance fallback for when keys are missing.
+    Includes simple caching to respect rate limits.
     """
 
     def __init__(self):
         self.provider = DEFAULT_PROVIDER
+
+    def get_current_prices(self, symbols: List[str]) -> Dict[str, Dict[str, Any]]:
+        """
+        Get latest prices for multiple symbols.
+        Returns dict: {symbol: {price: float, change: float, ...}}
+        Includes caching to reduce API calls.
+        """
+        results = {}
+        symbols_to_fetch = []
+        now = time.time()
+
+        # Check cache
+        for sym in symbols:
+            if sym in PRICE_CACHE:
+                ts, data = PRICE_CACHE[sym]
+                if now - ts < CACHE_TTL:
+                    results[sym] = data
+                    continue
+            symbols_to_fetch.append(sym)
+
+        if not symbols_to_fetch:
+            return results
+
+        # Fetch missing symbols
+        # 1. Try Batch FMP via OpenBB
+        fetched_results = {}
+        try:
+            # Split into chunks of 50 to respect typical batch limits if needed
+            chunk_size = 50
+            for i in range(0, len(symbols_to_fetch), chunk_size):
+                chunk = symbols_to_fetch[i:i + chunk_size]
+                symbols_str = ",".join(chunk)
+                quote = obb.equity.price.quote(symbol=symbols_str, provider="fmp")
+                
+                if quote and hasattr(quote, 'to_df'):
+                    df = quote.to_df()
+                    if not df.empty:
+                        for _, row in df.iterrows():
+                            sym = row.get('symbol')
+                            if sym:
+                                data = {
+                                    "symbol": sym,
+                                    "price": float(row.get('last_price', row.get('price', 0))),
+                                    "change": float(row.get('change', 0)),
+                                    "changesPercentage": float(row.get('change_percent', row.get('changesPercentage', 0))),
+                                    "previousClose": float(row.get('prev_close', row.get('previousClose', 0)))
+                                }
+                                fetched_results[sym] = data
+                                # Update cache
+                                PRICE_CACHE[sym] = (now, data)
+        except Exception as e:
+            LOGGER.warning(f"Batch FMP fetch failed: {e}")
+
+        # 2. Fill missing with yfinance (Batch)
+        missing_symbols = [s for s in symbols_to_fetch if s not in fetched_results]
+        if missing_symbols:
+            try:
+                # yfinance download is efficient for batch
+                data = yf.download(missing_symbols, period="1d", progress=False)
+                
+                if not data.empty:
+                    if len(missing_symbols) == 1:
+                        # Single ticker structure
+                        sym = missing_symbols[0]
+                        # Handle potential MultiIndex columns even for single ticker in newer yfinance
+                        if isinstance(data.columns, pd.MultiIndex):
+                             close = float(data['Close'][sym].iloc[-1])
+                             open_p = float(data['Open'][sym].iloc[-1])
+                        else:
+                             close = float(data['Close'].iloc[-1])
+                             open_p = float(data['Open'].iloc[-1])
+
+                        change = close - open_p
+                        change_p = (change / open_p) * 100 if open_p else 0
+                        
+                        res = {
+                            "symbol": sym,
+                            "price": close,
+                            "change": change,
+                            "changesPercentage": change_p,
+                            "previousClose": open_p 
+                        }
+                        fetched_results[sym] = res
+                        PRICE_CACHE[sym] = (now, res)
+                    else:
+                        # Multi-ticker
+                        for sym in missing_symbols:
+                            try:
+                                if sym in data['Close']:
+                                    close = float(data['Close'][sym].iloc[-1])
+                                    open_p = float(data['Open'][sym].iloc[-1])
+                                    change = close - open_p
+                                    change_p = (change / open_p) * 100 if open_p else 0
+                                    
+                                    res = {
+                                        "symbol": sym,
+                                        "price": close,
+                                        "change": change,
+                                        "changesPercentage": change_p,
+                                        "previousClose": open_p
+                                    }
+                                    fetched_results[sym] = res
+                                    PRICE_CACHE[sym] = (now, res)
+                            except Exception:
+                                continue
+            except Exception as e:
+                LOGGER.error(f"yfinance batch fetch failed: {e}")
+
+        # Merge fetched results into final results
+        results.update(fetched_results)
+
+        # 3. Final cleanup - fill remaining with 0s
+        for sym in symbols:
+            if sym not in results:
+                results[sym] = {
+                    "symbol": sym, 
+                    "price": 0.0, 
+                    "change": 0.0, 
+                    "changesPercentage": 0.0,
+                    "previousClose": 0.0
+                }
+            
+        return results
 
     def get_price_history(self, symbol: str, start_date: str = "2010-01-01") -> Any:
         """

@@ -307,4 +307,3 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
         </main>
     );
 };
-};

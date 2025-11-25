@@ -307,26 +307,4 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
         </main>
     );
 };
-className = "text-2xl font-bold"
-style = {{
-    fontFamily: 'var(--font-display)',
-        color: 'var(--color-cream)',
-                            }}
-                        >
-    Thesis Arena
-                        </h2 >
-    <button
-        onClick={() => setShowArena(false)}
-        className="text-2xl font-bold"
-        style={{ color: 'var(--color-text-secondary)' }}
-    >
-        ×
-    </button>
-                    </div >
-    <ThesisArena onClose={() => setShowArena(false)} />
-                </div >
-            </div >
-            )}
-        </main >
-    );
 };

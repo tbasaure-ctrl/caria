@@ -133,15 +133,6 @@ async def lifespan(app: FastAPI):
     # Ensure database schema and default user are in place
     run_bootstrap_tasks()
 
-    # Ensure mock data exists for valuation (if data pipeline hasn't run)
-    try:
-        from api.utils.mock_data_gen import ensure_mock_data_exists
-        ensure_mock_data_exists()
-    except ImportError:
-        LOGGER.warning("Could not import mock_data_gen, skipping data check.")
-    except Exception as e:
-        LOGGER.error(f"Error generating mock data: {e}")
-
     # Inicializar RAG (opcional - puede fallar si PostgreSQL no está disponible)
     vector_store = retriever = embedder = None
     try:

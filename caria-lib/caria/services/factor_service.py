@@ -81,11 +81,62 @@ class FactorService:
             dfs.append(pd.read_parquet(momentum_path))
         
         if not dfs:
+            # Fallback: Try to load from fundamentals cache service (database)
+            LOGGER.warning(
+                f"No se encontraron datos de fundamentals o técnicos en parquet. Buscado en:\n"
+                f"  - {quality_path}\n"
+                f"  - {value_path}\n"
+                f"  - {momentum_path}\n"
+                f"Intentando cargar desde cache de base de datos..."
+            )
+            # Try to load from database cache instead
+            try:
+                from api.services.fundamentals_cache_service import get_fundamentals_cache_service
+                cache_service = get_fundamentals_cache_service()
+                cached_tickers = cache_service.get_all_cached_tickers()
+                
+                if cached_tickers:
+                    LOGGER.info(f"Cargando {len(cached_tickers)} tickers desde cache de base de datos")
+                    # Build DataFrame from cache
+                    cache_data = []
+                    for ticker in cached_tickers[:500]:  # Limit to 500 for performance
+                        try:
+                            cached = cache_service.get_fundamentals(ticker)
+                            if cached and cached.get('data'):
+                                data = cached['data']
+                                cache_data.append({
+                                    'ticker': ticker,
+                                    'date': pd.Timestamp.now().normalize(),
+                                    'roic': data.get('roic'),
+                                    'returnOnEquity': data.get('returnOnEquity'),
+                                    'returnOnAssets': data.get('returnOnAssets'),
+                                    'grossProfitMargin': data.get('grossProfitMargin'),
+                                    'netProfitMargin': data.get('netProfitMargin'),
+                                    'priceToBookRatio': data.get('priceToBookRatio'),
+                                    'priceToSalesRatio': data.get('priceToSalesRatio'),
+                                    'revenueGrowth': data.get('revenueGrowth'),
+                                    'netIncomeGrowth': data.get('netIncomeGrowth'),
+                                    'freeCashFlowPerShare': data.get('freeCashFlowPerShare'),
+                                    'freeCashFlowYield': data.get('freeCashFlowYield'),
+                                })
+                        except Exception as e:
+                            LOGGER.debug(f"Error loading {ticker} from cache: {e}")
+                            continue
+                    
+                    if cache_data:
+                        df = pd.DataFrame(cache_data)
+                        LOGGER.info(f"✅ Cargados {len(df)} tickers desde cache de base de datos")
+                        return df
+            except Exception as e:
+                LOGGER.error(f"Error loading from cache: {e}")
+            
+            # If still no data, raise error
             raise FileNotFoundError(
                 f"No se encontraron datos de fundamentals o técnicos. Buscado en:\n"
                 f"  - {quality_path}\n"
                 f"  - {value_path}\n"
-                f"  - {momentum_path}"
+                f"  - {momentum_path}\n"
+                f"Y tampoco se encontraron datos en el cache de base de datos."
             )
         
         # Merge de todos los datasets

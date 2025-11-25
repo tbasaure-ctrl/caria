@@ -8,11 +8,16 @@ import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
 import { ThesisArena } from './widgets/ThesisArena';
 import { CrisisSimulator } from './widgets/CrisisSimulator';
+import { MacroSimulator } from './widgets/MacroSimulator';
 import { ValuationTool } from './widgets/ValuationTool';
 import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { RedditSentiment } from './widgets/RedditSentiment';
 import { Resources } from './widgets/Resources';
+import { GlobalMarketBar } from './widgets/GlobalMarketBar';
+import { ModelOutlook } from './widgets/ModelOutlook';
+import { FearGreedIndex } from './widgets/FearGreedIndex';
+import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
 const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void; id?: string }> = ({ onStartAnalysis, onEnterArena, id }) => (
@@ -202,47 +207,37 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
             {/* Tab Content */}
             <div className="fade-in delay-200">
-                {/* PORTFOLIO TAB - Crisis Simulation and Test Your Portfolio ONLY */}
+                {/* PORTFOLIO TAB - Market overview, portfolio management, and stress testing */}
                 {activeTab === 'portfolio' && (
                     <div className="space-y-8">
-                        {/* Crisis Simulation */}
-                        <div>
-                            <h2 className="text-2xl font-bold mb-2"
-                                style={{
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-cream)'
-                                }}>
-                                Crisis Simulation
-                            </h2>
-                            <p className="text-sm mb-4"
-                               style={{
-                                   fontFamily: 'var(--font-body)',
-                                   color: 'var(--color-text-secondary)'
-                               }}>
-                                Stress test your portfolio against historical market crises
-                            </p>
-                            <CrisisSimulator />
+                        {/* Global Market Bar - Full Width */}
+                        <GlobalMarketBar id="market-bar-widget" />
+
+                        {/* Market Indicators Row */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                            <FearGreedIndex />
                         </div>
 
-                        {/* Test Your Portfolio */}
-                        <div>
-                            <h2 className="text-2xl font-bold mb-2"
-                                style={{
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-cream)'
-                                }}>
-                                Test Your Portfolio
+                        {/* Portfolio Management */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <Portfolio id="portfolio-widget" />
+                            <PortfolioAnalytics />
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-8">
+                            <ModelPortfolioWidget />
+                        </div>
+                        
+                        {/* Scenario Analysis - Stress test your portfolio */}
+                        <div className="mt-4">
+                            <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--color-cream)', fontFamily: "'Instrument Serif', serif" }}>
+                                📊 Scenario Analysis
                             </h2>
-                            <p className="text-sm mb-4"
-                               style={{
-                                   fontFamily: 'var(--font-body)',
-                                   color: 'var(--color-text-secondary)'
-                               }}>
-                                Analyze your portfolio performance and risk metrics
-                            </p>
+                            <p className="text-sm text-slate-400 mb-4">Stress test your portfolio against historical crises and macroeconomic scenarios</p>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                <Portfolio id="portfolio-widget" />
-                                <PortfolioAnalytics />
+                                <CrisisSimulator />
+                                <MacroSimulator />
                             </div>
                         </div>
                     </div>

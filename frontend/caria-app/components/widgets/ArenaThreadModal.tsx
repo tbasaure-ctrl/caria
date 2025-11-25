@@ -3,6 +3,7 @@ import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
 import { CommunityCard } from './CommunityCard';
 import { CommunityTooltip } from './CommunityTooltip';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 interface CommunityResponse {
     community: string;
@@ -125,8 +126,7 @@ export const ArenaThreadModal: React.FC<ArenaThreadModalProps> = ({
             setRounds([...rounds, newRound]);
             setCurrentConviction(data.current_conviction);
             setUserMessage(''); // Clear input
-        } catch (err: any) {
-            console.error('Error responding in arena:', err);
+        } catch (err: unknown) {
             setError('Coming soon... Arena conversations are being enhanced for better multi-round analysis.');
         } finally {
             setIsLoading(false);

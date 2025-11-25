@@ -8,8 +8,13 @@ import { API_BASE_URL, fetchWithAuth } from '../services/apiService';
 // LocalStorage Helpers
 // -----------------------------------------------
 const getChatHistory = (): ChatMessage[] => {
-    const saved = localStorage.getItem('cariaChatHistory');
-    return saved ? JSON.parse(saved) : [];
+    try {
+        const saved = localStorage.getItem('cariaChatHistory');
+        return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+        console.warn('Failed to parse chat history', e);
+        return [];
+    }
 };
 
 const saveChatHistory = (messages: ChatMessage[]) => {

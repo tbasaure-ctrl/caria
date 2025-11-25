@@ -12,6 +12,7 @@ import {
     CommunityPostSort,
     fetchCommunityPosts,
 } from '../../services/communityService';
+import { getErrorMessage, isAbortError, isAuthError, isNetworkError } from '../../src/utils/errorHandling';
 
 const COMMUNITY_LABELS: Record<string, string> = {
     value_investor: 'Value Investor',
@@ -82,16 +83,15 @@ export const CommunityFeed: React.FC = () => {
                 const data = await fetchCommunityPosts({ sortBy, limit: 50, signal });
                 setPosts(data);
                 setStatusMessage(null);
-            } catch (err: any) {
-                if (err?.name === 'AbortError') {
+            } catch (err: unknown) {
+                if (isAbortError(err)) {
                     return;
                 }
-                console.error('Error loading community posts:', err);
                 hydrateFromCache();
-                const message = err?.message || '';
-                if (message.includes('401') || message.includes('Session expired')) {
+                const message = getErrorMessage(err);
+                if (isAuthError(err)) {
                     setError('Inicia sesión para ver las publicaciones de la comunidad.');
-                } else if (message.includes('connect')) {
+                } else if (isNetworkError(err)) {
                     setError('Servicio de comunidad no disponible. Reintentando...');
                 } else if (!postsRef.current.length) {
                     setError('Unable to load community posts. Please try again later.');
@@ -133,8 +133,8 @@ export const CommunityFeed: React.FC = () => {
         const query = searchQuery.toLowerCase();
         return posts.filter(
             (post) =>
-                post.title.toLowerCase().includes(query) ||
-                post.thesis_preview.toLowerCase().includes(query) ||
+                (post.title && post.title.toLowerCase().includes(query)) ||
+                (post.thesis_preview && post.thesis_preview.toLowerCase().includes(query)) ||
                 (post.ticker && post.ticker.toLowerCase().includes(query)) ||
                 (post.username && post.username.toLowerCase().includes(query))
         );
@@ -172,8 +172,8 @@ export const CommunityFeed: React.FC = () => {
                         : post
                 )
             );
-        } catch (err: any) {
-            console.error('Error voting:', err);
+        } catch (err: unknown) {
+            // Silently handle voting errors - user can retry
         } finally {
             setVoting((prev) => {
                 const next = new Set(prev);

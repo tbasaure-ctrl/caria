@@ -223,7 +223,7 @@ export const MonteCarloSimulation: React.FC = () => {
                         </div>
 
                         {/* Price Path Chart */}
-                        {result.price_paths && result.price_paths.length > 0 && (
+                        {result.price_paths && Array.isArray(result.price_paths) && result.price_paths.length > 0 && result.price_paths[0] && (
                             <div className="bg-gray-900/50 p-4 rounded-md border border-slate-800">
                                 <h4 className="text-sm font-semibold text-slate-300 mb-3">Simulated Price Paths</h4>
                                 <ResponsiveContainer width="100%" height={250}>

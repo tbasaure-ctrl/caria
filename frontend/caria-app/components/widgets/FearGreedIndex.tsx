@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 interface FearGreedData {
     value: number; // 0-100
@@ -47,8 +48,8 @@ export const FearGreedIndex: React.FC = () => {
 
             const fearGreedData: FearGreedData = await response.json();
             setData(fearGreedData);
-        } catch (err: any) {
-            console.error('Error loading Fear and Greed Index:', err);
+        } catch (err: unknown) {
+            const errorMsg = getErrorMessage(err);
             setError('Coming soon... Fear & Greed Index is being enhanced with real-time updates.');
         } finally {
             setLoading(false);
@@ -136,7 +137,17 @@ export const FearGreedIndex: React.FC = () => {
     }
 
     if (!data) {
-        return null;
+        return (
+            <WidgetCard
+                title="FEAR & GREED"
+                id="fear-greed-widget"
+                tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
+            >
+                <div className="text-center h-[124px] flex items-center justify-center">
+                    <p className="text-slate-500">No data available</p>
+                </div>
+            </WidgetCard>
+        );
     }
 
     const config = CLASSIFICATION_CONFIG[data.classification] || {
@@ -151,34 +162,32 @@ export const FearGreedIndex: React.FC = () => {
             id="fear-greed-widget"
             tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
         >
-            <div className="text-center">
+            <div className="flex flex-col items-center">
                 {renderGauge(data.value, config.color)}
 
-                <div className="flex flex-col items-center">
-                    <p className="text-2xl font-bold mt-3 mb-1"
-                        style={{ fontFamily: 'var(--font-display)', color: config.color }}>
-                        {config.label}
-                    </p>
+                <p className="text-2xl font-bold mt-2 mb-1"
+                    style={{ fontFamily: 'var(--font-display)', color: config.color }}>
+                    {config.label}
+                </p>
 
-                    {/* Change indicator */}
-                    {data.change !== null && data.previous_close !== null && (
-                        <div className="flex items-center gap-2 text-xs mb-2">
-                            <span className="text-slate-500">Prev: {data.previous_close}</span>
-                            <span
-                                style={{
-                                    color: data.change >= 0 ? '#10b981' : '#ef4444',
-                                    fontWeight: 'bold',
-                                }}
-                            >
-                                {data.change >= 0 ? '+' : ''}{data.change}
-                            </span>
-                        </div>
-                    )}
+                {/* Change indicator */}
+                {data.change !== null && data.previous_close !== null && (
+                    <div className="flex items-center gap-2 text-xs mb-1">
+                        <span className="text-slate-500">Prev: {data.previous_close}</span>
+                        <span
+                            style={{
+                                color: data.change >= 0 ? '#10b981' : '#ef4444',
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            {data.change >= 0 ? '+' : ''}{data.change}
+                        </span>
+                    </div>
+                )}
 
-                    <p className="text-xs mt-1 px-4 italic text-slate-500 leading-relaxed">
-                        Emotions driving the US stock market on a given day
-                    </p>
-                </div>
+                <p className="text-xs mt-2 max-w-xs text-center italic text-slate-500 leading-tight">
+                    Emotions driving the US stock market on a given day
+                </p>
             </div>
         </WidgetCard>
     );

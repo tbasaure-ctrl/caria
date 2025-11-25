@@ -4,6 +4,7 @@ import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
 import { CommunityCard } from './CommunityCard';
 import { CommunityTooltip } from './CommunityTooltip';
 import { ArenaThreadModal } from './ArenaThreadModal';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 import { ThesisEditorModal } from './ThesisEditorModal';
 
 interface CommunityResponse {
@@ -98,9 +99,8 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
             const data = await response.json();
             setResults(data);
             setSuccessMessage('Las comunidades han respondido. Revisa el impacto en tu convicción.');
-        } catch (err: any) {
-            console.error('Error challenging thesis:', err);
-            setError(err?.message || 'No pudimos desafiar la tesis. Intenta nuevamente.');
+        } catch (err: unknown) {
+            setError(getErrorMessage(err) || 'No pudimos desafiar la tesis. Intenta nuevamente.');
         } finally{
             setIsLoading(false);
         }

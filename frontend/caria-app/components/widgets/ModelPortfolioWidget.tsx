@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
 import { PortfolioPerformance } from './PortfolioPerformance';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 interface Holding {
     ticker: string;
@@ -53,8 +54,7 @@ export const ModelPortfolioWidget: React.FC = () => {
             if (data.length > 0 && !selectedPortfolio) {
                 setSelectedPortfolio(data[0]);
             }
-        } catch (err: any) {
-            console.error('Error loading model portfolios:', err);
+        } catch (err: unknown) {
             setError('Coming soon... Model portfolios are being enhanced with better allocation strategies.');
         } finally {
             setLoading(false);
@@ -83,8 +83,7 @@ export const ModelPortfolioWidget: React.FC = () => {
             const newPortfolio = await response.json();
             await loadPortfolios(); // Reload list
             setSelectedPortfolio(newPortfolio);
-        } catch (err: any) {
-            console.error('Error selecting portfolio:', err);
+        } catch (err: unknown) {
             setError('Coming soon... Portfolio selection is being enhanced for better recommendations.');
         } finally {
             setIsSelecting(false);
@@ -199,45 +198,47 @@ export const ModelPortfolioWidget: React.FC = () => {
                     </div>
                 )}
 
-                {/* Selected Portfolio Details */}
-                {selectedPortfolio && (
-                    <div className="space-y-3">
-                        <div className="p-3 rounded-lg" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)' }}>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-semibold" style={{ color: 'var(--color-cream)' }}>
-                                    {selectedPortfolio.selection_type.charAt(0).toUpperCase() + selectedPortfolio.selection_type.slice(1)} Portfolio
-                                </span>
-                                <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
-                                    {selectedPortfolio.total_holdings} holdings
-                                </span>
-                            </div>
-                            {selectedPortfolio.regime && (
-                                <div className="text-xs mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-                                    Regime: {selectedPortfolio.regime}
-                                </div>
-                            )}
-                            <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                                Created: {new Date(selectedPortfolio.created_at).toLocaleDateString()}
-                            </div>
-                        </div>
-
-                        {/* Holdings List */}
-                        <div className="p-3 rounded-lg max-h-48 overflow-y-auto" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)' }}>
-                            <h4 className="text-sm font-semibold mb-2" style={{ color: 'var(--color-cream)' }}>Holdings</h4>
-                            <div className="space-y-1">
-                                {selectedPortfolio.holdings.map((holding, idx) => (
-                                    <div key={idx} className="flex justify-between text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                                        <span className="font-mono">{holding.ticker}</span>
-                                        <span>{holding.allocation.toFixed(2)}%</span>
+                        {/* Selected Portfolio Details */}
+                        {selectedPortfolio && (
+                            <div className="space-y-3">
+                                <div className="p-3 rounded-lg" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)' }}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-semibold" style={{ color: 'var(--color-cream)' }}>
+                                            {(selectedPortfolio.selection_type ? selectedPortfolio.selection_type.charAt(0).toUpperCase() + selectedPortfolio.selection_type.slice(1) : 'Unknown')} Portfolio
+                                        </span>
+                                        <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text-secondary)' }}>
+                                            {selectedPortfolio.total_holdings} holdings
+                                        </span>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
+                                    {selectedPortfolio.regime && (
+                                        <div className="text-xs mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                                            Regime: {selectedPortfolio.regime}
+                                        </div>
+                                    )}
+                                    <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                                        Created: {new Date(selectedPortfolio.created_at).toLocaleDateString()}
+                                    </div>
+                                </div>
 
-                        {/* Performance Component */}
-                        <PortfolioPerformance portfolioId={selectedPortfolio.id} />
-                    </div>
-                )}
+                                {/* Holdings List */}
+                                <div className="p-3 rounded-lg max-h-48 overflow-y-auto" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-bg-tertiary)' }}>
+                                    <h4 className="text-sm font-semibold mb-2" style={{ color: 'var(--color-cream)' }}>Holdings</h4>
+                                    <div className="space-y-1">
+                                        {selectedPortfolio.holdings && Array.isArray(selectedPortfolio.holdings) ? selectedPortfolio.holdings.map((holding, idx) => (
+                                            <div key={idx} className="flex justify-between text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                                                <span className="font-mono">{holding.ticker}</span>
+                                                <span>{holding.allocation ? holding.allocation.toFixed(2) : '0.00'}%</span>
+                                            </div>
+                                        )) : (
+                                            <div className="text-xs text-slate-500">No holdings data available</div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Performance Component */}
+                                <PortfolioPerformance portfolioId={selectedPortfolio.id} />
+                            </div>
+                        )}
 
                 {portfolios.length === 0 && !loading && (
                     <div className="text-sm text-center py-4" style={{ color: 'var(--color-text-secondary)' }}>

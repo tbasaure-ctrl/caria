@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Portfolio } from './widgets/Portfolio';
-// import { TopMovers } from './widgets/TopMovers'; // Removed - using mock data
 import { ModelOutlook } from './widgets/ModelOutlook';
 import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
 import { FearGreedIndex } from './widgets/FearGreedIndex';
@@ -9,13 +8,15 @@ import { ThesisIcon } from './Icons';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
 import { WidgetErrorBoundary } from './widgets/WidgetErrorBoundary';
 import { CommunityFeed } from './widgets/CommunityFeed';
-// import { RankingsWidget } from './widgets/RankingsWidget'; // Commented out - requires thesis_arena_threads table
+import { RankingsWidget } from './widgets/RankingsWidget';
 import { MonteCarloSimulation } from './widgets/MonteCarloSimulation';
 import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
 import { ThesisArena } from './widgets/ThesisArena';
-import { OnboardingTour } from './OnboardingTour';
 import { ResearchSection } from './ResearchSection';
+import { CrisisSimulator } from './widgets/CrisisSimulator';
+import { MacroSimulator } from './widgets/MacroSimulator';
+import { MindMap } from './widgets/MindMap';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
 const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void; id?: string }> = ({ onStartAnalysis, onEnterArena, id }) => (
@@ -109,10 +110,13 @@ interface RegimeData {
     confidence: number;
 }
 
+type DashboardTab = 'portfolio' | 'analysis' | 'research';
+
 export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     const [regimeData, setRegimeData] = useState<RegimeData | null>(null);
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
     const [showArena, setShowArena] = useState(false);
+    const [activeTab, setActiveTab] = useState<DashboardTab>('portfolio');
 
     useEffect(() => {
         const fetchRegimeData = async () => {
@@ -136,22 +140,37 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
         fetchRegimeData();
     }, []);
 
+    const tabs = [
+        { id: 'portfolio' as DashboardTab, label: 'Portfolio' },
+        { id: 'analysis' as DashboardTab, label: 'Analysis' },
+        { id: 'research' as DashboardTab, label: 'Research' },
+    ];
+
     return (
-        <main className="flex-1 overflow-y-auto p-6 max-w-[1920px] mx-auto"
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 max-w-[1600px] mx-auto"
             style={{ backgroundColor: 'var(--color-bg-primary)' }}>
-            {/* OnboardingTour removed */}
 
             {/* Dashboard Header */}
             <div className="mb-8 fade-in">
-                <h1 className="text-4xl font-bold mb-2"
-                    style={{ fontFamily: 'var(--font-display)', color: 'var(--color-cream)' }}>
+                <h1 className="text-3xl md:text-5xl font-black mb-2"
+                    style={{
+                        fontFamily: "'Instrument Serif', Georgia, serif",
+                        color: 'var(--color-cream)',
+                        letterSpacing: '-0.02em'
+                    }}>
                     Investment Dashboard
                 </h1>
-                <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)' }}>
+                <p className="text-base md:text-lg"
+                   style={{
+                       fontFamily: "'Crimson Pro', Georgia, serif",
+                       color: 'rgba(232, 230, 227, 0.6)',
+                       lineHeight: '1.6'
+                   }}>
                     Your comprehensive view of market insights and portfolio analysis
                 </p>
             </div>
 
+<<<<<<< HEAD
             {/* Global Market Bar - Full Width */}
             <div className="mb-6 fade-in delay-100">
                 <WidgetErrorBoundary><GlobalMarketBar id="market-bar-widget" /></WidgetErrorBoundary>
@@ -193,6 +212,101 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             {/* RESEARCH SECTION: Full Width Row */}
             <div className="mb-8 fade-in delay-600">
                 <WidgetErrorBoundary><ResearchSection /></WidgetErrorBoundary>
+=======
+            {/* Tab Navigation */}
+            <div className="mb-8 fade-in delay-100">
+                <div className="flex flex-wrap gap-3 md:gap-4 border-b pb-4"
+                     style={{ borderColor: 'rgba(74, 144, 226, 0.2)' }}>
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className="px-4 md:px-6 py-2 md:py-3 rounded-lg font-semibold text-sm md:text-base transition-all duration-300"
+                            style={{
+                                backgroundColor: activeTab === tab.id ? 'rgba(74, 144, 226, 0.2)' : 'transparent',
+                                color: activeTab === tab.id ? 'var(--color-blue-light)' : 'rgba(232, 230, 227, 0.6)',
+                                border: `1px solid ${activeTab === tab.id ? 'rgba(74, 144, 226, 0.4)' : 'transparent'}`,
+                                fontFamily: "'Crimson Pro', Georgia, serif",
+                            }}
+                            onMouseEnter={(e) => {
+                                if (activeTab !== tab.id) {
+                                    e.currentTarget.style.backgroundColor = 'rgba(74, 144, 226, 0.1)';
+                                    e.currentTarget.style.color = 'var(--color-cream)';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (activeTab !== tab.id) {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                    e.currentTarget.style.color = 'rgba(232, 230, 227, 0.6)';
+                                }
+                            }}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="fade-in delay-200">
+                {/* PORTFOLIO TAB - Market overview and portfolio management combined */}
+                {activeTab === 'portfolio' && (
+                    <div className="space-y-8">
+                        {/* Global Market Bar - Full Width */}
+                        <GlobalMarketBar id="market-bar-widget" />
+
+                        {/* Market Indicators Row */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                            <FearGreedIndex />
+                        </div>
+
+                        {/* Portfolio Management */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <Portfolio id="portfolio-widget" />
+                            <PortfolioAnalytics />
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <ModelPortfolioWidget />
+                            <MonteCarloSimulation />
+                        </div>
+                    </div>
+                )}
+
+                {/* ANALYSIS TAB - Valuation, thesis, and community */}
+                {activeTab === 'analysis' && (
+                    <div className="space-y-8">
+                        <StartAnalysisCTA
+                            onStartAnalysis={onStartAnalysis}
+                            onEnterArena={() => setShowArena(true)}
+                            id="analysis-cta-widget"
+                        />
+
+                        <ResearchSection />
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <CommunityFeed />
+                            <RankingsWidget />
+                        </div>
+                    </div>
+                )}
+
+                {/* RESEARCH TAB - Simulations and deep analysis */}
+                {activeTab === 'research' && (
+                    <div className="space-y-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <RegimeTestWidget />
+                            <MonteCarloSimulation />
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <CrisisSimulator />
+                            <MacroSimulator />
+                        </div>
+                        <MindMap />
+                    </div>
+                )}
+>>>>>>> efe767c2407a4ef7c83c015b1f4e7fd6f9729ae8
             </div>
 
             {/* Thesis Arena Modal */}

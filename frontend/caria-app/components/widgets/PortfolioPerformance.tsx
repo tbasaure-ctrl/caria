@@ -4,6 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 interface PerformanceData {
     portfolio_id: string;
@@ -49,8 +50,7 @@ export const PortfolioPerformance: React.FC<PortfolioPerformanceProps> = ({ port
 
             const data: PerformanceData[] = await response.json();
             setPerformance(data);
-        } catch (err: any) {
-            console.error('Error loading performance:', err);
+        } catch (err: unknown) {
             setError('Coming soon... Performance tracking is being enhanced with historical analysis.');
         } finally {
             setLoading(false);

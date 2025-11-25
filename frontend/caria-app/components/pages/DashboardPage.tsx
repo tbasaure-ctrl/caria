@@ -9,7 +9,7 @@ export const DashboardPage: React.FC = () => {
     const [isAnalysisOpen, setAnalysisOpen] = useState(false);
 
     return (
-        <div className="min-h-screen w-full bg-[var(--color-bg-primary)] p-4 md:p-6 lg:p-8">
+        <div className="min-h-screen w-full bg-[var(--color-bg-primary)]">
             <Dashboard onStartAnalysis={() => setAnalysisOpen(true)} />
 
             {/* Phase 2: Advanced Features Section */}
@@ -20,7 +20,6 @@ export const DashboardPage: React.FC = () => {
                     <AlphaStockPicker />
                 </div>
             </div>
-
             {isAnalysisOpen && <AnalysisTool onClose={() => setAnalysisOpen(false)} />}
         </div>
     );

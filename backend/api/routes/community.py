@@ -7,11 +7,13 @@ from __future__ import annotations
 
 from datetime import datetime
 import logging
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
+from psycopg2 import errors
+from psycopg2.extras import RealDictCursor
 
 from api.dependencies import get_current_user, get_optional_current_user, open_db_connection
 from caria.models.auth import UserInDB
@@ -61,6 +63,27 @@ class CommunityPostResponse(BaseModel):
     arena_community: Optional[str] = None
 
 
+def _row_to_post(row: dict[str, Any]) -> CommunityPostResponse:
+    return CommunityPostResponse(
+        id=str(row["id"]),
+        user_id=str(row["user_id"]),
+        username=row.get("username"),
+        title=row["title"],
+        thesis_preview=row["thesis_preview"],
+        full_thesis=row.get("full_thesis"),
+        ticker=row.get("ticker"),
+        analysis_merit_score=(row.get("analysis_merit_score") or 0.0),
+        upvotes=row.get("upvotes", 0),
+        user_has_voted=bool(row.get("user_has_voted")),
+        created_at=row["created_at"],
+        updated_at=row["updated_at"],
+        is_arena_post=bool(row.get("is_arena_post", False)),
+        arena_thread_id=str(row["arena_thread_id"]) if row.get("arena_thread_id") else None,
+        arena_round_id=str(row["arena_round_id"]) if row.get("arena_round_id") else None,
+        arena_community=row.get("arena_community"),
+    )
+
+
 class VoteRequest(BaseModel):
     vote_type: str = Field(default="up", pattern="^up$")  # Only UP votes per requirements
 
@@ -78,13 +101,10 @@ async def get_community_posts(
     Get community posts (top ideas).
     Shows title and preview only per user requirements.
     """
-    from psycopg2.extras import RealDictCursor
-
     conn = _get_db_connection()
 
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Build query
             query = """
                 SELECT 
                     cp.id,
@@ -119,7 +139,6 @@ async def get_community_posts(
                 search_pattern = f"%{search}%"
                 params.extend([search_pattern, search_pattern, search_pattern])
 
-            # Order by
             if sort_by == "upvotes":
                 query += " ORDER BY cp.upvotes DESC, cp.created_at DESC"
             elif sort_by == "created_at":
@@ -130,30 +149,65 @@ async def get_community_posts(
             query += " LIMIT %s OFFSET %s"
             params.extend([limit, offset])
 
-            cursor.execute(query, params)
-            rows = cursor.fetchall()
-
-            return [
-                CommunityPostResponse(
-                    id=str(row["id"]),
-                    user_id=str(row["user_id"]),
-                    username=row.get("username"),
-                    title=row["title"],
-                    thesis_preview=row["thesis_preview"],
-                    full_thesis=row.get("full_thesis"),
-                    ticker=row.get("ticker"),
-                    analysis_merit_score=row["analysis_merit_score"] or 0.0,
-                    upvotes=row["upvotes"],
-                    user_has_voted=row.get("user_has_voted", False),
-                    created_at=row["created_at"],
-                    updated_at=row["updated_at"],
-                    is_arena_post=row.get("is_arena_post", False),
-                    arena_thread_id=str(row["arena_thread_id"]) if row.get("arena_thread_id") else None,
-                    arena_round_id=str(row["arena_round_id"]) if row.get("arena_round_id") else None,
-                    arena_community=row.get("arena_community"),
+            try:
+                cursor.execute(query, params)
+                rows = cursor.fetchall()
+                return [_row_to_post(row) for row in rows]
+            except errors.UndefinedColumn as column_err:
+                LOGGER.warning(
+                    "Community posts query failed due to missing column. Falling back to legacy schema: %s",
+                    column_err,
                 )
-                for row in rows
-            ]
+                legacy_query = """
+                    SELECT 
+                        cp.id,
+                        cp.user_id,
+                        u.username,
+                        cp.title,
+                        cp.thesis_preview,
+                        cp.full_thesis,
+                        cp.ticker,
+                        cp.analysis_merit_score,
+                        cp.upvotes,
+                        cp.created_at,
+                        cp.updated_at,
+                        CASE WHEN cv.id IS NOT NULL THEN TRUE ELSE FALSE END as user_has_voted
+                    FROM community_posts cp
+                    LEFT JOIN users u ON cp.user_id = u.id
+                    LEFT JOIN community_votes cv ON cv.post_id = cp.id AND cv.user_id = %s
+                    WHERE cp.is_active = TRUE
+                """
+                legacy_params = [str(current_user.id) if current_user else None]
+                if ticker:
+                    legacy_query += " AND cp.ticker = %s"
+                    legacy_params.append(ticker.upper())
+                if search:
+                    legacy_query += " AND (cp.title ILIKE %s OR cp.thesis_preview ILIKE %s OR cp.ticker ILIKE %s)"
+                    search_pattern = f"%{search}%"
+                    legacy_params.extend([search_pattern, search_pattern, search_pattern])
+                if sort_by == "upvotes":
+                    legacy_query += " ORDER BY cp.upvotes DESC, cp.created_at DESC"
+                elif sort_by == "created_at":
+                    legacy_query += " ORDER BY cp.created_at DESC"
+                else:
+                    legacy_query += " ORDER BY cp.created_at DESC"
+                legacy_query += " LIMIT %s OFFSET %s"
+                legacy_params.extend([limit, offset])
+
+                cursor.execute(legacy_query, legacy_params)
+                rows = cursor.fetchall()
+                return [
+                    _row_to_post(
+                        {
+                            **row,
+                            "is_arena_post": False,
+                            "arena_thread_id": None,
+                            "arena_round_id": None,
+                            "arena_community": None,
+                        }
+                    )
+                    for row in rows
+                ]
     except Exception as exc:
         LOGGER.exception(
             "Error retrieving community posts: limit=%s offset=%s sort=%s ticker=%s search=%s",
@@ -180,8 +234,6 @@ async def create_community_post(
     Create a new community post (share investment thesis).
     Per user requirements: chat can offer to share thesis based on analysis merit.
     """
-    from psycopg2.extras import RealDictCursor
-
     conn = _get_db_connection()
 
     try:

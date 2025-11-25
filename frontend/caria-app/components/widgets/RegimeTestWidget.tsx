@@ -3,6 +3,7 @@ import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
 import { ProtectionVisualization } from './ProtectionVisualization';
 import { RegimeTestResults } from './RegimeTestResults';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 interface RegimeTestResponse {
     regime: string;
@@ -54,8 +55,7 @@ export const RegimeTestWidget: React.FC = () => {
 
             const data = await response.json();
             setResults(data);
-        } catch (err: any) {
-            console.error('Error testing regime:', err);
+        } catch (err: unknown) {
             setError('Coming soon... Regime testing features are being enhanced to provide better portfolio stress analysis.');
         } finally {
             setIsLoading(false);

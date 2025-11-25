@@ -76,17 +76,17 @@ export const ModelOutlook: React.FC<{ regimeData: RegimeData | null; isLoading: 
         const { label, value, color } = regimeConfig[currentRegimeKey];
 
         return (
-            <div className="text-center">
+            <div className="flex flex-col items-center">
                 <Gauge value={value} color={color} />
-                <p className="text-2xl font-bold mt-3 mb-2"
+                <p className="text-2xl font-bold mt-2 mb-1"
                    style={{fontFamily: 'var(--font-display)', color: 'var(--color-cream)'}}>
                     {label}
                 </p>
-                <p className="text-xs mt-3 px-4 italic"
+                <p className="text-xs mt-2 max-w-xs text-center italic"
                    style={{
                      fontFamily: 'var(--font-body)',
                      color: 'var(--color-text-muted)',
-                     lineHeight: '1.5'
+                     lineHeight: '1.4'
                    }}>
                     As of November 2025, this model achieves 78% accuracy in post-training validation.
                 </p>

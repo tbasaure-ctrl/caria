@@ -3,15 +3,16 @@ import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react'
 import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, createHolding, deleteHolding } from '../../services/apiService';
 import { ArrowUpIcon, ArrowDownIcon } from '../Icons';
 import { WidgetCard } from './WidgetCard';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 type AllocationData = { name: string; value: number; color: string };
 
 const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
     // ... (unchanged)
     const [activeSlice, setActiveSlice] = useState<AllocationData | null>(data.length > 0 ? data[0] : null);
-    const total = data.reduce((acc, item) => acc + item.value, 0);
+    const total = data.reduce((acc, item) => acc + (item.value || 0), 0);
 
-    if (!data.length || total <= 0) {
+    if (!data.length || total <= 0 || !Number.isFinite(total)) {
         return (
             <div className="flex flex-col gap-2 text-slate-400 text-sm">
                 <p>No allocation data yet.</p>
@@ -104,23 +105,27 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[] }> = ({ data })
     const padding = { top: 20, right: 10, bottom: 20, left: 10 };
 
     const { dataPoints, path, areaPath, lastValue, valueChange, percentChange, isPositive } = useMemo(() => {
-        if (data.length === 0) return { dataPoints: [], path: '', areaPath: '', lastValue: 0, valueChange: 0, percentChange: 0, isPositive: true };
+        if (!data || data.length === 0) return { dataPoints: [], path: '', areaPath: '', lastValue: 0, valueChange: 0, percentChange: 0, isPositive: true };
 
-        const maxValue = Math.max(...data.map(p => p.value));
-        const minValue = Math.min(...data.map(p => p.value));
+        // Filter out invalid data points
+        const validData = data.filter(p => Number.isFinite(p.value));
+        if (validData.length === 0) return { dataPoints: [], path: '', areaPath: '', lastValue: 0, valueChange: 0, percentChange: 0, isPositive: true };
+
+        const maxValue = Math.max(...validData.map(p => p.value));
+        const minValue = Math.min(...validData.map(p => p.value));
         const valueRange = maxValue - minValue > 0 ? maxValue - minValue : 1;
 
-        const points: MappedPoint[] = data.map((point, i) => {
-            const x = (i / (data.length - 1)) * (width - padding.left - padding.right) + padding.left;
+        const points: MappedPoint[] = validData.map((point, i) => {
+            const x = (i / (validData.length - 1)) * (width - padding.left - padding.right) + padding.left;
             const y = height - padding.bottom - ((point.value - minValue) / valueRange * (height - padding.top - padding.bottom));
-            return { ...point, x, y };
+            return { ...point, x: Number.isFinite(x) ? x : 0, y: Number.isFinite(y) ? y : 0 };
         });
 
         const pathD = points.map((p, i) => (i === 0 ? 'M' : 'L') + `${p.x},${p.y}`).join(' ');
         const areaPathD = `M ${padding.left},${height - padding.bottom} ` + pathD + ` L ${width - padding.right},${height - padding.bottom} Z`;
 
-        const startValue = data[0].value;
-        const endValue = data[data.length - 1].value;
+        const startValue = validData[0].value;
+        const endValue = validData[validData.length - 1].value;
         const valChange = endValue - startValue;
         const pctChange = startValue !== 0 ? (valChange / startValue) * 100 : 0;
 
@@ -148,41 +153,89 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[] }> = ({ data })
 
     const handleMouseLeave = () => setHoveredPoint(null);
 
+    const chartColor = isPositive ? '#10b981' : '#ef4444'; // green or red like Yahoo Finance
+    const gridColor = 'rgba(232, 230, 227, 0.1)';
+
     return (
         <div>
             <div className="mb-4">
                 <p className="text-3xl font-bold mb-1"
                     style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-cream)' }}>
-                    ${lastValue.toLocaleString()}
+                    ${lastValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
                 <div className="flex items-center gap-2 text-sm"
                     style={{
-                        color: isPositive ? 'var(--color-accent)' : 'var(--color-primary)',
+                        color: chartColor,
                         fontFamily: 'var(--font-mono)'
                     }}>
                     {isPositive ? <ArrowUpIcon className="w-4 h-4" /> : <ArrowDownIcon className="w-4 h-4" />}
-                    <span className="font-semibold">${valueChange.toFixed(2)}</span>
+                    <span className="font-semibold">${Math.abs(valueChange).toFixed(2)}</span>
                     <span className="font-semibold">({percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%)</span>
                     <span style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-body)' }}>
-                        {data.length} data points
+                        All Time
                     </span>
                 </div>
             </div>
-            <div className="relative">
+            <div className="relative" style={{ backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '16px' }}>
                 <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full h-auto cursor-crosshair" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
                     <defs>
-                        <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style={{ stopColor: isPositive ? '#3A5A40' : '#5A2A27', stopOpacity: 0.3 }} />
-                            <stop offset="100%" style={{ stopColor: isPositive ? '#3A5A40' : '#5A2A27', stopOpacity: 0 }} />
+                        <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style={{ stopColor: chartColor, stopOpacity: 0.4 }} />
+                            <stop offset="100%" style={{ stopColor: chartColor, stopOpacity: 0 }} />
                         </linearGradient>
                     </defs>
-                    <path d={areaPath} fill="url(#gradient)" />
-                    <path d={path} fill="none" stroke={isPositive ? '#3A5A40' : '#5A2A27'} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+
+                    {/* Horizontal gridlines */}
+                    {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+                        const y = padding.top + (height - padding.top - padding.bottom) * ratio;
+                        return (
+                            <line
+                                key={ratio}
+                                x1={padding.left}
+                                y1={y}
+                                x2={width - padding.right}
+                                y2={y}
+                                stroke={gridColor}
+                                strokeWidth="1"
+                                strokeDasharray="2,2"
+                            />
+                        );
+                    })}
+
+                    {/* Area fill */}
+                    <path d={areaPath} fill="url(#areaGradient)" />
+
+                    {/* Main line with smooth curve */}
+                    <path
+                        d={path}
+                        fill="none"
+                        stroke={chartColor}
+                        strokeWidth="3"
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                        style={{ filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.3))' }}
+                    />
 
                     {hoveredPoint && (
                         <g>
-                            <line x1={hoveredPoint.x} y1={height} x2={hoveredPoint.x} y2={0} stroke="var(--color-text-muted)" strokeWidth="1" strokeDasharray="3,3" />
-                            <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="5" fill={isPositive ? '#3A5A40' : '#5A2A27'} stroke="var(--color-cream)" strokeWidth="2" />
+                            <line
+                                x1={hoveredPoint.x}
+                                y1={height - padding.bottom}
+                                x2={hoveredPoint.x}
+                                y2={padding.top}
+                                stroke="rgba(232, 230, 227, 0.5)"
+                                strokeWidth="1"
+                                strokeDasharray="4,4"
+                            />
+                            <circle
+                                cx={hoveredPoint.x}
+                                cy={hoveredPoint.y}
+                                r="6"
+                                fill={chartColor}
+                                stroke="var(--color-cream)"
+                                strokeWidth="2"
+                                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+                            />
                         </g>
                     )}
                 </svg>
@@ -277,18 +330,19 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
 
     const loadPortfolio = useCallback(
         async (showSpinner = true) => {
+            // Always start loading state to prevent hook mismatches
+            if (showSpinner) {
+                setLoading(true);
+            } else {
+                setIsRefreshing(true);
+            }
+            setError(null); // Reset error state
+
             try {
-                setError(null);
-                if (showSpinner) {
-                    setLoading(true);
-                } else {
-                    setIsRefreshing(true);
-                }
                 const data = await fetchHoldingsWithPrices();
                 setPortfolioData(data);
-            } catch (err: any) {
-                console.error('Error fetching portfolio:', err);
-                setError(err?.message || 'No pudimos cargar tu portfolio. Intenta nuevamente.');
+            } catch (err: unknown) {
+                setError(getErrorMessage(err) || 'No pudimos cargar tu portfolio. Intenta nuevamente.');
             } finally {
                 if (showSpinner) {
                     setLoading(false);
@@ -311,31 +365,6 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             setShowForm(true);
         }
     }, [portfolioData]);
-
-    if (loading) {
-        return (
-            <WidgetCard
-                id={id}
-                title="PORTFOLIO SNAPSHOT"
-                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
-            >
-                <div className="text-slate-400 text-sm">Cargando portfolio...</div>
-            </WidgetCard>
-        );
-    }
-
-    if (error) {
-        return (
-            <WidgetCard
-                id={id}
-                title="PORTFOLIO SNAPSHOT"
-                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
-            >
-                <div className="text-red-400 text-sm">{error}</div>
-                <div className="text-slate-500 text-xs mt-1">Inicia sesión para ver tu portfolio</div>
-            </WidgetCard>
-        );
-    }
 
     const hasHoldings = Boolean(portfolioData && portfolioData.holdings.length > 0);
 
@@ -432,6 +461,32 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         }
     }, [portfolioData, sortOption]);
 
+    // Early returns MUST happen AFTER all hooks are declared
+    if (loading) {
+        return (
+            <WidgetCard
+                id={id}
+                title="PORTFOLIO SNAPSHOT"
+                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
+            >
+                <div className="text-slate-400 text-sm">Cargando portfolio...</div>
+            </WidgetCard>
+        );
+    }
+
+    if (error) {
+        return (
+            <WidgetCard
+                id={id}
+                title="PORTFOLIO SNAPSHOT"
+                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
+            >
+                <div className="text-red-400 text-sm">{error}</div>
+                <div className="text-slate-500 text-xs mt-1">Inicia sesión para ver tu portfolio</div>
+            </WidgetCard>
+        );
+    }
+
     const handleAddHolding = async (event: React.FormEvent) => {
         event.preventDefault();
         setFormError(null);
@@ -465,25 +520,23 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             setFormData(createDefaultFormState());
             setShowForm(false);
             await loadPortfolio(false);
-        } catch (err: any) {
-            console.error('Error creating holding:', err);
-            setFormError(err?.message || 'No se pudo guardar la posición.');
+        } catch (err: unknown) {
+            setFormError(getErrorMessage(err) || 'Could not save position.');
         } finally {
             setActionLoading(false);
         }
     };
 
     const handleDeleteHolding = async (id: string) => {
-        if (!window.confirm('¿Eliminar esta posición?')) {
+        if (!window.confirm('Delete this position?')) {
             return;
         }
         try {
             setActionLoading(true);
             await deleteHolding(id);
             await loadPortfolio(false);
-        } catch (err: any) {
-            console.error('Error deleting holding:', err);
-            setFormError(err?.message || 'No se pudo eliminar la posición.');
+        } catch (err: unknown) {
+            setFormError(getErrorMessage(err) || 'No se pudo eliminar la posición.');
         } finally {
             setActionLoading(false);
         }
@@ -508,19 +561,19 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                     <>
                         <div className="space-y-2">
                             <div className="flex justify-between text-sm">
-                                <span className="text-slate-300">Valor Total:</span>
+                                <span className="text-slate-300">Total Value:</span>
                                 <span className="font-mono text-slate-100">
                                     ${portfolioData.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-slate-300">Costo Total:</span>
+                                <span className="text-slate-300">Total Cost:</span>
                                 <span className="font-mono text-slate-300">
                                     ${portfolioData.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </div>
                             <div className={`flex justify-between text-sm ${portfolioData.total_gain_loss >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                                <span>Ganancia/Pérdida:</span>
+                                <span>Gain/Loss:</span>
                                 <span className="font-mono">
                                     ${portfolioData.total_gain_loss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({portfolioData.total_gain_loss_pct >= 0 ? '+' : ''}{portfolioData.total_gain_loss_pct.toFixed(2)}%)
                                 </span>
@@ -557,7 +610,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                             </>
                         ) : (
                             <div className="rounded-lg border border-dashed border-slate-700 p-4 text-sm text-slate-400">
-                                Tu portfolio está vacío. Agrega tu primera posición para comenzar a trackear el desempeño.
+                                Your portfolio is empty. Add your first position to start tracking performance.
                             </div>
                         )}
                     </>
@@ -567,9 +620,9 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                     <div className="flex flex-wrap items-center gap-4 justify-between">
                         <div>
                             <h4 className="text-sm font-semibold" style={{ color: 'var(--color-cream)' }}>
-                                Gestión de posiciones
+                                Position Management
                             </h4>
-                            <p className="text-xs text-slate-500">Registra compras, ventas y notas clave.</p>
+                            <p className="text-xs text-slate-500">Track purchases, sales, and key notes.</p>
                         </div>
                         <div className="flex bg-slate-900/70 rounded-md overflow-hidden">
                             <button
@@ -599,7 +652,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                 color: 'var(--color-cream)',
                             }}
                         >
-                            {showForm ? 'Cerrar formulario' : 'Agregar posición'}
+                            {showForm ? 'Close Form' : 'Add Position'}
                         </button>
                     </div>
 
@@ -666,7 +719,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                     disabled={actionLoading}
                                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded transition-colors disabled:opacity-50"
                                 >
-                                    Guardar posición
+                                    Save Position
                                 </button>
                                 <button
                                     type="button"

@@ -1,0 +1,56 @@
+[33mcommit e8d7ad63764ff495d737b521cf0f6d3d7ebdaaef[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix/hero-background-size[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Merge: 0371251 9c6292c
+Author: tbasaure-ctrl <tbasaure@icloud.com>
+Date:   Mon Nov 24 14:21:39 2025 -0300
+
+    Fix React error #310: Add array guards, API validation, NaN handling, and timeout handlers
+    
+    - Add array guards (array || []) before all .map() operations in widgets
+    - Create API response validation utilities (apiValidation.ts)
+    - Add NaN handling in ValuationTool, PortfolioAnalytics, ModelOutlook, RegimeTestResults
+    - Add 30-second timeout handlers to prevent infinite loading states
+    - Fix Hero component structure and responsive background sizing
+    - Enhance SafeWidget error messages with reload button
+    - Remove debug console.log statements (keep console.error)
+    - Fix RegimeTestWidget (crisis simulator) with guards and timeouts
+    - Validate all API responses before rendering
+    - Fix portfolio loading loops with proper dependency arrays
+    
+    All fixes prevent React error #310 and improve system stability.
+
+[33mcommit 037125122d6826a38e23e7db0d2fd3fd55b1252a[m
+Author: tbasaure-ctrl <tbasaure@icloud.com>
+Date:   Mon Nov 24 14:12:54 2025 -0300
+
+    Fix React error #310 and system stability issues
+    
+    - Add array guards (array || []) before all .map() operations
+    - Create API response validation utilities (apiValidation.ts)
+    - Add NaN handling in ValuationTool, PortfolioAnalytics, ModelOutlook, RegimeTestResults
+    - Add 30-second timeout handlers to prevent infinite loading states
+    - Fix Hero component structure and responsive background sizing
+    - Enhance SafeWidget error messages with reload button
+    - Remove debug console.log statements (keep console.error)
+    - Fix RegimeTestWidget (crisis simulator) with guards and timeouts
+    - Validate all API responses before rendering
+    - Fix portfolio loading loops with proper dependency arrays
+    
+    All fixes prevent React error #310 and improve system stability.
+
+[33mcommit 9c6292cbbcc89883d5ad3f4e3147f788c0b2f3b2[m
+Author: tbasaure-ctrl <tbasaure@icloud.com>
+Date:   Mon Nov 24 13:15:21 2025 -0300
+
+    fix: Refine Hero layout with proper centering and Tailwind animations
+
+[33mcommit 6fe2b6631a799f9facf2023862cfe1f91fdb9653[m
+Author: tbasaure-ctrl <tbasaure@icloud.com>
+Date:   Mon Nov 24 12:31:13 2025 -0300
+
+    fix: Add explicit @source directives to index.css to ensure Tailwind scans components
+
+[33mcommit 993cd410c425e36793784049fe1d9f325ac6df54[m
+Author: tbasaure-ctrl <tbasaure@icloud.com>
+Date:   Mon Nov 24 12:10:58 2025 -0300
+
+    fix: Switch to @tailwindcss/vite plugin for reliable CSS loading

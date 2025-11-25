@@ -11,6 +11,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from psycopg2 import errors
 from psycopg2.extras import RealDictCursor
 
 from api.dependencies import get_current_user, get_optional_current_user, open_db_connection
@@ -151,6 +152,12 @@ async def get_community_rankings(
                 hot_theses=hot_theses,
                 survivors=survivors,
             )
+    except errors.UndefinedColumn as column_err:
+        LOGGER.warning(
+            "Community rankings query failed due to missing column; returning empty payload: %s",
+            column_err,
+        )
+        return RankingsResponse(top_communities=[], hot_theses=[], survivors=[])
     except Exception as e:
         LOGGER.exception("Error getting rankings for user=%s", getattr(current_user, "id", None))
         raise HTTPException(

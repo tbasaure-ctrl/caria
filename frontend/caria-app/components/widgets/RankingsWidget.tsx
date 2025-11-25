@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { WidgetCard } from './WidgetCard';
 import { fetchCommunityRankings, CommunityRankings } from '../../services/communityService';
+import { getErrorMessage } from '../../src/utils/errorHandling';
 
 const COMMUNITY_LABELS: Record<string, string> = {
     value_investor: 'Value Investor',
@@ -61,11 +62,10 @@ export const RankingsWidget: React.FC = () => {
                 const data = await fetchCommunityRankings(signal);
                 setRankings(data);
                 setStatusMessage(null);
-            } catch (err: any) {
-                if (err?.name === 'AbortError') return;
-                console.error('Error loading rankings:', err);
+            } catch (err: unknown) {
+                if (err instanceof Error && err.name === 'AbortError') return;
                 hydrateFromCache();
-                const message = err?.message || '';
+                const message = getErrorMessage(err);
                 if (message.includes('401') || message.includes('403')) {
                     setError('Please log in to view community rankings');
                 } else if (message.includes('connect')) {
@@ -135,7 +135,17 @@ export const RankingsWidget: React.FC = () => {
     }
 
     if (!rankings) {
-        return null;
+        return (
+            <WidgetCard
+                title="Community Rankings"
+                id="rankings-widget"
+                tooltip="Rankings de la comunidad: comunidades más activas, tesis más populares, y tesis con mayor convicción sostenida."
+            >
+                <div className="text-center h-[124px] flex items-center justify-center">
+                    <p className="text-slate-500">No rankings available</p>
+                </div>
+            </WidgetCard>
+        );
     }
 
     return (

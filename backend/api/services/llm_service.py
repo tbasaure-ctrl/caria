@@ -83,12 +83,6 @@ class LLMService:
         messages.append({"role": "user", "content": prompt})
 
         try:
-            # Handle full URL vs base URL
-            # If base_url ends with /chat/completions, use it directly.
-            # If it looks like a base (e.g. .../v1), append /chat/completions if missing?
-            # User provided: https://api.groq.com/openai/v1/chat/completions
-            # We'll use it as is if it looks complete.
-            
             # Normalize URL: strip trailing slashes, then append /chat/completions if missing
             url = self.base_url.rstrip("/")
             if "chat/completions" not in url:

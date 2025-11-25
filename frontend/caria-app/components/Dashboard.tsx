@@ -109,13 +109,13 @@ interface RegimeData {
     confidence: number;
 }
 
-type DashboardTab = 'overview' | 'portfolio' | 'analysis' | 'research' | 'community';
+type DashboardTab = 'portfolio' | 'analysis' | 'research';
 
 export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     const [regimeData, setRegimeData] = useState<RegimeData | null>(null);
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
     const [showArena, setShowArena] = useState(false);
-    const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
+    const [activeTab, setActiveTab] = useState<DashboardTab>('portfolio');
 
     useEffect(() => {
         const fetchRegimeData = async () => {
@@ -140,11 +140,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     }, []);
 
     const tabs = [
-        { id: 'overview' as DashboardTab, label: 'Overview' },
         { id: 'portfolio' as DashboardTab, label: 'Portfolio' },
         { id: 'analysis' as DashboardTab, label: 'Analysis' },
         { id: 'research' as DashboardTab, label: 'Research' },
-        { id: 'community' as DashboardTab, label: 'Community' },
     ];
 
     return (
@@ -207,74 +205,61 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
             {/* Tab Content */}
             <div className="fade-in delay-200">
-                {/* OVERVIEW TAB - Default view with market data and portfolio snapshot */}
-                {activeTab === 'overview' && (
-                    <div className="space-y-6">
+                {/* PORTFOLIO TAB - Market overview and portfolio management combined */}
+                {activeTab === 'portfolio' && (
+                    <div className="space-y-8">
                         {/* Global Market Bar - Full Width */}
                         <GlobalMarketBar id="market-bar-widget" />
 
                         {/* Market Indicators Row */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
                             <FearGreedIndex />
                         </div>
 
-                        {/* Portfolio Snapshot */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Portfolio Management */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <Portfolio id="portfolio-widget" />
                             <PortfolioAnalytics />
                         </div>
-                    </div>
-                )}
 
-                {/* PORTFOLIO TAB - Detailed portfolio management */}
-                {activeTab === 'portfolio' && (
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <Portfolio id="portfolio-widget" />
-                            <PortfolioAnalytics />
-                        </div>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <ModelPortfolioWidget />
                             <MonteCarloSimulation />
                         </div>
                     </div>
                 )}
 
-                {/* ANALYSIS TAB - Investment analysis tools */}
+                {/* ANALYSIS TAB - Valuation, thesis, and community */}
                 {activeTab === 'analysis' && (
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                         <StartAnalysisCTA
                             onStartAnalysis={onStartAnalysis}
                             onEnterArena={() => setShowArena(true)}
                             id="analysis-cta-widget"
                         />
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                        <ResearchSection />
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <CommunityFeed />
+                            <RankingsWidget />
+                        </div>
+                    </div>
+                )}
+
+                {/* RESEARCH TAB - Simulations and deep analysis */}
+                {activeTab === 'research' && (
+                    <div className="space-y-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <RegimeTestWidget />
                             <MonteCarloSimulation />
                         </div>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <CrisisSimulator />
                             <MacroSimulator />
                         </div>
                         <MindMap />
-                    </div>
-                )}
-
-                {/* RESEARCH TAB - Educational content */}
-                {activeTab === 'research' && (
-                    <div className="space-y-6">
-                        <ResearchSection />
-                    </div>
-                )}
-
-                {/* COMMUNITY TAB - Social features */}
-                {activeTab === 'community' && (
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <CommunityFeed />
-                            <RankingsWidget />
-                        </div>
                     </div>
                 )}
             </div>

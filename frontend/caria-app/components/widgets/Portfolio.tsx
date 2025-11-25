@@ -153,41 +153,89 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[] }> = ({ data })
 
     const handleMouseLeave = () => setHoveredPoint(null);
 
+    const chartColor = isPositive ? '#10b981' : '#ef4444'; // green or red like Yahoo Finance
+    const gridColor = 'rgba(232, 230, 227, 0.1)';
+
     return (
         <div>
             <div className="mb-4">
                 <p className="text-3xl font-bold mb-1"
                     style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-cream)' }}>
-                    ${lastValue.toLocaleString()}
+                    ${lastValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
                 <div className="flex items-center gap-2 text-sm"
                     style={{
-                        color: isPositive ? 'var(--color-accent)' : 'var(--color-primary)',
+                        color: chartColor,
                         fontFamily: 'var(--font-mono)'
                     }}>
                     {isPositive ? <ArrowUpIcon className="w-4 h-4" /> : <ArrowDownIcon className="w-4 h-4" />}
-                    <span className="font-semibold">${valueChange.toFixed(2)}</span>
+                    <span className="font-semibold">${Math.abs(valueChange).toFixed(2)}</span>
                     <span className="font-semibold">({percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%)</span>
                     <span style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-body)' }}>
-                        {data.length} data points
+                        All Time
                     </span>
                 </div>
             </div>
-            <div className="relative">
+            <div className="relative" style={{ backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '16px' }}>
                 <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full h-auto cursor-crosshair" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
                     <defs>
-                        <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style={{ stopColor: isPositive ? '#3A5A40' : '#5A2A27', stopOpacity: 0.3 }} />
-                            <stop offset="100%" style={{ stopColor: isPositive ? '#3A5A40' : '#5A2A27', stopOpacity: 0 }} />
+                        <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style={{ stopColor: chartColor, stopOpacity: 0.4 }} />
+                            <stop offset="100%" style={{ stopColor: chartColor, stopOpacity: 0 }} />
                         </linearGradient>
                     </defs>
-                    <path d={areaPath} fill="url(#gradient)" />
-                    <path d={path} fill="none" stroke={isPositive ? '#3A5A40' : '#5A2A27'} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+
+                    {/* Horizontal gridlines */}
+                    {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+                        const y = padding.top + (height - padding.top - padding.bottom) * ratio;
+                        return (
+                            <line
+                                key={ratio}
+                                x1={padding.left}
+                                y1={y}
+                                x2={width - padding.right}
+                                y2={y}
+                                stroke={gridColor}
+                                strokeWidth="1"
+                                strokeDasharray="2,2"
+                            />
+                        );
+                    })}
+
+                    {/* Area fill */}
+                    <path d={areaPath} fill="url(#areaGradient)" />
+
+                    {/* Main line with smooth curve */}
+                    <path
+                        d={path}
+                        fill="none"
+                        stroke={chartColor}
+                        strokeWidth="3"
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                        style={{ filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.3))' }}
+                    />
 
                     {hoveredPoint && (
                         <g>
-                            <line x1={hoveredPoint.x} y1={height} x2={hoveredPoint.x} y2={0} stroke="var(--color-text-muted)" strokeWidth="1" strokeDasharray="3,3" />
-                            <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="5" fill={isPositive ? '#3A5A40' : '#5A2A27'} stroke="var(--color-cream)" strokeWidth="2" />
+                            <line
+                                x1={hoveredPoint.x}
+                                y1={height - padding.bottom}
+                                x2={hoveredPoint.x}
+                                y2={padding.top}
+                                stroke="rgba(232, 230, 227, 0.5)"
+                                strokeWidth="1"
+                                strokeDasharray="4,4"
+                            />
+                            <circle
+                                cx={hoveredPoint.x}
+                                cy={hoveredPoint.y}
+                                r="6"
+                                fill={chartColor}
+                                stroke="var(--color-cream)"
+                                strokeWidth="2"
+                                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+                            />
                         </g>
                     )}
                 </svg>
@@ -473,14 +521,14 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             setShowForm(false);
             await loadPortfolio(false);
         } catch (err: unknown) {
-            setFormError(getErrorMessage(err) || 'No se pudo guardar la posición.');
+            setFormError(getErrorMessage(err) || 'Could not save position.');
         } finally {
             setActionLoading(false);
         }
     };
 
     const handleDeleteHolding = async (id: string) => {
-        if (!window.confirm('¿Eliminar esta posición?')) {
+        if (!window.confirm('Delete this position?')) {
             return;
         }
         try {
@@ -671,7 +719,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                     disabled={actionLoading}
                                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded transition-colors disabled:opacity-50"
                                 >
-                                    Guardar posición
+                                    Save Position
                                 </button>
                                 <button
                                     type="button"

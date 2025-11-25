@@ -72,7 +72,7 @@ export const RedditSentiment: React.FC = () => {
                     fontFamily: 'var(--font-display)',
                     color: 'var(--color-cream)'
                 }}>
-                    🔥 Reddit Hot Stocks
+                    Trending on Reddit
                 </h2>
                 <button
                     onClick={fetchRedditData}

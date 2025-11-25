@@ -18,36 +18,13 @@ import { WeeklyContent } from './widgets/WeeklyContent';
 export const ResearchSection: React.FC = () => {
     return (
         <div className="fade-in">
-            {/* Section Header */}
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold mb-2"
-                    style={{
-                        fontFamily: 'var(--font-display)',
-                        color: 'var(--color-cream)'
-                    }}>
-                    Research & Analysis
-                </h2>
-                <p className="text-sm mb-4"
-                   style={{
-                       fontFamily: 'var(--font-body)',
-                       color: 'var(--color-text-secondary)'
-                   }}>
-                    Tools and insights to help you make informed investment decisions
-                </p>
-                <div className="h-px mb-6"
-                     style={{
-                         background: 'linear-gradient(to right, transparent, var(--color-bg-tertiary), transparent)',
-                         opacity: 0.5
-                     }}></div>
-            </div>
-
             {/* Research Widgets - Grid Layout */}
-            <div className="space-y-6">
+            <div className="space-y-8">
                 {/* Valuation Tool - Full Width */}
                 <ValuationTool />
 
                 {/* Two Column Layout for Community Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <RedditSentiment />
                     <Resources />
                 </div>

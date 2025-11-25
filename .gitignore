@@ -96,6 +96,20 @@ secrets/
 *.pem
 firebase_service_account.json
 
+# Migration scripts with hardcoded secrets (should never be committed)
+migrate_wisdom_to_neon.py
+run_migration_with_progress.py
+run_migration_with_openai.py
+MIGRATION_STATUS.md
+migration_log.txt
+test_neon_connection.py
+setup_wisdom_table_neon.py
+check_and_fix_schema.py
+find_wisdom_data.py
+revert_to_openai_schema.py
+update_table_for_sentence_transformers.py
+MIGRATE_WISDOM_README.md
+
 # Data (opcional - descomenta si no quieres subir datos)
 # data/
 # *.parquet

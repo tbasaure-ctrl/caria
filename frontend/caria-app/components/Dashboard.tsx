@@ -6,7 +6,6 @@ import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
 import { FearGreedIndex } from './widgets/FearGreedIndex';
 import { ThesisIcon } from './Icons';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
-import { WidgetErrorBoundary } from './widgets/WidgetErrorBoundary';
 import { CommunityFeed } from './widgets/CommunityFeed';
 import { RankingsWidget } from './widgets/RankingsWidget';
 import { MonteCarloSimulation } from './widgets/MonteCarloSimulation';
@@ -211,23 +210,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {activeTab === 'portfolio' && (
                     <div className="space-y-8">
                         {/* Global Market Bar - Full Width */}
-                        <WidgetErrorBoundary><GlobalMarketBar id="market-bar-widget" /></WidgetErrorBoundary>
+                        <GlobalMarketBar id="market-bar-widget" />
 
                         {/* Market Indicators Row */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <WidgetErrorBoundary><ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} /></WidgetErrorBoundary>
-                            <WidgetErrorBoundary><FearGreedIndex /></WidgetErrorBoundary>
+                            <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                            <FearGreedIndex />
                         </div>
 
                         {/* Portfolio Management */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <WidgetErrorBoundary><Portfolio id="portfolio-widget" /></WidgetErrorBoundary>
-                            <WidgetErrorBoundary><PortfolioAnalytics /></WidgetErrorBoundary>
+                            <Portfolio id="portfolio-widget" />
+                            <PortfolioAnalytics />
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <WidgetErrorBoundary><ModelPortfolioWidget /></WidgetErrorBoundary>
-                            <WidgetErrorBoundary><MonteCarloSimulation /></WidgetErrorBoundary>
+                            <ModelPortfolioWidget />
+                            <MonteCarloSimulation />
                         </div>
                     </div>
                 )}
@@ -235,16 +234,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {/* ANALYSIS TAB - Valuation, thesis, and community */}
                 {activeTab === 'analysis' && (
                     <div className="space-y-8">
-                        <WidgetErrorBoundary><StartAnalysisCTA
+                        <StartAnalysisCTA
                             onStartAnalysis={onStartAnalysis}
                             onEnterArena={() => setShowArena(true)}
                             id="analysis-cta-widget"
-                        /></WidgetErrorBoundary>
+                        />
 
-                        <WidgetErrorBoundary><ResearchSection /></WidgetErrorBoundary>
+                        <ResearchSection />
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <WidgetErrorBoundary><CommunityFeed /></WidgetErrorBoundary>
+                            <CommunityFeed />
                             {/* <RankingsWidget /> */}
                         </div>
                     </div>
@@ -254,15 +253,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {activeTab === 'research' && (
                     <div className="space-y-8">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <WidgetErrorBoundary><RegimeTestWidget /></WidgetErrorBoundary>
-                            <WidgetErrorBoundary><MonteCarloSimulation /></WidgetErrorBoundary>
+                            <RegimeTestWidget />
+                            <MonteCarloSimulation />
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <WidgetErrorBoundary><CrisisSimulator /></WidgetErrorBoundary>
-                            <WidgetErrorBoundary><MacroSimulator /></WidgetErrorBoundary>
+                            <CrisisSimulator />
+                            <MacroSimulator />
                         </div>
                         {/* Replaced MindMap with AlphaStockPicker */}
-                        <WidgetErrorBoundary><AlphaStockPicker /></WidgetErrorBoundary>
+                        <AlphaStockPicker />
                     </div>
                 )}
             </div>

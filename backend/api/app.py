@@ -357,6 +357,8 @@ app.include_router(debug_router) # LLM Debug endpoint
 app.include_router(scoring_router)
 app.include_router(score_public_router)
 app.include_router(screener_router)
+from api.routes.alpha_picks import router as alpha_picks_router
+app.include_router(alpha_picks_router)
 
 
 # Mount SocketIO app for WebSocket support per audit document

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Dashboard } from '../Dashboard';
 import { AnalysisTool } from '../AnalysisTool';
 import { CrisisSimulator } from '../widgets/CrisisSimulator';
-import { MindMap } from '../widgets/MindMap';
+import { AlphaStockPicker } from '../widgets/AlphaStockPicker';
 import { MacroSimulator } from '../widgets/MacroSimulator';
 
 export const DashboardPage: React.FC = () => {
@@ -17,7 +17,7 @@ export const DashboardPage: React.FC = () => {
                 <CrisisSimulator />
                 <MacroSimulator />
                 <div className="xl:col-span-2">
-                    <MindMap />
+                    <AlphaStockPicker />
                 </div>
             </div>
 

@@ -7,6 +7,7 @@ import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
 import { FearGreedIndex } from './widgets/FearGreedIndex';
 import { ThesisIcon } from './Icons';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
+import { WidgetErrorBoundary } from './widgets/WidgetErrorBoundary';
 import { CommunityFeed } from './widgets/CommunityFeed';
 // import { RankingsWidget } from './widgets/RankingsWidget'; // Commented out - requires thesis_arena_threads table
 import { MonteCarloSimulation } from './widgets/MonteCarloSimulation';
@@ -153,45 +154,45 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
             {/* Global Market Bar - Full Width */}
             <div className="mb-6 fade-in delay-100">
-                <GlobalMarketBar id="market-bar-widget" />
+                <WidgetErrorBoundary><GlobalMarketBar id="market-bar-widget" /></WidgetErrorBoundary>
             </div>
 
             {/* TOP ROW: Market Indicators - Full Width */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 fade-in delay-200">
-                <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
-                <FearGreedIndex />
+                <WidgetErrorBoundary><ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} /></WidgetErrorBoundary>
+                <WidgetErrorBoundary><FearGreedIndex /></WidgetErrorBoundary>
             </div>
 
             {/* MAIN CONTENT: 3 Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 {/* LEFT COLUMN: Portfolio Management */}
                 <div className="space-y-6 fade-in delay-300">
-                    <Portfolio id="portfolio-widget" />
-                    <PortfolioAnalytics />
+                    <WidgetErrorBoundary><Portfolio id="portfolio-widget" /></WidgetErrorBoundary>
+                    <WidgetErrorBoundary><PortfolioAnalytics /></WidgetErrorBoundary>
                 </div>
 
                 {/* CENTER COLUMN: Analysis & Simulation */}
                 <div className="space-y-6 fade-in delay-400">
-                    <StartAnalysisCTA
+                    <WidgetErrorBoundary><StartAnalysisCTA
                         onStartAnalysis={onStartAnalysis}
                         onEnterArena={() => setShowArena(true)}
                         id="analysis-cta-widget"
-                    />
-                    <ModelPortfolioWidget />
-                    <RegimeTestWidget />
-                    <MonteCarloSimulation />
+                    /></WidgetErrorBoundary>
+                    <WidgetErrorBoundary><ModelPortfolioWidget /></WidgetErrorBoundary>
+                    <WidgetErrorBoundary><RegimeTestWidget /></WidgetErrorBoundary>
+                    <WidgetErrorBoundary><MonteCarloSimulation /></WidgetErrorBoundary>
                 </div>
 
                 {/* RIGHT COLUMN: Community & Rankings */}
                 <div className="space-y-6 fade-in delay-500">
-                    <CommunityFeed />
+                    <WidgetErrorBoundary><CommunityFeed /></WidgetErrorBoundary>
                     {/* <RankingsWidget /> */} {/* Commented out - requires thesis_arena_threads table */}
                 </div>
             </div>
 
             {/* RESEARCH SECTION: Full Width Row */}
             <div className="mb-8 fade-in delay-600">
-                <ResearchSection />
+                <WidgetErrorBoundary><ResearchSection /></WidgetErrorBoundary>
             </div>
 
             {/* Thesis Arena Modal */}

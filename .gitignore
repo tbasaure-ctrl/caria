@@ -114,3 +114,8 @@ caria_data/data/
 caria_data/silver/
 caria_data/gold/
 data/raw/
+
+# EXCEPTION: Allow critical production data files
+!data/silver/fundamentals/quality_signals.parquet
+!data/silver/fundamentals/value_signals.parquet
+!caria_data/raw/wisdom/historical_events_wisdom.jsonl

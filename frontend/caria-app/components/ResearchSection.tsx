@@ -3,6 +3,7 @@ import { ValuationTool } from './widgets/ValuationTool';
 import { RedditSentiment } from './widgets/RedditSentiment';
 import { Resources } from './widgets/Resources';
 import { WeeklyContent } from './widgets/WeeklyContent';
+import { WeeklyMedia } from './widgets/WeeklyMedia';
 
 /**
  * ResearchSection - Groups related research and analysis widgets together
@@ -20,7 +21,10 @@ export const ResearchSection: React.FC = () => {
         <div className="fade-in">
             {/* Research Widgets - Grid Layout */}
             <div className="space-y-8">
-                {/* Valuation Tool - Full Width */}
+                {/* Weekly Media - Video & Podcast at Top of Research */}
+                <WeeklyMedia compact={false} />
+                
+                {/* Valuation Tool - Full Width (includes Monte Carlo price simulation) */}
                 <ValuationTool />
 
                 {/* Two Column Layout for Community Content */}

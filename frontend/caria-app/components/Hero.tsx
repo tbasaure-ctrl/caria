@@ -34,8 +34,8 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
 
       {/* Removed animated grid to show legends background better */}
 
-      {/* Investing Legends Background - faded and artistic */}
-      <div className="legends-background opacity-20">
+      {/* Investing Legends Background - visible and inspiring */}
+      <div className="legends-background opacity-60">
         <div className="legend-figure legend-buffett"
           style={{backgroundImage: "url('/images/legends/warren-buffett.jpg')"}}></div>
         <div className="legend-figure legend-munger"

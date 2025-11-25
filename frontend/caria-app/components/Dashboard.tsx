@@ -8,7 +8,7 @@ import { ThesisIcon } from './Icons';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
 import { CommunityFeed } from './widgets/CommunityFeed';
 import { RankingsWidget } from './widgets/RankingsWidget';
-import { MonteCarloSimulation } from './widgets/MonteCarloSimulation';
+// MonteCarloSimulation removed - now integrated into ValuationTool with ticker input
 import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
 import { ThesisArena } from './widgets/ThesisArena';
@@ -170,11 +170,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 </p>
             </div>
 
-            {/* Weekly Media - Compact at Top */}
-            <div className="mb-6 fade-in delay-50">
-                <WeeklyMedia compact={true} />
-            </div>
-
             {/* Tab Navigation */}
             <div className="mb-8 fade-in delay-100">
                 <div className="flex flex-wrap gap-3 md:gap-4 border-b pb-4"
@@ -229,9 +224,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             <PortfolioAnalytics />
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 gap-8">
                             <ModelPortfolioWidget />
-                            <MonteCarloSimulation />
                         </div>
                     </div>
                 )}

@@ -446,27 +446,44 @@ export const ValuationTool: React.FC = () => {
                   <div className="text-xs text-emerald-300 font-semibold uppercase tracking-wider">Historical Multiples</div>
                   <div className="text-xs text-emerald-400/70">Fair Value</div>
                 </div>
-                <div className="text-3xl font-bold text-emerald-100">
-                  {formatMoney(valuation.multiples_valuation.fair_value)}
-                </div>
-                <div className="text-xs text-emerald-300/80 leading-relaxed space-y-1">
-                  <div>
-                    Medianas: EV/Sales {valuation.multiples_valuation.ev_sales_median?.toFixed(1) ?? '—'}x • EV/EBITDA{' '}
-                    {valuation.multiples_valuation.ev_ebitda_median?.toFixed(1) ?? '—'}x
-                  </div>
-                  {valuation.multiples_valuation.breakdown && (
-                    <div className="text-[11px] text-emerald-200/80">
-                      {valuation.multiples_valuation.breakdown.ev_sales !== undefined && (
-                        <span>EV/Sales → {formatMoney(valuation.multiples_valuation.breakdown.ev_sales)} </span>
-                      )}
-                      {valuation.multiples_valuation.breakdown.ev_ebitda !== undefined && (
-                        <span className="ml-1">
-                          EV/EBITDA → {formatMoney(valuation.multiples_valuation.breakdown.ev_ebitda)}
-                        </span>
+                {valuation.multiples_valuation.fair_value > 0 ? (
+                  <>
+                    <div className="text-3xl font-bold text-emerald-100">
+                      {formatMoney(valuation.multiples_valuation.fair_value)}
+                    </div>
+                    <div className="text-xs text-emerald-300/80 leading-relaxed space-y-1">
+                      <div>
+                        Medians: EV/Sales {valuation.multiples_valuation.ev_sales_median?.toFixed(1) ?? '—'}x • EV/EBITDA{' '}
+                        {valuation.multiples_valuation.ev_ebitda_median?.toFixed(1) ?? '—'}x
+                      </div>
+                      {valuation.multiples_valuation.breakdown && (
+                        <div className="text-[11px] text-emerald-200/80">
+                          {valuation.multiples_valuation.breakdown.ev_sales !== undefined && (
+                            <span>EV/Sales → {formatMoney(valuation.multiples_valuation.breakdown.ev_sales)} </span>
+                          )}
+                          {valuation.multiples_valuation.breakdown.ev_ebitda !== undefined && (
+                            <span className="ml-1">
+                              EV/EBITDA → {formatMoney(valuation.multiples_valuation.breakdown.ev_ebitda)}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
-                </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-lg font-bold text-emerald-300/50">N/A</div>
+                    <div className="text-xs text-emerald-300/60 leading-relaxed">
+                      {valuation.multiples_valuation.explanation || 'Insufficient data for multiples valuation. Historical revenue/EBITDA data may be unavailable.'}
+                    </div>
+                    {valuation.multiples_valuation.ev_sales_median !== null && (
+                      <div className="text-xs text-emerald-300/60">
+                        Available medians: EV/Sales {valuation.multiples_valuation.ev_sales_median?.toFixed(1) ?? '—'}x • EV/EBITDA{' '}
+                        {valuation.multiples_valuation.ev_ebitda_median?.toFixed(1) ?? '—'}x
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 

@@ -34,8 +34,8 @@ export const AlphaStockPicker: React.FC = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const apiUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:8000';
-                const res = await fetch(`${apiUrl}/api/valuation/cache/stats`);
+                const { fetchWithAuth, API_BASE_URL } = await import('../../services/apiService');
+                const res = await fetchWithAuth(`${API_BASE_URL}/api/valuation/cache/stats`);
                 if (res.ok) {
                     const data = await res.json();
                     setUniverseSize(data.total_universe);
@@ -51,17 +51,21 @@ export const AlphaStockPicker: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const apiUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:8000';
-            const response = await fetch(`${apiUrl}/api/alpha-picks/`);
+            const { fetchWithAuth, API_BASE_URL } = await import('../../services/apiService');
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/alpha-picks/`);
             if (!response.ok) {
-                throw new Error('Failed to fetch picks');
+                const errorData = await response.json().catch(() => ({ detail: 'Failed to fetch picks' }));
+                throw new Error(errorData.detail || 'Failed to fetch picks');
             }
             const data = await response.json();
+            if (!Array.isArray(data) || data.length === 0) {
+                throw new Error('No picks generated. Please try again.');
+            }
             setPicks(data);
             setGenerated(true);
-        } catch (err) {
-            console.error(err);
-            setError('Failed to generate picks. Please try again.');
+        } catch (err: any) {
+            console.error('Alpha Stock Picker error:', err);
+            setError(err.message || 'Failed to generate picks. Please try again.');
         } finally {
             setLoading(false);
         }

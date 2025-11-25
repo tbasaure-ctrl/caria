@@ -129,8 +129,10 @@ export const Resources: React.FC = () => {
                     tags: ['finance', 'curated', l.source.toLowerCase()]
                 }));
 
+                // Limit to top 3-4 lectures to reduce clutter
+                const limitedLectures = mappedLectures.slice(0, 4);
                 // Prepend dynamic lectures to static resources
-                setResources([...mappedLectures, ...STATIC_RESOURCES]);
+                setResources([...limitedLectures, ...STATIC_RESOURCES]);
             } catch (err) {
                 console.error("Failed to load lectures:", err);
                 // Keep static resources on error

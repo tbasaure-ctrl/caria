@@ -28,7 +28,13 @@ export const RedditSentiment: React.FC = () => {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/social/reddit?timeframe=${timeframe}`);
             if (!response.ok) throw new Error('Failed to fetch Reddit data');
             const data = await response.json();
-            setStocks(data.stocks || []);
+            const stocks = data.stocks || [];
+            // Remove duplicates and improve variety by filtering similar tickers
+            const uniqueStocks = stocks.filter((stock: RedditStock, index: number, self: RedditStock[]) => 
+                index === self.findIndex((s: RedditStock) => s.ticker === stock.ticker)
+            );
+            // Limit to top 5 for better variety
+            setStocks(uniqueStocks.slice(0, 5));
         } catch (err: unknown) {
             setError('Coming soon... Reddit sentiment analysis is being enhanced to provide even better social media insights.');
             // Fallback mock data for development

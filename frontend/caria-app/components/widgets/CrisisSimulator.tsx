@@ -51,6 +51,62 @@ export const CrisisSimulator: React.FC = () => {
         '1y': 'History shows: this too shall pass.'
     };
 
+    const filterDataByTimeframe = (data: SimulationResult, tf: Timeframe): SimulationResult => {
+        if (!data.dates || data.dates.length === 0) return data;
+        
+        const dates = data.dates.map(d => new Date(d));
+        const portfolioValues = data.portfolio_values;
+        const benchmarkValues = data.benchmark_values;
+        
+        let startIndex = 0;
+        let endIndex = dates.length;
+        
+        if (tf === '1d') {
+            // Show first day only
+            endIndex = Math.min(1, dates.length);
+        } else if (tf === '1m') {
+            // Show first month (approximately 20-22 trading days)
+            endIndex = Math.min(22, dates.length);
+        } else if (tf === '1y') {
+            // Show all data (1 year or full crisis period)
+            endIndex = dates.length;
+        }
+        
+        const filteredDates = dates.slice(startIndex, endIndex).map(d => d.toISOString().split('T')[0]);
+        const filteredPortfolio = portfolioValues.slice(startIndex, endIndex);
+        const filteredBenchmark = benchmarkValues.slice(startIndex, endIndex);
+        
+        // Recalculate metrics for filtered data
+        const initialPortfolio = filteredPortfolio[0] || 100;
+        const finalPortfolio = filteredPortfolio[filteredPortfolio.length - 1] || 100;
+        const portfolioReturn = (finalPortfolio / initialPortfolio) - 1;
+        
+        const initialBenchmark = filteredBenchmark[0] || 100;
+        const finalBenchmark = filteredBenchmark[filteredBenchmark.length - 1] || 100;
+        const benchmarkReturn = (finalBenchmark / initialBenchmark) - 1;
+        
+        // Calculate max drawdown for filtered period
+        let maxDrawdown = 0;
+        let peak = initialPortfolio;
+        for (const value of filteredPortfolio) {
+            if (value > peak) peak = value;
+            const drawdown = (value - peak) / peak;
+            if (drawdown < maxDrawdown) maxDrawdown = drawdown;
+        }
+        
+        return {
+            ...data,
+            dates: filteredDates,
+            portfolio_values: filteredPortfolio,
+            benchmark_values: filteredBenchmark,
+            metrics: {
+                max_drawdown: maxDrawdown,
+                total_return: portfolioReturn,
+                benchmark_return: benchmarkReturn,
+            }
+        };
+    };
+
     const handleSimulate = async () => {
         setLoading(true);
         setError(null);
@@ -67,7 +123,6 @@ export const CrisisSimulator: React.FC = () => {
                 body: JSON.stringify({
                     portfolio,
                     crisis_id: selectedCrisis,
-                    timeframe: timeframe,
                 }),
             });
 
@@ -76,7 +131,10 @@ export const CrisisSimulator: React.FC = () => {
             }
 
             const data = await response.json();
-            setResult(data);
+            
+            // Filter data based on selected timeframe
+            const filteredData = filterDataByTimeframe(data, timeframe);
+            setResult(filteredData);
         } catch (err: any) {
             setError(err.message || 'Failed to run simulation');
         } finally {
@@ -115,7 +173,14 @@ export const CrisisSimulator: React.FC = () => {
                         {(['1d', '1m', '1y'] as Timeframe[]).map((tf) => (
                             <button
                                 key={tf}
-                                onClick={() => setTimeframe(tf)}
+                                onClick={() => {
+                                    setTimeframe(tf);
+                                    // Re-filter existing result if available
+                                    if (result) {
+                                        const filtered = filterDataByTimeframe(result, tf);
+                                        setResult(filtered);
+                                    }
+                                }}
                                 className={`px-3 py-1 rounded text-xs font-medium transition-all ${
                                     timeframe === tf 
                                         ? 'bg-blue-600 text-white' 

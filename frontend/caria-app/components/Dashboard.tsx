@@ -1,20 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { Portfolio } from './widgets/Portfolio';
-import { ModelOutlook } from './widgets/ModelOutlook';
-import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
-import { FearGreedIndex } from './widgets/FearGreedIndex';
 import { ThesisIcon } from './Icons';
-import { GlobalMarketBar } from './widgets/GlobalMarketBar';
 import { CommunityFeed } from './widgets/CommunityFeed';
 import { RankingsWidget } from './widgets/RankingsWidget';
-// MonteCarloSimulation removed - now integrated into ValuationTool with ticker input
 import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
 import { ThesisArena } from './widgets/ThesisArena';
-import { ResearchSection } from './ResearchSection';
 import { CrisisSimulator } from './widgets/CrisisSimulator';
-import { MacroSimulator } from './widgets/MacroSimulator';
+import { ValuationTool } from './widgets/ValuationTool';
+import { AlphaStockPicker } from './widgets/AlphaStockPicker';
+import { WeeklyMedia } from './widgets/WeeklyMedia';
+import { RedditSentiment } from './widgets/RedditSentiment';
+import { Resources } from './widgets/Resources';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
 const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void; id?: string }> = ({ onStartAnalysis, onEnterArena, id }) => (
@@ -204,46 +202,59 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
             {/* Tab Content */}
             <div className="fade-in delay-200">
-                {/* PORTFOLIO TAB - Market overview, portfolio management, and stress testing */}
+                {/* PORTFOLIO TAB - Crisis Simulation and Test Your Portfolio ONLY */}
                 {activeTab === 'portfolio' && (
                     <div className="space-y-8">
-                        {/* Global Market Bar - Full Width */}
-                        <GlobalMarketBar id="market-bar-widget" />
-
-                        {/* Market Indicators Row */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
-                            <FearGreedIndex />
-                        </div>
-
-                        {/* Portfolio Management */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <Portfolio id="portfolio-widget" />
-                            <PortfolioAnalytics />
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-8">
-                            <ModelPortfolioWidget />
-                        </div>
-                        
-                        {/* Scenario Analysis - Stress test your portfolio */}
-                        <div className="mt-4">
-                            <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--color-cream)', fontFamily: "'Instrument Serif', serif" }}>
-                                📊 Scenario Analysis
+                        {/* Crisis Simulation */}
+                        <div>
+                            <h2 className="text-2xl font-bold mb-2"
+                                style={{
+                                    fontFamily: 'var(--font-display)',
+                                    color: 'var(--color-cream)'
+                                }}>
+                                Crisis Simulation
                             </h2>
-                            <p className="text-sm text-slate-400 mb-4">Stress test your portfolio against historical crises and macroeconomic scenarios</p>
+                            <p className="text-sm mb-4"
+                               style={{
+                                   fontFamily: 'var(--font-body)',
+                                   color: 'var(--color-text-secondary)'
+                               }}>
+                                Stress test your portfolio against historical market crises
+                            </p>
+                            <CrisisSimulator />
+                        </div>
+
+                        {/* Test Your Portfolio */}
+                        <div>
+                            <h2 className="text-2xl font-bold mb-2"
+                                style={{
+                                    fontFamily: 'var(--font-display)',
+                                    color: 'var(--color-cream)'
+                                }}>
+                                Test Your Portfolio
+                            </h2>
+                            <p className="text-sm mb-4"
+                               style={{
+                                   fontFamily: 'var(--font-body)',
+                                   color: 'var(--color-text-secondary)'
+                               }}>
+                                Analyze your portfolio performance and risk metrics
+                            </p>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                <CrisisSimulator />
-                                <MacroSimulator />
+                                <Portfolio id="portfolio-widget" />
+                                <PortfolioAnalytics />
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* ANALYSIS TAB - Investment thesis and community */}
+                {/* ANALYSIS TAB - Quick Valuation, Investment Thesis, and Community ONLY */}
                 {activeTab === 'analysis' && (
                     <div className="space-y-8">
-                        {/* Thesis Analysis */}
+                        {/* Quick Valuation with Monte Carlo */}
+                        <ValuationTool />
+
+                        {/* Investment Thesis with Caria */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <StartAnalysisCTA
                                 onStartAnalysis={onStartAnalysis}
@@ -254,17 +265,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         </div>
 
                         {/* Community Section */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <CommunityFeed />
-                            <RankingsWidget />
+                        <div>
+                            <h2 className="text-2xl font-bold mb-4"
+                                style={{
+                                    fontFamily: 'var(--font-display)',
+                                    color: 'var(--color-cream)'
+                                }}>
+                                Community
+                            </h2>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <CommunityFeed />
+                                <RankingsWidget />
+                            </div>
                         </div>
                     </div>
                 )}
 
-                {/* RESEARCH TAB - External content and screeners */}
+                {/* RESEARCH TAB - Weekly Video, Weekly Podcast, Stock Screener, Reddit, Lectures */}
                 {activeTab === 'research' && (
                     <div className="space-y-8">
-                        <ResearchSection />
+                        {/* Weekly Video and Podcast */}
+                        <WeeklyMedia compact={false} />
+                        
+                        {/* Stock Screener (Alpha Stock Picker) */}
+                        <AlphaStockPicker />
+
+                        {/* Two Column Layout: Reddit Feed and Recommended Lectures */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <RedditSentiment />
+                            <Resources />
+                        </div>
                     </div>
                 )}
             </div>

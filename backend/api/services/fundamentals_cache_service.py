@@ -139,9 +139,7 @@ class FundamentalsCacheService:
             result = {}
             
             # Quality metrics
-            for col in ['roic', 'roiic', 'returnOn
-
-Equity', 'returnOnAssets', 
+            for col in ['roic', 'roiic', 'returnOnEquity', 'returnOnAssets', 
                        'grossProfitMargin', 'netProfitMargin', 'freeCashFlowPerShare',
                        'freeCashFlowYield', 'capitalExpenditures', 'r_and_d']:
                 if col in quality_data.columns:

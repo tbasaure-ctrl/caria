@@ -92,7 +92,7 @@ export const CommunityFeed: React.FC = () => {
                 if (isAuthError(err)) {
                     setError('Inicia sesión para ver las publicaciones de la comunidad.');
                 } else if (isNetworkError(err)) {
-                    setError('Servicio de comunidad no disponible. Reintentando...');
+                    setError('Community service unavailable. Retrying...');
                 } else if (!postsRef.current.length) {
                     setError('Unable to load community posts. Please try again later.');
                 } else {
@@ -217,7 +217,7 @@ export const CommunityFeed: React.FC = () => {
             <WidgetCard
                 title="Community Feed"
                 id="community-feed-widget"
-                tooltip="Feed de tesis e ideas de inversión de la comunidad. Busca, vota y descubre insights compartidos por otros usuarios."
+                tooltip="Community investment thesis and ideas feed. Search, vote, and discover insights shared by other users."
             >
                 <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     Loading community posts...
@@ -231,7 +231,7 @@ export const CommunityFeed: React.FC = () => {
             <WidgetCard
                 title="Community Feed"
                 id="community-feed-widget"
-                tooltip="Feed de tesis e ideas de inversión de la comunidad. Busca, vota y descubre insights compartidos por otros usuarios."
+                tooltip="Community investment thesis and ideas feed. Search, vote, and discover insights shared by other users."
             >
                 <div className="text-sm" style={{ color: '#ef4444' }}>{error}</div>
                 <button
@@ -249,7 +249,7 @@ export const CommunityFeed: React.FC = () => {
         <WidgetCard
             title="Community Feed"
             id="community-feed-widget"
-            tooltip="Feed de tesis e ideas de inversión de la comunidad. Busca, vota y descubre insights compartidos por otros usuarios."
+            tooltip="Community investment thesis and ideas feed. Search, vote, and discover insights shared by other users."
         >
                 <div className="space-y-4">
                 {/* Search and Sort Controls */}

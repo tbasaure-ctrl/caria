@@ -33,7 +33,11 @@ const mediaItems: MediaItem[] = [
     }
 ];
 
-export const WeeklyMedia: React.FC = () => {
+interface WeeklyMediaProps {
+    compact?: boolean;
+}
+
+export const WeeklyMedia: React.FC<WeeklyMediaProps> = ({ compact = false }) => {
     // If no items, show placeholder
     if (mediaItems.length === 0) {
         return (
@@ -41,7 +45,7 @@ export const WeeklyMedia: React.FC = () => {
                 title="📺 Media of the Week"
                 tooltip="Weekly curated podcast and YouTube video recommendations"
             >
-                <div className="text-center py-8">
+                <div className="text-center py-4">
                     <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
                         Weekly media recommendations coming soon...
                     </p>
@@ -50,6 +54,112 @@ export const WeeklyMedia: React.FC = () => {
         );
     }
 
+    if (compact) {
+        // Compact version: Two cards side by side with smaller size
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {mediaItems.map((item, index) => (
+                    <a
+                        key={index}
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block group"
+                    >
+                        <div
+                            className="rounded-lg p-3 transition-all duration-200 border h-full"
+                            style={{
+                                backgroundColor: 'var(--color-bg-secondary)',
+                                borderColor: 'var(--color-bg-tertiary)',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--color-primary)';
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--color-bg-tertiary)';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                        >
+                            <div className="flex items-center gap-3">
+                                {/* Small icon */}
+                                <div className="flex-shrink-0">
+                                    {item.thumbnail ? (
+                                        <img
+                                            src={item.thumbnail}
+                                            alt={item.title}
+                                            className="w-12 h-12 rounded object-cover"
+                                        />
+                                    ) : (
+                                        <div
+                                            className="w-12 h-12 rounded flex items-center justify-center"
+                                            style={{
+                                                backgroundColor: item.type === 'podcast' 
+                                                    ? 'var(--color-primary)' 
+                                                    : 'var(--color-blue)',
+                                            }}
+                                        >
+                                            {item.type === 'podcast' ? (
+                                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-cream)' }}>
+                                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                                                </svg>
+                                            ) : (
+                                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-cream)' }}>
+                                                    <path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                                                </svg>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                        <span
+                                            className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                                            style={{
+                                                backgroundColor: item.type === 'podcast' 
+                                                    ? 'var(--color-primary)' 
+                                                    : 'var(--color-blue)',
+                                                color: 'var(--color-cream)',
+                                            }}
+                                        >
+                                            {item.type === 'podcast' ? '🎙️ Podcast' : '▶️ Video'}
+                                        </span>
+                                    </div>
+                                    <h3
+                                        className="text-sm font-bold truncate group-hover:underline"
+                                        style={{
+                                            fontFamily: 'var(--font-display)',
+                                            color: 'var(--color-cream)',
+                                        }}
+                                    >
+                                        {item.title}
+                                    </h3>
+                                    <p
+                                        className="text-xs truncate"
+                                        style={{
+                                            fontFamily: 'var(--font-body)',
+                                            color: 'var(--color-text-secondary)',
+                                        }}
+                                    >
+                                        {item.description}
+                                    </p>
+                                </div>
+
+                                {/* Arrow */}
+                                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-primary)' }}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </a>
+                ))}
+            </div>
+        );
+    }
+
+    // Full version (original)
     return (
         <WidgetCard
             title="📺 Media of the Week"

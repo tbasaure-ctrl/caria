@@ -203,7 +203,7 @@ export const ValuationTool: React.FC = () => {
         }
       } catch (scoringErr: any) {
         console.error('Scoring error:', scoringErr);
-        setScoringError('No se pudieron calcular los puntajes de Quality/Valuation/Momentum.');
+        setScoringError('Could not calculate Quality/Valuation/Momentum scores.');
       }
 
       // 3) usar el CAGR implícito del DCF como μ y horizonte para Monte Carlo

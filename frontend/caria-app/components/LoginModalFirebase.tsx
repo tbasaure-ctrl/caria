@@ -93,7 +93,7 @@ export const LoginModalFirebase: React.FC<LoginModalFirebaseProps> = ({
             } else if (err.code === 'auth/invalid-email') {
                 errorMessage = 'Email inválido';
             } else if (err.code === 'auth/network-request-failed') {
-                errorMessage = 'Error de conexión. Verifica tu internet';
+                errorMessage = 'Connection error. Please check your internet';
             } else if (err.message) {
                 errorMessage = err.message;
             }

@@ -106,7 +106,7 @@ export const RankingsWidget: React.FC = () => {
             <WidgetCard
                 title="Community Rankings"
                 id="rankings-widget"
-                tooltip="Rankings de la comunidad: comunidades más activas, tesis más populares, y tesis con mayor convicción sostenida."
+                tooltip="Community rankings: most active communities, popular theses, and theses with highest sustained conviction."
             >
                 <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     Loading rankings...
@@ -120,7 +120,7 @@ export const RankingsWidget: React.FC = () => {
             <WidgetCard
                 title="Community Rankings"
                 id="rankings-widget"
-                tooltip="Rankings de la comunidad: comunidades más activas, tesis más populares, y tesis con mayor convicción sostenida."
+                tooltip="Community rankings: most active communities, popular theses, and theses with highest sustained conviction."
             >
                 <div className="text-sm" style={{ color: '#ef4444' }}>{error}</div>
                 <button
@@ -139,7 +139,7 @@ export const RankingsWidget: React.FC = () => {
             <WidgetCard
                 title="Community Rankings"
                 id="rankings-widget"
-                tooltip="Rankings de la comunidad: comunidades más activas, tesis más populares, y tesis con mayor convicción sostenida."
+                tooltip="Community rankings: most active communities, popular theses, and theses with highest sustained conviction."
             >
                 <div className="text-center h-[124px] flex items-center justify-center">
                     <p className="text-slate-500">No rankings available</p>
@@ -152,7 +152,7 @@ export const RankingsWidget: React.FC = () => {
         <WidgetCard
             title="Community Rankings"
             id="rankings-widget"
-            tooltip="Rankings de la comunidad: comunidades más activas, tesis más populares, y tesis con mayor convicción sostenida."
+            tooltip="Community rankings: most active communities, popular theses, and theses with highest sustained conviction."
         >
             <div className="space-y-4">
                 {/* Tabs */}

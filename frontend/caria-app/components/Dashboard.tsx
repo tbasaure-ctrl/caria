@@ -139,7 +139,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
         <main className="flex-1 overflow-y-auto p-6 max-w-[1920px] mx-auto"
             style={{ backgroundColor: 'var(--color-bg-primary)', minHeight: '100vh' }}>
             {/* Dashboard Header */}
-            <div className="mb-8 fade-in">
+            <div className="mb-6 fade-in">
                 <h1 className="text-4xl font-bold mb-2"
                     style={{ fontFamily: 'var(--font-display)', color: 'var(--color-cream)' }}>
                     Investment Dashboard
@@ -147,6 +147,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)' }}>
                     Your comprehensive view of market insights and portfolio analysis
                 </p>
+            </div>
+
+            {/* Weekly Media - Compact at Top */}
+            <div className="mb-6 fade-in delay-50">
+                <SafeWidget>
+                    <WeeklyMedia compact={true} />
+                </SafeWidget>
             </div>
 
             {/* Global Market Bar - Full Width */}
@@ -214,12 +221,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 </SafeWidget>
             </div>
 
-            {/* WEEKLY MEDIA: Near Research Section */}
-            <div className="mb-8 fade-in delay-700">
-                <SafeWidget>
-                    <WeeklyMedia />
-                </SafeWidget>
-            </div>
 
             {/* Thesis Arena Modal */}
             {showArena && (

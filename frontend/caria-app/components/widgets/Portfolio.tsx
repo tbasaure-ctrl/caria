@@ -288,7 +288,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                 const data = await fetchHoldingsWithPrices();
                 setPortfolioData(data);
             } catch (err: unknown) {
-                setError(getErrorMessage(err) || 'No pudimos cargar tu portfolio. Intenta nuevamente.');
+                setError(getErrorMessage(err) || 'Could not load your portfolio. Please try again.');
             } finally {
                 if (showSpinner) {
                     setLoading(false);
@@ -445,11 +445,11 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             return;
         }
         if (!Number.isFinite(quantity) || quantity <= 0) {
-            setFormError('Ingresa una cantidad válida.');
+            setFormError('Please enter a valid quantity.');
             return;
         }
         if (!Number.isFinite(averageCost) || averageCost <= 0) {
-            setFormError('Ingresa un costo promedio válido.');
+            setFormError('Please enter a valid average cost.');
             return;
         }
 
@@ -466,7 +466,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             setShowForm(false);
             await loadPortfolio(false);
         } catch (err: unknown) {
-            setFormError(getErrorMessage(err) || 'No se pudo guardar la posición.');
+            setFormError(getErrorMessage(err) || 'Could not save the position.');
         } finally {
             setActionLoading(false);
         }
@@ -512,7 +512,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                 </span>
                             </div>
                             <div className="flex justify-between text-sm">
-                                <span className="text-slate-300">Costo Total:</span>
+                                <span className="text-slate-300">Total Cost:</span>
                                 <span className="font-mono text-slate-300">
                                     ${portfolioData.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
@@ -565,9 +565,9 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                     <div className="flex flex-wrap items-center gap-4 justify-between">
                         <div>
                             <h4 className="text-sm font-semibold" style={{ color: 'var(--color-cream)' }}>
-                                Gestión de posiciones
+                                Position Management
                             </h4>
-                            <p className="text-xs text-slate-500">Registra compras, ventas y notas clave.</p>
+                            <p className="text-xs text-slate-500">Track purchases, sales, and key notes.</p>
                         </div>
                         <div className="flex bg-slate-900/70 rounded-md overflow-hidden">
                             <button
@@ -597,7 +597,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                 color: 'var(--color-cream)',
                             }}
                         >
-                            {showForm ? 'Cerrar formulario' : 'Agregar posición'}
+                            {showForm ? 'Close Form' : 'Add Position'}
                         </button>
                     </div>
 
@@ -615,7 +615,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-400 mb-1">Cantidad</label>
+                                <label className="block text-xs text-slate-400 mb-1">Quantity</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -627,7 +627,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-400 mb-1">Costo Promedio</label>
+                                <label className="block text-xs text-slate-400 mb-1">Average Cost</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -639,7 +639,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-400 mb-1">Fecha de compra</label>
+                                <label className="block text-xs text-slate-400 mb-1">Purchase Date</label>
                                 <input
                                     type="date"
                                     value={formData.purchase_date}
@@ -649,13 +649,13 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                 />
                             </div>
                             <div className="md:col-span-2">
-                                <label className="block text-xs text-slate-400 mb-1">Notas (opcional)</label>
+                                <label className="block text-xs text-slate-400 mb-1">Notes (optional)</label>
                                 <input
                                     type="text"
                                     value={formData.notes}
                                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                     className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
-                                    placeholder="Catalizadores, tesis resumida, etc."
+                                    placeholder="Catalysts, thesis summary, etc."
                                 />
                             </div>
                             <div className="md:col-span-2 flex gap-3">
@@ -664,7 +664,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                     disabled={actionLoading}
                                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded transition-colors disabled:opacity-50"
                                 >
-                                    Guardar posición
+                                    Save Position
                                 </button>
                                 <button
                                     type="button"
@@ -675,7 +675,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                     }}
                                     className="px-4 py-2 rounded text-sm font-semibold text-slate-300 border border-slate-700 hover:border-slate-500"
                                 >
-                                    Cancelar
+                                    Cancel
                                 </button>
                             </div>
                         </form>
@@ -690,7 +690,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                     <div>
                         {sortedHoldings.length === 0 ? (
                             <div className="text-center text-sm text-slate-500 py-8">
-                                No hay posiciones registradas aún.
+                                No positions recorded yet.
                             </div>
                         ) : (
                             <div className="space-y-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">

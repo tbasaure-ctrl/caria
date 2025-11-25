@@ -145,27 +145,78 @@ class OpenBBClient:
             LOGGER.error(f"Error fetching batch prices: {e}")
             return {s: {"symbol": s, "price": 0, "change": 0, "changesPercentage": 0} for s in symbols}
 
+    def _obbject_to_list(self, obb_object: Any) -> list:
+        """Convert OBBject to list of dictionaries."""
+        if not obb_object:
+            return []
+        try:
+            if hasattr(obb_object, 'to_df'):
+                df = obb_object.to_df()
+                if not df.empty:
+                    # Replace NaN with None for JSON serialization
+                    return df.replace({float('nan'): None}).to_dict(orient='records')
+            if hasattr(obb_object, 'results'):
+                if isinstance(obb_object.results, list):
+                    return [
+                        res.model_dump() if hasattr(res, 'model_dump') else (res if isinstance(res, dict) else res.__dict__)
+                        for res in obb_object.results
+                    ]
+        except Exception as e:
+            LOGGER.warning(f"Error converting OBBject to list: {e}")
+        return []
+
     def get_ticker_data(self, symbol: str) -> Dict[str, Any]:
         """
         Unified aggregator for all metrics.
-        Returns a dictionary with prices, multiples, and financials.
+        Returns a dictionary with prices, multiples, and financials as processed lists/dicts.
         """
         try:
-            price_history = self.get_price_history(symbol)
-            multiples = self.get_multiples(symbol)
-            financials = self.get_financials(symbol)
-            key_metrics = self.get_key_metrics(symbol)
-            growth = self.get_growth(symbol)
+            # Get raw OBBject results
+            price_history_raw = self.get_price_history(symbol)
+            multiples_raw = self.get_multiples(symbol, limit=8)  # Get more history for median calc
+            income_raw = self.get_financials(symbol, limit=6)
+            key_metrics_raw = self.get_key_metrics(symbol)
+            growth_raw = self.get_growth(symbol)
             current_price = self.get_current_price(symbol)
+            
+            # Get cash flow statement separately
+            try:
+                cash_flow_raw = obb.equity.fundamental.cash(symbol=symbol, provider="fmp", limit=8)
+            except Exception:
+                cash_flow_raw = None
+            
+            # Get company profile for moat analysis
+            try:
+                profile_raw = obb.equity.profile(symbol=symbol, provider="fmp")
+                profile = self._obbject_to_list(profile_raw)
+                profile = profile[0] if profile else {}
+            except Exception:
+                profile = {}
+
+            # Convert to processed lists
+            price_history = self._obbject_to_list(price_history_raw)
+            multiples = self._obbject_to_list(multiples_raw)
+            income_statement = self._obbject_to_list(income_raw)
+            cash_flow = self._obbject_to_list(cash_flow_raw)
+            key_metrics = self._obbject_to_list(key_metrics_raw)
+            growth = self._obbject_to_list(growth_raw)
+            
+            # Extract latest price from history if current_price failed
+            if not current_price and price_history:
+                current_price = price_history[-1].get('close', 0)
 
             return {
                 "symbol": symbol,
                 "price_history": price_history,
+                "latest_price": current_price,
                 "multiples": multiples,
-                "financials": financials,
-                "key_metrics": key_metrics,
-                "growth": growth,
-                "current_price": current_price
+                "financials": {
+                    "income_statement": income_statement,
+                    "cash_flow": cash_flow,
+                },
+                "key_metrics": key_metrics[0] if key_metrics else {},
+                "growth": growth[0] if growth else {},
+                "profile": profile,
             }
         except Exception as e:
             LOGGER.error(f"Error aggregating data for {symbol}: {e}")

@@ -69,7 +69,7 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
 
     const handleChallenge = async () => {
         if (!thesis.trim() || thesis.length < 10) {
-            setError('Por favor ingresa una tesis de al menos 10 caracteres');
+            setError('Please enter a thesis with at least 10 characters');
             return;
         }
 
@@ -100,7 +100,7 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
             setResults(data);
             setSuccessMessage('Las comunidades han respondido. Revisa el impacto en tu convicción.');
         } catch (err: unknown) {
-            setError(getErrorMessage(err) || 'No pudimos desafiar la tesis. Intenta nuevamente.');
+            setError(getErrorMessage(err) || 'Could not challenge the thesis. Please try again.');
         } finally{
             setIsLoading(false);
         }
@@ -136,7 +136,7 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
             <WidgetCard
                 title="Thesis Arena"
                 className="fade-in"
-                tooltip="Desafía tus tesis de inversión con 4 comunidades diferentes. Recibe feedback crítico para refinar tu convicción y análisis."
+                tooltip="Challenge your investment thesis with 4 different communities. Receive critical feedback to refine your conviction and analysis."
             >
                 <div className="space-y-4">
                     {/* Ticker Input */}
@@ -172,13 +172,13 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
                             className="block text-sm font-medium mb-2"
                             style={{ color: 'var(--color-text-secondary)' }}
                         >
-                            Tesis de Inversión
+                            Investment Thesis
                         </label>
                         <textarea
                             id="thesis-textarea"
                             value={thesis}
                             onChange={(e) => setThesis(e.target.value)}
-                            placeholder="Describe tu tesis de inversión aquí..."
+                            placeholder="Describe your investment thesis here..."
                             rows={6}
                             maxLength={2000}
                             className="w-full px-4 py-2 rounded-lg border resize-none"
@@ -346,7 +346,7 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
                     onClose={() => setShowEditorModal(false)}
                     onSuccess={() => {
                         setShowEditorModal(false);
-                        setSuccessMessage('Tu tesis ya es visible en el feed de la comunidad.');
+                        setSuccessMessage('Your thesis is now visible in the community feed.');
                     }}
                     prefillData={{
                         title: `${results.ticker ? `${results.ticker}: ` : ''}Investment Thesis`,

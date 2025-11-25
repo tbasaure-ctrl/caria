@@ -134,7 +134,7 @@ export const ThesisEditorModal: React.FC<ThesisEditorModalProps> = ({
             }
             onClose();
         } catch (err: unknown) {
-            setError(getErrorMessage(err) || 'No pudimos publicar tu tesis. Intenta nuevamente.');
+            setError(getErrorMessage(err) || 'Could not publish your thesis. Please try again.');
         } finally {
             setIsSubmitting(false);
         }

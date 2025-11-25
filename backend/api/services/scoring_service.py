@@ -28,8 +28,13 @@ class ScoringService:
 
         price_history = dataset.get("price_history", [])
         latest_price = dataset.get("latest_price")
+        
+        # Fallback: extract from price history if latest_price not available
+        if not latest_price and price_history:
+            latest_price = price_history[-1].get("close") if price_history else None
+        
         if not latest_price:
-            raise RuntimeError(f"Price history unavailable for {ticker}")
+            raise RuntimeError(f"Price data unavailable for {ticker}")
 
         valuation = self.valuation_service.get_valuation(ticker, latest_price)
 
@@ -57,12 +62,18 @@ class ScoringService:
             "moat": moat_details.get("drivers"),
         }
 
+        # Classification based on composite score
+        classification = self._classify_c_score(composite)
+        
         return {
             "ticker": ticker,
             "qualityScore": round(quality_score, 0),
             "valuationScore": round(valuation_score, 0),
             "momentumScore": round(momentum_score, 0),
+            "qualitativeMoatScore": round(qualitative_moat, 0) if qualitative_moat else None,
             "compositeScore": composite,
+            "cScore": composite,  # Alias for API compatibility
+            "classification": classification,
             "current_price": latest_price,
             "fair_value": valuation_details.get("fair_value"),
             "valuation_upside_pct": valuation_details.get("upside_pct"),

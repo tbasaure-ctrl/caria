@@ -24,7 +24,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
     const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'reconnecting' | 'error'>(
         'connecting'
     );
-    const [connectionMessage, setConnectionMessage] = useState('Conectando con Caria...');
+    const [connectionMessage, setConnectionMessage] = useState('Connecting to Caria...');
     const [showDebug, setShowDebug] = useState(false);
     const [debugInfo, setDebugInfo] = useState<any>(null);
     const socketRef = useRef<Socket | null>(null);
@@ -44,12 +44,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 if (!token) {
                     console.warn('No auth token available for WebSocket connection');
                     setConnectionStatus('error');
-                    setConnectionMessage('Inicia sesión para chatear con Caria.');
+                    setConnectionMessage('Please log in to chat with Caria.');
                     return;
                 }
 
                 setConnectionStatus('connecting');
-                setConnectionMessage('Conectando con Caria...');
+                setConnectionMessage('Connecting to Caria...');
 
                 // Connect with JWT token in auth object (per audit document Problem #1)
                 // Socket.IO connects to the base URL (without /api), e.g., http://localhost:8000
@@ -80,12 +80,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 socket.on('connect', async () => {
                     console.log('WebSocket connected');
                     setConnectionStatus('connected');
-                    setConnectionMessage('Conectado');
+                    setConnectionMessage('Connected');
                     reconnectAttemptsRef.current = 0;
 
                     // Problem #3: Recover lost messages on reconnection
                     try {
-                        const response = await fetch(`${API_BASE_URL}/api/chat/history${lastMessageTimestamp ? `?since=${lastMessageTimestamp}` : ''}`, {
+                        // Fix: API_BASE_URL already contains the base, just append the path
+                        // Avoid double /api by checking if API_BASE_URL already ends with /api
+                        const chatHistoryUrl = API_BASE_URL.endsWith('/api') 
+                            ? `${API_BASE_URL}/chat/history${lastMessageTimestamp ? `?since=${lastMessageTimestamp}` : ''}`
+                            : `${API_BASE_URL}/api/chat/history${lastMessageTimestamp ? `?since=${lastMessageTimestamp}` : ''}`;
+                        
+                        const response = await fetch(chatHistoryUrl, {
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }
@@ -115,25 +121,25 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 socket.on('connect_error', (error: any) => {
                     console.error('WebSocket connection error:', error);
                     setConnectionStatus('reconnecting');
-                    setConnectionMessage('Error de conexión. Reintentando...');
+                    setConnectionMessage('Connection error. Retrying...');
                 });
 
                 // Handle disconnection
                 socket.on('disconnect', (reason: Socket.DisconnectReason) => {
                     console.log('WebSocket disconnected', reason);
                     setConnectionStatus('reconnecting');
-                    setConnectionMessage('Conexión perdida. Reintentando...');
+                    setConnectionMessage('Connection lost. Reconnecting...');
                 });
 
                 socket.io.on('reconnect_attempt', (attempt: number) => {
                     reconnectAttemptsRef.current = attempt;
                     setConnectionStatus('reconnecting');
-                    setConnectionMessage(`Reintentando conexión (${attempt}/5)...`);
+                    setConnectionMessage(`Reconnecting (${attempt}/5)...`);
                 });
 
                 socket.io.on('reconnect_failed', () => {
                     setConnectionStatus('error');
-                    setConnectionMessage('No se pudo reconectar. Intenta nuevamente.');
+                    setConnectionMessage('Could not reconnect. Please try again.');
                 });
 
                 // Handle incoming chat messages
@@ -169,7 +175,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
             } catch (error) {
                 console.error('Error initializing WebSocket:', error);
                 setConnectionStatus('error');
-                setConnectionMessage('No se pudo inicializar la conexión.');
+                setConnectionMessage('Could not initialize connection. Chat service may be unavailable.');
             }
         };
 
@@ -227,7 +233,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
     const handleManualReconnect = () => {
         if (socketRef.current) {
             setConnectionStatus('connecting');
-            setConnectionMessage('Reconectando...');
+            setConnectionMessage('Reconnecting...');
             reconnectAttemptsRef.current = 0;
             socketRef.current.connect();
         }

@@ -13,9 +13,11 @@ import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
 import { ThesisArena } from './widgets/ThesisArena';
 import { ResearchSection } from './ResearchSection';
+import { CrisisSimulator } from './widgets/CrisisSimulator';
+import { MacroSimulator } from './widgets/MacroSimulator';
+import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
-import { SafeWidget } from './SafeWidget';
 
 const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void; id?: string }> = ({ onStartAnalysis, onEnterArena, id }) => (
     <div id={id}
@@ -108,10 +110,13 @@ interface RegimeData {
     confidence: number;
 }
 
+type DashboardTab = 'portfolio' | 'analysis' | 'research';
+
 export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     const [regimeData, setRegimeData] = useState<RegimeData | null>(null);
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
     const [showArena, setShowArena] = useState(false);
+    const [activeTab, setActiveTab] = useState<DashboardTab>('portfolio');
 
     useEffect(() => {
         const fetchRegimeData = async () => {
@@ -125,7 +130,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 const data = await response.json();
                 setRegimeData({ regime: data.regime, confidence: data.confidence });
             } catch (error) {
-                // Silently fallback to default regime
+                console.error("Failed to fetch regime data:", error);
                 setRegimeData({ regime: 'slowdown', confidence: 0 }); // Fallback
             } finally {
                 setIsLoadingRegime(false);
@@ -134,93 +139,140 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
         fetchRegimeData();
     }, []);
-    
+
+    const tabs = [
+        { id: 'portfolio' as DashboardTab, label: 'Portfolio' },
+        { id: 'analysis' as DashboardTab, label: 'Analysis' },
+        { id: 'research' as DashboardTab, label: 'Research' },
+    ];
+
     return (
-        <main className="flex-1 overflow-y-auto p-6 max-w-[1920px] mx-auto"
-            style={{ backgroundColor: 'var(--color-bg-primary)', minHeight: '100vh' }}>
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 max-w-[1600px] mx-auto"
+            style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+
             {/* Dashboard Header */}
             <div className="mb-6 fade-in">
-                <h1 className="text-4xl font-bold mb-2"
-                    style={{ fontFamily: 'var(--font-display)', color: 'var(--color-cream)' }}>
+                <h1 className="text-3xl md:text-5xl font-black mb-2"
+                    style={{
+                        fontFamily: "'Instrument Serif', Georgia, serif",
+                        color: 'var(--color-cream)',
+                        letterSpacing: '-0.02em'
+                    }}>
                     Investment Dashboard
                 </h1>
-                <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)' }}>
+                <p className="text-base md:text-lg"
+                    style={{
+                        fontFamily: "'Crimson Pro', Georgia, serif",
+                        color: 'rgba(232, 230, 227, 0.6)',
+                        lineHeight: '1.6'
+                    }}>
                     Your comprehensive view of market insights and portfolio analysis
                 </p>
             </div>
 
             {/* Weekly Media - Compact at Top */}
             <div className="mb-6 fade-in delay-50">
-                <SafeWidget>
-                    <WeeklyMedia compact={true} />
-                </SafeWidget>
+                <WeeklyMedia compact={true} />
             </div>
 
-            {/* Global Market Bar - Full Width */}
-            <div className="mb-6 fade-in delay-100">
-                <SafeWidget>
-                    <GlobalMarketBar id="market-bar-widget" />
-                </SafeWidget>
-            </div>
-
-            {/* TOP ROW: Market Indicators - Full Width */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 fade-in delay-200">
-                <SafeWidget>
-                    <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
-                </SafeWidget>
-                <SafeWidget>
-                    <FearGreedIndex />
-                </SafeWidget>
-            </div>
-
-            {/* MAIN CONTENT: 3 Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                {/* LEFT COLUMN: Portfolio Management */}
-                <div className="space-y-6 fade-in delay-300">
-                    <SafeWidget>
-                        <Portfolio id="portfolio-widget" />
-                    </SafeWidget>
-                    <SafeWidget>
-                        <PortfolioAnalytics />
-                    </SafeWidget>
-                </div>
-
-                {/* CENTER COLUMN: Analysis & Simulation */}
-                <div className="space-y-6 fade-in delay-400">
-                    <StartAnalysisCTA
-                        onStartAnalysis={onStartAnalysis}
-                        onEnterArena={() => setShowArena(true)}
-                        id="analysis-cta-widget"
-                    />
-                    <SafeWidget>
-                        <ModelPortfolioWidget />
-                    </SafeWidget>
-                    <SafeWidget>
-                        <RegimeTestWidget />
-                    </SafeWidget>
-                    <SafeWidget>
-                        <MonteCarloSimulation />
-                    </SafeWidget>
-                </div>
-
-                {/* RIGHT COLUMN: Community & Rankings */}
-                <div className="space-y-6 fade-in delay-500">
-                    <SafeWidget>
-                        <CommunityFeed />
-                    </SafeWidget>
-                    <SafeWidget>
-                        <RankingsWidget />
-                    </SafeWidget>
+            {/* Tab Navigation */}
+            <div className="mb-8 fade-in delay-100">
+                <div className="flex flex-wrap gap-3 md:gap-4 border-b pb-4"
+                    style={{ borderColor: 'rgba(74, 144, 226, 0.2)' }}>
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className="px-4 md:px-6 py-2 md:py-3 rounded-lg font-semibold text-sm md:text-base transition-all duration-300"
+                            style={{
+                                backgroundColor: activeTab === tab.id ? 'rgba(74, 144, 226, 0.2)' : 'transparent',
+                                color: activeTab === tab.id ? 'var(--color-blue-light)' : 'rgba(232, 230, 227, 0.6)',
+                                border: `1px solid ${activeTab === tab.id ? 'rgba(74, 144, 226, 0.4)' : 'transparent'}`,
+                                fontFamily: "'Crimson Pro', Georgia, serif",
+                            }}
+                            onMouseEnter={(e) => {
+                                if (activeTab !== tab.id) {
+                                    e.currentTarget.style.backgroundColor = 'rgba(74, 144, 226, 0.1)';
+                                    e.currentTarget.style.color = 'var(--color-cream)';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (activeTab !== tab.id) {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                    e.currentTarget.style.color = 'rgba(232, 230, 227, 0.6)';
+                                }
+                            }}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            {/* RESEARCH SECTION: Full Width Row */}
-            <div className="mb-8 fade-in delay-600">
-                <SafeWidget>
-                    <ResearchSection />
-                </SafeWidget>
-            </div>
+            {/* Tab Content */}
+            <div className="fade-in delay-200">
+                {/* PORTFOLIO TAB - Market overview and portfolio management combined */}
+                {activeTab === 'portfolio' && (
+                    <div className="space-y-8">
+                        {/* Global Market Bar - Full Width */}
+                        <GlobalMarketBar id="market-bar-widget" />
 
+                        {/* Market Indicators Row */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                            <FearGreedIndex />
+                        </div>
+
+                        {/* Portfolio Management */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <Portfolio id="portfolio-widget" />
+                            <PortfolioAnalytics />
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <ModelPortfolioWidget />
+                            <MonteCarloSimulation />
+                        </div>
+                    </div>
+                )}
+
+                {/* ANALYSIS TAB - Valuation, thesis, and community */}
+                {activeTab === 'analysis' && (
+                    <div className="space-y-8">
+                        {/* Thesis Analysis */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <StartAnalysisCTA
+                                onStartAnalysis={onStartAnalysis}
+                                onEnterArena={() => setShowArena(true)}
+                                id="analysis-cta-widget"
+                            />
+                            <RegimeTestWidget />
+                        </div>
+
+                        {/* Community Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <CommunityFeed />
+                            <RankingsWidget />
+                        </div>
+
+                        {/* Simulators */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <CrisisSimulator />
+                            <MacroSimulator />
+                        </div>
+                        
+                        {/* Alpha Stock Picker */}
+                        <AlphaStockPicker />
+                    </div>
+                )}
+
+                {/* RESEARCH TAB - External content and screeners */}
+                {activeTab === 'research' && (
+                    <div className="space-y-8">
+                        <ResearchSection />
+                    </div>
+                )}
+            </div>
 
             {/* Thesis Arena Modal */}
             {showArena && (

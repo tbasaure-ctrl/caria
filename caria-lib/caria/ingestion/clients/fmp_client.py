@@ -153,3 +153,10 @@ class FMPClient:
         
         return results
 
+    def get_stock_screener(self, params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+        """
+        Usa el endpoint de screener de FMP.
+        Params comunes: marketCapMoreThan, marketCapLowerThan, betaMoreThan, limit, exchange, sector, etc.
+        """
+        return self._get("stock-screener", params)
+

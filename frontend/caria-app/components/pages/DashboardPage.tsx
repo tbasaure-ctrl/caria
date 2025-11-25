@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Dashboard } from '../Dashboard';
 import { AnalysisTool } from '../AnalysisTool';
 import { CrisisSimulator } from '../widgets/CrisisSimulator';
-import { MindMap } from '../widgets/MindMap';
+import { AlphaStockPicker } from '../widgets/AlphaStockPicker';
 import { MacroSimulator } from '../widgets/MacroSimulator';
 import { SafeWidget } from '../SafeWidget';
 
@@ -10,11 +10,11 @@ export const DashboardPage: React.FC = () => {
     const [isAnalysisOpen, setAnalysisOpen] = useState(false);
 
     return (
-        <div className="min-h-screen w-full bg-[var(--color-bg-primary)] p-4 md:p-6 lg:p-8">
+        <div className="min-h-screen w-full bg-[var(--color-bg-primary)]">
             <Dashboard onStartAnalysis={() => setAnalysisOpen(true)} />
 
             {/* Scenario Analysis Section - Crisis & Macro Simulators */}
-            <div className="max-w-[1920px] mx-auto mt-8 mb-8">
+            <div className="max-w-[1920px] mx-auto px-4 md:px-6 lg:px-8 mt-8 mb-8">
                 <div className="mb-6">
                     <h2 className="text-2xl font-bold mb-2"
                         style={{
@@ -47,10 +47,10 @@ export const DashboardPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Mind Map - Full Width */}
-            <div className="max-w-[1920px] mx-auto mb-8">
+            {/* Alpha Stock Picker - Full Width */}
+            <div className="max-w-[1920px] mx-auto px-4 md:px-6 lg:px-8 mb-8">
                 <SafeWidget>
-                    <MindMap />
+                    <AlphaStockPicker />
                 </SafeWidget>
             </div>
 

@@ -22,7 +22,7 @@ const mediaItems: MediaItem[] = [
         title: 'Charlie Munger - Taking Drawdowns with Philosophy and Equanimity',
         description: 'Wisdom on handling market downturns with philosophical perspective and calm composure.',
         url: 'https://youtu.be/7sNUg2kPJwI?si=wZfqg2mKkVD8HN4w',
-        thumbnail: 'https://img.youtube.com/vi/7sNUg2kPJwI/maxresdefault.jpg'
+        thumbnail: 'https://img.youtube.com/vi/7sNUg2kPJwI/hqdefault.jpg'
     },
     {
         type: 'podcast',

@@ -208,9 +208,10 @@ class RAGService:
         if not self.llm_available:
             raise RuntimeError("LLM no configurado")
 
-        url = self.base_url
-        if "chat/completions" not in url and not url.endswith("/"):
-             url += "/chat/completions"
+        # Normalize URL: strip trailing slashes, then append /chat/completions if missing
+        url = self.base_url.rstrip("/")
+        if "chat/completions" not in url:
+            url += "/chat/completions"
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",

@@ -89,9 +89,10 @@ class LLMService:
             # User provided: https://api.groq.com/openai/v1/chat/completions
             # We'll use it as is if it looks complete.
             
-            url = self.base_url
-            if "chat/completions" not in url and not url.endswith("/"):
-                 url += "/chat/completions"
+            # Normalize URL: strip trailing slashes, then append /chat/completions if missing
+            url = self.base_url.rstrip("/")
+            if "chat/completions" not in url:
+                url += "/chat/completions"
             
             resp = requests.post(
                 url, 

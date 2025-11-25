@@ -350,7 +350,6 @@ app.include_router(ux_tracking_router)  # UX tracking: user journeys, onboarding
 app.include_router(reddit_router)  # Social sentiment: Reddit hot stocks tracking
 app.include_router(cors_test_router)  # CORS test endpoint for debugging
 app.include_router(lectures_router)  # Recommended lectures
-app.include_router(lectures_router)  # Recommended lectures
 app.include_router(debug_secrets_router)  # Debug endpoint to check secrets status
 from api.routes.debug import router as debug_router
 app.include_router(debug_router) # LLM Debug endpoint

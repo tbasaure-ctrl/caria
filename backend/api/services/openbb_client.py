@@ -16,6 +16,20 @@ class OpenBBClient:
 
     def __init__(self):
         self.provider = DEFAULT_PROVIDER
+        # Ensure FMP API key is set if available
+        self._configure_fmp_key()
+    
+    def _configure_fmp_key(self):
+        """Configure FMP API key in OpenBB if available."""
+        try:
+            fmp_key = os.getenv("FMP_API_KEY")
+            if fmp_key:
+                obb.user.credentials.fmp_api_key = fmp_key
+                LOGGER.info("✅ FMP API key configured in OpenBB")
+            else:
+                LOGGER.warning("⚠️ FMP_API_KEY not found in environment. FMP features may be limited.")
+        except Exception as e:
+            LOGGER.warning(f"Could not configure FMP key: {e}")
 
     def get_price_history(self, symbol: str, start_date: str = "2010-01-01") -> Any:
         """

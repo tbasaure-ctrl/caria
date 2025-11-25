@@ -56,8 +56,12 @@ class SimpleValuationService:
             return self._fallback_response(ticker, current_price, str(e))
 
     def _fetch_metrics(self, ticker: str) -> Optional[Dict[str, Any]]:
-        """Fetch necessary metrics from OpenBB."""
+        """Fetch necessary metrics from OpenBB/FMP. Ensures FMP is used first."""
         try:
+            # Force FMP provider for critical data
+            LOGGER.info(f"Fetching metrics for {ticker} from FMP via OpenBB...")
+            
+            # Try to get comprehensive data
             data = self.obb_client.get_ticker_data(ticker)
             
             # Extract Data
@@ -82,9 +86,51 @@ class SimpleValuationService:
             if "netIncomePerShare" in mapped_metrics and "netIncomePerShareTTM" not in mapped_metrics:
                 mapped_metrics["netIncomePerShareTTM"] = mapped_metrics["netIncomePerShare"]
 
+            # If we don't have critical data, try direct FMP calls
+            if not mapped_metrics.get("freeCashFlowPerShareTTM") and not mapped_metrics.get("revenueTTM"):
+                LOGGER.warning(f"Missing critical metrics for {ticker}, trying direct FMP calls...")
+                try:
+                    # Try direct FMP calls for missing data
+                    from openbb import obb
+                    import os
+                    fmp_key = os.getenv("FMP_API_KEY")
+                    if fmp_key:
+                        obb.user.credentials.fmp_api_key = fmp_key
+                    
+                    # Get key metrics directly
+                    metrics_direct = obb.equity.fundamental.metrics(symbol=ticker, provider="fmp", limit=1)
+                    if metrics_direct and hasattr(metrics_direct, 'to_df'):
+                        df_metrics = metrics_direct.to_df()
+                        if not df_metrics.empty:
+                            direct_metrics = df_metrics.iloc[0].replace({float('nan'): None}).to_dict()
+                            # Merge with existing
+                            for k, v in direct_metrics.items():
+                                if v is not None and k not in mapped_metrics:
+                                    mapped_metrics[k] = v
+                    
+                    # Get ratios directly
+                    ratios_direct = obb.equity.fundamental.ratios(symbol=ticker, provider="fmp", limit=1)
+                    if ratios_direct and hasattr(ratios_direct, 'to_df'):
+                        df_ratios = ratios_direct.to_df()
+                        if not df_ratios.empty:
+                            direct_ratios = df_ratios.iloc[0].replace({float('nan'): None}).to_dict()
+                            for k, v in direct_ratios.items():
+                                if v is not None and k not in mapped_metrics:
+                                    mapped_metrics[k] = v
+                    
+                    LOGGER.info(f"✅ Successfully fetched additional metrics for {ticker} from FMP")
+                except Exception as direct_e:
+                    LOGGER.warning(f"Direct FMP calls failed for {ticker}: {direct_e}")
+
+            # Validate we have at least some data
+            if not mapped_metrics:
+                LOGGER.error(f"No metrics retrieved for {ticker}")
+                return None
+                
+            LOGGER.info(f"✅ Retrieved {len(mapped_metrics)} metrics for {ticker}")
             return mapped_metrics
         except Exception as e:
-            LOGGER.error(f"Error fetching OpenBB data: {e}")
+            LOGGER.error(f"Error fetching OpenBB/FMP data for {ticker}: {e}")
             return None
 
     def _extract_first(self, obb_object: Any) -> Dict[str, Any]:

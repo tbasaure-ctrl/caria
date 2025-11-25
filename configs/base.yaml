@@ -28,14 +28,14 @@ mlflow:
   tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,http://localhost:5000}
 
 retrieval:
-  provider: ${oc.env:RETRIEVAL_PROVIDER,openai}
-  embedding_model: ${oc.env:RETRIEVAL_EMBEDDING_MODEL,text-embedding-3-small}
-  embedding_dim: ${oc.env:RETRIEVAL_EMBEDDING_DIM,1536}
+  provider: ${oc.env:RETRIEVAL_PROVIDER,local}
+  embedding_model: ${oc.env:RETRIEVAL_EMBEDDING_MODEL,sentence-transformers/all-MiniLM-L6-v2}
+  embedding_dim: ${oc.env:RETRIEVAL_EMBEDDING_DIM,384}
   top_k: 5
   similarity_threshold: 0.75
 
 vector_store:
   connection: postgresql://${database.user}:${database.password}@${database.host}:${database.port}/${database.db}
-  embedding_table: ${oc.env:PGVECTOR_TABLE,embeddings}
+  embedding_table: ${oc.env:PGVECTOR_TABLE,wisdom_chunks}
   schema: ${database.schema}
 

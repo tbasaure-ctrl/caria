@@ -1,6 +1,6 @@
 """
 LLM Service for handling RAG interactions.
-Supports Groq (Llama), Claude, and Gemini as fallbacks.
+Uses OpenAI-compatible API (e.g. Groq) as primary provider.
 """
 import json
 import logging
@@ -8,20 +8,22 @@ import os
 from typing import Any, List, Optional, Tuple
 
 import requests
-import google.generativeai as genai
 
 LOGGER = logging.getLogger("caria.api.services.llm")
-DEFAULT_GROQ_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
 
 class LLMService:
     def __init__(self, retriever=None, embedder=None):
         self.retriever = retriever
         self.embedder = embedder
         
-        # Initialize Gemini if key exists
-        self.gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-        if self.gemini_key:
-            genai.configure(api_key=self.gemini_key)
+        # Load configuration
+        self.api_key = os.getenv("OPENAI_API_KEY")
+        # Default to Groq if not set, but respect env var
+        self.base_url = os.getenv("OPENAI_BASE_URL", "https://api.groq.com/openai/v1/chat/completions") 
+        self.model = os.getenv("OPENAI_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
+
+        if not self.api_key:
+            LOGGER.warning("OPENAI_API_KEY not set. LLM calls will fail.")
 
     def get_rag_context(self, query: str, top_k: int = 5) -> Tuple[str, List[dict]]:
         """
@@ -65,104 +67,51 @@ class LLMService:
 
     def call_llm(self, prompt: str, system_prompt: Optional[str] = None, use_fallback: bool = False) -> Optional[str]:
         """
-        Call LLM with fallback chain: Groq -> Claude -> Gemini.
+        Call LLM using OpenAI-compatible endpoint.
         """
-        # 1. Try Claude if structured output needed or fallback requested
-        if use_fallback or self._needs_structured_output(prompt, system_prompt):
-            result = self._call_claude(prompt, system_prompt)
-            if result: return result
-            LOGGER.warning("Claude fallback failed, trying Groq...")
+        if not self.api_key:
+            return "Error: API Key no configurada."
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
         
-        # 2. Try Groq (Llama)
-        result = self._call_llama(prompt, system_prompt)
-        if result: return result
-        
-        # 3. Try Claude (if not tried yet)
-        if not use_fallback:
-            LOGGER.info("Groq failed, trying Claude...")
-            result = self._call_claude(prompt, system_prompt)
-            if result: return result
-
-        # 4. Try Gemini (Last resort / Free tier often available)
-        LOGGER.info("All primary models failed, trying Gemini...")
-        result = self._call_gemini(prompt, system_prompt)
-        if result: return result
-        
-        return "Lo siento, el servicio de análisis no está disponible en este momento (API Keys missing or quota exceeded)."
-    
-    def _needs_structured_output(self, prompt: str, system_prompt: Optional[str] = None) -> bool:
-        combined = (system_prompt or "") + " " + prompt
-        keywords = ["json", "structured", "format", "schema", "parse", "extract"]
-        return any(keyword in combined.lower() for keyword in keywords)
-
-    def _call_llama(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
-        api_key = os.getenv("LLAMA_API_KEY")
-        api_url = os.getenv("LLAMA_API_URL", "https://api.groq.com/openai/v1/chat/completions")
-        model = os.getenv("LLAMA_MODEL", DEFAULT_GROQ_MODEL)
-
-        if not api_key: return None
-
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
         messages = []
-        if system_prompt: messages.append({"role": "system", "content": system_prompt})
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
-        return self._invoke_groq(api_url, headers, messages, model)
-
-    def _invoke_groq(self, api_url: str, headers: dict, messages: list, model: str) -> Optional[str]:
         try:
-            resp = requests.post(api_url, headers=headers, json={"model": model, "messages": messages}, timeout=40)
-            resp.raise_for_status()
-            return resp.json().get("choices", [{}])[0].get("message", {}).get("content", "")
-        except Exception as e:
-            LOGGER.warning(f"Groq call failed: {e}")
-            return None
-    
-    def _call_claude(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
-        api_key = os.getenv("ANTHROPIC_API_KEY")
-        if not api_key: return None
-        
-        try:
+            # Handle full URL vs base URL
+            # If base_url ends with /chat/completions, use it directly.
+            # If it looks like a base (e.g. .../v1), append /chat/completions if missing?
+            # User provided: https://api.groq.com/openai/v1/chat/completions
+            # We'll use it as is if it looks complete.
+            
+            url = self.base_url
+            if "chat/completions" not in url:
+                 url = url.rstrip("/") + "/chat/completions"
+            
             resp = requests.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": api_key, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
+                url, 
+                headers=headers, 
                 json={
-                    "model": "claude-3-5-sonnet-20241022",
-                    "max_tokens": 4096,
-                    "messages": [{"role": "user", "content": prompt}],
-                    "system": system_prompt
-                },
+                    "model": self.model, 
+                    "messages": messages,
+                    "temperature": 0.3
+                }, 
                 timeout=60
             )
             resp.raise_for_status()
-            content = resp.json().get("content", [])
-            if content: return content[0].get("text", "")
-        except Exception as e:
-            LOGGER.warning(f"Claude call failed: {e}")
-            return None
-        return None
-
-    def _call_gemini(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
-        """Fallback to Google Gemini."""
-        if not self.gemini_key:
-            LOGGER.warning("GEMINI_API_KEY not configured")
-            return None
+            data = resp.json()
+            return data.get("choices", [{}])[0].get("message", {}).get("content", "")
             
-        try:
-            model = genai.GenerativeModel('gemini-2.0-flash') # Use efficient model
-            
-            # Combine system prompt if present
-            full_prompt = prompt
-            if system_prompt:
-                full_prompt = f"System Instruction: {system_prompt}\n\nUser Request: {prompt}"
-                
-            response = model.generate_content(full_prompt)
-            if response and response.text:
-                return response.text
         except Exception as e:
-            LOGGER.warning(f"Gemini call failed: {e}")
-            return None
-        return None
+            LOGGER.error(f"LLM call failed: {e}")
+            if hasattr(e, 'response') and e.response:
+                LOGGER.error(f"Response: {e.response.text}")
+            return "Lo siento, hubo un error al procesar tu solicitud con el modelo."
 
     def parse_json_response(self, text: str) -> dict:
         try:

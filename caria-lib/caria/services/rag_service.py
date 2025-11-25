@@ -44,13 +44,12 @@ class RAGService:
         self.embedder = embedder
         self.settings = settings
 
-        # ---------- Llama (Groq OpenAI-compatible endpoint) ----------
-        self.llama_base_url = os.getenv("LLAMA_API_URL")  # p.ej. https://api.groq.com/openai
-        self.llama_api_key = os.getenv("LLAMA_API_KEY")
-        self.llama_model_name = os.getenv(
-            "LLAMA_MODEL_NAME", "llama-3.1-70b-instruct"
-        )
-        self.llama_available = bool(self.llama_base_url and self.llama_api_key)
+        # ---------- OpenAI Compatible (Groq) ----------
+        self.base_url = os.getenv("OPENAI_BASE_URL", "https://api.groq.com/openai/v1/chat/completions")
+        self.api_key = os.getenv("OPENAI_API_KEY")
+        self.model = os.getenv("OPENAI_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
+        
+        self.llm_available = bool(self.api_key)
 
     # ------------------------------------------------------------------
     # Helpers internos
@@ -205,17 +204,20 @@ class RAGService:
     # Llamadas a LLM
     # ------------------------------------------------------------------
 
-    def _call_llama(self, prompt: str) -> Dict[str, Any]:
-        if not self.llama_available:
-            raise RuntimeError("Llama no configurado")
+    def _call_llm(self, prompt: str) -> Dict[str, Any]:
+        if not self.llm_available:
+            raise RuntimeError("LLM no configurado")
 
-        url = self.llama_base_url.rstrip("/") + "/v1/chat/completions"
+        url = self.base_url
+        if "chat/completions" not in url and not url.endswith("/"):
+             url += "/chat/completions"
+
         headers = {
-            "Authorization": f"Bearer {self.llama_api_key}",
+            "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
         payload = {
-            "model": self.llama_model_name,
+            "model": self.model,
             "messages": [
                 {"role": "system", "content": "Eres un analista de inversiones racional."},
                 {"role": "user", "content": prompt},
@@ -245,13 +247,13 @@ class RAGService:
 
         prompt = self._build_prompt(thesis, ticker, chunks)
 
-        # Intentar Llama
-        if self.llama_available:
+        # Intentar LLM
+        if self.llm_available:
             try:
-                data = self._call_llama(prompt)
+                data = self._call_llm(prompt)
                 return self._normalize_output(thesis, ticker, chunks, data)
             except Exception as exc:
-                print(f"[RAGService] Error con Llama, usando fallback básico: {exc}")
+                print(f"[RAGService] Error con LLM, usando fallback básico: {exc}")
 
         # Fallback básico
         return self._basic_fallback(thesis, ticker, chunks)

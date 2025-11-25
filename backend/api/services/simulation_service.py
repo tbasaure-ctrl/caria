@@ -450,9 +450,10 @@ class SimulationService:
             return []
 
         # Try multiple paths for robustness
+        base_dir = Path(__file__).resolve().parents[3]
         paths = [
-            Path(r"c:\key\wise_adviser_cursor_context\notebooks\data\raw\wisdom\2025-11-08\historical_events_wisdom.jsonl"),
-            Path(__file__).resolve().parents[3] / "data" / "raw" / "wisdom" / "2025-11-08" / "historical_events_wisdom.jsonl"
+            base_dir / "caria_data" / "raw" / "wisdom" / "historical_events_wisdom.jsonl",
+            base_dir / "data" / "raw" / "wisdom" / "historical_events_wisdom.jsonl"
         ]
         
         events = []

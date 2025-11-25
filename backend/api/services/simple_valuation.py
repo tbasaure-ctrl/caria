@@ -67,7 +67,14 @@ class SimpleValuationService:
             # Extract Data
             key_metrics = self._extract_first(data.get("key_metrics"))
             ratios = self._extract_first(data.get("multiples"))
-            financials = self._extract_first(data.get("financials"))
+            
+            # Handle financials - it's a dict with income_statement, cash_flow
+            financials_dict = data.get("financials", {})
+            income_statement = self._extract_first(financials_dict.get("income_statement"))
+            cash_flow = self._extract_first(financials_dict.get("cash_flow"))
+            # Merge income and cash flow
+            financials = {**(income_statement or {}), **(cash_flow or {})}
+            
             growth = self._extract_first(data.get("growth"))
 
             # Map fields to expected format if necessary

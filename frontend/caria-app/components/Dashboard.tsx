@@ -15,8 +15,6 @@ import { ThesisArena } from './widgets/ThesisArena';
 import { ResearchSection } from './ResearchSection';
 import { CrisisSimulator } from './widgets/CrisisSimulator';
 import { MacroSimulator } from './widgets/MacroSimulator';
-import { AlphaStockPicker } from './widgets/AlphaStockPicker';
-import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
 const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void; id?: string }> = ({ onStartAnalysis, onEnterArena, id }) => (
@@ -206,7 +204,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
             {/* Tab Content */}
             <div className="fade-in delay-200">
-                {/* PORTFOLIO TAB - Market overview and portfolio management combined */}
+                {/* PORTFOLIO TAB - Market overview, portfolio management, and stress testing */}
                 {activeTab === 'portfolio' && (
                     <div className="space-y-8">
                         {/* Global Market Bar - Full Width */}
@@ -227,10 +225,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         <div className="grid grid-cols-1 gap-8">
                             <ModelPortfolioWidget />
                         </div>
+                        
+                        {/* Scenario Analysis - Stress test your portfolio */}
+                        <div className="mt-4">
+                            <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--color-cream)', fontFamily: "'Instrument Serif', serif" }}>
+                                📊 Scenario Analysis
+                            </h2>
+                            <p className="text-sm text-slate-400 mb-4">Stress test your portfolio against historical crises and macroeconomic scenarios</p>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <CrisisSimulator />
+                                <MacroSimulator />
+                            </div>
+                        </div>
                     </div>
                 )}
 
-                {/* ANALYSIS TAB - Valuation, thesis, and community */}
+                {/* ANALYSIS TAB - Investment thesis and community */}
                 {activeTab === 'analysis' && (
                     <div className="space-y-8">
                         {/* Thesis Analysis */}
@@ -248,15 +258,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             <CommunityFeed />
                             <RankingsWidget />
                         </div>
-
-                        {/* Simulators */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <CrisisSimulator />
-                            <MacroSimulator />
-                        </div>
-                        
-                        {/* Alpha Stock Picker */}
-                        <AlphaStockPicker />
                     </div>
                 )}
 

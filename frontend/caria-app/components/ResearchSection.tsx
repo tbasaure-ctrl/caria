@@ -2,8 +2,8 @@ import React from 'react';
 import { ValuationTool } from './widgets/ValuationTool';
 import { RedditSentiment } from './widgets/RedditSentiment';
 import { Resources } from './widgets/Resources';
-import { WeeklyContent } from './widgets/WeeklyContent';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
+import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 
 /**
  * ResearchSection - Groups related research and analysis widgets together
@@ -27,14 +27,14 @@ export const ResearchSection: React.FC = () => {
                 {/* Valuation Tool - Full Width (includes Monte Carlo price simulation) */}
                 <ValuationTool />
 
-                {/* Two Column Layout for Community Content */}
+                {/* Alpha Stock Picker - Find undervalued opportunities */}
+                <AlphaStockPicker />
+
+                {/* Two Column Layout for Social & Resources */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <RedditSentiment />
                     <Resources />
                 </div>
-
-                {/* Weekly Content - Full Width */}
-                <WeeklyContent />
             </div>
         </div>
     );

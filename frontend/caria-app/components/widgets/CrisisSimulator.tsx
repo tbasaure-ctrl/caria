@@ -30,11 +30,26 @@ interface SimulationResult {
     };
 }
 
+type Timeframe = '1d' | '1m' | '1y';
+
 export const CrisisSimulator: React.FC = () => {
     const [selectedCrisis, setSelectedCrisis] = useState(CRISES[7].id); // Default 2008
+    const [timeframe, setTimeframe] = useState<Timeframe>('1m');
     const [result, setResult] = useState<SimulationResult | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    
+    const timeframeLabels = {
+        '1d': '1 Day',
+        '1m': '1 Month', 
+        '1y': '1 Year'
+    };
+    
+    const timeframeMessages = {
+        '1d': 'Even the worst days eventually end.',
+        '1m': 'Markets often recover faster than fear suggests.',
+        '1y': 'History shows: this too shall pass.'
+    };
 
     const handleSimulate = async () => {
         setLoading(true);
@@ -52,6 +67,7 @@ export const CrisisSimulator: React.FC = () => {
                 body: JSON.stringify({
                     portfolio,
                     crisis_id: selectedCrisis,
+                    timeframe: timeframe,
                 }),
             });
 
@@ -69,7 +85,7 @@ export const CrisisSimulator: React.FC = () => {
     };
 
     return (
-        <WidgetCard title="HISTORICAL CRISIS SIMULATOR" tooltip="Stress test your portfolio against major historical market crashes.">
+        <WidgetCard title="HISTORICAL CRISIS SIMULATOR" tooltip="Stress test your portfolio against major historical market crashes. See how markets recover over different timeframes.">
             <div className="space-y-4">
                 <div className="flex gap-2">
                     <select
@@ -90,6 +106,26 @@ export const CrisisSimulator: React.FC = () => {
                     >
                         {loading ? 'Simulating...' : 'Run Simulation'}
                     </button>
+                </div>
+                
+                {/* Timeframe Selector */}
+                <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-500">View recovery:</span>
+                    <div className="flex gap-1 bg-gray-900/50 rounded p-1">
+                        {(['1d', '1m', '1y'] as Timeframe[]).map((tf) => (
+                            <button
+                                key={tf}
+                                onClick={() => setTimeframe(tf)}
+                                className={`px-3 py-1 rounded text-xs font-medium transition-all ${
+                                    timeframe === tf 
+                                        ? 'bg-blue-600 text-white' 
+                                        : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                                }`}
+                            >
+                                {timeframeLabels[tf]}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {error && <div className="text-red-400 text-xs">{error}</div>}
@@ -162,6 +198,13 @@ export const CrisisSimulator: React.FC = () => {
                                 style={{ width: '100%', height: '100%' }}
                                 config={{ displayModeBar: false }}
                             />
+                        </div>
+                        
+                        {/* Inspirational message */}
+                        <div className="text-center py-2 px-4 bg-emerald-900/20 rounded border border-emerald-800/30">
+                            <p className="text-emerald-300 text-sm italic">
+                                "{timeframeMessages[timeframe]}"
+                            </p>
                         </div>
                     </div>
                 )}

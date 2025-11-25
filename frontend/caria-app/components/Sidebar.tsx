@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { CariaLogoIcon, LogoutIcon, DashboardIcon, CommunityIcon, ThesisIcon, ChartIcon } from './Icons';
-import { ChatWindow } from './ChatWindow';
+import { CariaLogoIcon, LogoutIcon, DashboardIcon, CommunityIcon, ThesisIcon } from './Icons';
 
 interface SidebarProps {
     onLogout: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
-    const [showChat, setShowChat] = useState(false);
+    const [showProfile, setShowProfile] = useState(false);
 
     const getLinkClass = ({ isActive }: { isActive: boolean }) => `
         p-3 rounded-lg block transition-all duration-200
@@ -60,29 +59,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
                             </li>
                             <li>
                                 <button
-                                    onClick={() => setShowChat(!showChat)}
+                                    onClick={() => setShowProfile(!showProfile)}
                                     className="p-3 rounded-lg transition-all duration-200"
                                     style={{
-                                      backgroundColor: showChat ? 'var(--color-bg-tertiary)' : 'transparent',
-                                      color: showChat ? 'var(--color-cream)' : 'var(--color-text-muted)'
+                                      backgroundColor: showProfile ? 'var(--color-bg-tertiary)' : 'transparent',
+                                      color: showProfile ? 'var(--color-cream)' : 'var(--color-text-muted)'
                                     }}
                                     onMouseEnter={(e) => {
-                                      if (!showChat) {
+                                      if (!showProfile) {
                                         e.currentTarget.style.backgroundColor = 'var(--color-bg-tertiary)';
                                         e.currentTarget.style.color = 'var(--color-cream)';
                                       }
                                     }}
                                     onMouseLeave={(e) => {
-                                      if (!showChat) {
+                                      if (!showProfile) {
                                         e.currentTarget.style.backgroundColor = 'transparent';
                                         e.currentTarget.style.color = 'var(--color-text-muted)';
                                       }
                                     }}
-                                    title="Chat"
-                                    aria-label="Open Chat"
+                                    title="Profile & Settings"
+                                    aria-label="Open Profile"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
                                 </button>
                             </li>
@@ -107,9 +106,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
                     <LogoutIcon className="w-6 h-6" />
                 </button>
             </aside>
-            {showChat && (
-                <div className="fixed bottom-4 right-4 w-96 h-[600px] z-50 md:right-24">
-                    <ChatWindow onClose={() => setShowChat(false)} />
+            {/* Profile Panel - Coming Soon */}
+            {showProfile && (
+                <div className="fixed bottom-4 right-4 w-80 z-50 md:right-24 bg-gray-900 rounded-lg border border-slate-700 shadow-xl p-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold text-slate-200">Profile & Settings</h3>
+                        <button onClick={() => setShowProfile(false)} className="text-slate-400 hover:text-white">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div className="text-center py-8">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
+                            <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                        <p className="text-slate-400 text-sm">User profile and settings</p>
+                        <p className="text-slate-500 text-xs mt-2">Coming soon</p>
+                    </div>
                 </div>
             )}
         </>

@@ -90,6 +90,7 @@ from api.routes.lectures import router as lectures_router
 from api.routes.debug_secrets import router as debug_secrets_router
 from api.routes.scoring import router as scoring_router, score_router as score_public_router
 from api.routes.screener import router as screener_router
+from api.routes.simulation import router as simulation_router
 
 
 # WebSocket support per audit document
@@ -359,6 +360,7 @@ app.include_router(score_public_router)
 app.include_router(screener_router)
 from api.routes.alpha_picks import router as alpha_picks_router
 app.include_router(alpha_picks_router)
+app.include_router(simulation_router)  # Crisis Simulator and Macro Multiverse
 
 
 # Mount SocketIO app for WebSocket support per audit document

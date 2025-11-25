@@ -17,6 +17,7 @@ import { ResearchSection } from './ResearchSection';
 import { CrisisSimulator } from './widgets/CrisisSimulator';
 import { MacroSimulator } from './widgets/MacroSimulator';
 import { MindMap } from './widgets/MindMap';
+import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
 const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void; id?: string }> = ({ onStartAnalysis, onEnterArena, id }) => (
@@ -161,62 +162,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     Investment Dashboard
                 </h1>
                 <p className="text-base md:text-lg"
-                   style={{
-                       fontFamily: "'Crimson Pro', Georgia, serif",
-                       color: 'rgba(232, 230, 227, 0.6)',
-                       lineHeight: '1.6'
-                   }}>
+                    style={{
+                        fontFamily: "'Crimson Pro', Georgia, serif",
+                        color: 'rgba(232, 230, 227, 0.6)',
+                        lineHeight: '1.6'
+                    }}>
                     Your comprehensive view of market insights and portfolio analysis
                 </p>
             </div>
 
-<<<<<<< HEAD
-            {/* Global Market Bar - Full Width */}
-            <div className="mb-6 fade-in delay-100">
-                <WidgetErrorBoundary><GlobalMarketBar id="market-bar-widget" /></WidgetErrorBoundary>
-            </div>
-
-            {/* TOP ROW: Market Indicators - Full Width */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 fade-in delay-200">
-                <WidgetErrorBoundary><ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} /></WidgetErrorBoundary>
-                <WidgetErrorBoundary><FearGreedIndex /></WidgetErrorBoundary>
-            </div>
-
-            {/* MAIN CONTENT: 3 Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                {/* LEFT COLUMN: Portfolio Management */}
-                <div className="space-y-6 fade-in delay-300">
-                    <WidgetErrorBoundary><Portfolio id="portfolio-widget" /></WidgetErrorBoundary>
-                    <WidgetErrorBoundary><PortfolioAnalytics /></WidgetErrorBoundary>
-                </div>
-
-                {/* CENTER COLUMN: Analysis & Simulation */}
-                <div className="space-y-6 fade-in delay-400">
-                    <WidgetErrorBoundary><StartAnalysisCTA
-                        onStartAnalysis={onStartAnalysis}
-                        onEnterArena={() => setShowArena(true)}
-                        id="analysis-cta-widget"
-                    /></WidgetErrorBoundary>
-                    <WidgetErrorBoundary><ModelPortfolioWidget /></WidgetErrorBoundary>
-                    <WidgetErrorBoundary><RegimeTestWidget /></WidgetErrorBoundary>
-                    <WidgetErrorBoundary><MonteCarloSimulation /></WidgetErrorBoundary>
-                </div>
-
-                {/* RIGHT COLUMN: Community & Rankings */}
-                <div className="space-y-6 fade-in delay-500">
-                    <WidgetErrorBoundary><CommunityFeed /></WidgetErrorBoundary>
-                    {/* <RankingsWidget /> */} {/* Commented out - requires thesis_arena_threads table */}
-                </div>
-            </div>
-
-            {/* RESEARCH SECTION: Full Width Row */}
-            <div className="mb-8 fade-in delay-600">
-                <WidgetErrorBoundary><ResearchSection /></WidgetErrorBoundary>
-=======
             {/* Tab Navigation */}
             <div className="mb-8 fade-in delay-100">
                 <div className="flex flex-wrap gap-3 md:gap-4 border-b pb-4"
-                     style={{ borderColor: 'rgba(74, 144, 226, 0.2)' }}>
+                    style={{ borderColor: 'rgba(74, 144, 226, 0.2)' }}>
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
@@ -253,23 +211,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {activeTab === 'portfolio' && (
                     <div className="space-y-8">
                         {/* Global Market Bar - Full Width */}
-                        <GlobalMarketBar id="market-bar-widget" />
+                        <WidgetErrorBoundary><GlobalMarketBar id="market-bar-widget" /></WidgetErrorBoundary>
 
                         {/* Market Indicators Row */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
-                            <FearGreedIndex />
+                            <WidgetErrorBoundary><ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} /></WidgetErrorBoundary>
+                            <WidgetErrorBoundary><FearGreedIndex /></WidgetErrorBoundary>
                         </div>
 
                         {/* Portfolio Management */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <Portfolio id="portfolio-widget" />
-                            <PortfolioAnalytics />
+                            <WidgetErrorBoundary><Portfolio id="portfolio-widget" /></WidgetErrorBoundary>
+                            <WidgetErrorBoundary><PortfolioAnalytics /></WidgetErrorBoundary>
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <ModelPortfolioWidget />
-                            <MonteCarloSimulation />
+                            <WidgetErrorBoundary><ModelPortfolioWidget /></WidgetErrorBoundary>
+                            <WidgetErrorBoundary><MonteCarloSimulation /></WidgetErrorBoundary>
                         </div>
                     </div>
                 )}
@@ -277,17 +235,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {/* ANALYSIS TAB - Valuation, thesis, and community */}
                 {activeTab === 'analysis' && (
                     <div className="space-y-8">
-                        <StartAnalysisCTA
+                        <WidgetErrorBoundary><StartAnalysisCTA
                             onStartAnalysis={onStartAnalysis}
                             onEnterArena={() => setShowArena(true)}
                             id="analysis-cta-widget"
-                        />
+                        /></WidgetErrorBoundary>
 
-                        <ResearchSection />
+                        <WidgetErrorBoundary><ResearchSection /></WidgetErrorBoundary>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <CommunityFeed />
-                            <RankingsWidget />
+                            <WidgetErrorBoundary><CommunityFeed /></WidgetErrorBoundary>
+                            {/* <RankingsWidget /> */}
                         </div>
                     </div>
                 )}
@@ -296,17 +254,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {activeTab === 'research' && (
                     <div className="space-y-8">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <RegimeTestWidget />
-                            <MonteCarloSimulation />
+                            <WidgetErrorBoundary><RegimeTestWidget /></WidgetErrorBoundary>
+                            <WidgetErrorBoundary><MonteCarloSimulation /></WidgetErrorBoundary>
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <CrisisSimulator />
-                            <MacroSimulator />
+                            <WidgetErrorBoundary><CrisisSimulator /></WidgetErrorBoundary>
+                            <WidgetErrorBoundary><MacroSimulator /></WidgetErrorBoundary>
                         </div>
-                        <MindMap />
+                        {/* Replaced MindMap with AlphaStockPicker */}
+                        <WidgetErrorBoundary><AlphaStockPicker /></WidgetErrorBoundary>
                     </div>
                 )}
->>>>>>> efe767c2407a4ef7c83c015b1f4e7fd6f9729ae8
             </div>
 
             {/* Thesis Arena Modal */}
@@ -347,5 +305,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 </div>
             )}
         </main>
+    );
+};
+className = "text-2xl font-bold"
+style = {{
+    fontFamily: 'var(--font-display)',
+        color: 'var(--color-cream)',
+                            }}
+                        >
+    Thesis Arena
+                        </h2 >
+    <button
+        onClick={() => setShowArena(false)}
+        className="text-2xl font-bold"
+        style={{ color: 'var(--color-text-secondary)' }}
+    >
+        ×
+    </button>
+                    </div >
+    <ThesisArena onClose={() => setShowArena(false)} />
+                </div >
+            </div >
+            )}
+        </main >
     );
 };

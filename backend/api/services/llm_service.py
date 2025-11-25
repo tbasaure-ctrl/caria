@@ -90,8 +90,8 @@ class LLMService:
             # We'll use it as is if it looks complete.
             
             url = self.base_url
-            if "chat/completions" not in url and not url.endswith("/"):
-                 url += "/chat/completions"
+            if "chat/completions" not in url:
+                 url = url.rstrip("/") + "/chat/completions"
             
             resp = requests.post(
                 url, 

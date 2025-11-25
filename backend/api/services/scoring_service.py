@@ -45,6 +45,9 @@ class ScoringService:
 
         # 2. Calculate Raw Metrics
         metrics = self._calculate_metrics(ticker, financials, prices, quote)
+        if not metrics:
+             LOGGER.warning(f"Insufficient metrics calculated for {ticker}")
+             return self._empty_score(ticker)
         
         # 3. Calculate Scores (Quality, Valuation, Momentum)
         # We use 'standard' Z-score-like normalization using fixed market means/stds

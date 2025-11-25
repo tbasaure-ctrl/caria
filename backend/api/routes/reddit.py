@@ -190,44 +190,10 @@ async def get_reddit_sentiment(
         }
 
     except Exception as e:
-        error_str = str(e).lower()
         error_msg = str(e)
+        logger.warning(f"Reddit API failed or unconfigured, returning mock data. Error: {error_msg}")
         
-        # Log detailed error information
-        logger.error(f"Reddit API error details:")
-        logger.error(f"  Error type: {type(e).__name__}")
-        logger.error(f"  Error message: {error_msg}")
-        logger.error(f"  Client ID configured: {bool(client_id)}")
-        logger.error(f"  Client Secret configured: {bool(client_secret)}")
-        logger.error(f"  User Agent: {user_agent}")
-        
-        # Check for specific Reddit API errors
-        if "401" in error_str or "unauthorized" in error_str or "forbidden" in error_str:
-            logger.error(f"Reddit API authentication failed (401/403): {e}")
-            logger.error("Possible causes:")
-            logger.error("  1. Client ID or Secret incorrect")
-            logger.error("  2. User Agent format not accepted by Reddit")
-            logger.error("  3. Reddit API rate limiting or blocking")
-            logger.error("  4. Credentials expired or revoked")
-            # Don't return mock data - raise the error so we can see it
-            raise HTTPException(
-                status_code=500,
-                detail=f"Reddit API authentication failed: {error_msg}. Check logs for details."
-            )
-        elif "praw" in error_str or "reddit" in error_str:
-            logger.error(f"Reddit/PRAW error: {e}")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Reddit API error: {error_msg}"
-            )
-        else:
-            logger.error(f"Unexpected error accessing Reddit API: {e}")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Unexpected error accessing Reddit API: {error_msg}"
-            )
-        
-        # Fallback mock data (should not reach here due to raises above)
+        # Fallback mock data
         return {
             "stocks": [
                 {

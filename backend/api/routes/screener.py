@@ -24,11 +24,14 @@ class CScoreScreenRequest(BaseModel):
 class ScreenerItem(BaseModel):
     ticker: str
     cScore: float
+    hiddenGemScore: float
     classification: str | None
     qualityScore: float
     valuationScore: float
     momentumScore: float
-    qualitativeMoatScore: float | None = None
+    current_price: float | None = None
+    details: dict | None = None
+    explanations: dict | None = None
 
 
 class CScoreScreenResponse(BaseModel):
@@ -61,14 +64,84 @@ def screen_cscore(
             ScreenerItem(
                 ticker=ticker,
                 cScore=score["cScore"],
+                hiddenGemScore=score.get("hiddenGemScore", score["cScore"]),
                 classification=score.get("classification"),
                 qualityScore=score["qualityScore"],
                 valuationScore=score["valuationScore"],
                 momentumScore=score["momentumScore"],
-                qualitativeMoatScore=score.get("qualitativeMoatScore"),
+                current_price=score.get("current_price"),
+                details=score.get("details"),
+                explanations=score.get("explanations"),
             )
         )
 
     results.sort(key=lambda item: item.cScore, reverse=True)
     return CScoreScreenResponse(results=results)
+
+
+@router.get("/hidden-gems", response_model=CScoreScreenResponse)
+def get_hidden_gems(
+    limit: int = 10,
+    current_user: UserInDB = Depends(get_current_user),
+) -> CScoreScreenResponse:
+    """
+    Discover 'Hidden Gems' using FMP screener and our custom scoring model.
+    1. Fetches candidates from FMP (profitable, non-huge, growing).
+    2. Scores them with our detailed model.
+    3. Returns the top ranked stocks.
+    """
+    # 1. Fetch Candidates from FMP
+    # Criteria: Market Cap > 200M, Beta < 1.5, Dividend > 0 (optional), etc.
+    # We want "hidden gems": maybe reasonable valuation?
+    try:
+        # FMP Screener params
+        params = {
+            "marketCapMoreThan": 200_000_000,
+            "isEtf": "false",
+            "isFund": "false",
+            "limit": 50, # Get pool of 50
+            "exchange": "NASDAQ,NYSE,AMEX"
+        }
+        candidates = _screener_scoring.fmp.get_stock_screener(params)
+    except Exception as e:
+        LOGGER.error(f"Failed to fetch from FMP screener: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch candidates from data provider")
+
+    # 2. Score them
+    results: List[ScreenerItem] = []
+    # We take the first 'limit' * 2 to score, then sort.
+    # Scoring is slow (multiple API calls), so we limit the pool we fully analyze.
+    
+    pool = candidates[: (limit * 2) if limit < 10 else 20] 
+    
+    for cand in pool:
+        ticker = cand.get("symbol")
+        if not ticker:
+            continue
+            
+        try:
+            score = _screener_scoring.get_scores(ticker)
+            if score["cScore"] < 50: # Basic filter
+                continue
+                
+            results.append(
+                ScreenerItem(
+                    ticker=ticker,
+                    cScore=score["cScore"],
+                    hiddenGemScore=score.get("hiddenGemScore", score["cScore"]),
+                    classification=score.get("classification"),
+                    qualityScore=score["qualityScore"],
+                    valuationScore=score["valuationScore"],
+                    momentumScore=score["momentumScore"],
+                    current_price=score.get("current_price"),
+                    details=score.get("details"),
+                    explanations=score.get("explanations"),
+                )
+            )
+        except Exception:
+            continue
+
+    # 3. Sort and limit
+    results.sort(key=lambda item: item.hiddenGemScore, reverse=True)
+    return CScoreScreenResponse(results=results[:limit])
 

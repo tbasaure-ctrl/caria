@@ -9,12 +9,12 @@ orchestration:
 
 vector_store:
   connection: postgresql://${oc.env:POSTGRES_USER,caria_prod}:${oc.env:POSTGRES_PASSWORD,changeme}@${oc.env:POSTGRES_HOST,prod-db}:${oc.env:POSTGRES_PORT,5432}/${oc.env:POSTGRES_DB,caria_prod}
-  embedding_table: wisdom_embeddings_prod
+  embedding_table: wisdom_chunks
 
 retrieval:
-  provider: openai
-  embedding_model: text-embedding-3-large
-  embedding_dim: 3072
+  provider: local
+  embedding_model: sentence-transformers/all-MiniLM-L6-v2
+  embedding_dim: 384
   top_k: 10
   similarity_threshold: 0.8
 

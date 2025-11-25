@@ -56,17 +56,23 @@ def main():
         return
 
     # Path to data
-    # c:\key\wise_adviser_cursor_context\notebooks\data\raw\wisdom\2025-11-08\wisdom_corpus_unified_final.jsonl
-    # We are in backend/scripts, so ../../../data/raw/wisdom...
-    data_path = Path(__file__).resolve().parents[2] / "data" / "raw" / "wisdom" / "2025-11-08" / "wisdom_corpus_unified_final.jsonl"
+    # Resolve relative to project root
+    project_root = Path(__file__).resolve().parents[2]
+    data_path = project_root / "data" / "raw" / "wisdom" / "wisdom_corpus_unified_final.jsonl"
     
     if not data_path.exists():
-        LOGGER.error(f"Data file not found: {data_path}")
-        # Try absolute path from user info if relative fails
-        data_path = Path(r"c:\key\wise_adviser_cursor_context\notebooks\data\raw\wisdom\2025-11-08\wisdom_corpus_unified_final.jsonl")
-        if not data_path.exists():
-             LOGGER.error(f"Data file really not found: {data_path}")
-             return
+        LOGGER.warning(f"Data file not found at {data_path}. Skipping population.")
+        # Try finding any jsonl in wisdom folder?
+        wisdom_dir = project_root / "data" / "raw" / "wisdom"
+        if wisdom_dir.exists():
+             for f in wisdom_dir.glob("*.jsonl"):
+                 LOGGER.info(f"Found alternative file: {f}")
+                 data_path = f
+                 break
+        
+    if not data_path.exists():
+        LOGGER.error(f"No JSONL file found for ingestion.")
+        return
 
     LOGGER.info(f"Loading data from {data_path}")
     chunks = load_jsonl(data_path)

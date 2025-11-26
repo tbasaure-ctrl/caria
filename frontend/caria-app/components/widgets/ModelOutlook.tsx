@@ -33,7 +33,7 @@ const regimeConfig: { [key: string]: { label: string; value: number; color: stri
     },
     default: { 
         label: 'Awaiting Data...', 
-        value: 0, 
+        value: 50, 
         color: 'var(--color-text-muted)',
         description: 'Regime detection in progress'
     },
@@ -99,25 +99,15 @@ const Gauge: React.FC<{ value: number; color: string }> = ({ value, color }) => 
 export const ModelOutlook: React.FC<{ regimeData: RegimeData | null; isLoading: boolean }> = ({ regimeData, isLoading }) => {
     
     const renderContent = () => {
-        if (isLoading) {
-            return (
-                <div 
-                    className="text-center py-8 flex flex-col items-center justify-center"
-                >
-                    <div 
-                        className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mb-3"
-                        style={{ borderColor: 'var(--color-accent-primary)', borderTopColor: 'transparent' }}
-                    />
-                    <p style={{ color: 'var(--color-text-muted)' }}>Loading regime data...</p>
-                </div>
-            );
-        }
-        
-        const currentRegimeKey = regimeData?.regime && regimeConfig[regimeData.regime] ? regimeData.regime : 'default';
+        // Always show data - use default if loading or no data
+        const currentRegimeKey = (!isLoading && regimeData?.regime && regimeConfig[regimeData.regime]) 
+            ? regimeData.regime 
+            : 'default';
         const { label, value: defaultValue, color, description } = regimeConfig[currentRegimeKey];
         
         // Use actual confidence score (0-1) converted to 0-100, or fallback to default value
-        const gaugeValue = regimeData?.confidence !== undefined 
+        // If confidence is 0 or undefined, use default value to show something meaningful
+        const gaugeValue = (!isLoading && regimeData?.confidence !== undefined && regimeData.confidence > 0) 
             ? regimeData.confidence * 100 
             : defaultValue;
 

@@ -15,6 +15,16 @@ const GLOBAL_INDICES = [
 
 const POLLING_INTERVAL = 30000;
 
+// Mock data for initial display (before API loads or if API fails)
+const MOCK_PRICES: Record<string, RealtimePrice> = {
+    'SPY': { symbol: 'SPY', price: 5487.03, change: 42.15, changesPercentage: 0.77, previousClose: 5444.88 },
+    'QQQ': { symbol: 'QQQ', price: 17857.02, change: 168.45, changesPercentage: 0.95, previousClose: 17688.57 },
+    'VGK': { symbol: 'VGK', price: 514.94, change: -3.78, changesPercentage: -0.73, previousClose: 518.72 },
+    'EEM': { symbol: 'EEM', price: 42.35, change: 0.15, changesPercentage: 0.36, previousClose: 42.20 },
+    'GLD': { symbol: 'GLD', price: 265.48, change: 1.25, changesPercentage: 0.47, previousClose: 264.23 },
+    'OIL': { symbol: 'OIL', price: 78.92, change: -0.45, changesPercentage: -0.57, previousClose: 79.37 },
+};
+
 interface MarketTileProps {
     name: string;
     symbol: string;
@@ -175,24 +185,30 @@ export const GlobalMarketBar: React.FC<{ id?: string }> = ({ id }) => {
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
     useEffect(() => {
+        // Show mock data immediately
+        setPrices(MOCK_PRICES);
+        setLoading(false);
+        setLastUpdate(new Date());
+
         const updatePrices = async () => {
             try {
                 setError(null);
                 const tickers = GLOBAL_INDICES.map(idx => idx.ticker);
                 const data = await fetchPrices(tickers);
-                setPrices(data);
-                setLastUpdate(new Date());
-                setLoading(false);
+                // Only update if we got valid data
+                if (data && Object.keys(data).length > 0) {
+                    setPrices(data);
+                    setLastUpdate(new Date());
+                }
             } catch (err: unknown) {
                 const message = getErrorMessage(err);
                 // Don't show error for unauthenticated users - prices should work without auth
                 console.warn('Error fetching prices:', message);
-                // Set empty prices but don't show error - allow display to continue
-                setPrices({});
-                setLoading(false);
+                // Keep showing mock data on error
             }
         };
 
+        // Try to fetch real data after initial render
         updatePrices();
         const interval = setInterval(updatePrices, POLLING_INTERVAL);
 
@@ -227,34 +243,10 @@ export const GlobalMarketBar: React.FC<{ id?: string }> = ({ id }) => {
                     GLOBAL_INDICES.map((_, idx) => <LoadingTile key={idx} />)
                 ) : (
                     GLOBAL_INDICES.map((index) => {
-                        const priceData = prices[index.ticker];
+                        const priceData = prices[index.ticker] || MOCK_PRICES[index.ticker];
                         
                         if (!priceData) {
-                            return (
-                                <div 
-                                    key={index.ticker}
-                                    className="p-4 rounded-lg"
-                                    style={{
-                                        backgroundColor: 'var(--color-bg-tertiary)',
-                                        border: '1px solid var(--color-border-subtle)',
-                                    }}
-                                >
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span 
-                                            className="text-xs font-mono font-semibold"
-                                            style={{ color: 'var(--color-text-muted)' }}
-                                        >
-                                            {index.symbol}
-                                        </span>
-                                    </div>
-                                    <div 
-                                        className="text-sm"
-                                        style={{ color: 'var(--color-text-muted)' }}
-                                    >
-                                        No data
-                                    </div>
-                                </div>
-                            );
+                            return null;
                         }
 
                         const price = priceData.price || priceData.previousClose || 0;

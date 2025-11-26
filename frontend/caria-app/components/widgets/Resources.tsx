@@ -170,7 +170,7 @@ export const Resources: React.FC = () => {
                 Recommended Research & Lectures
             </h2>
             <p className="text-xs mb-4" style={{ color: 'var(--color-text-secondary)' }}>
-                Curated daily from Abnormal Returns, The Motley Fool, CFA Institute, Farnam Street, and other institutional-grade sources. Sponsored and low-quality pieces are filtered out.
+                Curated daily from Abnormal Returns, The Motley Fool, CFA Institute, Farnam Street, and other trusted sources. Sponsored and low-quality pieces are filtered out.
             </p>
 
             {/* Filter buttons */}

@@ -232,7 +232,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         {/* Scenario Analysis - Stress test your portfolio */}
                         <div className="mt-6">
                             <h2 className="text-xl font-bold mb-5" style={{ color: 'var(--color-cream)', fontFamily: "'Instrument Serif', serif" }}>
-                                📊 Scenario Analysis
+                                Scenario Analysis
                             </h2>
                             <p className="text-sm text-slate-400 mb-6">Stress test your portfolio against historical crises and macroeconomic scenarios</p>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">

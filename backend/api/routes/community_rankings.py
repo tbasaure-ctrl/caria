@@ -56,17 +56,17 @@ async def get_community_rankings(
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             # Top Communities (by arena activity)
             cursor.execute("""
-                SELECT 
+                SELECT
                     cp.arena_community as community,
                     COUNT(DISTINCT cp.id) as post_count,
                     SUM(cp.upvotes) as total_upvotes,
                     COUNT(DISTINCT cp.user_id) as unique_users
                 FROM community_posts cp
-                WHERE cp.is_arena_post = TRUE 
+                WHERE cp.is_arena_post = TRUE
                     AND cp.arena_community IS NOT NULL
                     AND cp.is_active = TRUE
                 GROUP BY cp.arena_community
-                ORDER BY (post_count * 2 + total_upvotes) DESC
+                ORDER BY (COUNT(DISTINCT cp.id) * 2 + SUM(cp.upvotes)) DESC
                 LIMIT 10
             """)
             top_communities = [

@@ -56,14 +56,34 @@ def _quick_regime_from_prices(symbol: str = "SPY") -> RegimeResponse | None:
     try:
         start_date = (datetime.utcnow() - timedelta(days=420)).date().isoformat()
         history = openbb_client.get_price_history(symbol, start_date=start_date)
-        closes = [
-            entry.get("close") or entry.get("adj_close")
-            for entry in history
-            if entry.get("close") or entry.get("adj_close")
-        ]
-        closes = [float(price) for price in closes if price is not None]
+
+        # Convert OBBject to list of dicts if needed
+        if history and hasattr(history, 'to_df'):
+            import pandas as pd
+            df = history.to_df()
+            if not df.empty and 'close' in df.columns:
+                closes = df['close'].dropna().tolist()
+            else:
+                LOGGER.warning(f"No close price data in history for {symbol}")
+                return None
+        elif isinstance(history, (list, tuple)):
+            # Handle list/tuple of entries
+            closes = []
+            for entry in history:
+                if isinstance(entry, dict):
+                    close = entry.get("close") or entry.get("adj_close")
+                    if close is not None:
+                        closes.append(float(close))
+                elif hasattr(entry, 'close'):
+                    closes.append(float(entry.close))
+        else:
+            LOGGER.warning(f"Unexpected history format for {symbol}: {type(history)}")
+            return None
+
+        closes = [float(price) for price in closes if price is not None and price > 0]
 
         if len(closes) < 60:
+            LOGGER.warning(f"Insufficient data points for {symbol}: {len(closes)}")
             return None
 
         def pct_change(days: int) -> float:

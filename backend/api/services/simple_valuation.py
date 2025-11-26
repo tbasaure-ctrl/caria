@@ -146,6 +146,7 @@ class SimpleValuationService:
                 return None
 
             LOGGER.info(f"✅ Retrieved {len(mapped_metrics)} metrics for {ticker}")
+            LOGGER.info(f"Available metric keys: {list(mapped_metrics.keys())[:20]}")
 
             # Cache the result
             cache_key = f"{ticker}_metrics"
@@ -181,28 +182,48 @@ class SimpleValuationService:
     def _calculate_dcf(self, metrics: Dict[str, Any], current_price: float) -> Dict[str, Any]:
         """Perform a simplified DCF calculation."""
         try:
-            fcf_per_share = metrics.get("freeCashFlowPerShareTTM") or metrics.get("freeCashFlowPerShare")
+            # Try multiple field name variations for FCF
+            fcf_per_share = (
+                metrics.get("freeCashFlowPerShareTTM") or
+                metrics.get("freeCashFlowPerShare") or
+                metrics.get("free_cash_flow_per_share") or
+                metrics.get("fcfPerShare")
+            )
             LOGGER.info(f"DCF calculation - FCF per share: {fcf_per_share}, Current price: {current_price}")
 
             if not fcf_per_share:
-                 # Fallback to EPS
-                fcf_per_share = metrics.get("netIncomePerShareTTM") or metrics.get("netIncomePerShare") or 0
+                 # Fallback to EPS with more field variations
+                fcf_per_share = (
+                    metrics.get("netIncomePerShareTTM") or
+                    metrics.get("netIncomePerShare") or
+                    metrics.get("eps") or
+                    metrics.get("epsttm") or
+                    0
+                )
                 LOGGER.info(f"No FCF found, using EPS fallback: {fcf_per_share}")
 
             if fcf_per_share <= 0:
                 LOGGER.warning(f"Negative or zero FCF ({fcf_per_share}), trying P/E and P/B fallbacks")
-                # Fallback 1: P/E Valuation
-                eps = metrics.get("netIncomePerShareTTM") or metrics.get("netIncomePerShare")
+                # Fallback 1: P/E Valuation with more field variations
+                eps = (
+                    metrics.get("netIncomePerShareTTM") or
+                    metrics.get("netIncomePerShare") or
+                    metrics.get("eps") or
+                    metrics.get("epsttm") or
+                    metrics.get("net_income_per_share")
+                )
+                LOGGER.info(f"Trying P/E fallback - EPS: {eps}, Current Price: {current_price}")
 
-                if eps and eps > 0:
-                    pe_ratio = current_price / eps if current_price > 0 else 0
-                    industry_avg_pe = 15  # Conservative baseline
+                if eps and eps > 0 and current_price > 0:
+                    pe_ratio = current_price / eps
+                    industry_avg_pe = 20  # More realistic for tech/growth stocks
 
-                    if 0 < pe_ratio < 100:  # Sanity check
+                    # More lenient PE range
+                    if 2 < pe_ratio < 150:  # Sanity check
                         fair_value = eps * industry_avg_pe
-                        upside = ((fair_value - current_price) / current_price) * 100 if current_price > 0 else 0
+                        upside = ((fair_value - current_price) / current_price) * 100
 
-                        LOGGER.info(f"P/E Fallback successful - EPS: {eps}, Fair Value: {fair_value}, Upside: {upside}%")
+                        LOGGER.info(f"P/E Fallback successful - EPS: {eps:.2f}, PE: {pe_ratio:.2f}, Fair Value: {fair_value:.2f}, Upside: {upside:.2f}%")
                         return {
                             "method": "P/E Fallback (No FCF)",
                             "fair_value_per_share": round(fair_value, 2),
@@ -217,10 +238,16 @@ class SimpleValuationService:
                             "explanation": f"Using P/E valuation as FCF is negative. EPS: ${eps:.2f}, Target P/E: {industry_avg_pe}"
                         }
                     else:
-                        LOGGER.warning(f"P/E ratio out of range: {pe_ratio}")
+                        LOGGER.warning(f"P/E ratio out of range: {pe_ratio:.2f}")
+                else:
+                    LOGGER.warning(f"Cannot compute PE: eps={eps}, current_price={current_price}")
 
                 # Fallback 2: Price/Book Valuation
-                book_value_per_share = metrics.get("bookValuePerShareTTM")
+                book_value_per_share = (
+                    metrics.get("bookValuePerShareTTM") or
+                    metrics.get("bookValuePerShare") or
+                    metrics.get("book_value_per_share")
+                )
                 LOGGER.info(f"Trying P/B fallback - Book Value: {book_value_per_share}")
 
                 if book_value_per_share and book_value_per_share > 0:

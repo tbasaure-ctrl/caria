@@ -228,11 +228,14 @@ class SimulationService:
         rolling_max = portfolio_series.cummax()
         drawdown = (portfolio_series - rolling_max) / rolling_max
         max_drawdown = float(drawdown.min())
-        
+
+        # Convert dates to string list
+        dates_list = [d.strftime('%Y-%m-%d') if hasattr(d, 'strftime') else str(d) for d in bench_df.index]
+
         return {
             "crisis_name": crisis["name"],
             "description": crisis.get("description", ""),
-            "dates": bench_df.index.strftime('%Y-%m-%d').tolist(),
+            "dates": dates_list,
             "portfolio_values": portfolio_series.tolist(),
             "benchmark_values": bench_df['normalized'].tolist(),
             "metrics": {

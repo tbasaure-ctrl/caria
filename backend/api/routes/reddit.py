@@ -123,8 +123,21 @@ async def get_reddit_sentiment(
             logger.error(f"Reddit API authentication failed: {auth_error}")
             raise
         
-        # Subreddits to monitor
-        subreddits = ["wallstreetbets", "stocks", "investing"]
+        # Subreddits to monitor - expanded list for better variety
+        subreddits = [
+            "wallstreetbets",
+            "stocks",
+            "investing",
+            "StockMarket",
+            "SecurityAnalysis",
+            "ValueInvesting",
+            "dividends",
+            "options",
+            "pennystocks",
+            "SPACs",
+            "Stock_Picks",
+            "investingforbeginners"
+        ]
 
         # Map timeframe to Reddit time filter
         time_filters = {
@@ -140,23 +153,74 @@ async def get_reddit_sentiment(
         for subreddit_name in subreddits:
             subreddit = reddit.subreddit(subreddit_name)
 
-            # Get hot posts
-            for submission in subreddit.hot(limit=100):
-                # Simple ticker extraction (look for $TICKER or uppercase tickers)
-                import re
-                tickers = re.findall(r'\$([A-Z]{1,5})\b|\b([A-Z]{2,5})\b', submission.title + " " + submission.selftext)
-
-                for ticker_match in tickers:
-                    ticker = ticker_match[0] or ticker_match[1]
-                    if ticker and len(ticker) <= 5:  # Filter out non-ticker words
-                        ticker_mentions[ticker] = ticker_mentions.get(ticker, 0) + 1
-
-                        # Save top post for each ticker
-                        if ticker not in ticker_posts or submission.score > ticker_posts[ticker]["score"]:
+            # Get hot posts - use different sorting based on timeframe
+            import re
+            from datetime import datetime, timedelta
+            
+            # Determine which posts to fetch based on timeframe
+            if timeframe == "hour":
+                posts = list(subreddit.new(limit=100))
+            elif timeframe == "day":
+                posts = list(subreddit.hot(limit=100))
+            else:  # week
+                posts = list(subreddit.top(time_filter="week", limit=100))
+            
+            # Common words to exclude (not tickers)
+            excluded_words = {
+                "THE", "AND", "FOR", "ARE", "BUT", "NOT", "YOU", "ALL", "CAN", "HER", "WAS", "ONE", "OUR", "OUT", "DAY", "GET", "HAS", "HIM", "HIS", "HOW", "ITS", "MAY", "NEW", "NOW", "OLD", "SEE", "TWO", "WHO", "WAY", "USE", "HER", "SHE", "PUT", "END", "WHY", "ASK", "TRY", "OWN", "SET", "LET", "RUN", "PAY", "SAY", "SHOW", "TURN", "WANT", "TELL", "WORK", "CALL", "FIND", "GIVE", "HELP", "KEEP", "KNOW", "LEAVE", "LIVE", "LOOK", "MAKE", "MOVE", "NEED", "OPEN", "PLAY", "READ", "SEEM", "STOP", "TAKE", "TALK", "WALK", "WISH", "YEAR", "GOOD", "LONG", "MUCH", "ONLY", "OVER", "SOME", "SUCH", "THAT", "THEM", "THEN", "THERE", "THESE", "THEY", "THING", "THINK", "THIS", "THOSE", "THREE", "THROUGH", "TIME", "TODAY", "TOGETHER", "TOO", "UNDER", "UNTIL", "UPON", "USED", "VERY", "WANT", "WATER", "WENT", "WERE", "WHAT", "WHEN", "WHERE", "WHICH", "WHILE", "WHITE", "WHO", "WHOM", "WHOSE", "WHY", "WILL", "WITH", "WITHIN", "WITHOUT", "WOULD", "WRITE", "WRITTEN", "WRONG", "WROTE", "YARD", "YEAR", "YES", "YESTERDAY", "YET", "YOU", "YOUNG", "YOUR", "YOURSELF"
+            }
+            
+            # Common stock ticker patterns
+            ticker_patterns = [
+                r'\$([A-Z]{1,5})\b',  # $AAPL format
+                r'\b([A-Z]{2,5})\s+(?:stock|shares|ticker|equity|price|earnings|revenue|dividend)',  # AAPL stock
+                r'\b([A-Z]{2,5})\s+(?:is|are|was|were|will|going|up|down|bullish|bearish)',  # AAPL is up
+            ]
+            
+            for submission in posts:
+                # Combine title and selftext for analysis
+                text_content = (submission.title + " " + (submission.selftext or "")).upper()
+                
+                # Extract tickers using multiple patterns
+                found_tickers = set()
+                for pattern in ticker_patterns:
+                    matches = re.findall(pattern, text_content)
+                    for match in matches:
+                        ticker = match if isinstance(match, str) else match[0] if match[0] else match[1] if len(match) > 1 else None
+                        if ticker and len(ticker) >= 1 and len(ticker) <= 5:
+                            ticker = ticker.upper()
+                            # Filter out common words
+                            if ticker not in excluded_words:
+                                found_tickers.add(ticker)
+                
+                # Also check for explicit ticker mentions in title (most reliable)
+                title_tickers = re.findall(r'\$([A-Z]{1,5})\b', submission.title.upper())
+                for ticker in title_tickers:
+                    if ticker and len(ticker) >= 1 and len(ticker) <= 5 and ticker not in excluded_words:
+                        found_tickers.add(ticker)
+                
+                # Count mentions and track top posts
+                for ticker in found_tickers:
+                    ticker_mentions[ticker] = ticker_mentions.get(ticker, 0) + 1
+                    
+                    # Save top post for each ticker (prioritize higher scores and more recent)
+                    if ticker not in ticker_posts:
+                        ticker_posts[ticker] = {
+                            "title": submission.title,
+                            "subreddit": subreddit_name,
+                            "score": submission.score,
+                            "created_utc": submission.created_utc
+                        }
+                    else:
+                        # Update if this post has higher score or is more recent with similar score
+                        current_post = ticker_posts[ticker]
+                        if (submission.score > current_post["score"] * 0.8 and 
+                            submission.created_utc > current_post.get("created_utc", 0)):
                             ticker_posts[ticker] = {
                                 "title": submission.title,
                                 "subreddit": subreddit_name,
-                                "score": submission.score
+                                "score": submission.score,
+                                "created_utc": submission.created_utc
                             }
 
         # Sort by mentions and get top stocks

@@ -4,6 +4,7 @@ import { RedditSentiment } from './widgets/RedditSentiment';
 import { Resources } from './widgets/Resources';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { AlphaStockPicker } from './widgets/AlphaStockPicker';
+import { UnderTheRadarScreener } from './widgets/UnderTheRadarScreener';
 
 /**
  * ResearchSection - Groups related research and analysis widgets together
@@ -23,6 +24,9 @@ export const ResearchSection: React.FC = () => {
             <div className="space-y-8">
                 {/* Weekly Media - Video & Podcast at Top of Research */}
                 <WeeklyMedia compact={false} />
+                
+                {/* Under-the-Radar Screener - New Stock Screener */}
+                <UnderTheRadarScreener />
                 
                 {/* Valuation Tool - Full Width (includes Monte Carlo price simulation) */}
                 <ValuationTool />

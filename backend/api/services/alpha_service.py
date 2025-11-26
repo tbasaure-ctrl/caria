@@ -137,22 +137,56 @@ class AlphaService:
     
     def _get_candidates_from_cache(self, top_n: int = 100) -> List[Dict[str, Any]]:
         """
-        Fallback method: Get candidates directly from fundamentals cache service.
+        Fallback method: Get candidates directly from FMP screener or fundamentals cache.
         This works when parquet files are missing.
-        Calculates scores directly from cached fundamentals data.
+        Calculates scores directly from fundamentals data.
         """
         try:
             from api.services.fundamentals_cache_service import get_fundamentals_cache_service
             from api.services.openbb_client import OpenBBClient
+            from api.services.scoring_service import ScoringService
             
             cache_service = get_fundamentals_cache_service()
             obb_client = OpenBBClient()
+            scoring_service = ScoringService()
             
             # Get all cached tickers
             cached_tickers = cache_service.get_all_cached_tickers()
             
+            # If no cache, use FMP screener to get candidates
             if not cached_tickers:
-                LOGGER.error("No tickers in cache. Run weekly screening first via POST /api/screening/weekly/yahoo-finance")
+                LOGGER.info("No tickers in cache, using FMP screener to get candidates")
+                try:
+                    # Use FMP screener to get a pool of stocks
+                    fmp_params = {
+                        "marketCapMoreThan": 100_000_000,  # $100M+
+                        "marketCapLowerThan": 50_000_000_000,  # < $50B
+                        "isActivelyTrading": "true",
+                        "isEtf": "false",
+                        "isFund": "false",
+                        "limit": min(top_n * 5, 200),  # Get more candidates
+                        "exchange": "NASDAQ,NYSE,AMEX"
+                    }
+                    screener_results = scoring_service.fmp.get_stock_screener(fmp_params)
+                    if screener_results and len(screener_results) > 0:
+                        # Extract tickers from screener results
+                        cached_tickers = [r.get("symbol") for r in screener_results if r.get("symbol")]
+                        LOGGER.info(f"FMP screener returned {len(cached_tickers)} candidates")
+                    else:
+                        # Ultimate fallback: use a predefined list
+                        cached_tickers = [
+                            "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "BRK.B",
+                            "UNH", "JNJ", "V", "WMT", "PG", "JPM", "MA", "HD", "DIS", "BAC",
+                            "ADBE", "NFLX", "CRM", "PYPL", "INTC", "CMCSA", "PEP", "COST", "AVGO",
+                            "TMO", "ABT", "NKE", "MRK", "ACN", "CSCO", "TXN", "QCOM", "DHR"
+                        ]
+                        LOGGER.info(f"Using fallback ticker list: {len(cached_tickers)} stocks")
+                except Exception as e:
+                    LOGGER.warning(f"FMP screener failed: {e}, using fallback list")
+                    cached_tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA"]
+            
+            if not cached_tickers:
+                LOGGER.error("No tickers available for alpha picks")
                 return []
             
             LOGGER.info(f"Using {len(cached_tickers)} tickers from cache for alpha picks")
@@ -161,12 +195,39 @@ class AlphaService:
             candidates = []
             for ticker in cached_tickers[:min(top_n * 3, 200)]:  # Limit to 200 for performance
                 try:
-                    # Get fundamentals from cache
-                    cached = cache_service.get_fundamentals(ticker)
-                    if not cached or not cached.get('data'):
-                        continue
+                    data = None
                     
-                    data = cached['data']
+                    # Try to get fundamentals from cache first
+                    cached = cache_service.get_fundamentals(ticker)
+                    if cached and cached.get('data'):
+                        data = cached['data']
+                    else:
+                        # If not in cache, fetch from OpenBB/FMP using scoring service
+                        try:
+                            from api.services.scoring_service import ScoringService
+                            scoring = ScoringService()
+                            # Use scoring service to get scores which will fetch data
+                            score_result = scoring.get_scores(ticker)
+                            if score_result and score_result.get("details"):
+                                # Extract data from score details
+                                quality_details = score_result.get("details", {}).get("quality", {})
+                                valuation_details = score_result.get("details", {}).get("valuation", {})
+                                momentum_details = score_result.get("details", {}).get("momentum", {})
+                                
+                                # Build data dict from score details
+                                data = {
+                                    **quality_details,
+                                    **valuation_details,
+                                    **momentum_details,
+                                    "company_name": ticker,
+                                    "sector": "Unknown"
+                                }
+                        except Exception as fetch_error:
+                            LOGGER.debug(f"Could not fetch data for {ticker}: {fetch_error}")
+                            continue
+                    
+                    if not data:
+                        continue
                     
                     # Get current price for valuation
                     current_price = obb_client.get_current_price(ticker)

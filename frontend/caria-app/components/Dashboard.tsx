@@ -207,7 +207,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             </div>
 
             {/* Tab Content */}
-            <div className="fade-in delay-200">
+            <div className="fade-in delay-200" style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
                 {/* PORTFOLIO TAB - Market overview, portfolio management, and stress testing */}
                 {activeTab === 'portfolio' && (
                     <div className="space-y-12">

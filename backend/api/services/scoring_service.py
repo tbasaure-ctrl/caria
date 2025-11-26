@@ -397,6 +397,7 @@ class ScoringService:
         return "Avoid"
 
     def _empty_score(self, ticker: str) -> Dict[str, Any]:
+        """Return empty score structure matching ScoringResponse format."""
         return {
             "ticker": ticker,
             "cScore": 0,
@@ -405,9 +406,22 @@ class ScoringService:
             "valuationScore": 0,
             "momentumScore": 0,
             "classification": "No Data",
-            "current_price": 0,
-            "details": {},
-            "explanations": {}
+            "current_price": 0.0,
+            "fair_value": None,
+            "valuation_upside_pct": None,
+            "details": {
+                "quality": {},
+                "valuation": {},
+                "momentum": {},
+                "moat": None
+            },
+            "factorAttribution": None,
+            "explanations": {
+                "quality": None,
+                "valuation": None,
+                "momentum": None,
+                "moat": None
+            }
         }
 
     def _build_explanations(self, q, v, m) -> Dict[str, str]:

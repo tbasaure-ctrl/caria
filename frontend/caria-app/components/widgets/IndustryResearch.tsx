@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
+import { BASE_INDUSTRIES } from '../../data/industries';
 
 interface IndustryCard {
     name: string;
@@ -144,6 +145,7 @@ export const IndustryResearch: React.FC = () => {
     const [selectedIndustry, setSelectedIndustry] = useState<IndustryDetail | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [featuredIndustry, setFeaturedIndustry] = useState<IndustryCard | null>(null);
 
     useEffect(() => {
         const loadIndustries = async () => {
@@ -153,10 +155,40 @@ export const IndustryResearch: React.FC = () => {
                 if (response.ok) {
                     const data = await response.json();
                     setIndustries(data);
+                    // Set featured industry (first one or random)
+                    if (data.length > 0) {
+                        setFeaturedIndustry(data[0]);
+                    }
+                } else {
+                    // Fallback to using base industries config if API fails
+                    const fallbackIndustries: IndustryCard[] = BASE_INDUSTRIES.map(industry => ({
+                        name: industry.name,
+                        status: industry.status,
+                        growth_signal: `Growth drivers and market dynamics for ${industry.name}`,
+                        valuation_context: `Valuation metrics vs historical averages`,
+                        flows_activity: `ETF flows and M&A activity trends`,
+                        representative_tickers: industry.representative_tickers
+                    }));
+                    setIndustries(fallbackIndustries);
+                    if (fallbackIndustries.length > 0) {
+                        setFeaturedIndustry(fallbackIndustries[0]);
+                    }
                 }
             } catch (e) {
                 console.error('Failed to load industries', e);
-                setError('Failed to load industries');
+                // Fallback to using base industries config
+                const fallbackIndustries: IndustryCard[] = BASE_INDUSTRIES.map(industry => ({
+                    name: industry.name,
+                    status: industry.status,
+                    growth_signal: `Growth drivers and market dynamics for ${industry.name}`,
+                    valuation_context: `Valuation metrics vs historical averages`,
+                    flows_activity: `ETF flows and M&A activity trends`,
+                    representative_tickers: industry.representative_tickers
+                }));
+                setIndustries(fallbackIndustries);
+                if (fallbackIndustries.length > 0) {
+                    setFeaturedIndustry(fallbackIndustries[0]);
+                }
             } finally {
                 setLoading(false);
             }
@@ -195,47 +227,73 @@ export const IndustryResearch: React.FC = () => {
                         ← Back to Industries
                     </button>
                     
-                    <div>
-                        <h2 
-                            className="text-2xl font-bold mb-2"
-                            style={{ color: 'var(--color-text-primary)' }}
-                        >
-                            {selectedIndustry.name}
-                        </h2>
-                        <StatusPill status={selectedIndustry.stage} />
-                    </div>
-                    
-                    <div>
-                        <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                            Thesis Summary
-                        </h3>
-                        <ul className="space-y-2">
-                            {selectedIndustry.thesis_summary.map((point, idx) => (
-                                <li key={idx} className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
-                                    <span style={{ color: 'var(--color-accent-primary)' }}>•</span>
-                                    <span>{point}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {Object.entries(selectedIndustry.aggregate_kpis).map(([key, value]) => (
-                            <div key={key} className="p-4 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                                <div className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                                    {key.replace(/_/g, ' ')}
-                                </div>
-                                <div className="text-lg font-bold font-mono" style={{ color: 'var(--color-text-primary)' }}>
-                                    {typeof value === 'number' && value > 1000000000 
-                                        ? `$${(value / 1000000000).toFixed(1)}B`
-                                        : typeof value === 'number' && value > 1000000
-                                        ? `$${(value / 1000000).toFixed(1)}M`
-                                        : typeof value === 'number'
-                                        ? value.toFixed(1) + (key.includes('growth') || key.includes('margin') ? '%' : 'x')
-                                        : value}
+                    {/* Sector Sheet - Top Section */}
+                    <div 
+                        className="mb-6 p-6 rounded-xl"
+                        style={{
+                            backgroundColor: 'var(--color-bg-secondary)',
+                            border: '1px solid var(--color-border-subtle)',
+                        }}
+                    >
+                        <div className="flex items-start justify-between mb-4">
+                            <div>
+                                <h2 
+                                    className="text-2xl font-bold mb-2"
+                                    style={{ 
+                                        fontFamily: 'var(--font-display)',
+                                        color: 'var(--color-text-primary)' 
+                                    }}
+                                >
+                                    {selectedIndustry.name}
+                                </h2>
+                                <div className="flex items-center gap-2">
+                                    <StatusPill status={selectedIndustry.stage} />
+                                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                                        Stage: {selectedIndustry.stage}
+                                    </span>
                                 </div>
                             </div>
-                        ))}
+                        </div>
+                        
+                        {/* Thesis Summary - Bullets */}
+                        <div className="mb-4">
+                            <h3 className="text-xs font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                                Thesis Summary
+                            </h3>
+                            <ul className="space-y-1.5">
+                                {selectedIndustry.thesis_summary.map((point, idx) => (
+                                    <li key={idx} className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
+                                        <span style={{ color: 'var(--color-accent-primary)' }}>•</span>
+                                        <span>{point}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        
+                        {/* Aggregate KPIs */}
+                        <div>
+                            <h3 className="text-xs font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                                Aggregate KPIs
+                            </h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {Object.entries(selectedIndustry.aggregate_kpis).map(([key, value]) => (
+                                    <div key={key} className="p-3 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
+                                        <div className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>
+                                            {key.replace(/_/g, ' ')}
+                                        </div>
+                                        <div className="text-lg font-bold font-mono" style={{ color: 'var(--color-text-primary)' }}>
+                                            {typeof value === 'number' && value > 1000000000 
+                                                ? `$${(value / 1000000000).toFixed(1)}B`
+                                                : typeof value === 'number' && value > 1000000
+                                                ? `$${(value / 1000000).toFixed(1)}M`
+                                                : typeof value === 'number'
+                                                ? value.toFixed(1) + (key.includes('growth') || key.includes('margin') ? '%' : 'x')
+                                                : value}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                     
                     <div>
@@ -279,27 +337,99 @@ export const IndustryResearch: React.FC = () => {
                         <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
                             Caria Signals
                         </h3>
+                        <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
+                            % of tickers in this industry that appear in:
+                        </p>
                         <div className="grid grid-cols-3 gap-4">
                             <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                                <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Alpha Picker</div>
+                                <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Alpha Stock Picker</div>
                                 <div className="text-lg font-bold font-mono" style={{ color: 'var(--color-text-primary)' }}>
-                                    {selectedIndustry.caria_signals.alpha_picker_appearances}
+                                    {typeof selectedIndustry.caria_signals.alpha_picker_appearances === 'number' 
+                                        ? `${selectedIndustry.caria_signals.alpha_picker_appearances}%`
+                                        : selectedIndustry.caria_signals.alpha_picker_appearances}
                                 </div>
                             </div>
                             <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                                <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Screener</div>
+                                <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Under-the-Radar Screener</div>
                                 <div className="text-lg font-bold font-mono" style={{ color: 'var(--color-text-primary)' }}>
-                                    {selectedIndustry.caria_signals.screener_appearances}
+                                    {typeof selectedIndustry.caria_signals.screener_appearances === 'number' 
+                                        ? `${selectedIndustry.caria_signals.screener_appearances}%`
+                                        : selectedIndustry.caria_signals.screener_appearances}
                                 </div>
                             </div>
                             <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                                <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Crisis Sensitivity</div>
+                                <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Crisis / Macro Sensitivity</div>
                                 <div className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
                                     {selectedIndustry.caria_signals.crisis_sensitivity}
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    {/* Recent Headlines */}
+                    {selectedIndustry.recent_headlines && selectedIndustry.recent_headlines.length > 0 && (
+                        <div>
+                            <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                                Recent Headlines
+                            </h3>
+                            <div className="space-y-2">
+                                {selectedIndustry.recent_headlines.map((headline, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        className="p-3 rounded-lg text-sm flex items-start gap-2" 
+                                        style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
+                                    >
+                                        <span style={{ color: 'var(--color-accent-primary)' }}>📰</span>
+                                        <span style={{ color: 'var(--color-text-secondary)' }}>{headline}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Learning Resources */}
+                    {selectedIndustry.learning_resources && (
+                        <div>
+                            <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                                Learning
+                            </h3>
+                            <div className="space-y-4">
+                                {/* Lectures */}
+                                {selectedIndustry.learning_resources.lectures && selectedIndustry.learning_resources.lectures.length > 0 && (
+                                    <div>
+                                        <div className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                                            Recommended Lectures
+                                        </div>
+                                        <ul className="space-y-2">
+                                            {selectedIndustry.learning_resources.lectures.slice(0, 2).map((lecture, idx) => (
+                                                <li key={idx} className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
+                                                    <span style={{ color: 'var(--color-accent-primary)' }}>📚</span>
+                                                    <span>{lecture}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                
+                                {/* Videos/Podcasts */}
+                                {selectedIndustry.learning_resources.videos && selectedIndustry.learning_resources.videos.length > 0 && (
+                                    <div>
+                                        <div className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                                            Video / Podcast
+                                        </div>
+                                        <ul className="space-y-2">
+                                            {selectedIndustry.learning_resources.videos.slice(0, 1).map((video, idx) => (
+                                                <li key={idx} className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
+                                                    <span style={{ color: 'var(--color-accent-primary)' }}>🎥</span>
+                                                    <span>{video}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </WidgetCard>
         );
@@ -327,16 +457,77 @@ export const IndustryResearch: React.FC = () => {
             
             {industries.length > 0 && (
                 <div>
-                    <div className="mb-6">
+                    {/* Hero Section: This Week's Deep Dive */}
+                    {featuredIndustry && (
+                        <div 
+                            className="mb-8 p-6 rounded-xl"
+                            style={{
+                                backgroundColor: 'var(--color-bg-secondary)',
+                                border: '1px solid var(--color-border-subtle)',
+                            }}
+                        >
+                            <div className="flex items-start justify-between mb-4">
+                                <div>
+                                    <h2 
+                                        className="text-2xl font-bold mb-3"
+                                        style={{ 
+                                            fontFamily: 'var(--font-display)',
+                                            color: 'var(--color-text-primary)' 
+                                        }}
+                                    >
+                                        This Week's Deep Dive: {featuredIndustry.name}
+                                    </h2>
+                                    <StatusPill status={featuredIndustry.status} />
+                                </div>
+                            </div>
+                            
+                            {/* 3-5 bullet summary */}
+                            <ul className="space-y-2 mt-4">
+                                <li className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
+                                    <span style={{ color: 'var(--color-accent-primary)' }}>•</span>
+                                    <span><strong>Drivers:</strong> {featuredIndustry.growth_signal}</span>
+                                </li>
+                                <li className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
+                                    <span style={{ color: 'var(--color-accent-primary)' }}>•</span>
+                                    <span><strong>Risks:</strong> Market volatility and sector-specific challenges</span>
+                                </li>
+                                <li className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
+                                    <span style={{ color: 'var(--color-accent-primary)' }}>•</span>
+                                    <span><strong>Valuation Context:</strong> {featuredIndustry.valuation_context}</span>
+                                </li>
+                                <li className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
+                                    <span style={{ color: 'var(--color-accent-primary)' }}>•</span>
+                                    <span><strong>Activity:</strong> {featuredIndustry.flows_activity}</span>
+                                </li>
+                            </ul>
+                            
+                            <button
+                                onClick={() => handleSelectIndustry(featuredIndustry.name)}
+                                className="mt-4 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                style={{
+                                    backgroundColor: 'var(--color-accent-primary)',
+                                    color: '#FFFFFF',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.opacity = '0.9';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.opacity = '1';
+                                }}
+                            >
+                                Explore {featuredIndustry.name} →
+                            </button>
+                        </div>
+                    )}
+                    
+                    {/* Industry Cards Grid */}
+                    <div className="mb-4">
                         <h3 
-                            className="text-lg font-semibold mb-2"
+                            className="text-lg font-semibold mb-4"
                             style={{ color: 'var(--color-text-primary)' }}
                         >
-                            This Week's Deep Dive
+                            All Industries
                         </h3>
-                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                            Explore sector-level insights, trends, and investment opportunities
-                        </p>
                     </div>
                     
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">

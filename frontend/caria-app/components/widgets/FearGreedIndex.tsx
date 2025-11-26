@@ -1,6 +1,6 @@
 /**
- * FearGreedIndex Widget - CNN Fear and Greed Index in real-time.
- * Displays market sentiment gauge similar to CNN's original design but adapted to app style.
+ * FearGreedIndex Widget - CNN Fear and Greed Index
+ * Displays market sentiment gauge with Bloomberg-style design
  */
 
 import React, { useState, useEffect } from 'react';
@@ -9,7 +9,7 @@ import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
 import { getErrorMessage } from '../../src/utils/errorHandling';
 
 interface FearGreedData {
-    value: number; // 0-100
+    value: number;
     classification: string;
     timestamp: string;
     previous_close: number | null;
@@ -17,11 +17,11 @@ interface FearGreedData {
 }
 
 const CLASSIFICATION_CONFIG: Record<string, { label: string; color: string; zone: string }> = {
-    'Extreme Fear': { label: 'EXTREME FEAR', color: '#ef4444', zone: '0-25' },
-    'Fear': { label: 'FEAR', color: '#f59e0b', zone: '25-45' },
-    'Neutral': { label: 'NEUTRAL', color: '#6b7280', zone: '45-55' },
-    'Greed': { label: 'GREED', color: '#3b82f6', zone: '55-75' },
-    'Extreme Greed': { label: 'EXTREME GREED', color: '#10b981', zone: '75-100' },
+    'Extreme Fear': { label: 'EXTREME FEAR', color: 'var(--color-negative)', zone: '0-25' },
+    'Fear': { label: 'FEAR', color: 'var(--color-warning)', zone: '25-45' },
+    'Neutral': { label: 'NEUTRAL', color: 'var(--color-text-muted)', zone: '45-55' },
+    'Greed': { label: 'GREED', color: 'var(--color-accent-primary)', zone: '55-75' },
+    'Extreme Greed': { label: 'EXTREME GREED', color: 'var(--color-positive)', zone: '75-100' },
 };
 
 export const FearGreedIndex: React.FC = () => {
@@ -31,7 +31,6 @@ export const FearGreedIndex: React.FC = () => {
 
     useEffect(() => {
         loadFearGreedIndex();
-        // Refresh every 5 minutes
         const interval = setInterval(loadFearGreedIndex, 5 * 60 * 1000);
         return () => clearInterval(interval);
     }, []);
@@ -49,8 +48,7 @@ export const FearGreedIndex: React.FC = () => {
             const fearGreedData: FearGreedData = await response.json();
             setData(fearGreedData);
         } catch (err: unknown) {
-            const errorMsg = getErrorMessage(err);
-            setError('Coming soon... Fear & Greed Index is being enhanced with real-time updates.');
+            setError('Fear & Greed Index temporarily unavailable');
         } finally {
             setLoading(false);
         }
@@ -66,7 +64,7 @@ export const FearGreedIndex: React.FC = () => {
                     <path
                         d="M 10 50 A 40 40 0 0 1 90 50"
                         fill="none"
-                        stroke="var(--color-bg-tertiary)"
+                        stroke="var(--color-bg-surface)"
                         strokeWidth="6"
                         strokeLinecap="round"
                     />
@@ -92,12 +90,17 @@ export const FearGreedIndex: React.FC = () => {
                         transform: `translateX(-50%) rotate(${angle}deg)`,
                         width: '2px',
                         height: '20px',
-                        backgroundColor: 'var(--color-cream)'
+                        backgroundColor: 'var(--color-text-primary)'
                     }}
-                ></div>
+                />
                 {/* Center dot */}
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full"
-                    style={{ backgroundColor: 'var(--color-cream)', boxShadow: '0 0 8px var(--color-cream)' }}></div>
+                <div 
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full"
+                    style={{ 
+                        backgroundColor: 'var(--color-text-primary)', 
+                        boxShadow: '0 0 8px var(--color-text-primary)' 
+                    }}
+                />
             </div>
         );
     };
@@ -105,12 +108,15 @@ export const FearGreedIndex: React.FC = () => {
     if (loading) {
         return (
             <WidgetCard
-                title="FEAR & GREED"
-                id="fear-greed-widget"
-                tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
+                title="FEAR & GREED INDEX"
+                tooltip="CNN Fear & Greed Index measures market sentiment from 0 (Extreme Fear) to 100 (Extreme Greed)."
             >
-                <div className="text-center h-[124px] flex items-center justify-center">
-                    <p className="text-slate-500">Loading index...</p>
+                <div className="text-center py-8 flex flex-col items-center justify-center">
+                    <div 
+                        className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mb-3"
+                        style={{ borderColor: 'var(--color-accent-primary)', borderTopColor: 'transparent' }}
+                    />
+                    <p style={{ color: 'var(--color-text-muted)' }}>Loading sentiment data...</p>
                 </div>
             </WidgetCard>
         );
@@ -119,15 +125,24 @@ export const FearGreedIndex: React.FC = () => {
     if (error) {
         return (
             <WidgetCard
-                title="FEAR & GREED"
-                id="fear-greed-widget"
-                tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
+                title="FEAR & GREED INDEX"
+                tooltip="CNN Fear & Greed Index measures market sentiment from 0 (Extreme Fear) to 100 (Extreme Greed)."
             >
-                <div className="text-center h-[124px] flex flex-col items-center justify-center">
-                    <div className="text-sm mb-2 text-red-400">{error}</div>
+                <div className="text-center py-8 flex flex-col items-center justify-center">
+                    <div 
+                        className="text-sm mb-4"
+                        style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                        {error}
+                    </div>
                     <button
                         onClick={loadFearGreedIndex}
-                        className="text-xs underline text-blue-400"
+                        className="text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+                        style={{
+                            backgroundColor: 'var(--color-bg-surface)',
+                            color: 'var(--color-text-secondary)',
+                            border: '1px solid var(--color-border-subtle)',
+                        }}
                     >
                         Retry
                     </button>
@@ -139,12 +154,14 @@ export const FearGreedIndex: React.FC = () => {
     if (!data) {
         return (
             <WidgetCard
-                title="FEAR & GREED"
-                id="fear-greed-widget"
-                tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
+                title="FEAR & GREED INDEX"
+                tooltip="CNN Fear & Greed Index measures market sentiment from 0 (Extreme Fear) to 100 (Extreme Greed)."
             >
-                <div className="text-center h-[124px] flex items-center justify-center">
-                    <p className="text-slate-500">No data available</p>
+                <div 
+                    className="text-center py-8"
+                    style={{ color: 'var(--color-text-muted)' }}
+                >
+                    No data available
                 </div>
             </WidgetCard>
         );
@@ -152,44 +169,70 @@ export const FearGreedIndex: React.FC = () => {
 
     const config = CLASSIFICATION_CONFIG[data.classification] || {
         label: data.classification,
-        color: '#6b7280',
+        color: 'var(--color-text-muted)',
         zone: '',
     };
 
     return (
         <WidgetCard
-            title="FEAR & GREED"
-            id="fear-greed-widget"
-            tooltip="Índice CNN Fear & Greed en tiempo real. Mide el sentimiento del mercado de 0 (Miedo Extremo) a 100 (Avaricia Extrema)."
+            title="FEAR & GREED INDEX"
+            tooltip="CNN Fear & Greed Index measures market sentiment from 0 (Extreme Fear) to 100 (Extreme Greed). Based on 7 market indicators."
         >
             <div className="flex flex-col items-center">
                 {renderGauge(data.value, config.color)}
-
-                <p className="text-2xl font-bold mt-2 mb-1"
-                    style={{ fontFamily: 'var(--font-display)', color: config.color }}>
-                    {config.label}
-                </p>
-
-                {/* Change indicator */}
-                {data.change !== null && data.previous_close !== null && (
-                    <div className="flex items-center gap-2 text-xs mb-1">
-                        <span className="text-slate-500">Prev: {data.previous_close}</span>
-                        <span
-                            style={{
-                                color: data.change >= 0 ? '#10b981' : '#ef4444',
-                                fontWeight: 'bold',
+                
+                {/* Value Display */}
+                <div className="flex items-center gap-3 mb-2">
+                    <span 
+                        className="text-4xl font-bold font-mono"
+                        style={{ color: config.color }}
+                    >
+                        {data.value}
+                    </span>
+                    {data.change !== null && (
+                        <span 
+                            className="text-sm font-mono font-medium"
+                            style={{ 
+                                color: data.change >= 0 ? 'var(--color-positive)' : 'var(--color-negative)'
                             }}
                         >
                             {data.change >= 0 ? '+' : ''}{data.change}
                         </span>
+                    )}
+                </div>
+
+                {/* Classification Label */}
+                <div 
+                    className="text-lg font-semibold mb-3"
+                    style={{ 
+                        fontFamily: 'var(--font-display)', 
+                        color: config.color 
+                    }}
+                >
+                    {config.label}
+                </div>
+
+                {/* Previous Close */}
+                {data.previous_close !== null && (
+                    <div 
+                        className="text-xs mb-3 px-3 py-1 rounded-full"
+                        style={{ 
+                            backgroundColor: 'var(--color-bg-surface)',
+                            color: 'var(--color-text-muted)'
+                        }}
+                    >
+                        Previous: {data.previous_close}
                     </div>
                 )}
 
-                <p className="text-xs mt-2 max-w-xs text-center italic text-slate-500 leading-tight">
-                    Emotions driving the US stock market on a given day
+                {/* Description */}
+                <p 
+                    className="text-xs text-center italic"
+                    style={{ color: 'var(--color-text-muted)' }}
+                >
+                    Emotions driving the US stock market
                 </p>
             </div>
         </WidgetCard>
     );
 };
-

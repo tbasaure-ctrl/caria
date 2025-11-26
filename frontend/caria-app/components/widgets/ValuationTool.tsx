@@ -3,610 +3,662 @@ import Plot from "react-plotly.js";
 import { WidgetCard } from "./WidgetCard";
 import { fetchWithAuth, API_BASE_URL } from "../../services/apiService";
 
-// ---------- Tipos que deben calzar con el backend ----------
-
+// Types
 interface DcfAssumptions {
-  fcf_yield_start: number;
-  high_growth_rate: number;
-  high_growth_years: number;
-  fade_years: number;
-  terminal_growth_rate: number;
-  discount_rate: number;
-  horizon_years: number;
-  shares_outstanding?: number | null;
-  net_debt?: number | null;
+    fcf_yield_start: number;
+    high_growth_rate: number;
+    high_growth_years: number;
+    fade_years: number;
+    terminal_growth_rate: number;
+    discount_rate: number;
+    horizon_years: number;
+    shares_outstanding?: number | null;
+    net_debt?: number | null;
 }
 
 interface DcfBlock {
-  method: string;
-  fair_value_per_share: number;
-  upside_percent: number;
-  implied_return_cagr: number;
-  intrinsic_value_equity?: number | null;
-  assumptions: DcfAssumptions;
-  explanation: string;
+    method: string;
+    fair_value_per_share: number;
+    upside_percent: number;
+    implied_return_cagr: number;
+    intrinsic_value_equity?: number | null;
+    assumptions: DcfAssumptions;
+    explanation: string;
 }
 
 interface MultiplesBlock {
-  method: string;
-  multiples: Record<string, number>;
-  explanation: string;
+    method: string;
+    multiples: Record<string, number>;
+    explanation: string;
 }
 
 interface ReverseDcfBlock {
-  implied_growth_rate: number;
-  explanation: string;
+    implied_growth_rate: number;
+    explanation: string;
 }
 
 interface MultiplesValuationBlock {
-  method: string;
-  fair_value: number;
-  ev_sales_median?: number;
-  ev_ebitda_median?: number;
-  breakdown?: {
-    ev_sales?: number;
-    ev_ebitda?: number;
-  };
-  explanation: string;
+    method: string;
+    fair_value: number;
+    ev_sales_median?: number;
+    ev_ebitda_median?: number;
+    breakdown?: {
+        ev_sales?: number;
+        ev_ebitda?: number;
+    };
+    explanation: string;
 }
 
 interface QuickValuationResponse {
-  ticker: string;
-  currency: string;
-  current_price: number;
-  dcf: DcfBlock;
-  reverse_dcf: ReverseDcfBlock;
-  multiples_valuation: MultiplesValuationBlock;
-  multiples: MultiplesBlock;
+    ticker: string;
+    currency: string;
+    current_price: number;
+    dcf: DcfBlock;
+    reverse_dcf: ReverseDcfBlock;
+    multiples_valuation: MultiplesValuationBlock;
+    multiples: MultiplesBlock;
 }
 
-// Monte Carlo (mismo shape que tu widget actual)
 interface MonteCarloResult {
-  paths: number[][];
-  final_values: number[];
-  percentiles: {
-    p5: number;
-    p10: number;
-    p25: number;
-    p50: number;
-    p75: number;
-    p90: number;
-    p95: number;
-  };
-  metrics: {
-    mean: number;
-    median: number;
-    std: number;
-    var_5pct: number;
-    cvar_5pct: number;
-    prob_final_less_invested: number;
-    moic_median: number;
-  };
-  plotly_data: {
-    x: (number | null)[];
-    y: (number | null)[];
-    type: string;
-    mode: string;
-    line: { width: number; color: string };
-    name: string;
-  };
-  histogram: {
-    x: number[];
-    type: string;
-    nbinsx: number;
-    marker: { color: string; line: { color: string; width: number } };
-    name: string;
-  };
-  simulation_params: {
-    initial_value: number;
-    mu: number;
-    sigma: number;
-    years: number;
-    simulations: number;
-  };
+    paths: number[][];
+    final_values: number[];
+    percentiles: {
+        p5: number;
+        p10: number;
+        p25: number;
+        p50: number;
+        p75: number;
+        p90: number;
+        p95: number;
+    };
+    metrics: {
+        mean: number;
+        median: number;
+        std: number;
+        var_5pct: number;
+        cvar_5pct: number;
+        prob_final_less_invested: number;
+        moic_median: number;
+    };
+    plotly_data: any;
+    histogram: any;
+    simulation_params: {
+        initial_value: number;
+        mu: number;
+        sigma: number;
+        years: number;
+        simulations: number;
+    };
 }
 
 interface ScoringResponse {
-  ticker: string;
-  qualityScore: number;
-  valuationScore: number;
-  momentumScore: number;
-  compositeScore: number;
-  valuation_upside_pct: number | null;
+    ticker: string;
+    qualityScore: number;
+    valuationScore: number;
+    momentumScore: number;
+    compositeScore: number;
+    valuation_upside_pct: number | null;
 }
 
 const formatMoney = (v: number) =>
-  `$${v.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+    `$${v.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 
 export const ValuationTool: React.FC = () => {
-  const [ticker, setTicker] = useState("AAPL");
-  const [valuation, setValuation] = useState<QuickValuationResponse | null>(
-    null
-  );
-  const [scoring, setScoring] = useState<ScoringResponse | null>(null);
-  const [scoringError, setScoringError] = useState<string | null>(null);
-  const [isLoadingValuation, setIsLoadingValuation] = useState(false);
-  const [valError, setValError] = useState<string | null>(null);
+    const [ticker, setTicker] = useState("AAPL");
+    const [valuation, setValuation] = useState<QuickValuationResponse | null>(null);
+    const [scoring, setScoring] = useState<ScoringResponse | null>(null);
+    const [scoringError, setScoringError] = useState<string | null>(null);
+    const [isLoadingValuation, setIsLoadingValuation] = useState(false);
+    const [valError, setValError] = useState<string | null>(null);
 
-  // Monte Carlo (portfolio view)
-  const [initialValue, setInitialValue] = useState(100_000);
-  const [mu, setMu] = useState(0.1);
-  const [sigma, setSigma] = useState(0.25);
-  const [years, setYears] = useState(5);
-  const [simulations, setSimulations] = useState(10_000);
-  const [mcResult, setMcResult] = useState<MonteCarloResult | null>(null);
-  const [isLoadingMC, setIsLoadingMC] = useState(false);
-  const [mcError, setMcError] = useState<string | null>(null);
+    // Monte Carlo
+    const [years, setYears] = useState(5);
+    const [simulations] = useState(10_000);
+    const [mcResult, setMcResult] = useState<MonteCarloResult | null>(null);
+    const [isLoadingMC, setIsLoadingMC] = useState(false);
+    const [mcError, setMcError] = useState<string | null>(null);
 
-  const handleAnalyze = async () => {
-    setIsLoadingValuation(true);
-    setValError(null);
-    setScoring(null);
-    setScoringError(null);
-    setMcResult(null);
-    setMcError(null);
+    const handleAnalyze = async () => {
+        setIsLoadingValuation(true);
+        setValError(null);
+        setScoring(null);
+        setScoringError(null);
+        setMcResult(null);
+        setMcError(null);
 
-    try {
-      const cleanTicker = ticker.trim().toUpperCase();
-      if (!cleanTicker) {
-        throw new Error("Please enter a ticker symbol.");
-      }
+        try {
+            const cleanTicker = ticker.trim().toUpperCase();
+            if (!cleanTicker) throw new Error("Please enter a ticker symbol.");
 
-      // 1) Precio actual
-      const priceResp = await fetchWithAuth(
-        `${API_BASE_URL}/api/prices/realtime/${cleanTicker}`
-      );
-      if (!priceResp.ok) {
-        const errData = await priceResp
-          .json()
-          .catch(() => ({ detail: "Could not fetch current price" }));
-        throw new Error(errData.detail || "Could not fetch current price");
-      }
-      const priceData: any = await priceResp.json();
-      const currentPrice: number = priceData.price ?? priceData.current_price;
+            // Get current price
+            const priceResp = await fetchWithAuth(`${API_BASE_URL}/api/prices/realtime/${cleanTicker}`);
+            if (!priceResp.ok) throw new Error("Could not fetch current price");
+            const priceData = await priceResp.json();
+            const currentPrice = priceData.price ?? priceData.current_price;
 
-      if (!currentPrice || currentPrice <= 0) {
-        throw new Error("Backend did not return a valid current price.");
-      }
+            if (!currentPrice || currentPrice <= 0) {
+                throw new Error("Invalid current price from API.");
+            }
 
-      // 2) Valuación DCF / múltiplos
-      const dcfBody = {
-        current_price: currentPrice, // el resto usa defaults del backend
-      };
+            // Get valuation
+            const valResp = await fetchWithAuth(`${API_BASE_URL}/api/valuation/${cleanTicker}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ current_price: currentPrice }),
+            });
 
-      const valResp = await fetchWithAuth(
-        `${API_BASE_URL}/api/valuation/${cleanTicker}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(dcfBody),
+            if (!valResp.ok) {
+                const errData = await valResp.json().catch(() => ({ detail: "Valuation failed" }));
+                throw new Error(errData.detail || "Valuation failed");
+            }
+
+            const valData: QuickValuationResponse = await valResp.json();
+            setValuation(valData);
+
+            // Get scoring
+            try {
+                const scoringResp = await fetchWithAuth(`${API_BASE_URL}/api/analysis/scoring/${cleanTicker}`);
+                if (scoringResp.ok) {
+                    setScoring(await scoringResp.json());
+                }
+            } catch {
+                setScoringError("Scoring temporarily unavailable");
+            }
+
+            // Run Monte Carlo
+            const horizon = valData.dcf.assumptions.horizon_years;
+            setYears(horizon);
+            await runMonteCarlo(horizon);
+        } catch (err: any) {
+            console.error("Valuation error:", err);
+            setValError(err.message || "An unexpected error occurred.");
+        } finally {
+            setIsLoadingValuation(false);
         }
-      );
+    };
 
-      if (!valResp.ok) {
-        const errData = await valResp
-          .json()
-          .catch(() => ({ detail: "Valuation failed" }));
-        throw new Error(errData.detail || "Valuation failed");
-      }
+    const runMonteCarlo = async (yearsForSim?: number) => {
+        const yearsToUse = yearsForSim ?? years;
+        setIsLoadingMC(true);
+        setMcError(null);
+        setMcResult(null);
 
-      const valData: QuickValuationResponse = await valResp.json();
-      setValuation(valData);
+        try {
+            const resp = await fetchWithAuth(`${API_BASE_URL}/api/montecarlo/forecast/stock`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ticker: ticker.toUpperCase(),
+                    horizon_years: yearsToUse,
+                    simulations: simulations,
+                }),
+            });
 
-      try {
-        const scoringResp = await fetchWithAuth(`${API_BASE_URL}/api/analysis/scoring/${cleanTicker}`);
-        if (scoringResp.ok) {
-          const scoringData: ScoringResponse = await scoringResp.json();
-          setScoring(scoringData);
-        } else {
-          throw new Error('Scoring failed');
+            if (!resp.ok) {
+                const errData = await resp.json().catch(() => ({ detail: "Simulation failed" }));
+                throw new Error(errData.detail || "Simulation failed");
+            }
+
+            setMcResult(await resp.json());
+        } catch (err: any) {
+            console.error("Monte Carlo error:", err);
+            setMcError(err.message || "Simulation failed");
+        } finally {
+            setIsLoadingMC(false);
         }
-      } catch (scoringErr: any) {
-        console.error('Scoring error:', scoringErr);
-        setScoringError('Could not calculate Quality/Valuation/Momentum scores.');
-      }
+    };
 
-      // 3) usar el CAGR implícito del DCF como μ y horizonte para Monte Carlo
-      const impliedMu = valData.dcf.implied_return_cagr;
-      const horizon = valData.dcf.assumptions.horizon_years;
+    // Plotly layouts
+    const mcLayout = {
+        title: { text: "", font: { color: "#F2F4F7", size: 14 } },
+        xaxis: { title: "Years", gridcolor: "#1E2733", color: "#6B7A8F", tickfont: { size: 11 } },
+        yaxis: { title: "Price ($)", gridcolor: "#1E2733", color: "#6B7A8F", tickfont: { size: 11 } },
+        plot_bgcolor: "#0F1419",
+        paper_bgcolor: "#0F1419",
+        font: { color: "#6B7A8F" },
+        showlegend: false,
+        margin: { l: 50, r: 20, t: 20, b: 40 },
+    };
 
-      setMu(impliedMu);
-      setYears(horizon);
-
-      await runMonteCarlo(impliedMu, horizon);
-    } catch (err: any) {
-      console.error("Quick valuation error:", err);
-      setValError(err.message || "An unexpected error occurred during valuation.");
-    } finally {
-      setIsLoadingValuation(false);
-    }
-  };
-
-  const runMonteCarlo = async (muForSim?: number, yearsForSim?: number) => {
-    // const muToUse = muForSim ?? mu; // Not used for stock forecast
-    const yearsToUse = yearsForSim ?? years;
-
-    setIsLoadingMC(true);
-    setMcError(null);
-    setMcResult(null);
-
-    try {
-      const resp = await fetchWithAuth(`${API_BASE_URL}/api/montecarlo/forecast/stock`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticker: ticker.toUpperCase(),
-          horizon_years: yearsToUse,
-          simulations: simulations,
-        }),
-      });
-
-      if (!resp.ok) {
-        const errData = await resp
-          .json()
-          .catch(() => ({ detail: "Simulation failed" }));
-        throw new Error(errData.detail || "Simulation failed");
-      }
-
-      const data: MonteCarloResult = await resp.json();
-      setMcResult(data);
-    } catch (err: any) {
-      console.error("Monte Carlo valuation error:", err);
-      setMcError(err.message || "Simulation failed");
-    } finally {
-      setIsLoadingMC(false);
-    }
-  };
-
-  // Layouts Plotly
-  const mcLayout = {
-    title: {
-      text: `Monte Carlo – portfolio in ${valuation?.ticker ?? ticker.toUpperCase()
-        } (${mcResult?.simulation_params.simulations.toLocaleString() ??
-        simulations.toLocaleString()
-        } paths)`,
-      font: { color: "#E0E1DD", size: 14 },
-      pad: { b: 10 }
-    },
-    xaxis: {
-      title: "Years",
-      gridcolor: "#334155",
-      color: "#94a3b8",
-    },
-    yaxis: {
-      title: "Portfolio Value ($)",
-      gridcolor: "#334155",
-      color: "#94a3b8",
-    },
-    plot_bgcolor: "#0f172a",
-    paper_bgcolor: "#0f172a",
-    font: { color: "#94a3b8" },
-    showlegend: false,
-    margin: { l: 60, r: 20, t: 50, b: 50 },
-  };
-
-  const histLayout = {
-    title: {
-      text: "Distribution of Final Values",
-      font: { color: "#E0E1DD", size: 14 },
-    },
-    xaxis: {
-      title: "Final Value ($)",
-      gridcolor: "#334155",
-      color: "#94a3b8",
-    },
-    yaxis: {
-      title: "Frequency",
-      gridcolor: "#334155",
-      color: "#94a3b8",
-    },
-    plot_bgcolor: "#0f172a",
-    paper_bgcolor: "#0f172a",
-    font: { color: "#94a3b8" },
-    margin: { l: 60, r: 20, t: 50, b: 50 },
-  };
-
-  return (
-    <WidgetCard
-      title="QUICK VALUATION"
-      tooltip="Valuación rápida con DCF y múltiplos. Analiza precio objetivo, upside potencial y simulaciones Monte Carlo para cualquier ticker."
-    >
-      <div className="space-y-6">
-        {/* Ticker + botón */}
-        <section className="space-y-3">
-          <div className="flex flex-col md:flex-row gap-3 items-stretch">
-            <div className="flex-1">
-              <label className="block text-xs text-slate-400 mb-1">Ticker</label>
-              <input
-                value={ticker}
-                onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                className="w-full bg-gray-800 border border-slate-700 rounded-md py-2 px-3 text-slate-100"
-                placeholder="AAPL, MSFT, NVDA..."
-              />
-            </div>
-            <button
-              onClick={handleAnalyze}
-              disabled={isLoadingValuation || !ticker.trim()}
-              className="px-6 py-2 rounded-md bg-slate-700 hover:bg-slate-600 text-sm font-semibold"
-            >
-              {isLoadingValuation ? "Analyzing..." : "Analyze"}
-            </button>
-          </div>
-          {valError && (
-            <div className="text-sm text-red-400 bg-red-900/30 p-2 rounded-md">
-              {valError}
-            </div>
-          )}
-        </section>
-
-        {scoring && (
-          <section className="border border-slate-800 rounded-lg p-6 bg-gray-950/50 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full pointer-events-none"></div>
-            
-            <div className="flex flex-col md:flex-row gap-8 items-center">
-              {/* Main C-Score */}
-              <div className="text-center min-w-[180px]">
-                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">
-                  Caria C-Score
-                </h3>
+    return (
+        <WidgetCard
+            title="VALUATION TERMINAL"
+            tooltip="Multi-method valuation: DCF, reverse DCF, historical multiples, and Monte Carlo price simulations."
+        >
+            <div className="space-y-6">
+                {/* Ticker Input */}
                 <div 
-                  className="text-6xl font-bold mb-2"
-                  style={{
-                    color: scoring.compositeScore >= 80 ? '#10b981' : scoring.compositeScore >= 60 ? '#fbbf24' : '#9ca3af',
-                    textShadow: '0 0 20px rgba(0,0,0,0.5)'
-                  }}
-                >
-                  {scoring.compositeScore.toFixed(0)}
-                </div>
-                <div className="px-3 py-1 rounded-full text-xs font-bold inline-block"
-                  style={{
-                    backgroundColor: scoring.compositeScore >= 80 ? 'rgba(16, 185, 129, 0.2)' : scoring.compositeScore >= 60 ? 'rgba(251, 191, 36, 0.2)' : 'rgba(156, 163, 175, 0.2)',
-                    color: scoring.compositeScore >= 80 ? '#10b981' : scoring.compositeScore >= 60 ? '#fbbf24' : '#9ca3af',
-                  }}
-                >
-                  {scoring.compositeScore >= 80 ? 'PROBABLE OUTLIER' : scoring.compositeScore >= 60 ? 'HIGH-QUALITY' : 'STANDARD'}
-                </div>
-              </div>
-
-              {/* Divider */}
-              <div className="hidden md:block w-px h-24 bg-slate-800"></div>
-
-              {/* Breakdown */}
-              <div className="flex-1 w-full grid grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <div className="text-xs text-slate-500 font-medium">QUALITY (35%)</div>
-                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full rounded-full" 
-                      style={{ width: `${scoring.qualityScore}%`, backgroundColor: '#3b82f6' }}
-                    ></div>
-                  </div>
-                  <div className="text-lg font-bold text-slate-200">{scoring.qualityScore.toFixed(0)}<span className="text-xs text-slate-500 font-normal">/100</span></div>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="text-xs text-slate-500 font-medium">VALUATION (25%)</div>
-                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full rounded-full" 
-                      style={{ width: `${scoring.valuationScore}%`, backgroundColor: '#8b5cf6' }}
-                    ></div>
-                  </div>
-                  <div className="text-lg font-bold text-slate-200">{scoring.valuationScore.toFixed(0)}<span className="text-xs text-slate-500 font-normal">/100</span></div>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="text-xs text-slate-500 font-medium">MOMENTUM (20%)</div>
-                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full rounded-full" 
-                      style={{ width: `${scoring.momentumScore}%`, backgroundColor: '#f59e0b' }}
-                    ></div>
-                  </div>
-                  <div className="text-lg font-bold text-slate-200">{scoring.momentumScore.toFixed(0)}<span className="text-xs text-slate-500 font-normal">/100</span></div>
-                </div>
-                
-                <div className="col-span-3 text-xs text-slate-500 mt-1 flex justify-between">
-                   <span>* Moat Score (20%) not yet available</span>
-                   <span>Weights re-normalized to 100%</span>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {scoringError && (
-          <div className="text-xs text-amber-300 bg-amber-900/20 border border-amber-500/20 p-2 rounded-md">
-            {scoringError}
-          </div>
-        )}
-
-        {/* Contenido de valuación */}
-        {valuation && (
-          <section className="space-y-6">
-            {/* Reverse DCF & Multiples Valuation (New) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Reverse DCF */}
-              <div className="bg-indigo-900/20 border border-indigo-500/30 rounded-lg p-4 space-y-2">
-                <div className="flex justify-between items-start">
-                  <div className="text-xs text-indigo-300 font-semibold uppercase tracking-wider">Reverse DCF</div>
-                  <div className="text-xs text-indigo-400/70">Implied Growth</div>
-                </div>
-                <div className="text-3xl font-bold text-indigo-100">
-                  {(valuation.reverse_dcf.implied_growth_rate * 100).toFixed(1)}%
-                </div>
-                <div className="text-xs text-indigo-300/80 leading-relaxed">
-                  {valuation.reverse_dcf.explanation}
-                </div>
-              </div>
-
-              {/* Multiples Valuation */}
-              <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-4 space-y-2">
-                <div className="flex justify-between items-start">
-                  <div className="text-xs text-emerald-300 font-semibold uppercase tracking-wider">Historical Multiples</div>
-                  <div className="text-xs text-emerald-400/70">Fair Value</div>
-                </div>
-                {valuation.multiples_valuation.fair_value > 0 ? (
-                  <>
-                    <div className="text-3xl font-bold text-emerald-100">
-                      {formatMoney(valuation.multiples_valuation.fair_value)}
-                    </div>
-                    <div className="text-xs text-emerald-300/80 leading-relaxed space-y-1">
-                      <div>
-                        Medians: EV/Sales {valuation.multiples_valuation.ev_sales_median?.toFixed(1) ?? '—'}x • EV/EBITDA{' '}
-                        {valuation.multiples_valuation.ev_ebitda_median?.toFixed(1) ?? '—'}x
-                      </div>
-                      {valuation.multiples_valuation.breakdown && (
-                        <div className="text-[11px] text-emerald-200/80">
-                          {valuation.multiples_valuation.breakdown.ev_sales !== undefined && (
-                            <span>EV/Sales → {formatMoney(valuation.multiples_valuation.breakdown.ev_sales)} </span>
-                          )}
-                          {valuation.multiples_valuation.breakdown.ev_ebitda !== undefined && (
-                            <span className="ml-1">
-                              EV/EBITDA → {formatMoney(valuation.multiples_valuation.breakdown.ev_ebitda)}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-lg font-bold text-emerald-300/50">N/A</div>
-                    <div className="text-xs text-emerald-300/60 leading-relaxed">
-                      {valuation.multiples_valuation.explanation || 'Insufficient data for multiples valuation. Historical revenue/EBITDA data may be unavailable.'}
-                    </div>
-                    {valuation.multiples_valuation.ev_sales_median !== null && (
-                      <div className="text-xs text-emerald-300/60">
-                        Available medians: EV/Sales {valuation.multiples_valuation.ev_sales_median?.toFixed(1) ?? '—'}x • EV/EBITDA{' '}
-                        {valuation.multiples_valuation.ev_ebitda_median?.toFixed(1) ?? '—'}x
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Multiples Table */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-slate-300">Current Market Multiples</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                {Object.entries(valuation.multiples.multiples).map(
-                  ([key, value]) => {
-                    const num = Number(value);
-                    return (
-                      <div
-                        key={key}
-                        className="bg-gray-900/40 p-2 rounded border border-slate-800"
-                      >
-                        <div className="text-slate-500 mb-1">{key}</div>
-                        <div className="text-slate-200 font-mono">
-                          {key.includes("yield") || key.includes("rate")
-                            ? `${(num * 100).toFixed(1)}%`
-                            : num.toFixed(2)}
-                        </div>
-                      </div>
-                    );
-                  }
-                )}
-              </div>
-            </div>
-
-            {/* Monte Carlo */}
-            <div className="border-t border-slate-800 pt-4 space-y-3">
-              <h2 className="text-sm font-semibold text-slate-300">
-                Monte Carlo – Stock Price Forecast
-              </h2>
-              <p className="text-xs text-slate-500">
-                Projecting future stock price based on historical volatility.
-              </p>
-
-              {/* Parámetros MC */}
-              <div className="flex items-center gap-3 text-xs">
-                <div className="w-24">
-                  <label className="text-slate-400 block mb-1">Years</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={years}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value);
-                      if (val >= 1 && val <= 10) {
-                        setYears(val);
-                      } else if (val < 1) {
-                        setYears(1);
-                      } else {
-                        setYears(10);
-                      }
+                    className="flex gap-3 p-4 rounded-lg"
+                    style={{ 
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        border: '1px solid var(--color-border-subtle)'
                     }}
-                    className="w-full bg-gray-800 border border-slate-700 rounded py-1 px-2 text-slate-100"
-                    disabled={isLoadingMC}
-                  />
-                </div>
-                <div className="flex-1 flex items-end">
-                  <button
-                    onClick={() => runMonteCarlo()}
-                    disabled={isLoadingMC}
-                    className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-1.5 rounded transition-colors text-xs font-medium"
-                  >
-                    {isLoadingMC ? "Running..." : "Re-run Simulation"}
-                  </button>
-                </div>
-              </div>
-
-              {mcError && (
-                <div className="text-xs text-red-400 bg-red-900/20 p-2 rounded">
-                  {mcError}
-                </div>
-              )}
-
-              {mcResult && (
-                <div className="space-y-4 mt-2">
-                  {/* Percentiles */}
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div className="bg-gray-900/40 p-2 rounded border border-slate-800">
-                      <div className="text-slate-500">P10 (Bear)</div>
-                      <div className="text-slate-200 font-mono">
-                        {formatMoney(mcResult.percentiles.p10)}
-                      </div>
+                >
+                    <div className="flex-1">
+                        <label 
+                            className="block text-[10px] font-medium tracking-wider uppercase mb-1.5"
+                            style={{ color: 'var(--color-text-muted)' }}
+                        >
+                            Ticker Symbol
+                        </label>
+                        <input
+                            value={ticker}
+                            onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                            className="w-full px-4 py-2.5 rounded-lg text-base font-mono font-semibold"
+                            style={{
+                                backgroundColor: 'var(--color-bg-surface)',
+                                border: '1px solid var(--color-border-subtle)',
+                                color: 'var(--color-text-primary)',
+                            }}
+                            placeholder="AAPL, MSFT, NVDA..."
+                        />
                     </div>
-                    <div className="bg-gray-900/40 p-2 rounded border border-slate-800">
-                      <div className="text-slate-500">P50 (Base)</div>
-                      <div className="text-slate-200 font-mono">
-                        {formatMoney(mcResult.percentiles.p50)}
-                      </div>
-                    </div>
-                    <div className="bg-gray-900/40 p-2 rounded border border-slate-800">
-                      <div className="text-slate-500">P90 (Bull)</div>
-                      <div className="text-slate-200 font-mono">
-                        {formatMoney(mcResult.percentiles.p90)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Paths */}
-                  <div className="bg-gray-900/20 rounded border border-slate-800/50 p-1">
-                    <Plot
-                      data={[mcResult.plotly_data] as any}
-                      layout={mcLayout}
-                      config={{ displayModeBar: false, responsive: true }}
-                      style={{ width: "100%", height: "250px" }}
-                      useResizeHandler
-                    />
-                  </div>
+                    <button
+                        onClick={handleAnalyze}
+                        disabled={isLoadingValuation || !ticker.trim()}
+                        className="self-end px-6 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 disabled:opacity-50"
+                        style={{
+                            backgroundColor: 'var(--color-accent-primary)',
+                            color: '#FFFFFF',
+                        }}
+                    >
+                        {isLoadingValuation ? "Analyzing..." : "Analyze"}
+                    </button>
                 </div>
-              )}
+
+                {valError && (
+                    <div 
+                        className="px-4 py-3 rounded-lg text-sm"
+                        style={{
+                            backgroundColor: 'var(--color-negative-muted)',
+                            color: 'var(--color-negative)',
+                            border: '1px solid var(--color-negative)',
+                        }}
+                    >
+                        {valError}
+                    </div>
+                )}
+
+                {/* C-Score Section */}
+                {scoring && (
+                    <div 
+                        className="rounded-xl p-6 relative overflow-hidden"
+                        style={{
+                            backgroundColor: 'var(--color-bg-tertiary)',
+                            border: '1px solid var(--color-border-subtle)',
+                        }}
+                    >
+                        <div className="flex flex-col md:flex-row gap-8 items-center">
+                            {/* Main Score */}
+                            <div className="text-center min-w-[140px]">
+                                <div 
+                                    className="text-[10px] font-semibold tracking-widest uppercase mb-2"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                >
+                                    Caria C-Score
+                                </div>
+                                <div 
+                                    className="text-5xl font-bold font-mono"
+                                    style={{
+                                        color: scoring.compositeScore >= 80 ? 'var(--color-positive)' : 
+                                               scoring.compositeScore >= 60 ? 'var(--color-warning)' : 
+                                               'var(--color-text-secondary)',
+                                    }}
+                                >
+                                    {scoring.compositeScore.toFixed(0)}
+                                </div>
+                                <div 
+                                    className="text-xs font-medium mt-2 px-3 py-1 rounded-full inline-block"
+                                    style={{
+                                        backgroundColor: scoring.compositeScore >= 80 ? 'var(--color-positive-muted)' : 
+                                                        scoring.compositeScore >= 60 ? 'var(--color-warning-muted)' : 
+                                                        'var(--color-bg-surface)',
+                                        color: scoring.compositeScore >= 80 ? 'var(--color-positive)' : 
+                                               scoring.compositeScore >= 60 ? 'var(--color-warning)' : 
+                                               'var(--color-text-muted)',
+                                    }}
+                                >
+                                    {scoring.compositeScore >= 80 ? 'PROBABLE OUTLIER' : 
+                                     scoring.compositeScore >= 60 ? 'HIGH-QUALITY' : 'STANDARD'}
+                                </div>
+                            </div>
+
+                            {/* Divider */}
+                            <div 
+                                className="hidden md:block w-px h-20"
+                                style={{ backgroundColor: 'var(--color-border-subtle)' }}
+                            />
+
+                            {/* Breakdown */}
+                            <div className="flex-1 grid grid-cols-3 gap-6">
+                                {[
+                                    { label: 'Quality', value: scoring.qualityScore, weight: '35%', color: 'var(--color-accent-primary)' },
+                                    { label: 'Valuation', value: scoring.valuationScore, weight: '25%', color: '#8B5CF6' },
+                                    { label: 'Momentum', value: scoring.momentumScore, weight: '20%', color: 'var(--color-warning)' },
+                                ].map((metric) => (
+                                    <div key={metric.label}>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span 
+                                                className="text-[10px] font-medium tracking-wider uppercase"
+                                                style={{ color: 'var(--color-text-muted)' }}
+                                            >
+                                                {metric.label}
+                                            </span>
+                                            <span 
+                                                className="text-[10px]"
+                                                style={{ color: 'var(--color-text-subtle)' }}
+                                            >
+                                                {metric.weight}
+                                            </span>
+                                        </div>
+                                        <div 
+                                            className="h-2 rounded-full overflow-hidden mb-2"
+                                            style={{ backgroundColor: 'var(--color-bg-surface)' }}
+                                        >
+                                            <div 
+                                                className="h-full rounded-full"
+                                                style={{ width: `${metric.value}%`, backgroundColor: metric.color }}
+                                            />
+                                        </div>
+                                        <div 
+                                            className="text-lg font-bold font-mono"
+                                            style={{ color: 'var(--color-text-primary)' }}
+                                        >
+                                            {metric.value.toFixed(0)}
+                                            <span 
+                                                className="text-xs font-normal"
+                                                style={{ color: 'var(--color-text-muted)' }}
+                                            >
+                                                /100
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {scoringError && (
+                    <div 
+                        className="px-4 py-2 rounded-lg text-xs"
+                        style={{
+                            backgroundColor: 'var(--color-warning-muted)',
+                            color: 'var(--color-warning)',
+                        }}
+                    >
+                        {scoringError}
+                    </div>
+                )}
+
+                {/* Valuation Results */}
+                {valuation && (
+                    <div className="space-y-6">
+                        {/* Valuation Methods Grid */}
+                        <div className="grid md:grid-cols-2 gap-4">
+                            {/* Reverse DCF */}
+                            <div 
+                                className="rounded-xl p-5"
+                                style={{
+                                    backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                                    border: '1px solid rgba(139, 92, 246, 0.25)',
+                                }}
+                            >
+                                <div className="flex items-center justify-between mb-3">
+                                    <span 
+                                        className="text-[10px] font-semibold tracking-widest uppercase"
+                                        style={{ color: '#8B5CF6' }}
+                                    >
+                                        Reverse DCF
+                                    </span>
+                                    <span 
+                                        className="text-[10px]"
+                                        style={{ color: 'rgba(139, 92, 246, 0.7)' }}
+                                    >
+                                        Implied Growth
+                                    </span>
+                                </div>
+                                <div 
+                                    className="text-3xl font-bold font-mono mb-2"
+                                    style={{ color: '#8B5CF6' }}
+                                >
+                                    {(valuation.reverse_dcf.implied_growth_rate * 100).toFixed(1)}%
+                                </div>
+                                <p 
+                                    className="text-xs leading-relaxed"
+                                    style={{ color: 'rgba(139, 92, 246, 0.8)' }}
+                                >
+                                    {valuation.reverse_dcf.explanation}
+                                </p>
+                            </div>
+
+                            {/* Multiples Valuation */}
+                            <div 
+                                className="rounded-xl p-5"
+                                style={{
+                                    backgroundColor: 'var(--color-positive-muted)',
+                                    border: '1px solid rgba(0, 200, 83, 0.25)',
+                                }}
+                            >
+                                <div className="flex items-center justify-between mb-3">
+                                    <span 
+                                        className="text-[10px] font-semibold tracking-widest uppercase"
+                                        style={{ color: 'var(--color-positive)' }}
+                                    >
+                                        Historical Multiples
+                                    </span>
+                                    <span 
+                                        className="text-[10px]"
+                                        style={{ color: 'rgba(0, 200, 83, 0.7)' }}
+                                    >
+                                        Fair Value
+                                    </span>
+                                </div>
+                                {valuation.multiples_valuation.fair_value > 0 ? (
+                                    <>
+                                        <div 
+                                            className="text-3xl font-bold font-mono mb-2"
+                                            style={{ color: 'var(--color-positive)' }}
+                                        >
+                                            {formatMoney(valuation.multiples_valuation.fair_value)}
+                                        </div>
+                                        <p 
+                                            className="text-xs"
+                                            style={{ color: 'rgba(0, 200, 83, 0.8)' }}
+                                        >
+                                            EV/Sales: {valuation.multiples_valuation.ev_sales_median?.toFixed(1) ?? '—'}x • 
+                                            EV/EBITDA: {valuation.multiples_valuation.ev_ebitda_median?.toFixed(1) ?? '—'}x
+                                        </p>
+                                    </>
+                                ) : (
+                                    <div 
+                                        className="text-lg font-medium"
+                                        style={{ color: 'rgba(0, 200, 83, 0.5)' }}
+                                    >
+                                        Insufficient data
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Current Multiples Grid */}
+                        <div>
+                            <div 
+                                className="text-[10px] font-semibold tracking-widest uppercase mb-3"
+                                style={{ color: 'var(--color-text-muted)' }}
+                            >
+                                Current Market Multiples
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                {Object.entries(valuation.multiples.multiples).map(([key, value]) => {
+                                    const num = Number(value);
+                                    return (
+                                        <div
+                                            key={key}
+                                            className="px-3 py-2 rounded-lg"
+                                            style={{
+                                                backgroundColor: 'var(--color-bg-tertiary)',
+                                                border: '1px solid var(--color-border-subtle)',
+                                            }}
+                                        >
+                                            <div 
+                                                className="text-[10px] mb-1"
+                                                style={{ color: 'var(--color-text-muted)' }}
+                                            >
+                                                {key}
+                                            </div>
+                                            <div 
+                                                className="text-sm font-mono font-medium"
+                                                style={{ color: 'var(--color-text-primary)' }}
+                                            >
+                                                {key.includes("yield") || key.includes("rate")
+                                                    ? `${(num * 100).toFixed(1)}%`
+                                                    : num.toFixed(2)}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Monte Carlo Section */}
+                        <div 
+                            className="pt-6 border-t"
+                            style={{ borderColor: 'var(--color-border-subtle)' }}
+                        >
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <div 
+                                        className="text-sm font-semibold"
+                                        style={{ color: 'var(--color-text-primary)' }}
+                                    >
+                                        Monte Carlo Price Forecast
+                                    </div>
+                                    <div 
+                                        className="text-xs"
+                                        style={{ color: 'var(--color-text-muted)' }}
+                                    >
+                                        {simulations.toLocaleString()} simulations based on historical volatility
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-3">
+                                    <div>
+                                        <label 
+                                            className="text-[10px] block mb-1"
+                                            style={{ color: 'var(--color-text-muted)' }}
+                                        >
+                                            Years
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="10"
+                                            value={years}
+                                            onChange={(e) => setYears(Math.min(10, Math.max(1, parseInt(e.target.value) || 1)))}
+                                            className="w-16 px-2 py-1.5 rounded text-sm font-mono"
+                                            style={{
+                                                backgroundColor: 'var(--color-bg-surface)',
+                                                border: '1px solid var(--color-border-subtle)',
+                                                color: 'var(--color-text-primary)',
+                                            }}
+                                            disabled={isLoadingMC}
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={() => runMonteCarlo()}
+                                        disabled={isLoadingMC}
+                                        className="px-4 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                                        style={{
+                                            backgroundColor: 'var(--color-bg-surface)',
+                                            color: 'var(--color-text-secondary)',
+                                            border: '1px solid var(--color-border-subtle)',
+                                        }}
+                                    >
+                                        {isLoadingMC ? "Running..." : "Re-run"}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {mcError && (
+                                <div 
+                                    className="px-4 py-2 rounded-lg text-xs mb-4"
+                                    style={{
+                                        backgroundColor: 'var(--color-negative-muted)',
+                                        color: 'var(--color-negative)',
+                                    }}
+                                >
+                                    {mcError}
+                                </div>
+                            )}
+
+                            {mcResult && (
+                                <div className="space-y-4">
+                                    {/* Percentiles */}
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {[
+                                            { label: 'Bear (P10)', value: mcResult.percentiles.p10, color: 'var(--color-negative)' },
+                                            { label: 'Base (P50)', value: mcResult.percentiles.p50, color: 'var(--color-text-primary)' },
+                                            { label: 'Bull (P90)', value: mcResult.percentiles.p90, color: 'var(--color-positive)' },
+                                        ].map((p) => (
+                                            <div 
+                                                key={p.label}
+                                                className="px-4 py-3 rounded-lg text-center"
+                                                style={{
+                                                    backgroundColor: 'var(--color-bg-tertiary)',
+                                                    border: '1px solid var(--color-border-subtle)',
+                                                }}
+                                            >
+                                                <div 
+                                                    className="text-[10px] font-medium tracking-wider uppercase mb-1"
+                                                    style={{ color: 'var(--color-text-muted)' }}
+                                                >
+                                                    {p.label}
+                                                </div>
+                                                <div 
+                                                    className="text-xl font-bold font-mono"
+                                                    style={{ color: p.color }}
+                                                >
+                                                    {formatMoney(p.value)}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Chart */}
+                                    <div 
+                                        className="rounded-lg overflow-hidden"
+                                        style={{
+                                            backgroundColor: 'var(--color-bg-tertiary)',
+                                            border: '1px solid var(--color-border-subtle)',
+                                        }}
+                                    >
+                                        <Plot
+                                            data={[mcResult.plotly_data] as any}
+                                            layout={mcLayout}
+                                            config={{ displayModeBar: false, responsive: true }}
+                                            style={{ width: "100%", height: "240px" }}
+                                            useResizeHandler
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Empty State */}
+                {!valuation && !isLoadingValuation && !valError && (
+                    <div 
+                        className="text-center py-12"
+                        style={{ color: 'var(--color-text-muted)' }}
+                    >
+                        <p className="text-sm">
+                            Enter a ticker symbol to run valuation analysis
+                        </p>
+                    </div>
+                )}
             </div>
-          </section>
-        )}
-
-        {!valuation && !isLoadingValuation && !valError && (
-          <div className="text-center text-xs text-slate-500 py-8 italic">
-            Enter a ticker to see Reverse DCF, Multiples Valuation, and Monte Carlo forecasts.
-          </div>
-        )}
-      </div>
-    </WidgetCard>
-  );
+        </WidgetCard>
+    );
 };

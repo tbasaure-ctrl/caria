@@ -23,12 +23,62 @@ const generateSparklineData = () => {
     }));
 };
 
+interface WeeklyPick {
+    ticker: string;
+    company_name: string;
+    sector: string;
+    cas_score: number;
+    scores: {
+        momentum: number;
+        quality: number;
+        valuation: number;
+        catalyst: number;
+    };
+    investment_thesis: string;
+    generated_date: string;
+}
+
 export const AlphaStockPicker: React.FC = () => {
     const [picks, setPicks] = useState<AlphaPick[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [generated, setGenerated] = useState(false);
     const [universeSize, setUniverseSize] = useState<number | null>(null);
+    const [weekInfo, setWeekInfo] = useState<{ week_start: string; generated_date: string } | null>(null);
+
+    // Auto-load weekly picks on mount
+    useEffect(() => {
+        const loadWeeklyPicks = async () => {
+            try {
+                const { fetchWithAuth, API_BASE_URL } = await import('../../services/apiService');
+                const response = await fetchWithAuth(`${API_BASE_URL}/api/weekly-picks/current`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.picks && data.picks.length > 0) {
+                        // Convert WeeklyPick format to AlphaPick format
+                        const convertedPicks: AlphaPick[] = data.picks.map((wp: WeeklyPick) => ({
+                            ticker: wp.ticker,
+                            company_name: wp.company_name,
+                            sector: wp.sector,
+                            cas_score: wp.cas_score,
+                            scores: wp.scores,
+                            explanation: wp.investment_thesis
+                        }));
+                        setPicks(convertedPicks);
+                        setGenerated(true);
+                        setWeekInfo({
+                            week_start: data.week_start,
+                            generated_date: data.generated_date
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load weekly picks', e);
+                // Fallback to manual generation
+            }
+        };
+        loadWeeklyPicks();
+    }, []);
 
     // Load universe stats on mount
     useEffect(() => {
@@ -79,17 +129,23 @@ export const AlphaStockPicker: React.FC = () => {
                 </div>
             )}
             <div className="min-h-[400px] w-full bg-slate-900/50 rounded border border-slate-800 p-6 flex flex-col items-center justify-center relative overflow-hidden">
+                {/* Week info */}
+                {weekInfo && (
+                    <div className="text-xs text-slate-500 mb-2 self-start">
+                        Week of {new Date(weekInfo.week_start).toLocaleDateString()} • Auto-updated weekly
+                    </div>
+                )}
                 {/* Initial state */}
                 {!generated && !loading && (
                     <div className="text-center z-10">
                         <div className="mb-6 text-slate-400 max-w-md mx-auto">
-                            Generate this week's top 3 stock picks based on our Composite Alpha Score (CAS) model.
+                            This week's top 3 stock picks based on our Composite Alpha Score (CAS) model.
                         </div>
                         <button
                             onClick={generatePicks}
                             className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-blue-500/20 transition-all transform hover:scale-105"
                         >
-                            Generate Weekly Picks
+                            Load Weekly Picks
                         </button>
                     </div>
                 )}
@@ -141,7 +197,7 @@ export const AlphaStockPicker: React.FC = () => {
                                     <ScoreBadge label="CAT" value={pick.scores.catalyst} />
                                 </div>
                                 <div className="mt-auto pt-3 border-t border-slate-700/50">
-                                    <p className="text-xs text-slate-300 italic leading-relaxed">"{pick.explanation}"</p>
+                                    <p className="text-xs text-slate-300 leading-relaxed">{pick.explanation}</p>
                                 </div>
                             </div>
                         ))}

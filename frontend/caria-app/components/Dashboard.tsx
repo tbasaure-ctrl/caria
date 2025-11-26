@@ -244,9 +244,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     </div>
                 )}
 
-                {/* ANALYSIS TAB - Quick Valuation, Investment Thesis, and Community ONLY */}
+                {/* ANALYSIS TAB - Screeners, Quick Valuation, Investment Thesis */}
                 {activeTab === 'analysis' && (
                     <div className="space-y-12">
+                        {/* Stock Screeners - Two Column Layout */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Alpha Stock Picker - Top picks by CAS score */}
+                            <AlphaStockPicker />
+                            
+                            {/* Hidden Gems Screener - Under the radar mid-caps */}
+                            <HiddenGemsScreener />
+                        </div>
+
                         {/* Quick Valuation with Monte Carlo */}
                         <ValuationTool />
 
@@ -259,8 +268,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             />
                             <RegimeTestWidget />
                         </div>
+                    </div>
+                )}
 
-                        {/* Community Section */}
+                {/* RESEARCH TAB - Weekly Video, Weekly Podcast, Reddit, Lectures, Community */}
+                {activeTab === 'research' && (
+                    <div className="space-y-12">
+                        {/* Weekly Video and Podcast */}
+                        <WeeklyMedia compact={false} />
+
+                        {/* Two Column Layout: Reddit Feed and Recommended Lectures */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                            <RedditSentiment />
+                            <Resources />
+                        </div>
+
+                        {/* Community Section - At Bottom */}
                         <div>
                             <h2 className="text-2xl font-bold mb-5"
                                 style={{
@@ -273,29 +296,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                 <CommunityFeed />
                                 <RankingsWidget />
                             </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* RESEARCH TAB - Weekly Video, Weekly Podcast, Stock Screener, Reddit, Lectures */}
-                {activeTab === 'research' && (
-                    <div className="space-y-12">
-                        {/* Weekly Video and Podcast */}
-                        <WeeklyMedia compact={false} />
-
-                        {/* Stock Screeners - Two Column Layout */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Alpha Stock Picker - Top picks by CAS score */}
-                            <AlphaStockPicker />
-                            
-                            {/* Hidden Gems Screener - Under the radar mid-caps */}
-                            <HiddenGemsScreener />
-                        </div>
-
-                        {/* Two Column Layout: Reddit Feed and Recommended Lectures */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                            <RedditSentiment />
-                            <Resources />
                         </div>
                     </div>
                 )}

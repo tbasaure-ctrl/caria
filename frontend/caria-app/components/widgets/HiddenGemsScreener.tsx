@@ -52,10 +52,27 @@ export const HiddenGemsScreener: React.FC = () => {
         return 'text-slate-400';
     };
 
+    const scoreExplanation = (
+        <div>
+            <p className="mb-2"><strong>How the Hidden Gem Score Works:</strong></p>
+            <p className="mb-2 text-sm">The Hidden Gem Score (0-100) combines three key factors:</p>
+            <ul className="list-disc list-inside mb-2 text-sm space-y-1">
+                <li><strong>Quality Score (30%):</strong> Measures financial health, profitability, and operational efficiency</li>
+                <li><strong>Valuation Score (30%):</strong> Assesses whether the stock is trading at an attractive price relative to fundamentals</li>
+                <li><strong>Momentum Score (25%):</strong> Evaluates recent price performance and market sentiment</li>
+                <li><strong>Bonus/Penalty (15%):</strong> Adjustments for exceptional metrics or red flags</li>
+            </ul>
+            <p className="mb-2 text-sm">Stocks scoring 80+ are classified as "Hidden Gems" - undervalued mid-caps with strong fundamentals.</p>
+            <p className="mt-3 pt-2 border-t border-slate-600 text-xs text-red-300">
+                <strong>⚠️ Disclaimer:</strong> This is not financial advice. All investments carry risk. Please conduct your own research and consult with a financial advisor before making investment decisions.
+            </p>
+        </div>
+    );
+
     return (
         <WidgetCard 
             title="HIDDEN GEMS SCREENER" 
-            tooltip="Discover undervalued mid-cap stocks (50M-10B market cap) with strong fundamentals that fly under the radar"
+            tooltip={scoreExplanation}
         >
             <div className="min-h-[400px] w-full bg-slate-900/50 rounded border border-slate-800 p-6 flex flex-col items-center justify-center relative overflow-hidden">
                 {/* Initial state */}

@@ -16,8 +16,8 @@ class ValuationRequest(BaseModel):
 @router.post("/{ticker}")
 async def get_valuation(ticker: str, request: ValuationRequest):
     """
-    Get simple valuation using the robust SimpleValuationService.
-    Legacy endpoint - use /comprehensive for full analysis.
+    Get simple valuation using direct FMP calls for P/E, EV/EBITDA, EV/Sales.
+    Simplified approach that's more reliable.
     """
     try:
         ticker = ticker.upper()
@@ -27,12 +27,12 @@ async def get_valuation(ticker: str, request: ValuationRequest):
         if not current_price:
             LOGGER.info(f"Fetching current price for {ticker}")
             try:
-                from ..services.scoring_service import ScoringService
-                scoring = ScoringService()
-                price_data = scoring.fmp.get_realtime_price(ticker)
-                if price_data and len(price_data) > 0:
-                    current_price = price_data[0].get('price', 0)
-                    LOGGER.info(f"Got price for {ticker}: ${current_price}")
+                from ..services.openbb_client import OpenBBClient
+                obb_client = OpenBBClient()
+                current_price = obb_client.get_current_price(ticker)
+                if not current_price or current_price <= 0:
+                    raise ValueError(f"Invalid price: {current_price}")
+                LOGGER.info(f"Got price for {ticker}: ${current_price}")
             except Exception as price_error:
                 LOGGER.error(f"Failed to fetch price for {ticker}: {price_error}")
                 raise HTTPException(status_code=400, detail=f"Could not fetch current price for {ticker}")
@@ -40,14 +40,108 @@ async def get_valuation(ticker: str, request: ValuationRequest):
         if not current_price or current_price <= 0:
             raise HTTPException(status_code=400, detail=f"Invalid price for {ticker}: {current_price}")
 
-        service = SimpleValuationService()
-        result = service.get_valuation(ticker, current_price)
+        # Use simplified direct FMP approach
+        from ..services.openbb_client import OpenBBClient
+        import os
+        from openbb import obb
+        
+        obb_client = OpenBBClient()
+        fmp_key = os.getenv("FMP_API_KEY", "").strip()
+        if fmp_key:
+            obb.user.credentials.fmp_api_key = fmp_key
 
-        if not result:
-            raise HTTPException(status_code=500, detail=f"Valuation service returned no data for {ticker}")
+        # Fetch ratios directly from FMP
+        try:
+            ratios = obb.equity.fundamental.ratios(symbol=ticker, provider="fmp", limit=1)
+            metrics = obb.equity.fundamental.metrics(symbol=ticker, provider="fmp", limit=1)
+            
+            pe_ratio = None
+            ev_ebitda = None
+            ev_sales = None
+            
+            if ratios and hasattr(ratios, 'to_df'):
+                df_ratios = ratios.to_df()
+                if not df_ratios.empty:
+                    row = df_ratios.iloc[0]
+                    pe_ratio = row.get('peRatio') or row.get('priceEarningsRatio') or row.get('pe_ratio')
+                    ev_ebitda = row.get('enterpriseValueMultiple') or row.get('evEbitda') or row.get('ev_ebitda')
+                    ev_sales = row.get('priceToSalesRatio') or row.get('evSales') or row.get('ev_sales')
+            
+            if metrics and hasattr(metrics, 'to_df'):
+                df_metrics = metrics.to_df()
+                if not df_metrics.empty:
+                    row = df_metrics.iloc[0]
+                    if not pe_ratio:
+                        pe_ratio = row.get('peRatio') or row.get('priceEarningsRatio')
+                    if not ev_ebitda:
+                        ev_ebitda = row.get('enterpriseValueMultiple') or row.get('evEbitda')
+                    if not ev_sales:
+                        ev_sales = row.get('evSales') or row.get('enterpriseValueOverRevenue')
+            
+            # Calculate fair value using industry averages
+            # For simplicity, use reasonable defaults if multiples are missing
+            fair_value = current_price
+            method = "Current Price"
+            
+            if pe_ratio and pe_ratio > 0:
+                # Use industry average P/E of 20
+                eps = current_price / pe_ratio if pe_ratio > 0 else None
+                if eps and eps > 0:
+                    fair_value = eps * 20
+                    method = "P/E Multiple (20x)"
+            elif ev_ebitda and ev_ebitda > 0:
+                # Use industry average EV/EBITDA of 12
+                # Approximate: fair_value ≈ current_price * (12 / ev_ebitda)
+                fair_value = current_price * (12 / ev_ebitda) if ev_ebitda > 0 else current_price
+                method = "EV/EBITDA Multiple (12x)"
+            elif ev_sales and ev_sales > 0:
+                # Use industry average EV/Sales of 3
+                fair_value = current_price * (3 / ev_sales) if ev_sales > 0 else current_price
+                method = "EV/Sales Multiple (3x)"
+            
+            upside = ((fair_value - current_price) / current_price) * 100 if current_price > 0 else 0
+            
+            result = {
+                "ticker": ticker,
+                "currency": "USD",
+                "current_price": current_price,
+                "multiples": {
+                    "pe_ratio": round(pe_ratio, 2) if pe_ratio else None,
+                    "ev_ebitda": round(ev_ebitda, 2) if ev_ebitda else None,
+                    "ev_sales": round(ev_sales, 2) if ev_sales else None,
+                },
+                "dcf": {
+                    "method": method,
+                    "fair_value_per_share": round(fair_value, 2),
+                    "upside_percent": round(upside, 2),
+                    "explanation": f"Valuation based on {method}. P/E: {pe_ratio:.2f if pe_ratio else 'N/A'}, EV/EBITDA: {ev_ebitda:.2f if ev_ebitda else 'N/A'}, EV/Sales: {ev_sales:.2f if ev_sales else 'N/A'}"
+                },
+                "reverse_dcf": {
+                    "method": "N/A",
+                    "fair_value_per_share": round(fair_value, 2),
+                    "upside_percent": round(upside, 2),
+                    "explanation": "Simplified valuation using multiples"
+                },
+                "multiples_valuation": {
+                    "method": method,
+                    "fair_value": round(fair_value, 2),
+                    "upside_percent": round(upside, 2),
+                    "explanation": f"Fair value calculated using {method}"
+                }
+            }
+            
+            LOGGER.info(f"✅ Simple valuation completed for {ticker}: ${current_price} → ${fair_value:.2f} ({upside:+.1f}%)")
+            return result
+            
+        except Exception as e:
+            LOGGER.warning(f"Direct FMP valuation failed for {ticker}: {e}, falling back to SimpleValuationService")
+            # Fallback to original service
+            service = SimpleValuationService()
+            result = service.get_valuation(ticker, current_price)
+            if not result:
+                raise HTTPException(status_code=500, detail=f"Valuation service returned no data for {ticker}")
+            return result
 
-        LOGGER.info(f"Valuation completed for {ticker} at ${current_price}")
-        return result
     except HTTPException:
         raise
     except Exception as e:

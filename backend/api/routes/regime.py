@@ -202,9 +202,26 @@ def get_current_regime(
             features_used={},
         )
     
-    result = regime_service.get_regime_probabilities()
-    if result is None:
-        LOGGER.warning("Could not detect regime with trained model, using fallback heuristics")
+    try:
+        result = regime_service.get_regime_probabilities()
+        if result is None:
+            LOGGER.debug("Regime model returned None, using fallback heuristics")
+            fallback = _quick_regime_from_prices()
+            if fallback:
+                return fallback
+            return RegimeResponse(
+                regime="slowdown",
+                confidence=0.5,
+                probabilities={
+                    "expansion": 0.2,
+                    "slowdown": 0.5,
+                    "recession": 0.2,
+                    "stress": 0.1,
+                },
+                features_used={},
+            )
+    except Exception as e:
+        LOGGER.debug(f"Regime detection error (using fallback): {e}")
         fallback = _quick_regime_from_prices()
         if fallback:
             return fallback

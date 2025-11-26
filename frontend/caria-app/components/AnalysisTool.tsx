@@ -178,10 +178,18 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             const biases = Array.isArray(data.identified_biases) ? data.identified_biases : [];
             const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
 
-            const formatted =
-                `**Critical Analysis**\n${critical}\n\n` +
-                (biases.length ? `**🔍 Identified Biases**\n- ${biases.join('\n- ')}\n\n` : '') +
-                (recs.length ? `**💡 Recommendations**\n- ${recs.join('\n- ')}` : '');
+            // More conversational, Socratic format
+            let formatted = critical;
+            
+            if (biases.length) {
+                formatted += `\n\n**🤔 Things to Question:**\n`;
+                formatted += biases.map(b => `- ${b}`).join('\n');
+            }
+            
+            if (recs.length) {
+                formatted += `\n\n**💭 Food for Thought:**\n`;
+                formatted += recs.map(r => `- ${r}`).join('\n');
+            }
 
             const modelMessage: ChatMessage = { role: 'model', content: formatted };
             setMessages(prev => [...prev, modelMessage]);
@@ -256,7 +264,7 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                                     handleSubmit(e as any);
                                 }
                             }}
-                            placeholder="e.g., 'Buy NVDA because AI is the future...'"
+                            placeholder="Share your investment thesis... What makes you think this is a good opportunity?"
                             className="flex-1 bg-gray-800 border border-slate-700 rounded-lg py-2 px-3 resize-none focus:outline-none focus:ring-2 focus:ring-slate-600 text-base max-h-40"
                             rows={1}
                         />

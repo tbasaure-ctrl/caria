@@ -359,7 +359,9 @@ app.include_router(scoring_router)
 app.include_router(score_public_router)
 app.include_router(screener_router)
 from api.routes.alpha_picks import router as alpha_picks_router
+from api.routes.weekly_picks import router as weekly_picks_router
 app.include_router(alpha_picks_router)
+app.include_router(weekly_picks_router)
 
 # Weekly screening for universe expansion
 from api.routes.weekly_screening import router as weekly_screening_router

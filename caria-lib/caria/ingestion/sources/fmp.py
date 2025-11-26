@@ -24,7 +24,7 @@ class FMPSource(IngestionSource):
 
     def __init__(self, output_dir: Path, api_key: str | None = None) -> None:
         super().__init__(output_dir)
-        self.api_key = api_key or os.getenv("FMP_API_KEY")
+        self.api_key = (api_key or os.getenv("FMP_API_KEY", "")).strip()
         if not self.api_key:
             raise RuntimeError("FMP_API_KEY no configurado en entorno")
         self.client = FMPClient(api_key=self.api_key)

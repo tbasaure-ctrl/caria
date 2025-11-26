@@ -111,7 +111,7 @@ class SimpleValuationService:
                     # Try direct FMP calls for missing data
                     from openbb import obb
                     import os
-                    fmp_key = os.getenv("FMP_API_KEY")
+                    fmp_key = os.getenv("FMP_API_KEY", "").strip()
                     if fmp_key:
                         obb.user.credentials.fmp_api_key = fmp_key
 

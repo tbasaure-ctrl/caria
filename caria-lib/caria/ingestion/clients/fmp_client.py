@@ -17,7 +17,7 @@ class FMPClient:
     base_url = "https://financialmodelingprep.com/api/v3"
 
     def __init__(self, api_key: str | None = None) -> None:
-        self.api_key = api_key or os.getenv("FMP_API_KEY")
+        self.api_key = (api_key or os.getenv("FMP_API_KEY", "")).strip()
         if not self.api_key:
             LOGGER.error("FMP_API_KEY no configurado. Verifica que el secret esté configurado en Cloud Run.")
             raise RuntimeError("FMP_API_KEY no configurado para FMPClient")

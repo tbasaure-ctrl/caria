@@ -22,7 +22,7 @@ class OpenBBClient:
     def _configure_fmp_key(self):
         """Configure FMP API key in OpenBB if available."""
         try:
-            fmp_key = os.getenv("FMP_API_KEY")
+            fmp_key = os.getenv("FMP_API_KEY", "").strip()
             if fmp_key:
                 obb.user.credentials.fmp_api_key = fmp_key
                 LOGGER.info("✅ FMP API key configured in OpenBB")

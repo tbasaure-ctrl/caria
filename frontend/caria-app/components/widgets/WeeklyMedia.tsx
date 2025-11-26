@@ -1,14 +1,15 @@
 /**
  * WeeklyMedia - Displays podcast and YouTube video of the week
  * Easy to update weekly by modifying the mediaItems array
+ * YouTube titles are fetched automatically if not provided
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { WidgetCard } from './WidgetCard';
 
 interface MediaItem {
     type: 'podcast' | 'youtube';
-    title: string;
+    title?: string; // Optional - will be fetched from YouTube if not provided
     description: string;
     url: string;
     thumbnail?: string;
@@ -19,20 +20,80 @@ interface MediaItem {
 const mediaItems: MediaItem[] = [
     {
         type: 'youtube',
-        title: 'Charlie Munger - Taking Drawdowns with Philosophy and Equanimity',
-        description: 'Wisdom on handling market downturns with philosophical perspective and calm composure.',
+        description: 'Weekly investment video recommendation',
         url: 'https://www.youtube.com/watch?v=BCY6MycxtIo',
         thumbnail: 'https://img.youtube.com/vi/BCY6MycxtIo/hqdefault.jpg'
+    },
+    {
+        type: 'podcast',
+        title: 'Podcast of the Week',
+        description: 'Weekly curated investment podcast',
+        url: 'https://open.spotify.com/episode/4RyYkVkiFSZUdxWTiod8QG?si=4fe4c86534d540a5'
     }
 ];
+
+// Function to extract video ID from YouTube URL
+const getYouTubeVideoId = (url: string): string | null => {
+    const patterns = [
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+        /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+    ];
+    
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+    return null;
+};
+
+// Function to fetch YouTube video title using oEmbed API
+const fetchYouTubeTitle = async (url: string): Promise<string | null> => {
+    try {
+        const videoId = getYouTubeVideoId(url);
+        if (!videoId) return null;
+        
+        const oEmbedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+        const response = await fetch(oEmbedUrl);
+        
+        if (!response.ok) return null;
+        
+        const data = await response.json();
+        return data.title || null;
+    } catch (error) {
+        console.error('Error fetching YouTube title:', error);
+        return null;
+    }
+};
 
 interface WeeklyMediaProps {
     compact?: boolean;
 }
 
 export const WeeklyMedia: React.FC<WeeklyMediaProps> = ({ compact = false }) => {
+    const [itemsWithTitles, setItemsWithTitles] = useState<MediaItem[]>(mediaItems);
+
+    useEffect(() => {
+        // Fetch YouTube titles for items that don't have titles
+        const fetchTitles = async () => {
+            const updatedItems = await Promise.all(
+                mediaItems.map(async (item) => {
+                    if (item.type === 'youtube' && !item.title) {
+                        const title = await fetchYouTubeTitle(item.url);
+                        return { ...item, title: title || 'Investment Video' };
+                    }
+                    return item;
+                })
+            );
+            setItemsWithTitles(updatedItems);
+        };
+
+        fetchTitles();
+    }, []);
+
     // If no items, show placeholder
-    if (mediaItems.length === 0) {
+    if (itemsWithTitles.length === 0) {
         return (
             <WidgetCard
                 title="📺 Media of the Week"
@@ -51,7 +112,7 @@ export const WeeklyMedia: React.FC<WeeklyMediaProps> = ({ compact = false }) => 
         // Compact version: Two cards side by side with smaller size
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {mediaItems.map((item, index) => (
+                {itemsWithTitles.map((item, index) => (
                     <a
                         key={index}
                         href={item.url}
@@ -112,6 +173,19 @@ export const WeeklyMedia: React.FC<WeeklyMediaProps> = ({ compact = false }) => 
                                             </span>
                                         </div>
                                     )}
+                                    {item.type === 'podcast' && (
+                                        <div className="flex items-center gap-2 mb-0.5">
+                                            <span
+                                                className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                                                style={{
+                                                    backgroundColor: 'var(--color-primary)',
+                                                    color: 'var(--color-cream)',
+                                                }}
+                                            >
+                                                🎙️ Podcast
+                                            </span>
+                                        </div>
+                                    )}
                                     <h3
                                         className="text-sm font-bold truncate group-hover:underline"
                                         style={{
@@ -119,7 +193,7 @@ export const WeeklyMedia: React.FC<WeeklyMediaProps> = ({ compact = false }) => 
                                             color: 'var(--color-cream)',
                                         }}
                                     >
-                                        {item.title}
+                                        {item.title || 'Media of the Week'}
                                     </h3>
                                     <p
                                         className="text-xs truncate"
@@ -151,7 +225,7 @@ export const WeeklyMedia: React.FC<WeeklyMediaProps> = ({ compact = false }) => 
             tooltip="Weekly curated podcast and YouTube video recommendations"
         >
             <div className="space-y-4">
-                {mediaItems.map((item, index) => (
+                {itemsWithTitles.map((item, index) => (
                     <a
                         key={index}
                         href={item.url}
@@ -212,6 +286,19 @@ export const WeeklyMedia: React.FC<WeeklyMediaProps> = ({ compact = false }) => 
                                             </span>
                                         </div>
                                     )}
+                                    {item.type === 'podcast' && (
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span
+                                                className="text-xs font-semibold px-2 py-1 rounded"
+                                                style={{
+                                                    backgroundColor: 'var(--color-primary)',
+                                                    color: 'var(--color-cream)',
+                                                }}
+                                            >
+                                                🎙️ Spotify
+                                            </span>
+                                        </div>
+                                    )}
                                     <h3
                                         className="text-base font-bold mb-1 group-hover:underline"
                                         style={{
@@ -219,7 +306,7 @@ export const WeeklyMedia: React.FC<WeeklyMediaProps> = ({ compact = false }) => 
                                             color: 'var(--color-cream)',
                                         }}
                                     >
-                                        {item.title}
+                                        {item.title || 'Media of the Week'}
                                     </h3>
                                     <p
                                         className="text-sm line-clamp-2"

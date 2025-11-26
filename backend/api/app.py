@@ -86,6 +86,7 @@ from api.routes.model_validation import router as model_validation_router
 from api.routes.tactical_allocation import router as tactical_allocation_router
 from api.routes.ux_tracking import router as ux_tracking_router
 from api.routes.reddit import router as reddit_router
+from api.routes.stocktwits import router as stocktwits_router
 from api.routes.cors_test import router as cors_test_router
 from api.routes.lectures import router as lectures_router
 from api.routes.debug_secrets import router as debug_secrets_router
@@ -350,6 +351,7 @@ app.include_router(model_validation_router)  # Legacy: Use /api/validation inste
 app.include_router(tactical_allocation_router)  # Legacy: Use /api/portfolio/tactical instead
 app.include_router(ux_tracking_router)  # UX tracking: user journeys, onboarding metrics (per audit 4.2)
 app.include_router(reddit_router)  # Social sentiment: Reddit hot stocks tracking
+app.include_router(stocktwits_router)  # Social sentiment: StockTwits trending stocks
 app.include_router(cors_test_router)  # CORS test endpoint for debugging
 app.include_router(lectures_router)  # Recommended lectures
 app.include_router(lectures_router)  # Recommended lectures

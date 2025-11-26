@@ -10,7 +10,7 @@ const GLOBAL_INDICES = [
     { ticker: 'VGK', name: 'Euro Stoxx', symbol: 'STOXX', region: 'EU' },
     { ticker: 'EEM', name: 'Emerging', symbol: 'EM', region: 'GLOBAL' },
     { ticker: 'GLD', name: 'Gold', symbol: 'GOLD', region: 'CMDTY' },
-    { ticker: 'TLT', name: 'Treasuries', symbol: 'TLT', region: 'BOND' },
+    { ticker: 'OIL', name: 'Oil', symbol: 'OIL', region: 'CMDTY' },
 ];
 
 const POLLING_INTERVAL = 30000;
@@ -82,7 +82,7 @@ const MarketTile: React.FC<MarketTileProps> = ({ name, symbol, region, price, ch
                 <div className="text-right">
                     <div 
                         className="text-sm font-mono font-semibold flex items-center gap-1"
-                        style={{ color: isPositive ? 'var(--color-positive)' : 'var(--color-negative)' }}
+                        style={{ color: isPositive ? '#10b981' : '#ef4444' }}
                     >
                         <svg 
                             className="w-3 h-3" 

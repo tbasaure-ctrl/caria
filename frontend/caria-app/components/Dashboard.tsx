@@ -18,6 +18,7 @@ import { GlobalMarketBar } from './widgets/GlobalMarketBar';
 import { ModelOutlook } from './widgets/ModelOutlook';
 import { FearGreedIndex } from './widgets/FearGreedIndex';
 import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
+import { ProtectedWidget } from './ProtectedWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
 // Analysis CTA Component
@@ -161,12 +162,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
     return (
         <main 
-            className="flex-1 overflow-y-auto"
+            className="flex-1 overflow-y-auto relative"
             style={{ backgroundColor: 'var(--color-bg-primary)' }}
         >
+            {/* Investing Legends Background - visible and inspiring */}
+            <div className="legends-background opacity-40 fixed inset-0 pointer-events-none z-0">
+                <div className="legend-figure legend-buffett"
+                    style={{backgroundImage: "url('/images/legends/warren-buffett.jpg')"}}></div>
+                <div className="legend-figure legend-munger"
+                    style={{backgroundImage: "url('/images/legends/peter-lynch.jpg')"}}></div>
+                <div className="legend-figure legend-druckenmiller"
+                    style={{backgroundImage: "url('/images/legends/ben-graham.jpg')"}}></div>
+                <div className="legend-figure legend-graham"
+                    style={{backgroundImage: "url('/images/legends/stan-druckenmiller.jpg')"}}></div>
+                <div className="legend-figure legend-lynch"
+                    style={{backgroundImage: "url('/images/legends/charlie-munger.jpg')"}}></div>
+                <div className="legend-figure legend-keynes"
+                    style={{backgroundImage: "url('/images/legends/john-keynes.jpg')"}}></div>
+                <div className="legend-figure legend-tepper"
+                    style={{backgroundImage: "url('/images/legends/david-tepper.jpg')"}}></div>
+                <div className="legend-figure legend-smith"
+                    style={{backgroundImage: "url('/images/legends/terry-smith.jpg')"}}></div>
+            </div>
             {/* Dashboard Header */}
             <div 
-                className="sticky top-0 z-40 border-b"
+                className="sticky top-0 z-40 border-b relative"
                 style={{ 
                     backgroundColor: 'rgba(10, 14, 20, 0.95)',
                     backdropFilter: 'blur(12px)',
@@ -256,7 +276,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             </div>
 
             {/* Tab Content */}
-            <div className="max-w-[1800px] mx-auto px-6 lg:px-10 py-8">
+            <div className="max-w-[1800px] mx-auto px-6 lg:px-10 py-8 relative z-10">
                 
                 {/* PORTFOLIO TAB */}
                 {activeTab === 'portfolio' && (
@@ -289,12 +309,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                         {/* Portfolio Grid - Two Column */}
                         <div className="grid lg:grid-cols-2 gap-6">
-                            <Portfolio id="portfolio-widget" />
-                            <PortfolioAnalytics />
+                            <ProtectedWidget featureName="Portfolio Management">
+                                <Portfolio id="portfolio-widget" />
+                            </ProtectedWidget>
+                            <ProtectedWidget featureName="Portfolio Analytics">
+                                <PortfolioAnalytics />
+                            </ProtectedWidget>
+                        </div>
+
+                        {/* Crisis Simulator - Below Portfolio Analysis */}
+                        <div className="pt-8">
+                            <ProtectedWidget featureName="Crisis Simulator">
+                                <CrisisSimulator />
+                            </ProtectedWidget>
                         </div>
 
                         {/* Model Portfolio */}
-                        <ModelPortfolioWidget />
+                        <ProtectedWidget featureName="Model Portfolio">
+                            <ModelPortfolioWidget />
+                        </ProtectedWidget>
 
                         {/* Scenario Analysis Section */}
                         <div className="pt-4">
@@ -323,7 +356,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             </div>
                             
                             <div className="grid lg:grid-cols-2 gap-6">
-                                <CrisisSimulator />
                                 <MacroSimulator />
                             </div>
                         </div>
@@ -335,8 +367,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     <div className="space-y-8 animate-fade-in">
                         {/* Stock Screeners - Research Report Cards */}
                         <div className="grid lg:grid-cols-2 gap-6">
-                            <AlphaStockPicker />
-                            <HiddenGemsScreener />
+                            <ProtectedWidget featureName="Alpha Stock Picker">
+                                <AlphaStockPicker />
+                            </ProtectedWidget>
+                            <ProtectedWidget featureName="Hidden Gems Screener">
+                                <HiddenGemsScreener />
+                            </ProtectedWidget>
                         </div>
 
                         {/* Valuation Tools Section */}
@@ -365,7 +401,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                 </div>
                             </div>
                             
-                            <ValuationTool />
+                            <ProtectedWidget featureName="Valuation Tool">
+                                <ValuationTool />
+                            </ProtectedWidget>
                         </div>
 
                         {/* Thesis Testing */}
@@ -387,10 +425,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             </div>
                             
                             <div className="grid lg:grid-cols-2 gap-6">
-                                <AnalysisCTA
-                                    onStartAnalysis={onStartAnalysis}
-                                    onEnterArena={() => setShowArena(true)}
-                                />
+                                <ProtectedWidget featureName="Investment Thesis Analysis">
+                                    <AnalysisCTA
+                                        onStartAnalysis={onStartAnalysis}
+                                        onEnterArena={() => setShowArena(true)}
+                                    />
+                                </ProtectedWidget>
                                 <RegimeTestWidget />
                             </div>
                         </div>
@@ -428,7 +468,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             </div>
                             
                             <div className="grid lg:grid-cols-2 gap-6">
-                                <CommunityFeed />
+                                <ProtectedWidget featureName="Community">
+                                    <CommunityFeed />
+                                </ProtectedWidget>
                                 <RankingsWidget />
                             </div>
                         </div>

@@ -144,18 +144,6 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onRegister }) => {
                         {/* Auth Buttons */}
                         <div className="flex items-center gap-4">
                             <button
-                                onClick={onLogin}
-                                className="px-4 py-2 text-sm font-medium transition-colors duration-200"
-                                style={{
-                                    color: 'var(--color-text-secondary)',
-                                    fontFamily: 'var(--font-body)'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
-                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
-                            >
-                                Sign In
-                            </button>
-                            <button
                                 onClick={onRegister || onLogin}
                                 className="px-5 py-2.5 text-sm font-semibold rounded-md transition-all duration-200"
                                 style={{

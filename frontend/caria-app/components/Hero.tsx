@@ -33,25 +33,6 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
         }}
       />
 
-      {/* Investing Legends Background - visible and inspiring */}
-      <div className="legends-background opacity-60">
-        <div className="legend-figure legend-buffett"
-          style={{backgroundImage: "url('/images/legends/warren-buffett.jpg')"}}></div>
-        <div className="legend-figure legend-munger"
-          style={{backgroundImage: "url('/images/legends/peter-lynch.jpg')"}}></div>
-        <div className="legend-figure legend-druckenmiller"
-          style={{backgroundImage: "url('/images/legends/ben-graham.jpg')"}}></div>
-        <div className="legend-figure legend-graham"
-          style={{backgroundImage: "url('/images/legends/stan-druckenmiller.jpg')"}}></div>
-        <div className="legend-figure legend-lynch"
-          style={{backgroundImage: "url('/images/legends/charlie-munger.jpg')"}}></div>
-        <div className="legend-figure legend-keynes"
-          style={{backgroundImage: "url('/images/legends/john-keynes.jpg')"}}></div>
-        <div className="legend-figure legend-tepper"
-          style={{backgroundImage: "url('/images/legends/david-tepper.jpg')"}}></div>
-        <div className="legend-figure legend-smith"
-          style={{backgroundImage: "url('/images/legends/terry-smith.jpg')"}}></div>
-      </div>
 
       <div className="container mx-auto px-6 md:px-12 relative z-10">
         <div className="max-w-6xl mx-auto">
@@ -149,7 +130,7 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
               }}
             >
               <span className="relative z-10 flex items-center gap-3">
-                Begin Your Journey
+                Discover Caria
                 <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -160,31 +141,6 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
                   background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%)',
                 }}
               ></div>
-            </button>
-
-            <button
-              className="px-8 py-5 rounded-xl font-semibold text-lg transition-all duration-300"
-              style={{
-                background: 'transparent',
-                color: 'var(--color-blue-light)',
-                fontFamily: "'Crimson Pro', serif",
-                border: '2px solid var(--color-blue-light)',
-                letterSpacing: '0.02em',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(74, 144, 226, 0.1)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.borderColor = '#ffffff';
-                e.currentTarget.style.color = '#ffffff';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.borderColor = 'var(--color-blue-light)';
-                e.currentTarget.style.color = 'var(--color-blue-light)';
-              }}
-            >
-              Explore Features
             </button>
           </div>
         </div>

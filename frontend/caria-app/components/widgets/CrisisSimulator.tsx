@@ -117,105 +117,143 @@ export const CrisisSimulator: React.FC = () => {
             title="CRISIS SIMULATOR" 
             tooltip="Stress test your portfolio against major historical market crashes. Visualize how your holdings would perform across different recovery timeframes."
         >
-            <div className="space-y-5">
-                {/* Controls */}
-                <div 
-                    className="p-4 rounded-lg"
-                    style={{
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border-subtle)',
-                    }}
-                >
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        {/* Crisis Selector */}
-                        <div className="flex-1">
-                            <label 
-                                className="block text-[10px] font-medium tracking-wider uppercase mb-1.5"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Historical Crisis
-                            </label>
-                            <select
-                                value={selectedCrisis}
-                                onChange={(e) => setSelectedCrisis(e.target.value)}
-                                className="w-full px-3 py-2.5 rounded-lg text-sm"
-                                style={{
-                                    backgroundColor: 'var(--color-bg-surface)',
-                                    border: '1px solid var(--color-border-subtle)',
-                                    color: 'var(--color-text-primary)',
-                                }}
-                            >
-                                {CRISES.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.name} ({c.year})
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Run Button */}
-                        <button
-                            onClick={handleSimulate}
-                            disabled={loading}
-                            className="self-end px-6 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 disabled:opacity-50"
+            <div className="grid lg:grid-cols-2 gap-6">
+                {/* Left Column - Controls */}
+                <div className="space-y-4">
+                    {/* Crisis Selector */}
+                    <div>
+                        <label 
+                            className="block text-xs font-medium tracking-wider uppercase mb-2"
+                            style={{ color: 'var(--color-text-muted)' }}
+                        >
+                            Historical Crisis
+                        </label>
+                        <select
+                            value={selectedCrisis}
+                            onChange={(e) => setSelectedCrisis(e.target.value)}
+                            className="w-full px-4 py-3 rounded-lg text-sm"
                             style={{
-                                backgroundColor: 'var(--color-negative)',
-                                color: '#FFFFFF',
+                                backgroundColor: 'var(--color-bg-tertiary)',
+                                border: '1px solid var(--color-border-subtle)',
+                                color: 'var(--color-text-primary)',
                             }}
                         >
-                            {loading ? 'Simulating...' : 'Run Stress Test'}
-                        </button>
+                            {CRISES.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.name} ({c.year})
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                </div>
 
-                {/* Timeframe Selector */}
-                <div className="flex items-center gap-3">
-                    <span 
-                        className="text-xs"
-                        style={{ color: 'var(--color-text-muted)' }}
-                    >
-                        Recovery view:
-                    </span>
-                    <div 
-                        className="flex gap-1 p-1 rounded-lg"
-                        style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
-                    >
-                        {(['1d', '1m', '1y'] as Timeframe[]).map((tf) => (
-                            <button
-                                key={tf}
-                                onClick={() => {
-                                    setTimeframe(tf);
-                                    if (result) setResult(filterDataByTimeframe(result, tf));
-                                }}
-                                className="px-4 py-1.5 rounded text-xs font-medium transition-all"
-                                style={{
-                                    backgroundColor: timeframe === tf ? 'var(--color-accent-primary)' : 'transparent',
-                                    color: timeframe === tf ? '#FFFFFF' : 'var(--color-text-muted)',
-                                }}
-                            >
-                                {timeframeLabels[tf]}
-                            </button>
-                        ))}
+                    {/* Timeframe Selector */}
+                    <div>
+                        <label 
+                            className="block text-xs font-medium tracking-wider uppercase mb-2"
+                            style={{ color: 'var(--color-text-muted)' }}
+                        >
+                            Recovery View
+                        </label>
+                        <div 
+                            className="flex gap-2"
+                        >
+                            {(['1d', '1m', '1y'] as Timeframe[]).map((tf) => (
+                                <button
+                                    key={tf}
+                                    onClick={() => {
+                                        setTimeframe(tf);
+                                        if (result) setResult(filterDataByTimeframe(result, tf));
+                                    }}
+                                    className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all"
+                                    style={{
+                                        backgroundColor: timeframe === tf ? 'var(--color-accent-primary)' : 'var(--color-bg-tertiary)',
+                                        color: timeframe === tf ? '#FFFFFF' : 'var(--color-text-secondary)',
+                                        border: timeframe === tf ? '1px solid var(--color-accent-primary)' : '1px solid var(--color-border-subtle)',
+                                    }}
+                                >
+                                    {timeframeLabels[tf]}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                </div>
 
-                {error && (
-                    <div 
-                        className="px-4 py-3 rounded-lg text-sm"
+                    {/* Run Button */}
+                    <button
+                        onClick={handleSimulate}
+                        disabled={loading}
+                        className="w-full px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 disabled:opacity-50"
                         style={{
-                            backgroundColor: 'var(--color-negative-muted)',
-                            color: 'var(--color-negative)',
+                            backgroundColor: 'var(--color-negative)',
+                            color: '#FFFFFF',
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!loading) {
+                                e.currentTarget.style.backgroundColor = '#E53935';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!loading) {
+                                e.currentTarget.style.backgroundColor = 'var(--color-negative)';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                            }
                         }}
                     >
-                        {error}
-                    </div>
-                )}
+                        {loading ? 'Simulating...' : 'Run Stress Test'}
+                    </button>
 
-                {/* Results */}
-                {result && (
-                    <div className="space-y-5 animate-fade-in">
-                        {/* Metrics Grid */}
-                        <div className="grid grid-cols-3 gap-3">
+                    {/* Crisis Info */}
+                    {selectedCrisisData && (
+                        <div 
+                            className="p-4 rounded-lg"
+                            style={{
+                                backgroundColor: 'var(--color-bg-tertiary)',
+                                border: '1px solid var(--color-border-subtle)',
+                            }}
+                        >
+                            <div 
+                                className="text-xs font-medium tracking-wider uppercase mb-2"
+                                style={{ color: 'var(--color-text-muted)' }}
+                            >
+                                Selected Crisis
+                            </div>
+                            <div 
+                                className="text-lg font-semibold"
+                                style={{ color: 'var(--color-text-primary)' }}
+                            >
+                                {selectedCrisisData.name}
+                            </div>
+                            <div 
+                                className="text-sm mt-1"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                            >
+                                Year: {selectedCrisisData.year}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Right Column - Results */}
+                <div className="space-y-4">
+
+                    {error && (
+                        <div 
+                            className="px-4 py-3 rounded-lg text-sm"
+                            style={{
+                                backgroundColor: 'var(--color-negative-muted)',
+                                color: 'var(--color-negative)',
+                                border: '1px solid var(--color-negative)',
+                            }}
+                        >
+                            {error}
+                        </div>
+                    )}
+
+                    {/* Results */}
+                    {result && (
+                        <div className="space-y-4 animate-fade-in">
+                            {/* Metrics Grid */}
+                            <div className="grid grid-cols-3 gap-3">
                             <div 
                                 className="p-4 rounded-lg text-center"
                                 style={{
@@ -286,103 +324,106 @@ export const CrisisSimulator: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Chart */}
+                            {/* Chart */}
+                            <div 
+                                className="rounded-lg overflow-hidden"
+                                style={{
+                                    backgroundColor: 'var(--color-bg-tertiary)',
+                                    border: '1px solid var(--color-border-subtle)',
+                                }}
+                            >
+                                <Plot
+                                    data={[
+                                        {
+                                            x: result.dates,
+                                            y: result.portfolio_values,
+                                            type: 'scatter',
+                                            mode: 'lines',
+                                            name: 'Portfolio',
+                                            line: { color: '#2E7CF6', width: 2.5 },
+                                        },
+                                        {
+                                            x: result.dates,
+                                            y: result.benchmark_values,
+                                            type: 'scatter',
+                                            mode: 'lines',
+                                            name: 'S&P 500',
+                                            line: { color: '#6B7A8F', width: 2, dash: 'dot' },
+                                        },
+                                    ]}
+                                    layout={{
+                                        autosize: true,
+                                        margin: { l: 60, r: 30, t: 30, b: 50 },
+                                        paper_bgcolor: '#0F1419',
+                                        plot_bgcolor: '#0F1419',
+                                        xaxis: {
+                                            gridcolor: '#1E2733',
+                                            tickfont: { color: '#6B7A8F', size: 11 },
+                                        },
+                                        yaxis: {
+                                            gridcolor: '#1E2733',
+                                            tickfont: { color: '#6B7A8F', size: 11 },
+                                            title: 'Value (Rebased)',
+                                            titlefont: { color: '#B4BCC8', size: 12 },
+                                        },
+                                        legend: {
+                                            orientation: 'h',
+                                            y: 1.15,
+                                            x: 0.5,
+                                            xanchor: 'center',
+                                            font: { color: '#B4BCC8', size: 12 },
+                                        },
+                                    }}
+                                    useResizeHandler
+                                    style={{ width: '100%', height: '300px' }}
+                                    config={{ displayModeBar: false }}
+                                />
+                            </div>
+                            
+                            {/* Inspirational Message */}
+                            <div 
+                                className="text-center py-3 px-4 rounded-lg"
+                                style={{
+                                    backgroundColor: 'var(--color-positive-muted)',
+                                    border: '1px solid rgba(0, 200, 83, 0.25)',
+                                }}
+                            >
+                                <p 
+                                    className="text-sm italic"
+                                    style={{ color: 'var(--color-positive)' }}
+                                >
+                                    "{timeframeMessages[timeframe]}"
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Empty State */}
+                    {!result && !loading && !error && (
                         <div 
-                            className="rounded-lg overflow-hidden"
+                            className="text-center py-16 rounded-lg"
                             style={{
                                 backgroundColor: 'var(--color-bg-tertiary)',
                                 border: '1px solid var(--color-border-subtle)',
                             }}
                         >
-                            <Plot
-                                data={[
-                                    {
-                                        x: result.dates,
-                                        y: result.portfolio_values,
-                                        type: 'scatter',
-                                        mode: 'lines',
-                                        name: 'Portfolio',
-                                        line: { color: '#2E7CF6', width: 2 },
-                                    },
-                                    {
-                                        x: result.dates,
-                                        y: result.benchmark_values,
-                                        type: 'scatter',
-                                        mode: 'lines',
-                                        name: 'S&P 500',
-                                        line: { color: '#6B7A8F', width: 2, dash: 'dot' },
-                                    },
-                                ]}
-                                layout={{
-                                    autosize: true,
-                                    margin: { l: 50, r: 20, t: 20, b: 40 },
-                                    paper_bgcolor: '#0F1419',
-                                    plot_bgcolor: '#0F1419',
-                                    xaxis: {
-                                        gridcolor: '#1E2733',
-                                        tickfont: { color: '#6B7A8F', size: 10 },
-                                    },
-                                    yaxis: {
-                                        gridcolor: '#1E2733',
-                                        tickfont: { color: '#6B7A8F', size: 10 },
-                                        title: 'Value (Rebased)',
-                                        titlefont: { color: '#6B7A8F', size: 10 },
-                                    },
-                                    legend: {
-                                        orientation: 'h',
-                                        y: 1.1,
-                                        font: { color: '#B4BCC8', size: 11 },
-                                    },
-                                }}
-                                useResizeHandler
-                                style={{ width: '100%', height: '240px' }}
-                                config={{ displayModeBar: false }}
-                            />
-                        </div>
-                        
-                        {/* Inspirational Message */}
-                        <div 
-                            className="text-center py-3 px-4 rounded-lg"
-                            style={{
-                                backgroundColor: 'var(--color-positive-muted)',
-                                border: '1px solid rgba(0, 200, 83, 0.25)',
-                            }}
-                        >
-                            <p 
-                                className="text-sm italic"
-                                style={{ color: 'var(--color-positive)' }}
+                            <div 
+                                className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center"
+                                style={{ backgroundColor: 'var(--color-negative-muted)' }}
                             >
-                                "{timeframeMessages[timeframe]}"
+                                <svg className="w-8 h-8" style={{ color: 'var(--color-negative)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                                </svg>
+                            </div>
+                            <p 
+                                className="text-sm"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                            >
+                                Select a crisis and run the stress test to see how your portfolio would perform
                             </p>
                         </div>
-                    </div>
-                )}
-
-                {/* Empty State */}
-                {!result && !loading && !error && (
-                    <div 
-                        className="text-center py-10 rounded-lg"
-                        style={{
-                            backgroundColor: 'var(--color-bg-tertiary)',
-                            border: '1px solid var(--color-border-subtle)',
-                        }}
-                    >
-                        <div 
-                            className="w-14 h-14 mx-auto mb-4 rounded-xl flex items-center justify-center"
-                            style={{ backgroundColor: 'var(--color-negative-muted)' }}
-                        >
-                            <svg className="w-7 h-7" style={{ color: 'var(--color-negative)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                            </svg>
-                        </div>
-                        <p 
-                            className="text-sm"
-                            style={{ color: 'var(--color-text-secondary)' }}
-                        >
-                            Select a crisis and run the stress test to see how your portfolio would perform
-                        </p>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </WidgetCard>
     );

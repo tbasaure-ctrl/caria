@@ -44,15 +44,15 @@ const useOnScreen = (ref: React.RefObject<HTMLElement>, threshold: number = 0.1)
 const featuresData: Feature[] = [
   {
     title: 'AI-Powered Portfolio Intelligence',
-    description: 'Track your investments with real-time analytics, advanced metrics (Sharpe, Alpha, Beta), and stress test your portfolio against different economic scenarios with Monte Carlo simulations.',
+    description: 'Track your investments with real-time analytics, advanced metrics (Sharpe, Alpha, Beta), and stress test your portfolio against different economic scenarios with Monte Carlo simulations. Our comprehensive portfolio analysis provides deep insights into your holdings, risk exposure, and performance attribution. Monitor your investments with institutional-grade tools that help you make informed decisions and optimize your asset allocation for long-term success.',
   },
   {
     title: 'Market Intelligence & Regime Detection',
-    description: 'Stay ahead with our proprietary macroeconomic regime detection that adapts your strategy to market conditions in real-time.',
+    description: 'Stay ahead with our proprietary macroeconomic regime detection that adapts your strategy to market conditions in real-time. Understand market cycles, identify regime shifts, and position your portfolio accordingly. Our advanced algorithms analyze multiple economic indicators, sentiment data, and historical patterns to provide you with actionable insights that help you navigate volatile markets with confidence.',
   },
   {
     title: 'Collaborative Insights',
-    description: 'Explore investment ideas, share your analysis, and learn from a community of driven investors in our exclusive forum.',
+    description: 'Explore investment ideas, share your analysis, and learn from a community of driven investors in our exclusive forum. Engage in thoughtful discussions, challenge investment theses, and discover new opportunities through peer-to-peer learning. Connect with like-minded investors who value fundamental analysis, long-term thinking, and evidence-based decision making.',
   },
 ];
 
@@ -64,7 +64,7 @@ const FeatureCard: React.FC<{ feature: Feature, index: number }> = ({ feature, i
         <div
             ref={cardRef}
             className={`
-                rounded-2xl p-8 flex flex-col relative overflow-hidden group
+                rounded-2xl p-10 md:p-12 flex flex-col relative overflow-hidden group
                 transition-all ease-out duration-700
                 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}
             `}
@@ -74,6 +74,7 @@ const FeatureCard: React.FC<{ feature: Feature, index: number }> = ({ feature, i
                 transitionDelay: `${index * 150}ms`,
                 backdropFilter: 'blur(10px)',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                minHeight: '280px',
             }}
             onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = 'rgba(74, 144, 226, 0.6)';
@@ -96,7 +97,7 @@ const FeatureCard: React.FC<{ feature: Feature, index: number }> = ({ feature, i
 
             <div className="relative z-10">
                 <h3
-                    className="text-2xl md:text-3xl font-bold mb-4"
+                    className="text-2xl md:text-3xl font-bold mb-6"
                     style={{
                         fontFamily: "'Instrument Serif', Georgia, serif",
                         color: 'var(--color-cream)',
@@ -109,8 +110,8 @@ const FeatureCard: React.FC<{ feature: Feature, index: number }> = ({ feature, i
                     style={{
                         fontFamily: "'Crimson Pro', Georgia, serif",
                         color: 'rgba(232, 230, 227, 0.8)',
-                        fontSize: '1.05rem',
-                        lineHeight: '1.7',
+                        fontSize: '1.1rem',
+                        lineHeight: '1.8',
                     }}>
                     {feature.description}
                 </p>
@@ -122,7 +123,7 @@ const FeatureCard: React.FC<{ feature: Feature, index: number }> = ({ feature, i
 
 export const Features: React.FC = () => {
   return (
-    <section className="py-24 md:py-32 relative overflow-hidden" style={{backgroundColor: 'var(--color-bg-primary)'}}>
+    <section className="py-32 md:py-48 relative overflow-hidden" style={{backgroundColor: 'var(--color-bg-primary)'}}>
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl"
@@ -132,7 +133,7 @@ export const Features: React.FC = () => {
       </div>
 
       <div className="container mx-auto px-6 md:px-12 relative z-10">
-        <div className="text-center mb-20">
+        <div className="text-center mb-32">
             <h2
               className="text-4xl md:text-6xl font-black mb-6 fade-in"
               style={{
@@ -140,7 +141,7 @@ export const Features: React.FC = () => {
                 color: 'var(--color-cream)',
                 letterSpacing: '-0.02em',
               }}>
-              Everything You Need to Succeed
+              Everything you need to navigate the markets
             </h2>
             <p
               className="mt-6 max-w-2xl mx-auto text-lg md:text-xl fade-in delay-200"
@@ -152,7 +153,7 @@ export const Features: React.FC = () => {
                 Powerful tools and a vibrant community to elevate your investing journey.
             </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-8 md:gap-10">
+        <div className="grid md:grid-cols-3 gap-12 md:gap-16">
           {featuresData.map((feature, index) => (
             <FeatureCard key={feature.title} feature={feature} index={index} />
           ))}

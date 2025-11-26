@@ -21,15 +21,8 @@ const mediaItems: MediaItem[] = [
         type: 'youtube',
         title: 'Charlie Munger - Taking Drawdowns with Philosophy and Equanimity',
         description: 'Wisdom on handling market downturns with philosophical perspective and calm composure.',
-        url: 'https://youtu.be/7sNUg2kPJwI?si=wZfqg2mKkVD8HN4w',
-        thumbnail: 'https://img.youtube.com/vi/7sNUg2kPJwI/hqdefault.jpg'
-    },
-    {
-        type: 'podcast',
-        title: 'The Knowledge Project - Morgan Housel',
-        description: 'Insights on investing, decision-making, and understanding human behavior in markets.',
-        url: 'https://open.spotify.com/episode/00ll36IR6rEoigiqFRwBzW?si=Qa78MY88QjWilhw4lJjQCA',
-        host: 'The Knowledge Project'
+        url: 'https://www.youtube.com/watch?v=BCY6MycxtIo',
+        thumbnail: 'https://img.youtube.com/vi/BCY6MycxtIo/hqdefault.jpg'
     }
 ];
 
@@ -94,39 +87,31 @@ export const WeeklyMedia: React.FC<WeeklyMediaProps> = ({ compact = false }) => 
                                         <div
                                             className="w-12 h-12 rounded flex items-center justify-center"
                                             style={{
-                                                backgroundColor: item.type === 'podcast' 
-                                                    ? 'var(--color-primary)' 
-                                                    : 'var(--color-blue)',
+                                                backgroundColor: 'var(--color-blue)',
                                             }}
                                         >
-                                            {item.type === 'podcast' ? (
-                                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-cream)' }}>
-                                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
-                                                </svg>
-                                            ) : (
-                                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-cream)' }}>
-                                                    <path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                                                </svg>
-                                            )}
+                                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-cream)' }}>
+                                                <path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                                            </svg>
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Content */}
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-0.5">
-                                        <span
-                                            className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                                            style={{
-                                                backgroundColor: item.type === 'podcast' 
-                                                    ? 'var(--color-primary)' 
-                                                    : 'var(--color-blue)',
-                                                color: 'var(--color-cream)',
-                                            }}
-                                        >
-                                            {item.type === 'podcast' ? '🎙️ Podcast' : '▶️ Video'}
-                                        </span>
-                                    </div>
+                                    {item.type === 'youtube' && (
+                                        <div className="flex items-center gap-2 mb-0.5">
+                                            <span
+                                                className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                                                style={{
+                                                    backgroundColor: 'var(--color-blue)',
+                                                    color: 'var(--color-cream)',
+                                                }}
+                                            >
+                                                ▶️ Video
+                                            </span>
+                                        </div>
+                                    )}
                                     <h3
                                         className="text-sm font-bold truncate group-hover:underline"
                                         style={{
@@ -202,44 +187,31 @@ export const WeeklyMedia: React.FC<WeeklyMediaProps> = ({ compact = false }) => 
                                         <div
                                             className="w-16 h-16 rounded flex items-center justify-center"
                                             style={{
-                                                backgroundColor: item.type === 'podcast' 
-                                                    ? 'var(--color-primary)' 
-                                                    : 'var(--color-blue)',
+                                                backgroundColor: 'var(--color-blue)',
                                             }}
                                         >
-                                            {item.type === 'podcast' ? (
-                                                <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-cream)' }}>
-                                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
-                                                </svg>
-                                            ) : (
-                                                <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-cream)' }}>
-                                                    <path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                                                </svg>
-                                            )}
+                                            <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-cream)' }}>
+                                                <path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                                            </svg>
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Content */}
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span
-                                            className="text-xs font-semibold px-2 py-1 rounded"
-                                            style={{
-                                                backgroundColor: item.type === 'podcast' 
-                                                    ? 'var(--color-primary)' 
-                                                    : 'var(--color-blue)',
-                                                color: 'var(--color-cream)',
-                                            }}
-                                        >
-                                            {item.type === 'podcast' ? '🎙️ Podcast' : '▶️ YouTube'}
-                                        </span>
-                                        {item.host && (
-                                            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                                                {item.host}
+                                    {item.type === 'youtube' && (
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span
+                                                className="text-xs font-semibold px-2 py-1 rounded"
+                                                style={{
+                                                    backgroundColor: 'var(--color-blue)',
+                                                    color: 'var(--color-cream)',
+                                                }}
+                                            >
+                                                ▶️ YouTube
                                             </span>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
                                     <h3
                                         className="text-base font-bold mb-1 group-hover:underline"
                                         style={{

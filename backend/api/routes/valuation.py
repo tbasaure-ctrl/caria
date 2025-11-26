@@ -1,10 +1,13 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 import logging
+import asyncio
 
 from ..services.simple_valuation import SimpleValuationService
 from ..services.comprehensive_valuation_service import get_comprehensive_valuation_service
 from ..services.fundamentals_cache_service import get_fundamentals_cache_service
+from ..services.enhanced_valuation_service import EnhancedValuationService
+from ..services.enhanced_monte_carlo_service import EnhancedMonteCarloService
 from ..dependencies import get_current_user
 
 router = APIRouter(prefix="/api/valuation", tags=["valuation"])
@@ -16,8 +19,10 @@ class ValuationRequest(BaseModel):
 @router.post("/{ticker}")
 async def get_valuation(ticker: str, request: ValuationRequest):
     """
-    Get simple valuation using direct FMP calls for P/E, EV/EBITDA, EV/Sales.
-    Simplified approach that's more reliable.
+    Get valuation analysis. Tries enhanced methods first, falls back to simple methods.
+    
+    This endpoint attempts to use multiple intrinsic value methods for better reliability.
+    If enhanced methods fail, falls back to simple multiples-based valuation.
     """
     try:
         ticker = ticker.upper()
@@ -29,7 +34,12 @@ async def get_valuation(ticker: str, request: ValuationRequest):
             try:
                 from ..services.openbb_client import OpenBBClient
                 obb_client = OpenBBClient()
-                current_price = obb_client.get_current_price(ticker)
+                price_data = obb_client.get_current_price(ticker)
+                if isinstance(price_data, dict):
+                    current_price = price_data.get("price", 0)
+                else:
+                    current_price = float(price_data) if price_data else 0
+                
                 if not current_price or current_price <= 0:
                     raise ValueError(f"Invalid price: {current_price}")
                 LOGGER.info(f"Got price for {ticker}: ${current_price}")
@@ -40,7 +50,29 @@ async def get_valuation(ticker: str, request: ValuationRequest):
         if not current_price or current_price <= 0:
             raise HTTPException(status_code=400, detail=f"Invalid price for {ticker}: {current_price}")
 
-        # Use simplified direct FMP approach
+        # Try enhanced valuation first
+        try:
+            enhanced_val_service = EnhancedValuationService()
+            intrinsic_result = enhanced_val_service.get_intrinsic_value(ticker, current_price)
+            
+            # If we got a valid intrinsic value, return enhanced result
+            intrinsic_value = intrinsic_result.get("intrinsic_value", {}).get("consensus")
+            if intrinsic_value and intrinsic_value > 0:
+                LOGGER.info(f"✅ Using enhanced valuation for {ticker}")
+                # Format as legacy response for compatibility
+                return {
+                    "ticker": ticker,
+                    "currency": "USD",
+                    "current_price": current_price,
+                    "intrinsic_value": intrinsic_result.get("intrinsic_value", {}),
+                    "methods": intrinsic_result.get("methods", {}),
+                    "enhanced": True,
+                    "explanation": f"Enhanced valuation using multiple methods. Consensus intrinsic value: ${intrinsic_value:.2f}"
+                }
+        except Exception as enhanced_error:
+            LOGGER.warning(f"Enhanced valuation failed for {ticker}: {enhanced_error}, falling back to simple methods")
+
+        # Fallback to simple FMP-based approach
         from ..services.openbb_client import OpenBBClient
         import os
         from openbb import obb
@@ -79,7 +111,6 @@ async def get_valuation(ticker: str, request: ValuationRequest):
                         ev_sales = row.get('evSales') or row.get('enterpriseValueOverRevenue')
             
             # Calculate fair value using industry averages
-            # For simplicity, use reasonable defaults if multiples are missing
             fair_value = current_price
             method = "Current Price"
             
@@ -96,7 +127,6 @@ async def get_valuation(ticker: str, request: ValuationRequest):
                     method = "P/E Multiple (20x)"
             elif ev_ebitda and ev_ebitda > 0:
                 # Use industry average EV/EBITDA of 12
-                # Approximate: fair_value ≈ current_price * (12 / ev_ebitda)
                 fair_value = current_price * (12 / ev_ebitda)
                 method = "EV/EBITDA Multiple (12x)"
             elif ev_sales and ev_sales > 0:
@@ -114,13 +144,12 @@ async def get_valuation(ticker: str, request: ValuationRequest):
             # Calculate Reverse DCF using SimpleValuationService
             reverse_dcf_result = {"implied_growth_rate": 0, "explanation": "N/A"}
             try:
-                from ..services.simple_valuation import SimpleValuationService
                 val_service = SimpleValuationService()
                 # Fetch metrics for reverse DCF calculation
-                metrics = val_service._fetch_metrics(ticker)
-                if metrics:
+                metrics_data = val_service._fetch_metrics(ticker)
+                if metrics_data:
                     assumptions = val_service._default_assumptions()
-                    reverse_dcf_result = val_service._calculate_reverse_dcf(metrics, current_price, assumptions)
+                    reverse_dcf_result = val_service._calculate_reverse_dcf(metrics_data, current_price, assumptions)
                     LOGGER.info(f"Reverse DCF calculated for {ticker}: {reverse_dcf_result.get('implied_growth_rate', 0):.2%}")
                 else:
                     LOGGER.warning(f"Could not fetch metrics for reverse DCF for {ticker}")
@@ -151,7 +180,9 @@ async def get_valuation(ticker: str, request: ValuationRequest):
                     "fair_value": round(fair_value, 2),
                     "upside_percent": round(upside, 2),
                     "explanation": f"Fair value calculated using {method}"
-                }
+                },
+                "enhanced": False,
+                "note": "Using simple multiples-based valuation. For enhanced analysis with multiple methods, use /api/valuation/enhanced/{ticker}"
             }
             
             LOGGER.info(f"✅ Simple valuation completed for {ticker}: ${current_price} → ${fair_value:.2f} ({upside:+.1f}%)")
@@ -159,7 +190,7 @@ async def get_valuation(ticker: str, request: ValuationRequest):
             
         except Exception as e:
             LOGGER.warning(f"Direct FMP valuation failed for {ticker}: {e}, falling back to SimpleValuationService")
-            # Fallback to original service
+            # Final fallback to original service
             service = SimpleValuationService()
             result = service.get_valuation(ticker, current_price)
             if not result:
@@ -257,4 +288,131 @@ async def get_all_cached_tickers(current_user=Depends(get_current_user)):
     except Exception as e:
         LOGGER.error(f"Error getting cached tickers: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/enhanced/{ticker}")
+async def get_enhanced_valuation(ticker: str, request: ValuationRequest):
+    """
+    Get enhanced valuation using multiple intrinsic value methods:
+    - Enhanced DCF (with better FCF estimation)
+    - Historical Multiples (P/E, P/B, P/S)
+    - Graham Number (conservative estimate)
+    - Earnings Power Value (EPV)
+    - Asset-Based Valuation
+    
+    Returns consensus intrinsic value and individual method results.
+    Also includes enhanced Monte Carlo simulation with fundamental adjustments.
+    """
+    try:
+        ticker = ticker.upper()
+        current_price = request.current_price
+        
+        # Fetch current price if not provided
+        if not current_price:
+            LOGGER.info(f"Fetching current price for {ticker}")
+            try:
+                from ..services.openbb_client import OpenBBClient
+                obb_client = OpenBBClient()
+                price_data = obb_client.get_current_price(ticker)
+                if isinstance(price_data, dict):
+                    current_price = price_data.get("price", 0)
+                else:
+                    current_price = float(price_data) if price_data else 0
+                
+                if not current_price or current_price <= 0:
+                    raise ValueError(f"Invalid price: {current_price}")
+                LOGGER.info(f"Got price for {ticker}: ${current_price}")
+            except Exception as price_error:
+                LOGGER.error(f"Failed to fetch price for {ticker}: {price_error}")
+                raise HTTPException(status_code=400, detail=f"Could not fetch current price for {ticker}")
+        
+        if not current_price or current_price <= 0:
+            raise HTTPException(status_code=400, detail=f"Invalid price for {ticker}: {current_price}")
+        
+        # Get intrinsic value using enhanced service
+        enhanced_val_service = EnhancedValuationService()
+        intrinsic_result = enhanced_val_service.get_intrinsic_value(ticker, current_price)
+        
+        # Get consensus intrinsic value
+        intrinsic_value = intrinsic_result.get("intrinsic_value", {}).get("consensus")
+        
+        # Run enhanced Monte Carlo simulation
+        monte_carlo_result = {}
+        try:
+            mc_service = EnhancedMonteCarloService()
+            monte_carlo_result = await asyncio.to_thread(
+                mc_service.run_enhanced_forecast,
+                ticker,
+                horizon_years=2,
+                simulations=10000,
+                intrinsic_value=intrinsic_value
+            )
+            LOGGER.info(f"Enhanced Monte Carlo completed for {ticker}")
+        except Exception as e:
+            LOGGER.warning(f"Enhanced Monte Carlo failed for {ticker}: {e}")
+            monte_carlo_result = {"error": str(e)}
+        
+        # Combine results
+        result = {
+            **intrinsic_result,
+            "monte_carlo": {
+                "horizon_years": 2,
+                "simulations": 10000,
+                "percentiles": monte_carlo_result.get("percentiles", {}),
+                "expected_value": monte_carlo_result.get("expected_value"),
+                "probability_positive_return": monte_carlo_result.get("prob_positive"),
+                "probability_above_intrinsic": monte_carlo_result.get("prob_above_intrinsic"),
+                "probabilities": monte_carlo_result.get("probabilities", {}),
+                "estimated_mu": monte_carlo_result.get("estimated_mu"),
+                "estimated_sigma": monte_carlo_result.get("estimated_sigma"),
+                "fundamental_adjustments": monte_carlo_result.get("fundamental_adjustments", {}),
+                "chart_data": monte_carlo_result.get("plotly_data"),
+                "error": monte_carlo_result.get("error")
+            },
+            "summary": _generate_enhanced_summary(intrinsic_result, monte_carlo_result, current_price)
+        }
+        
+        LOGGER.info(f"✅ Enhanced valuation completed for {ticker}")
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        LOGGER.error(f"Enhanced valuation error for {ticker}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def _generate_enhanced_summary(intrinsic_result: dict, monte_carlo_result: dict, current_price: float) -> str:
+    """Generate executive summary for enhanced valuation."""
+    intrinsic_value = intrinsic_result.get("intrinsic_value", {})
+    consensus = intrinsic_value.get("consensus")
+    upside = intrinsic_value.get("upside_percent", 0)
+    
+    summary_parts = []
+    
+    if consensus:
+        summary_parts.append(
+            f"**Intrinsic Value**: ${consensus:.2f} (Current: ${current_price:.2f})"
+        )
+        summary_parts.append(intrinsic_value.get("interpretation", ""))
+    else:
+        summary_parts.append("Could not calculate reliable intrinsic value with available data.")
+    
+    # Add Monte Carlo insights
+    if "error" not in monte_carlo_result:
+        prob_positive = monte_carlo_result.get("prob_positive")
+        expected_value = monte_carlo_result.get("expected_value")
+        
+        if prob_positive is not None:
+            summary_parts.append(
+                f"**Monte Carlo Forecast**: {prob_positive*100:.0f}% probability of positive returns over 2 years."
+            )
+        
+        if expected_value:
+            expected_return = ((expected_value - current_price) / current_price) * 100
+            summary_parts.append(
+                f"Expected 2-year price: ${expected_value:.2f} ({expected_return:+.1f}%)"
+            )
+    
+    return " ".join(summary_parts)
 

@@ -83,23 +83,33 @@ async def get_valuation(ticker: str, request: ValuationRequest):
             fair_value = current_price
             method = "Current Price"
             
+            # Safe conversion and validation
+            pe_ratio = float(pe_ratio) if pe_ratio is not None and pe_ratio != 0 else None
+            ev_ebitda = float(ev_ebitda) if ev_ebitda is not None and ev_ebitda != 0 else None
+            ev_sales = float(ev_sales) if ev_sales is not None and ev_sales != 0 else None
+            
             if pe_ratio and pe_ratio > 0:
                 # Use industry average P/E of 20
-                eps = current_price / pe_ratio if pe_ratio > 0 else None
+                eps = current_price / pe_ratio
                 if eps and eps > 0:
                     fair_value = eps * 20
                     method = "P/E Multiple (20x)"
             elif ev_ebitda and ev_ebitda > 0:
                 # Use industry average EV/EBITDA of 12
                 # Approximate: fair_value ≈ current_price * (12 / ev_ebitda)
-                fair_value = current_price * (12 / ev_ebitda) if ev_ebitda > 0 else current_price
+                fair_value = current_price * (12 / ev_ebitda)
                 method = "EV/EBITDA Multiple (12x)"
             elif ev_sales and ev_sales > 0:
                 # Use industry average EV/Sales of 3
-                fair_value = current_price * (3 / ev_sales) if ev_sales > 0 else current_price
+                fair_value = current_price * (3 / ev_sales)
                 method = "EV/Sales Multiple (3x)"
             
             upside = ((fair_value - current_price) / current_price) * 100 if current_price > 0 else 0
+            
+            # Safe formatting for explanation
+            pe_str = f"{pe_ratio:.2f}" if pe_ratio and pe_ratio > 0 else "N/A"
+            ev_ebitda_str = f"{ev_ebitda:.2f}" if ev_ebitda and ev_ebitda > 0 else "N/A"
+            ev_sales_str = f"{ev_sales:.2f}" if ev_sales and ev_sales > 0 else "N/A"
             
             result = {
                 "ticker": ticker,
@@ -114,7 +124,7 @@ async def get_valuation(ticker: str, request: ValuationRequest):
                     "method": method,
                     "fair_value_per_share": round(fair_value, 2),
                     "upside_percent": round(upside, 2),
-                    "explanation": f"Valuation based on {method}. P/E: {pe_ratio:.2f if pe_ratio and pe_ratio > 0 else 'N/A'}, EV/EBITDA: {ev_ebitda:.2f if ev_ebitda and ev_ebitda > 0 else 'N/A'}, EV/Sales: {ev_sales:.2f if ev_sales and ev_sales > 0 else 'N/A'}"
+                    "explanation": f"Valuation based on {method}. P/E: {pe_str}, EV/EBITDA: {ev_ebitda_str}, EV/Sales: {ev_sales_str}"
                 },
                 "reverse_dcf": {
                     "method": "N/A",

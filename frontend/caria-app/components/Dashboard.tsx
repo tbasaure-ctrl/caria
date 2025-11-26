@@ -283,8 +283,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         {/* Weekly Video and Podcast */}
                         <WeeklyMedia compact={false} />
 
-                        {/* Stock Screener (Alpha Stock Picker) */}
-                        <AlphaStockPicker />
+                        {/* Stock Screeners - Two Column Layout */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Alpha Stock Picker - Top picks by CAS score */}
+                            <AlphaStockPicker />
+                            
+                            {/* Hidden Gems Screener - Under the radar mid-caps */}
+                            <HiddenGemsScreener />
+                        </div>
 
                         {/* Two Column Layout: Reddit Feed and Recommended Lectures */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">

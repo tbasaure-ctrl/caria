@@ -139,6 +139,43 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onRegister }) => {
                             >
                                 Pricing
                             </a>
+                            <div className="flex items-center gap-3 ml-4 pl-4 border-l" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                                <button
+                                    onClick={onLogin}
+                                    className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                                    style={{
+                                        color: 'var(--color-text-secondary)',
+                                        backgroundColor: 'transparent',
+                                        border: '1px solid var(--color-border-subtle)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.color = 'var(--color-text-primary)';
+                                        e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.color = 'var(--color-text-secondary)';
+                                        e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
+                                    }}
+                                >
+                                    Sign In
+                                </button>
+                                <button
+                                    onClick={onRegister}
+                                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
+                                    style={{
+                                        backgroundColor: 'var(--color-accent-primary)',
+                                        color: '#FFFFFF',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.opacity = '0.9';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.opacity = '1';
+                                    }}
+                                >
+                                    Get Started
+                                </button>
+                            </div>
                         </nav>
 
                     </div>

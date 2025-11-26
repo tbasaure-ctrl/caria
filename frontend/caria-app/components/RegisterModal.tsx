@@ -11,6 +11,8 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [occupation, setOccupation] = useState('');
+    const [selfDescription, setSelfDescription] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +38,12 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ 
+                    email, 
+                    password,
+                    occupation: occupation || undefined,
+                    self_description: selfDescription || undefined
+                }),
             });
 
             if (!response.ok) {
@@ -196,6 +203,48 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
                                 color: 'var(--color-text-primary)',
                             }}
                             placeholder="••••••••"
+                        />
+                    </div>
+
+                    <div>
+                        <label 
+                            className="block text-xs font-medium tracking-wider uppercase mb-2"
+                            style={{ color: 'var(--color-text-muted)' }}
+                        >
+                            Occupation <span className="text-xs normal-case" style={{ color: 'var(--color-text-subtle)' }}>(optional)</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={occupation}
+                            onChange={(e) => setOccupation(e.target.value)}
+                            className="w-full px-4 py-3 rounded-lg text-sm"
+                            style={{
+                                backgroundColor: 'var(--color-bg-tertiary)',
+                                border: '1px solid var(--color-border-subtle)',
+                                color: 'var(--color-text-primary)',
+                            }}
+                            placeholder="What do you do for a living?"
+                        />
+                    </div>
+
+                    <div>
+                        <label 
+                            className="block text-xs font-medium tracking-wider uppercase mb-2"
+                            style={{ color: 'var(--color-text-muted)' }}
+                        >
+                            Tell us about yourself <span className="text-xs normal-case" style={{ color: 'var(--color-text-subtle)' }}>(optional)</span>
+                        </label>
+                        <textarea
+                            value={selfDescription}
+                            onChange={(e) => setSelfDescription(e.target.value)}
+                            rows={3}
+                            className="w-full px-4 py-3 rounded-lg text-sm resize-none"
+                            style={{
+                                backgroundColor: 'var(--color-bg-tertiary)',
+                                border: '1px solid var(--color-border-subtle)',
+                                color: 'var(--color-text-primary)',
+                            }}
+                            placeholder="Tell us a bit about yourself..."
                         />
                     </div>
 

@@ -41,12 +41,43 @@ def _generate_weekly_picks(request: Request) -> List[Dict[str, Any]]:
     try:
         picks = alpha_service.compute_alpha_picks(top_n_candidates=100)
         
-        # Enhance with investment thesis
+        # Enhance with investment thesis and ensure required fields
         enhanced_picks = []
         for pick in picks[:3]:  # Top 3 only
+            # Ensure company_name and sector are never None
+            ticker = pick.get("ticker", "")
+            company_name = pick.get("company_name")
+            sector = pick.get("sector")
+            
+            # If missing, try to fetch from fundamentals cache
+            if not company_name or not sector or company_name == ticker or sector == "Unknown":
+                try:
+                    from api.services.fundamentals_cache_service import get_fundamentals_cache_service
+                    cache_service = get_fundamentals_cache_service()
+                    fund_result = cache_service.get_fundamentals(ticker)
+                    if fund_result and fund_result.get("data"):
+                        data = fund_result["data"]
+                        if not company_name or company_name == ticker:
+                            company_name = data.get("company_name") or data.get("name") or ticker
+                        if not sector or sector == "Unknown":
+                            sector = data.get("sector") or "Unknown"
+                except Exception as cache_error:
+                    LOGGER.warning(f"Could not fetch metadata for {ticker}: {cache_error}")
+                    # Use safe defaults
+                    if not company_name or company_name == ticker:
+                        company_name = ticker
+                    if not sector or sector == "Unknown":
+                        sector = "Unknown"
+            
+            # Final safety check - ensure strings, not None
+            company_name = str(company_name) if company_name else ticker
+            sector = str(sector) if sector else "Unknown"
+            
             thesis = _generate_investment_thesis(pick)
             enhanced_picks.append({
                 **pick,
+                "company_name": company_name,
+                "sector": sector,
                 "investment_thesis": thesis,
                 "generated_date": datetime.utcnow().isoformat()
             })
@@ -131,8 +162,31 @@ def get_current_weekly_picks(
     cached = _weekly_picks_cache.get(_WEEKLY_PICKS_KEY, {})
     picks_data = cached.get("picks", [])
     
+    # Validate and sanitize picks before creating WeeklyPick models
+    validated_picks = []
+    for p in picks_data:
+        # Ensure required fields are present and not None
+        ticker = p.get("ticker", "")
+        company_name = p.get("company_name")
+        sector = p.get("sector")
+        
+        # Safety checks
+        if not company_name or company_name is None:
+            company_name = ticker
+        if not sector or sector is None:
+            sector = "Unknown"
+        
+        # Convert to strings to ensure type safety
+        validated_pick = {
+            **p,
+            "ticker": str(ticker),
+            "company_name": str(company_name),
+            "sector": str(sector),
+        }
+        validated_picks.append(WeeklyPick(**validated_pick))
+    
     return WeeklyPicksResponse(
-        picks=[WeeklyPick(**p) for p in picks_data],
+        picks=validated_picks,
         week_start=cached.get("week_start", week_start),
         generated_date=cached.get("generated_date", datetime.utcnow().isoformat())
     )

@@ -72,14 +72,15 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
                             </span>
                         </div>
 
-                        {/* Main Headline */}
+                        {/* Main Headline - Bloomberg Style: 26-32px emphasis */}
                         <h1 
                             className="animate-fade-in-up"
                             style={{ animationDelay: '100ms' }}
                         >
                             <span 
-                                className="block text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight"
+                                className="block font-bold leading-[1.1] tracking-tight mb-3"
                                 style={{
+                                    fontSize: 'clamp(26px, 5vw, 32px)',
                                     fontFamily: 'var(--font-display)',
                                     color: 'var(--color-text-primary)',
                                 }}
@@ -87,8 +88,9 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
                                 Institutional-Grade
                             </span>
                             <span 
-                                className="block text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight mt-2"
+                                className="block font-bold leading-[1.1] tracking-tight mb-3"
                                 style={{
+                                    fontSize: 'clamp(26px, 5vw, 32px)',
                                     fontFamily: 'var(--font-display)',
                                     background: 'linear-gradient(135deg, var(--color-accent-primary) 0%, #60A5FA 100%)',
                                     WebkitBackgroundClip: 'text',
@@ -99,8 +101,9 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
                                 Research Platform
                             </span>
                             <span 
-                                className="block text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight mt-2"
+                                className="block font-bold leading-[1.1] tracking-tight"
                                 style={{
+                                    fontSize: 'clamp(26px, 5vw, 32px)',
                                     fontFamily: 'var(--font-display)',
                                     color: 'var(--color-text-primary)',
                                 }}
@@ -109,10 +112,11 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
                             </span>
                         </h1>
 
-                        {/* Subheadline */}
+                        {/* Subheadline - 16-18px for readability */}
                         <p 
-                            className="text-lg md:text-xl max-w-2xl animate-fade-in-up leading-relaxed"
+                            className="max-w-2xl animate-fade-in-up leading-relaxed mt-6"
                             style={{ 
+                                fontSize: '18px',
                                 color: 'var(--color-text-secondary)',
                                 fontFamily: 'var(--font-body)',
                                 animationDelay: '200ms'

@@ -5,6 +5,7 @@ import { Resources } from './widgets/Resources';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 import { UnderTheRadarScreener } from './widgets/UnderTheRadarScreener';
+import { IndustryResearch } from './widgets/IndustryResearch';
 
 /**
  * ResearchSection - Groups related research and analysis widgets together
@@ -24,6 +25,9 @@ export const ResearchSection: React.FC = () => {
             <div className="space-y-8">
                 {/* Weekly Media - Video & Podcast at Top of Research */}
                 <WeeklyMedia compact={false} />
+                
+                {/* Industry Research - Sector Deep Dives */}
+                <IndustryResearch />
                 
                 {/* Under-the-Radar Screener - New Stock Screener */}
                 <UnderTheRadarScreener />

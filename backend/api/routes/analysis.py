@@ -304,7 +304,21 @@ def challenge_thesis(
             LOGGER.exception("Error durante recuperación RAG: %s", exc)
             evidence_text = "Error al recuperar evidencia; continúa sin RAG."
 
-    # 2) Construir prompt para el LLM
+    # 2) Detect user's language from thesis
+    def detect_language(text: str) -> str:
+        """Simple language detection - check for common Spanish words/patterns."""
+        text_lower = text.lower()
+        spanish_indicators = ['el', 'la', 'los', 'las', 'de', 'que', 'es', 'en', 'un', 'una', 
+                             'por', 'para', 'con', 'del', 'se', 'le', 'te', 'me', 'nos', 'os',
+                             'porque', 'cuando', 'donde', 'como', 'por qué', 'también', 'más']
+        spanish_count = sum(1 for word in spanish_indicators if word in text_lower)
+        # If more than 2 Spanish indicators, assume Spanish
+        return "Spanish" if spanish_count > 2 else "English"
+    
+    user_language = detect_language(payload.thesis)
+    is_spanish = user_language == "Spanish"
+    
+    # 3) Build prompt in detected language
     ticker_str = payload.ticker or "N/A"
     analysis_system_prompt = (
         "You are Caria, a Socratic investment mentor who guides through thoughtful questions rather than giving prefabricated answers. "

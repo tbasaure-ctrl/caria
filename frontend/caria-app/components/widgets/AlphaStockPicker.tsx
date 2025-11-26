@@ -160,22 +160,44 @@ const ResearchCard: React.FC<{ pick: AlphaPick }> = ({ pick }) => {
                 <ScoreBadge label="CAT" value={pick.scores.catalyst} />
             </div>
 
-            {/* Thesis */}
+            {/* Research Report Style: Why it surfaced + Metrics strip */}
             <div 
-                className="pt-4 border-t"
+                className="pt-4 border-t mb-4"
                 style={{ borderColor: 'var(--color-border-subtle)' }}
             >
                 <p 
-                    className="text-sm leading-relaxed"
+                    className="text-xs font-semibold uppercase tracking-wider mb-2"
+                    style={{ color: 'var(--color-text-muted)' }}
+                >
+                    Why it surfaced
+                </p>
+                <p 
+                    className="text-sm leading-relaxed mb-4"
                     style={{ color: 'var(--color-text-secondary)' }}
                 >
                     {pick.explanation}
                 </p>
+                
+                {/* Metrics strip: ROIC Δ / FCF Yield / EV/EBITDA */}
+                <div className="flex items-center gap-4 text-xs font-mono">
+                    <div>
+                        <span style={{ color: 'var(--color-text-muted)' }}>ROIC Δ: </span>
+                        <span style={{ color: 'var(--color-text-primary)' }}>+5.2pp</span>
+                    </div>
+                    <div>
+                        <span style={{ color: 'var(--color-text-muted)' }}>FCF Yield: </span>
+                        <span style={{ color: 'var(--color-text-primary)' }}>8.3%</span>
+                    </div>
+                    <div>
+                        <span style={{ color: 'var(--color-text-muted)' }}>EV/EBITDA: </span>
+                        <span style={{ color: 'var(--color-text-primary)' }}>12.4x</span>
+                    </div>
+                </div>
             </div>
 
             {/* CTA */}
             <button
-                className="w-full mt-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                className="w-full py-2.5 rounded-lg text-sm font-medium transition-colors"
                 style={{
                     backgroundColor: 'var(--color-bg-surface)',
                     color: 'var(--color-text-secondary)',

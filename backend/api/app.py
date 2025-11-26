@@ -76,6 +76,7 @@ from api.routes.prices import router as prices_router
 from api.routes.holdings import router as holdings_router
 from api.routes.chat import router as chat_router
 from api.routes.community import router as community_router
+from api.routes.industry_research import router as industry_research_router
 from api.routes.community_rankings import router as community_rankings_router
 from api.routes.model_portfolio import router as model_portfolio_router
 from api.routes.fear_greed import router as fear_greed_router
@@ -352,6 +353,7 @@ app.include_router(reddit_router)  # Social sentiment: Reddit hot stocks trackin
 app.include_router(cors_test_router)  # CORS test endpoint for debugging
 app.include_router(lectures_router)  # Recommended lectures
 app.include_router(lectures_router)  # Recommended lectures
+app.include_router(industry_research_router)  # Industry Research / Sector Deep Dives
 app.include_router(debug_secrets_router)  # Debug endpoint to check secrets status
 from api.routes.debug import router as debug_router
 app.include_router(debug_router) # LLM Debug endpoint

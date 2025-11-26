@@ -20,10 +20,10 @@ interface RegimeTestResponse {
 }
 
 const REGIME_OPTIONS = [
-    { value: 'expansion', label: 'Expansion', description: 'Crecimiento económico fuerte' },
-    { value: 'slowdown', label: 'Desaceleración', description: 'Desaceleración económica' },
-    { value: 'recession', label: 'Recesión', description: 'Contracción económica' },
-    { value: 'stress', label: 'Estrés', description: 'Crisis/volatilidad extrema' },
+    { value: 'expansion', label: 'Expansion', description: 'Strong economic growth' },
+    { value: 'slowdown', label: 'Slowdown', description: 'Economic deceleration' },
+    { value: 'recession', label: 'Recession', description: 'Economic contraction' },
+    { value: 'stress', label: 'Stress', description: 'Crisis/extreme volatility' },
 ];
 
 export const RegimeTestWidget: React.FC = () => {
@@ -49,7 +49,7 @@ export const RegimeTestWidget: React.FC = () => {
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ detail: 'Error desconocido' }));
+                const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
                 throw new Error(errorData.detail || `Error ${response.status}`);
             }
 
@@ -64,19 +64,19 @@ export const RegimeTestWidget: React.FC = () => {
 
     return (
         <WidgetCard
-            title="Test según Régimen"
+            title="REGIME TEST"
             className="fade-in"
-            tooltip="Prueba cómo se comportaría tu cartera en diferentes escenarios macroeconómicos: expansión, recesión, o crisis."
+            tooltip="Test how your portfolio would perform under different macroeconomic scenarios: expansion, recession, or crisis."
         >
             <div className="space-y-4">
                 {/* Regime Selection */}
                 <div>
-                    <label 
+                    <label
                         htmlFor="regime-select"
                         className="block text-sm font-medium mb-2"
                         style={{ color: 'var(--color-text-secondary)' }}
                     >
-                        Selecciona un régimen económico para probar:
+                        Select an economic regime to test:
                     </label>
                     <select
                         id="regime-select"
@@ -104,8 +104,8 @@ export const RegimeTestWidget: React.FC = () => {
                     disabled={isLoading}
                     className="w-full px-6 py-3 rounded-lg font-medium transition-all"
                     style={{
-                        backgroundColor: isLoading 
-                            ? 'var(--color-bg-tertiary)' 
+                        backgroundColor: isLoading
+                            ? 'var(--color-bg-tertiary)'
                             : 'var(--color-primary)',
                         color: 'var(--color-cream)',
                         fontFamily: 'var(--font-display)',
@@ -113,7 +113,7 @@ export const RegimeTestWidget: React.FC = () => {
                         opacity: isLoading ? 0.6 : 1,
                     }}
                 >
-                    {isLoading ? 'Probando...' : 'Probar Portfolio'}
+                    {isLoading ? 'Testing...' : 'Test Portfolio'}
                 </button>
 
                 {/* Error Display */}

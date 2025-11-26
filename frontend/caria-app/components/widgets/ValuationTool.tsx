@@ -527,8 +527,19 @@ export const ValuationTool: React.FC = () => {
                   <label className="text-slate-400 block mb-1">Years</label>
                   <input
                     type="number"
+                    min="1"
+                    max="10"
                     value={years}
-                    onChange={(e) => setYears(parseInt(e.target.value) || 1)}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      if (val >= 1 && val <= 10) {
+                        setYears(val);
+                      } else if (val < 1) {
+                        setYears(1);
+                      } else {
+                        setYears(10);
+                      }
+                    }}
                     className="w-full bg-gray-800 border border-slate-700 rounded py-1 px-2 text-slate-100"
                     disabled={isLoadingMC}
                   />

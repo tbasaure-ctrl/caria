@@ -209,33 +209,33 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             <div className="fade-in delay-200">
                 {/* PORTFOLIO TAB - Market overview, portfolio management, and stress testing */}
                 {activeTab === 'portfolio' && (
-                    <div className="space-y-8">
+                    <div className="space-y-12">
                         {/* Global Market Bar - Full Width */}
                         <GlobalMarketBar id="market-bar-widget" />
 
                         {/* Market Indicators Row */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                             <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
                             <FearGreedIndex />
                         </div>
 
                         {/* Portfolio Management */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                             <Portfolio id="portfolio-widget" />
                             <PortfolioAnalytics />
                         </div>
 
-                        <div className="grid grid-cols-1 gap-8">
+                        <div className="grid grid-cols-1 gap-10">
                             <ModelPortfolioWidget />
                         </div>
-                        
+
                         {/* Scenario Analysis - Stress test your portfolio */}
-                        <div className="mt-4">
-                            <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--color-cream)', fontFamily: "'Instrument Serif', serif" }}>
+                        <div className="mt-6">
+                            <h2 className="text-xl font-bold mb-5" style={{ color: 'var(--color-cream)', fontFamily: "'Instrument Serif', serif" }}>
                                 📊 Scenario Analysis
                             </h2>
-                            <p className="text-sm text-slate-400 mb-4">Stress test your portfolio against historical crises and macroeconomic scenarios</p>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <p className="text-sm text-slate-400 mb-6">Stress test your portfolio against historical crises and macroeconomic scenarios</p>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                                 <CrisisSimulator />
                                 <MacroSimulator />
                             </div>
@@ -245,12 +245,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* ANALYSIS TAB - Quick Valuation, Investment Thesis, and Community ONLY */}
                 {activeTab === 'analysis' && (
-                    <div className="space-y-8">
+                    <div className="space-y-12">
                         {/* Quick Valuation with Monte Carlo */}
                         <ValuationTool />
 
                         {/* Investment Thesis with Caria */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                             <StartAnalysisCTA
                                 onStartAnalysis={onStartAnalysis}
                                 onEnterArena={() => setShowArena(true)}
@@ -261,14 +261,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                         {/* Community Section */}
                         <div>
-                            <h2 className="text-2xl font-bold mb-4"
+                            <h2 className="text-2xl font-bold mb-5"
                                 style={{
                                     fontFamily: 'var(--font-display)',
                                     color: 'var(--color-cream)'
                                 }}>
                                 Community
                             </h2>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                                 <CommunityFeed />
                                 <RankingsWidget />
                             </div>
@@ -278,15 +278,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* RESEARCH TAB - Weekly Video, Weekly Podcast, Stock Screener, Reddit, Lectures */}
                 {activeTab === 'research' && (
-                    <div className="space-y-8">
+                    <div className="space-y-12">
                         {/* Weekly Video and Podcast */}
                         <WeeklyMedia compact={false} />
-                        
+
                         {/* Stock Screener (Alpha Stock Picker) */}
                         <AlphaStockPicker />
 
                         {/* Two Column Layout: Reddit Feed and Recommended Lectures */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                             <RedditSentiment />
                             <Resources />
                         </div>

@@ -16,13 +16,6 @@ interface AlphaPick {
     explanation: string;
 }
 
-// Mock sparkline data generator (since we don't have real history in this payload yet)
-const generateSparklineData = () => {
-    return Array.from({ length: 20 }, (_, i) => ({
-        value: 50 + Math.random() * 20 + i * 0.5 // Slight upward trend
-    }));
-};
-
 interface WeeklyPick {
     ticker: string;
     company_name: string;
@@ -37,6 +30,171 @@ interface WeeklyPick {
     investment_thesis: string;
     generated_date: string;
 }
+
+// Mock sparkline data
+const generateSparklineData = () => {
+    return Array.from({ length: 20 }, (_, i) => ({
+        value: 50 + Math.random() * 20 + i * 0.5
+    }));
+};
+
+const ScoreBadge: React.FC<{ label: string; value: number }> = ({ label, value }) => {
+    const getColor = (v: number) => {
+        if (v >= 70) return 'var(--color-positive)';
+        if (v >= 40) return 'var(--color-warning)';
+        return 'var(--color-text-muted)';
+    };
+    
+    return (
+        <div 
+            className="px-2 py-1.5 rounded text-center"
+            style={{ backgroundColor: 'var(--color-bg-surface)' }}
+        >
+            <div 
+                className="text-[9px] font-medium tracking-wider uppercase"
+                style={{ color: 'var(--color-text-subtle)' }}
+            >
+                {label}
+            </div>
+            <div 
+                className="text-sm font-bold font-mono"
+                style={{ color: getColor(value) }}
+            >
+                {Math.round(value)}
+            </div>
+        </div>
+    );
+};
+
+const ResearchCard: React.FC<{ pick: AlphaPick }> = ({ pick }) => {
+    const sparklineData = generateSparklineData();
+    
+    return (
+        <div 
+            className="rounded-xl p-5 transition-all duration-300"
+            style={{
+                backgroundColor: 'var(--color-bg-tertiary)',
+                border: '1px solid var(--color-border-subtle)',
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--color-border-emphasis)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
+                e.currentTarget.style.transform = 'translateY(0)';
+            }}
+        >
+            {/* Header: Ticker + Score */}
+            <div className="flex items-start justify-between mb-4">
+                <div>
+                    <div className="flex items-center gap-2 mb-1">
+                        <span 
+                            className="text-xl font-bold font-mono"
+                            style={{ color: 'var(--color-text-primary)' }}
+                        >
+                            {pick.ticker}
+                        </span>
+                        <span 
+                            className="text-xs font-medium px-2 py-0.5 rounded"
+                            style={{ 
+                                backgroundColor: 'var(--color-bg-surface)',
+                                color: 'var(--color-text-muted)'
+                            }}
+                        >
+                            {pick.sector}
+                        </span>
+                    </div>
+                    <div 
+                        className="text-sm"
+                        style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                        {pick.company_name}
+                    </div>
+                </div>
+                
+                {/* CAS Score Badge */}
+                <div className="text-center">
+                    <div 
+                        className="text-3xl font-bold font-mono"
+                        style={{ 
+                            color: pick.cas_score >= 80 ? 'var(--color-positive)' : 
+                                   pick.cas_score >= 60 ? 'var(--color-accent-primary)' : 
+                                   'var(--color-text-secondary)'
+                        }}
+                    >
+                        {pick.cas_score}
+                    </div>
+                    <div 
+                        className="text-[9px] font-medium tracking-widest uppercase"
+                        style={{ color: 'var(--color-text-muted)' }}
+                    >
+                        CAS Score
+                    </div>
+                </div>
+            </div>
+
+            {/* Sparkline */}
+            <div 
+                className="h-12 mb-4 rounded overflow-hidden"
+                style={{ backgroundColor: 'var(--color-bg-surface)' }}
+            >
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={sparklineData}>
+                        <Line 
+                            type="monotone" 
+                            dataKey="value" 
+                            stroke="var(--color-accent-primary)" 
+                            strokeWidth={1.5} 
+                            dot={false} 
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
+
+            {/* Score Breakdown */}
+            <div className="grid grid-cols-4 gap-2 mb-4">
+                <ScoreBadge label="MOM" value={pick.scores.momentum} />
+                <ScoreBadge label="QUAL" value={pick.scores.quality} />
+                <ScoreBadge label="VAL" value={pick.scores.valuation} />
+                <ScoreBadge label="CAT" value={pick.scores.catalyst} />
+            </div>
+
+            {/* Thesis */}
+            <div 
+                className="pt-4 border-t"
+                style={{ borderColor: 'var(--color-border-subtle)' }}
+            >
+                <p 
+                    className="text-sm leading-relaxed"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                >
+                    {pick.explanation}
+                </p>
+            </div>
+
+            {/* CTA */}
+            <button
+                className="w-full mt-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                style={{
+                    backgroundColor: 'var(--color-bg-surface)',
+                    color: 'var(--color-text-secondary)',
+                    border: '1px solid var(--color-border-subtle)',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
+                    e.currentTarget.style.color = 'var(--color-accent-primary)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
+                    e.currentTarget.style.color = 'var(--color-text-secondary)';
+                }}
+            >
+                View Deep Dive →
+            </button>
+        </div>
+    );
+};
 
 export const AlphaStockPicker: React.FC = () => {
     const [picks, setPicks] = useState<AlphaPick[]>([]);
@@ -55,7 +213,6 @@ export const AlphaStockPicker: React.FC = () => {
                 if (response.ok) {
                     const data = await response.json();
                     if (data.picks && data.picks.length > 0) {
-                        // Convert WeeklyPick format to AlphaPick format
                         const convertedPicks: AlphaPick[] = data.picks.map((wp: WeeklyPick) => ({
                             ticker: wp.ticker,
                             company_name: wp.company_name,
@@ -74,13 +231,12 @@ export const AlphaStockPicker: React.FC = () => {
                 }
             } catch (e) {
                 console.error('Failed to load weekly picks', e);
-                // Fallback to manual generation
             }
         };
         loadWeeklyPicks();
     }, []);
 
-    // Load universe stats on mount
+    // Load universe stats
     useEffect(() => {
         const fetchStats = async () => {
             try {
@@ -122,107 +278,151 @@ export const AlphaStockPicker: React.FC = () => {
     };
 
     return (
-        <WidgetCard title="ALPHA STOCK PICKER" tooltip="Weekly 3-stock selection using Momentum, Quality, Valuation & Catalysts">
-            {universeSize !== null && (
-                <div className="text-xs text-slate-400 mt-1">
-                    Screening {universeSize} stocks (growing with user exploration)
+        <WidgetCard 
+            title="ALPHA STOCK PICKER" 
+            tooltip="Weekly 3-stock selection using Composite Alpha Score (CAS): Momentum, Quality, Valuation & Catalyst factors. Updated every Monday."
+        >
+            {/* Meta Info */}
+            <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-4">
+                    {universeSize !== null && (
+                        <span 
+                            className="text-xs font-mono"
+                            style={{ color: 'var(--color-text-muted)' }}
+                        >
+                            Screening {universeSize.toLocaleString()} stocks
+                        </span>
+                    )}
+                    {weekInfo && (
+                        <span 
+                            className="text-xs"
+                            style={{ color: 'var(--color-text-subtle)' }}
+                        >
+                            Week of {new Date(weekInfo.week_start).toLocaleDateString()}
+                        </span>
+                    )}
                 </div>
-            )}
-            <div className="min-h-[400px] w-full bg-slate-900/50 rounded border border-slate-800 p-6 flex flex-col items-center justify-center relative overflow-hidden">
-                {/* Week info */}
-                {weekInfo && (
-                    <div className="text-xs text-slate-500 mb-2 self-start">
-                        Week of {new Date(weekInfo.week_start).toLocaleDateString()} • Auto-updated weekly
-                    </div>
-                )}
-                {/* Initial state */}
-                {!generated && !loading && (
-                    <div className="text-center z-10">
-                        <div className="mb-6 text-slate-400 max-w-md mx-auto">
-                            This week's top 3 stock picks based on our Composite Alpha Score (CAS) model.
-                        </div>
-                        <button
-                            onClick={generatePicks}
-                            className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-blue-500/20 transition-all transform hover:scale-105"
-                        >
-                            Load Weekly Picks
-                        </button>
-                    </div>
-                )}
-                {/* Loading */}
-                {loading && (
-                    <div className="flex flex-col items-center z-10">
-                        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <div className="text-blue-400 animate-pulse">Running Alpha Models...</div>
-                    </div>
-                )}
-                {/* Error */}
-                {error && (
-                    <div className="text-center z-10">
-                        <div className="text-red-400 mb-4">{error}</div>
-                        <button
-                            onClick={generatePicks}
-                            className="bg-slate-700 hover:bg-slate-600 text-white py-2 px-6 rounded-full text-sm"
-                        >
-                            Try Again
-                        </button>
-                    </div>
-                )}
-                {/* Results */}
-                {generated && !loading && !error && (
-                    <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 z-10 animate-fade-in">
-                        {picks.map(pick => (
-                            <div key={pick.ticker} className="bg-slate-800/80 border border-slate-700 rounded-xl p-4 flex flex-col hover:border-blue-500/50 transition-colors">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                        <h3 className="text-xl font-bold text-white">{pick.ticker}</h3>
-                                        <div className="text-xs text-slate-400">{pick.company_name}</div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-2xl font-bold text-blue-400">{pick.cas_score}</div>
-                                        <div className="text-[10px] text-slate-500 uppercase tracking-wider">CAS Score</div>
-                                    </div>
-                                </div>
-                                <div className="h-16 w-full mb-4 opacity-50">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <LineChart data={generateSparklineData()}>
-                                            <Line type="monotone" dataKey="value" stroke="#60a5fa" strokeWidth={2} dot={false} />
-                                        </LineChart>
-                                    </ResponsiveContainer>
-                                </div>
-                                <div className="grid grid-cols-4 gap-1 mb-4 text-center">
-                                    <ScoreBadge label="MOM" value={pick.scores.momentum} />
-                                    <ScoreBadge label="QUAL" value={pick.scores.quality} />
-                                    <ScoreBadge label="VAL" value={pick.scores.valuation} />
-                                    <ScoreBadge label="CAT" value={pick.scores.catalyst} />
-                                </div>
-                                <div className="mt-auto pt-3 border-t border-slate-700/50">
-                                    <p className="text-xs text-slate-300 leading-relaxed">{pick.explanation}</p>
-                                </div>
-                            </div>
-                        ))}
-                        <div className="col-span-1 md:col-span-3 flex justify-center mt-6">
-                            <button onClick={generatePicks} className="text-xs text-slate-500 hover:text-slate-300 underline">
-                                Refresh Picks
-                            </button>
-                        </div>
-                    </div>
+                {generated && (
+                    <button
+                        onClick={generatePicks}
+                        disabled={loading}
+                        className="text-xs font-medium transition-colors"
+                        style={{ color: 'var(--color-text-muted)' }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-accent-primary)'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-muted)'}
+                    >
+                        Refresh
+                    </button>
                 )}
             </div>
-        </WidgetCard>
-    );
-};
 
-const ScoreBadge: React.FC<{ label: string; value: number }> = ({ label, value }) => {
-    const getColor = (v: number) => {
-        if (v >= 70) return 'text-green-400';
-        if (v >= 40) return 'text-yellow-400';
-        return 'text-red-400';
-    };
-    return (
-        <div className="bg-slate-900/50 rounded p-1">
-            <div className="text-[9px] text-slate-500 uppercase">{label}</div>
-            <div className={`text-sm font-bold ${getColor(value)}`}>{Math.round(value)}</div>
-        </div>
+            {/* Initial State */}
+            {!generated && !loading && !error && (
+                <div 
+                    className="rounded-xl p-10 text-center"
+                    style={{ 
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        border: '1px solid var(--color-border-subtle)'
+                    }}
+                >
+                    <div 
+                        className="w-16 h-16 mx-auto mb-5 rounded-xl flex items-center justify-center"
+                        style={{ backgroundColor: 'rgba(46, 124, 246, 0.12)' }}
+                    >
+                        <svg className="w-8 h-8" style={{ color: 'var(--color-accent-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                    </div>
+                    <h3 
+                        className="text-lg font-semibold mb-2"
+                        style={{ color: 'var(--color-text-primary)' }}
+                    >
+                        Weekly Alpha Picks
+                    </h3>
+                    <p 
+                        className="text-sm mb-6 max-w-sm mx-auto"
+                        style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                        Top 3 stock picks based on our Composite Alpha Score model—combining momentum, quality, valuation, and catalyst signals.
+                    </p>
+                    <button
+                        onClick={generatePicks}
+                        className="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200"
+                        style={{
+                            backgroundColor: 'var(--color-accent-primary)',
+                            color: '#FFFFFF',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(46, 124, 246, 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'none';
+                        }}
+                    >
+                        Load Weekly Picks
+                    </button>
+                </div>
+            )}
+
+            {/* Loading State */}
+            {loading && (
+                <div 
+                    className="rounded-xl p-10 text-center"
+                    style={{ 
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        border: '1px solid var(--color-border-subtle)'
+                    }}
+                >
+                    <div className="w-10 h-10 mx-auto mb-4 border-3 border-t-transparent rounded-full animate-spin"
+                        style={{ borderColor: 'var(--color-accent-primary)', borderTopColor: 'transparent' }}
+                    />
+                    <p 
+                        className="text-sm animate-pulse"
+                        style={{ color: 'var(--color-accent-primary)' }}
+                    >
+                        Running alpha models...
+                    </p>
+                </div>
+            )}
+
+            {/* Error State */}
+            {error && (
+                <div 
+                    className="rounded-xl p-6 text-center"
+                    style={{ 
+                        backgroundColor: 'var(--color-negative-muted)',
+                        border: '1px solid var(--color-negative)'
+                    }}
+                >
+                    <p 
+                        className="text-sm mb-4"
+                        style={{ color: 'var(--color-negative)' }}
+                    >
+                        {error}
+                    </p>
+                    <button
+                        onClick={generatePicks}
+                        className="px-4 py-2 rounded-lg text-sm font-medium"
+                        style={{
+                            backgroundColor: 'var(--color-bg-surface)',
+                            color: 'var(--color-text-secondary)',
+                        }}
+                    >
+                        Try Again
+                    </button>
+                </div>
+            )}
+
+            {/* Results */}
+            {generated && !loading && !error && (
+                <div className="grid md:grid-cols-3 gap-4 animate-fade-in">
+                    {picks.map(pick => (
+                        <ResearchCard key={pick.ticker} pick={pick} />
+                    ))}
+                </div>
+            )}
+        </WidgetCard>
     );
 };

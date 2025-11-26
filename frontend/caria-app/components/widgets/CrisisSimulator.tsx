@@ -4,18 +4,18 @@ import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
 
 const CRISES = [
-    { id: '1929_depression', name: 'Great Depression (1929)' },
-    { id: '1939_wwii', name: 'WWII Start (1939)' },
-    { id: '1962_cuban_missile', name: 'Cuban Missile Crisis (1962)' },
-    { id: '1963_jfk', name: 'Kennedy Assassination (1963)' },
-    { id: '1987_black_monday', name: 'Black Monday (1987)' },
-    { id: '2000_dot_com', name: 'Dot Com Bubble (2000)' },
-    { id: '2001_911', name: '9/11 Attacks (2001)' },
-    { id: '2008_gfc', name: 'Global Financial Crisis (2008)' },
-    { id: '2011_euro_debt', name: 'European Debt Crisis (2011)' },
-    { id: '2018_trade_war', name: '2018 Trade War / Fed Tightening' },
-    { id: '2020_covid', name: 'COVID-19 Crash (2020)' },
-    { id: '2022_inflation', name: '2022 Inflation Bear Market' },
+    { id: '1929_depression', name: 'Great Depression', year: '1929' },
+    { id: '1939_wwii', name: 'WWII Start', year: '1939' },
+    { id: '1962_cuban_missile', name: 'Cuban Missile Crisis', year: '1962' },
+    { id: '1963_jfk', name: 'Kennedy Assassination', year: '1963' },
+    { id: '1987_black_monday', name: 'Black Monday', year: '1987' },
+    { id: '2000_dot_com', name: 'Dot Com Bubble', year: '2000' },
+    { id: '2001_911', name: '9/11 Attacks', year: '2001' },
+    { id: '2008_gfc', name: 'Global Financial Crisis', year: '2008' },
+    { id: '2011_euro_debt', name: 'European Debt Crisis', year: '2011' },
+    { id: '2018_trade_war', name: 'Trade War', year: '2018' },
+    { id: '2020_covid', name: 'COVID-19 Crash', year: '2020' },
+    { id: '2022_inflation', name: 'Inflation Bear Market', year: '2022' },
 ];
 
 interface SimulationResult {
@@ -33,18 +33,13 @@ interface SimulationResult {
 type Timeframe = '1d' | '1m' | '1y';
 
 export const CrisisSimulator: React.FC = () => {
-    const [selectedCrisis, setSelectedCrisis] = useState(CRISES[7].id); // Default 2008
+    const [selectedCrisis, setSelectedCrisis] = useState(CRISES[7].id);
     const [timeframe, setTimeframe] = useState<Timeframe>('1m');
     const [result, setResult] = useState<SimulationResult | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     
-    const timeframeLabels = {
-        '1d': '1 Day',
-        '1m': '1 Month', 
-        '1y': '1 Year'
-    };
-    
+    const timeframeLabels = { '1d': '1 Day', '1m': '1 Month', '1y': '1 Year' };
     const timeframeMessages = {
         '1d': 'Even the worst days eventually end.',
         '1m': 'Markets often recover faster than fear suggests.',
@@ -55,28 +50,15 @@ export const CrisisSimulator: React.FC = () => {
         if (!data.dates || data.dates.length === 0) return data;
         
         const dates = data.dates.map(d => new Date(d));
-        const portfolioValues = data.portfolio_values;
-        const benchmarkValues = data.benchmark_values;
-        
-        let startIndex = 0;
         let endIndex = dates.length;
         
-        if (tf === '1d') {
-            // Show first day only
-            endIndex = Math.min(1, dates.length);
-        } else if (tf === '1m') {
-            // Show first month (approximately 20-22 trading days)
-            endIndex = Math.min(22, dates.length);
-        } else if (tf === '1y') {
-            // Show all data (1 year or full crisis period)
-            endIndex = dates.length;
-        }
+        if (tf === '1d') endIndex = Math.min(1, dates.length);
+        else if (tf === '1m') endIndex = Math.min(22, dates.length);
         
-        const filteredDates = dates.slice(startIndex, endIndex).map(d => d.toISOString().split('T')[0]);
-        const filteredPortfolio = portfolioValues.slice(startIndex, endIndex);
-        const filteredBenchmark = benchmarkValues.slice(startIndex, endIndex);
+        const filteredDates = dates.slice(0, endIndex).map(d => d.toISOString().split('T')[0]);
+        const filteredPortfolio = data.portfolio_values.slice(0, endIndex);
+        const filteredBenchmark = data.benchmark_values.slice(0, endIndex);
         
-        // Recalculate metrics for filtered data
         const initialPortfolio = filteredPortfolio[0] || 100;
         const finalPortfolio = filteredPortfolio[filteredPortfolio.length - 1] || 100;
         const portfolioReturn = (finalPortfolio / initialPortfolio) - 1;
@@ -85,7 +67,6 @@ export const CrisisSimulator: React.FC = () => {
         const finalBenchmark = filteredBenchmark[filteredBenchmark.length - 1] || 100;
         const benchmarkReturn = (finalBenchmark / initialBenchmark) - 1;
         
-        // Calculate max drawdown for filtered period
         let maxDrawdown = 0;
         let peak = initialPortfolio;
         for (const value of filteredPortfolio) {
@@ -99,11 +80,7 @@ export const CrisisSimulator: React.FC = () => {
             dates: filteredDates,
             portfolio_values: filteredPortfolio,
             benchmark_values: filteredBenchmark,
-            metrics: {
-                max_drawdown: maxDrawdown,
-                total_return: portfolioReturn,
-                benchmark_return: benchmarkReturn,
-            }
+            metrics: { max_drawdown: maxDrawdown, total_return: portfolioReturn, benchmark_return: benchmarkReturn }
         };
     };
 
@@ -111,7 +88,6 @@ export const CrisisSimulator: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            // Mock portfolio for now - in real app, fetch from state/context
             const portfolio = [
                 { ticker: 'AAPL', quantity: 10, weight: 0.5 },
                 { ticker: 'MSFT', quantity: 5, weight: 0.5 },
@@ -120,21 +96,13 @@ export const CrisisSimulator: React.FC = () => {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/simulation/crisis`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    portfolio,
-                    crisis_id: selectedCrisis,
-                }),
+                body: JSON.stringify({ portfolio, crisis_id: selectedCrisis }),
             });
 
-            if (!response.ok) {
-                throw new Error('Simulation failed');
-            }
+            if (!response.ok) throw new Error('Simulation failed');
 
             const data = await response.json();
-            
-            // Filter data based on selected timeframe
-            const filteredData = filterDataByTimeframe(data, timeframe);
-            setResult(filteredData);
+            setResult(filterDataByTimeframe(data, timeframe));
         } catch (err: any) {
             setError(err.message || 'Failed to run simulation');
         } finally {
@@ -142,50 +110,88 @@ export const CrisisSimulator: React.FC = () => {
         }
     };
 
+    const selectedCrisisData = CRISES.find(c => c.id === selectedCrisis);
+
     return (
-        <WidgetCard title="HISTORICAL CRISIS SIMULATOR" tooltip="Stress test your portfolio against major historical market crashes. See how markets recover over different timeframes.">
-            <div className="space-y-4">
-                <div className="flex gap-2">
-                    <select
-                        value={selectedCrisis}
-                        onChange={(e) => setSelectedCrisis(e.target.value)}
-                        className="flex-1 bg-gray-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200"
-                    >
-                        {CRISES.map((c) => (
-                            <option key={c.id} value={c.id}>
-                                {c.name}
-                            </option>
-                        ))}
-                    </select>
-                    <button
-                        onClick={handleSimulate}
-                        disabled={loading}
-                        className="bg-red-900/50 hover:bg-red-900/70 text-red-100 px-4 py-2 rounded text-sm font-semibold border border-red-800/50 transition-colors"
-                    >
-                        {loading ? 'Simulating...' : 'Run Simulation'}
-                    </button>
+        <WidgetCard 
+            title="CRISIS SIMULATOR" 
+            tooltip="Stress test your portfolio against major historical market crashes. Visualize how your holdings would perform across different recovery timeframes."
+        >
+            <div className="space-y-5">
+                {/* Controls */}
+                <div 
+                    className="p-4 rounded-lg"
+                    style={{
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        border: '1px solid var(--color-border-subtle)',
+                    }}
+                >
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        {/* Crisis Selector */}
+                        <div className="flex-1">
+                            <label 
+                                className="block text-[10px] font-medium tracking-wider uppercase mb-1.5"
+                                style={{ color: 'var(--color-text-muted)' }}
+                            >
+                                Historical Crisis
+                            </label>
+                            <select
+                                value={selectedCrisis}
+                                onChange={(e) => setSelectedCrisis(e.target.value)}
+                                className="w-full px-3 py-2.5 rounded-lg text-sm"
+                                style={{
+                                    backgroundColor: 'var(--color-bg-surface)',
+                                    border: '1px solid var(--color-border-subtle)',
+                                    color: 'var(--color-text-primary)',
+                                }}
+                            >
+                                {CRISES.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.name} ({c.year})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Run Button */}
+                        <button
+                            onClick={handleSimulate}
+                            disabled={loading}
+                            className="self-end px-6 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 disabled:opacity-50"
+                            style={{
+                                backgroundColor: 'var(--color-negative)',
+                                color: '#FFFFFF',
+                            }}
+                        >
+                            {loading ? 'Simulating...' : 'Run Stress Test'}
+                        </button>
+                    </div>
                 </div>
-                
+
                 {/* Timeframe Selector */}
-                <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500">View recovery:</span>
-                    <div className="flex gap-1 bg-gray-900/50 rounded p-1">
+                <div className="flex items-center gap-3">
+                    <span 
+                        className="text-xs"
+                        style={{ color: 'var(--color-text-muted)' }}
+                    >
+                        Recovery view:
+                    </span>
+                    <div 
+                        className="flex gap-1 p-1 rounded-lg"
+                        style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
+                    >
                         {(['1d', '1m', '1y'] as Timeframe[]).map((tf) => (
                             <button
                                 key={tf}
                                 onClick={() => {
                                     setTimeframe(tf);
-                                    // Re-filter existing result if available
-                                    if (result) {
-                                        const filtered = filterDataByTimeframe(result, tf);
-                                        setResult(filtered);
-                                    }
+                                    if (result) setResult(filterDataByTimeframe(result, tf));
                                 }}
-                                className={`px-3 py-1 rounded text-xs font-medium transition-all ${
-                                    timeframe === tf 
-                                        ? 'bg-blue-600 text-white' 
-                                        : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                                }`}
+                                className="px-4 py-1.5 rounded text-xs font-medium transition-all"
+                                style={{
+                                    backgroundColor: timeframe === tf ? 'var(--color-accent-primary)' : 'transparent',
+                                    color: timeframe === tf ? '#FFFFFF' : 'var(--color-text-muted)',
+                                }}
                             >
                                 {timeframeLabels[tf]}
                             </button>
@@ -193,32 +199,101 @@ export const CrisisSimulator: React.FC = () => {
                     </div>
                 </div>
 
-                {error && <div className="text-red-400 text-xs">{error}</div>}
+                {error && (
+                    <div 
+                        className="px-4 py-3 rounded-lg text-sm"
+                        style={{
+                            backgroundColor: 'var(--color-negative-muted)',
+                            color: 'var(--color-negative)',
+                        }}
+                    >
+                        {error}
+                    </div>
+                )}
 
+                {/* Results */}
                 {result && (
-                    <div className="space-y-4 animate-fade-in">
-                        <div className="grid grid-cols-3 gap-2">
-                            <div className="bg-gray-900/50 p-2 rounded border border-slate-800">
-                                <div className="text-xs text-slate-500">Max Drawdown</div>
-                                <div className="text-lg font-mono text-red-400">
+                    <div className="space-y-5 animate-fade-in">
+                        {/* Metrics Grid */}
+                        <div className="grid grid-cols-3 gap-3">
+                            <div 
+                                className="p-4 rounded-lg text-center"
+                                style={{
+                                    backgroundColor: 'var(--color-bg-tertiary)',
+                                    border: '1px solid var(--color-border-subtle)',
+                                }}
+                            >
+                                <div 
+                                    className="text-[10px] font-medium tracking-wider uppercase mb-1"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                >
+                                    Max Drawdown
+                                </div>
+                                <div 
+                                    className="text-2xl font-bold font-mono"
+                                    style={{ color: 'var(--color-negative)' }}
+                                >
                                     {(result.metrics.max_drawdown * 100).toFixed(1)}%
                                 </div>
                             </div>
-                            <div className="bg-gray-900/50 p-2 rounded border border-slate-800">
-                                <div className="text-xs text-slate-500">Portfolio Return</div>
-                                <div className={`text-lg font-mono ${result.metrics.total_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <div 
+                                className="p-4 rounded-lg text-center"
+                                style={{
+                                    backgroundColor: 'var(--color-bg-tertiary)',
+                                    border: '1px solid var(--color-border-subtle)',
+                                }}
+                            >
+                                <div 
+                                    className="text-[10px] font-medium tracking-wider uppercase mb-1"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                >
+                                    Portfolio Return
+                                </div>
+                                <div 
+                                    className="text-2xl font-bold font-mono"
+                                    style={{ 
+                                        color: result.metrics.total_return >= 0 
+                                            ? 'var(--color-positive)' 
+                                            : 'var(--color-negative)' 
+                                    }}
+                                >
                                     {(result.metrics.total_return * 100).toFixed(1)}%
                                 </div>
                             </div>
-                            <div className="bg-gray-900/50 p-2 rounded border border-slate-800">
-                                <div className="text-xs text-slate-500">S&P 500 Return</div>
-                                <div className={`text-lg font-mono ${result.metrics.benchmark_return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <div 
+                                className="p-4 rounded-lg text-center"
+                                style={{
+                                    backgroundColor: 'var(--color-bg-tertiary)',
+                                    border: '1px solid var(--color-border-subtle)',
+                                }}
+                            >
+                                <div 
+                                    className="text-[10px] font-medium tracking-wider uppercase mb-1"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                >
+                                    S&P 500 Return
+                                </div>
+                                <div 
+                                    className="text-2xl font-bold font-mono"
+                                    style={{ 
+                                        color: result.metrics.benchmark_return >= 0 
+                                            ? 'var(--color-positive)' 
+                                            : 'var(--color-negative)' 
+                                    }}
+                                >
                                     {(result.metrics.benchmark_return * 100).toFixed(1)}%
                                 </div>
                             </div>
                         </div>
 
-                        <div className="h-64 w-full bg-gray-900/30 rounded border border-slate-800/50 p-1">
+                        {/* Chart */}
+                        <div 
+                            className="rounded-lg overflow-hidden"
+                            style={{
+                                backgroundColor: 'var(--color-bg-tertiary)',
+                                border: '1px solid var(--color-border-subtle)',
+                            }}
+                        >
                             <Plot
                                 data={[
                                     {
@@ -227,7 +302,7 @@ export const CrisisSimulator: React.FC = () => {
                                         type: 'scatter',
                                         mode: 'lines',
                                         name: 'Portfolio',
-                                        line: { color: '#3b82f6', width: 2 },
+                                        line: { color: '#2E7CF6', width: 2 },
                                     },
                                     {
                                         x: result.dates,
@@ -235,42 +310,77 @@ export const CrisisSimulator: React.FC = () => {
                                         type: 'scatter',
                                         mode: 'lines',
                                         name: 'S&P 500',
-                                        line: { color: '#64748b', width: 2, dash: 'dot' },
+                                        line: { color: '#6B7A8F', width: 2, dash: 'dot' },
                                     },
                                 ]}
                                 layout={{
                                     autosize: true,
-                                    margin: { l: 40, r: 20, t: 20, b: 40 },
-                                    paper_bgcolor: 'rgba(0,0,0,0)',
-                                    plot_bgcolor: 'rgba(0,0,0,0)',
+                                    margin: { l: 50, r: 20, t: 20, b: 40 },
+                                    paper_bgcolor: '#0F1419',
+                                    plot_bgcolor: '#0F1419',
                                     xaxis: {
-                                        gridcolor: '#1e293b',
-                                        tickfont: { color: '#94a3b8', size: 10 },
+                                        gridcolor: '#1E2733',
+                                        tickfont: { color: '#6B7A8F', size: 10 },
                                     },
                                     yaxis: {
-                                        gridcolor: '#1e293b',
-                                        tickfont: { color: '#94a3b8', size: 10 },
-                                        title: 'Value (Rebased to 100)',
-                                        titlefont: { color: '#64748b', size: 10 },
+                                        gridcolor: '#1E2733',
+                                        tickfont: { color: '#6B7A8F', size: 10 },
+                                        title: 'Value (Rebased)',
+                                        titlefont: { color: '#6B7A8F', size: 10 },
                                     },
                                     legend: {
                                         orientation: 'h',
                                         y: 1.1,
-                                        font: { color: '#cbd5e1' },
+                                        font: { color: '#B4BCC8', size: 11 },
                                     },
                                 }}
                                 useResizeHandler
-                                style={{ width: '100%', height: '100%' }}
+                                style={{ width: '100%', height: '240px' }}
                                 config={{ displayModeBar: false }}
                             />
                         </div>
                         
-                        {/* Inspirational message */}
-                        <div className="text-center py-2 px-4 bg-emerald-900/20 rounded border border-emerald-800/30">
-                            <p className="text-emerald-300 text-sm italic">
+                        {/* Inspirational Message */}
+                        <div 
+                            className="text-center py-3 px-4 rounded-lg"
+                            style={{
+                                backgroundColor: 'var(--color-positive-muted)',
+                                border: '1px solid rgba(0, 200, 83, 0.25)',
+                            }}
+                        >
+                            <p 
+                                className="text-sm italic"
+                                style={{ color: 'var(--color-positive)' }}
+                            >
                                 "{timeframeMessages[timeframe]}"
                             </p>
                         </div>
+                    </div>
+                )}
+
+                {/* Empty State */}
+                {!result && !loading && !error && (
+                    <div 
+                        className="text-center py-10 rounded-lg"
+                        style={{
+                            backgroundColor: 'var(--color-bg-tertiary)',
+                            border: '1px solid var(--color-border-subtle)',
+                        }}
+                    >
+                        <div 
+                            className="w-14 h-14 mx-auto mb-4 rounded-xl flex items-center justify-center"
+                            style={{ backgroundColor: 'var(--color-negative-muted)' }}
+                        >
+                            <svg className="w-7 h-7" style={{ color: 'var(--color-negative)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                            </svg>
+                        </div>
+                        <p 
+                            className="text-sm"
+                            style={{ color: 'var(--color-text-secondary)' }}
+                        >
+                            Select a crisis and run the stress test to see how your portfolio would perform
+                        </p>
                     </div>
                 )}
             </div>

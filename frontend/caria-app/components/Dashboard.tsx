@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Portfolio } from './widgets/Portfolio';
 import { ThesisIcon } from './Icons';
@@ -21,83 +20,96 @@ import { FearGreedIndex } from './widgets/FearGreedIndex';
 import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
-const StartAnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void; id?: string }> = ({ onStartAnalysis, onEnterArena, id }) => (
-    <div id={id}
-        className="rounded-lg p-8 flex flex-col items-center justify-center text-center relative overflow-hidden group cursor-pointer transition-all duration-300"
+// Analysis CTA Component
+const AnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void }> = ({ 
+    onStartAnalysis, 
+    onEnterArena 
+}) => (
+    <div
+        className="rounded-xl p-6 transition-all duration-300 cursor-pointer group"
         style={{
             backgroundColor: 'var(--color-bg-secondary)',
-            border: '1px solid var(--color-bg-tertiary)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+            border: '1px solid var(--color-border-subtle)',
         }}
         onClick={onStartAnalysis}
         onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'var(--color-primary)';
-            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.borderColor = 'var(--color-border-emphasis)';
         }}
         onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'var(--color-bg-tertiary)';
-            e.currentTarget.style.transform = 'translateY(0)';
-        }}>
-        {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-32 h-32 opacity-5"
-            style={{ background: 'radial-gradient(circle, var(--color-primary) 0%, transparent 70%)' }}></div>
-
-        <ThesisIcon className="w-14 h-14 mb-4" style={{ color: 'var(--color-secondary)' }} />
-        <h3 className="text-2xl font-bold mb-3"
-            style={{ fontFamily: 'var(--font-display)', color: 'var(--color-cream)' }}>
-            Have an idea?
-        </h3>
-        <p className="mb-6 max-w-sm leading-relaxed"
-            style={{
-                fontFamily: 'var(--font-body)',
-                color: 'var(--color-text-secondary)',
-                fontSize: '0.95rem'
-            }}>
-            Challenge your investment thesis against Caria. Uncover cognitive biases and strengthen your rationale before you invest.
-        </p>
-        <div className="flex flex-col gap-3 w-full max-w-sm">
-            <button
-                onClick={onStartAnalysis}
-                className="py-3 px-8 rounded-lg font-semibold transition-all duration-200"
-                style={{
-                    backgroundColor: 'var(--color-primary)',
-                    color: 'var(--color-cream)',
-                    fontFamily: 'var(--font-body)'
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--color-primary-light)';
-                    e.currentTarget.style.transform = 'scale(1.05)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--color-primary)';
-                    e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
+        }}
+    >
+        <div className="flex flex-col items-center text-center">
+            <div 
+                className="w-14 h-14 rounded-xl flex items-center justify-center mb-5"
+                style={{ backgroundColor: 'rgba(46, 124, 246, 0.12)' }}
+            >
+                <ThesisIcon className="w-7 h-7" style={{ color: 'var(--color-accent-primary)' }} />
+            </div>
+            
+            <h3 
+                className="text-xl font-semibold mb-2"
+                style={{ 
+                    fontFamily: 'var(--font-display)',
+                    color: 'var(--color-text-primary)' 
                 }}
             >
-                Let's Break It Down
-            </button>
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onEnterArena();
-                }}
-                className="py-2 px-6 rounded-lg text-sm font-medium transition-all duration-200"
-                style={{
-                    backgroundColor: 'transparent',
-                    color: 'var(--color-text-secondary)',
-                    border: '1px solid var(--color-bg-tertiary)',
-                    fontFamily: 'var(--font-body)'
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-primary)';
-                    e.currentTarget.style.color = 'var(--color-primary)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-bg-tertiary)';
-                    e.currentTarget.style.color = 'var(--color-text-secondary)';
-                }}
+                Challenge Your Thesis
+            </h3>
+            
+            <p 
+                className="text-sm leading-relaxed mb-6 max-w-sm"
+                style={{ color: 'var(--color-text-secondary)' }}
             >
-                Want deeper analysis? Enter Arena →
-            </button>
+                Test your investment ideas against Caria's AI analysis. Uncover biases and strengthen your conviction.
+            </p>
+            
+            <div className="flex flex-col gap-3 w-full max-w-xs">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onStartAnalysis();
+                    }}
+                    className="py-3 px-6 rounded-lg font-semibold text-sm transition-all duration-200"
+                    style={{
+                        backgroundColor: 'var(--color-accent-primary)',
+                        color: '#FFFFFF',
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(46, 124, 246, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                    }}
+                >
+                    Start Analysis
+                </button>
+                
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onEnterArena();
+                    }}
+                    className="py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200"
+                    style={{
+                        backgroundColor: 'transparent',
+                        color: 'var(--color-text-secondary)',
+                        border: '1px solid var(--color-border-subtle)',
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
+                        e.currentTarget.style.color = 'var(--color-accent-primary)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
+                        e.currentTarget.style.color = 'var(--color-text-secondary)';
+                    }}
+                >
+                    Enter Thesis Arena →
+                </button>
+            </div>
         </div>
     </div>
 );
@@ -124,7 +136,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
         const fetchRegimeData = async () => {
             setIsLoadingRegime(true);
             try {
-                // Use centralized API_BASE_URL per audit document
                 const response = await fetchWithAuth(`${API_BASE_URL}/api/regime/current`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -133,7 +144,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 setRegimeData({ regime: data.regime, confidence: data.confidence });
             } catch (error) {
                 console.error("Failed to fetch regime data:", error);
-                setRegimeData({ regime: 'slowdown', confidence: 0 }); // Fallback
+                setRegimeData({ regime: 'slowdown', confidence: 0 });
             } finally {
                 setIsLoadingRegime(false);
             }
@@ -143,100 +154,175 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     }, []);
 
     const tabs = [
-        { id: 'portfolio' as DashboardTab, label: 'Portfolio' },
-        { id: 'analysis' as DashboardTab, label: 'Analysis' },
-        { id: 'research' as DashboardTab, label: 'Research' },
+        { id: 'portfolio' as DashboardTab, label: 'Portfolio', icon: '📊' },
+        { id: 'analysis' as DashboardTab, label: 'Analysis', icon: '🔬' },
+        { id: 'research' as DashboardTab, label: 'Research', icon: '📰' },
     ];
 
     return (
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 max-w-[1600px] mx-auto"
-            style={{ backgroundColor: 'var(--color-bg-primary)' }}>
-
+        <main 
+            className="flex-1 overflow-y-auto"
+            style={{ backgroundColor: 'var(--color-bg-primary)' }}
+        >
             {/* Dashboard Header */}
-            <div className="mb-6 fade-in">
-                <h1 className="text-3xl md:text-5xl font-black mb-2"
-                    style={{
-                        fontFamily: "'Instrument Serif', Georgia, serif",
-                        color: 'var(--color-cream)',
-                        letterSpacing: '-0.02em'
-                    }}>
-                    Investment Dashboard
-                </h1>
-                <p className="text-base md:text-lg"
-                    style={{
-                        fontFamily: "'Crimson Pro', Georgia, serif",
-                        color: 'rgba(232, 230, 227, 0.6)',
-                        lineHeight: '1.6'
-                    }}>
-                    Your comprehensive view of market insights and portfolio analysis
-                </p>
-            </div>
+            <div 
+                className="sticky top-0 z-40 border-b"
+                style={{ 
+                    backgroundColor: 'rgba(10, 14, 20, 0.95)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    borderColor: 'var(--color-border-subtle)'
+                }}
+            >
+                <div className="max-w-[1800px] mx-auto px-6 lg:px-10">
+                    {/* Top Section */}
+                    <div className="flex items-center justify-between py-5">
+                        <div>
+                            <h1 
+                                className="text-2xl md:text-3xl font-bold"
+                                style={{
+                                    fontFamily: 'var(--font-display)',
+                                    color: 'var(--color-text-primary)',
+                                    letterSpacing: '-0.02em'
+                                }}
+                            >
+                                Terminal
+                            </h1>
+                            <p 
+                                className="text-sm mt-1"
+                                style={{ color: 'var(--color-text-muted)' }}
+                            >
+                                Professional investment intelligence
+                            </p>
+                        </div>
+                        
+                        {/* Quick Stats */}
+                        <div className="hidden md:flex items-center gap-6">
+                            <div className="text-right">
+                                <div 
+                                    className="text-xs font-medium uppercase tracking-wide"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                >
+                                    Market Status
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span 
+                                        className="w-2 h-2 rounded-full animate-pulse"
+                                        style={{ backgroundColor: 'var(--color-positive)' }}
+                                    />
+                                    <span 
+                                        className="text-sm font-medium"
+                                        style={{ color: 'var(--color-positive)' }}
+                                    >
+                                        Markets Open
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            {/* Tab Navigation */}
-            <div className="mb-8 fade-in delay-100">
-                <div className="flex flex-wrap gap-3 md:gap-4 border-b pb-4"
-                    style={{ borderColor: 'rgba(74, 144, 226, 0.2)' }}>
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className="px-4 md:px-6 py-2 md:py-3 rounded-lg font-semibold text-sm md:text-base transition-all duration-300"
-                            style={{
-                                backgroundColor: activeTab === tab.id ? 'rgba(74, 144, 226, 0.2)' : 'transparent',
-                                color: activeTab === tab.id ? 'var(--color-blue-light)' : 'rgba(232, 230, 227, 0.6)',
-                                border: `1px solid ${activeTab === tab.id ? 'rgba(74, 144, 226, 0.4)' : 'transparent'}`,
-                                fontFamily: "'Crimson Pro', Georgia, serif",
-                            }}
-                            onMouseEnter={(e) => {
-                                if (activeTab !== tab.id) {
-                                    e.currentTarget.style.backgroundColor = 'rgba(74, 144, 226, 0.1)';
-                                    e.currentTarget.style.color = 'var(--color-cream)';
-                                }
-                            }}
-                            onMouseLeave={(e) => {
-                                if (activeTab !== tab.id) {
-                                    e.currentTarget.style.backgroundColor = 'transparent';
-                                    e.currentTarget.style.color = 'rgba(232, 230, 227, 0.6)';
-                                }
-                            }}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
+                    {/* Tab Navigation - Bloomberg Style */}
+                    <div className="flex gap-1 -mb-px">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className="relative px-5 py-3 font-medium text-sm transition-all duration-200"
+                                style={{
+                                    color: activeTab === tab.id 
+                                        ? 'var(--color-text-primary)' 
+                                        : 'var(--color-text-muted)',
+                                    backgroundColor: activeTab === tab.id 
+                                        ? 'var(--color-bg-secondary)' 
+                                        : 'transparent',
+                                    borderTopLeftRadius: '8px',
+                                    borderTopRightRadius: '8px',
+                                }}
+                            >
+                                <span className="flex items-center gap-2">
+                                    <span>{tab.icon}</span>
+                                    {tab.label}
+                                </span>
+                                {activeTab === tab.id && (
+                                    <div 
+                                        className="absolute bottom-0 left-0 right-0 h-0.5"
+                                        style={{ backgroundColor: 'var(--color-accent-primary)' }}
+                                    />
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
             {/* Tab Content */}
-            <div className="fade-in delay-200" style={{ padding: '2rem 1rem', maxWidth: '1600px', margin: '0 auto' }}>
-                {/* PORTFOLIO TAB - Market overview, portfolio management, and stress testing */}
+            <div className="max-w-[1800px] mx-auto px-6 lg:px-10 py-8">
+                
+                {/* PORTFOLIO TAB */}
                 {activeTab === 'portfolio' && (
-                    <div className="space-y-10">
-                        {/* Global Market Bar - Full Width */}
+                    <div className="space-y-8 animate-fade-in">
+                        {/* Market Overview Bar */}
                         <GlobalMarketBar id="market-bar-widget" />
 
-                        {/* Market Indicators Row */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        {/* Market Indicators */}
+                        <div className="grid lg:grid-cols-2 gap-6">
                             <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
                             <FearGreedIndex />
                         </div>
 
-                        {/* Portfolio Management */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        {/* Portfolio Section Header */}
+                        <div className="flex items-center gap-3 pt-4">
+                            <div 
+                                className="w-1 h-6 rounded-full"
+                                style={{ backgroundColor: 'var(--color-accent-primary)' }}
+                            />
+                            <h2 
+                                className="text-xl font-semibold"
+                                style={{ 
+                                    fontFamily: 'var(--font-display)',
+                                    color: 'var(--color-text-primary)' 
+                                }}
+                            >
+                                Portfolio Management
+                            </h2>
+                        </div>
+
+                        {/* Portfolio Grid - Two Column */}
+                        <div className="grid lg:grid-cols-2 gap-6">
                             <Portfolio id="portfolio-widget" />
                             <PortfolioAnalytics />
                         </div>
 
-                        <div className="grid grid-cols-1 gap-10">
-                            <ModelPortfolioWidget />
-                        </div>
+                        {/* Model Portfolio */}
+                        <ModelPortfolioWidget />
 
-                        {/* Scenario Analysis - Stress test your portfolio */}
-                        <div className="mt-6">
-                            <h2 className="text-xl font-bold mb-5" style={{ color: 'var(--color-cream)', fontFamily: "'Instrument Serif', serif" }}>
-                                Scenario Analysis
-                            </h2>
-                            <p className="text-sm text-slate-400 mb-6">Stress test your portfolio against historical crises and macroeconomic scenarios</p>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        {/* Scenario Analysis Section */}
+                        <div className="pt-4">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div 
+                                    className="w-1 h-6 rounded-full"
+                                    style={{ backgroundColor: 'var(--color-warning)' }}
+                                />
+                                <div>
+                                    <h2 
+                                        className="text-xl font-semibold"
+                                        style={{ 
+                                            fontFamily: 'var(--font-display)',
+                                            color: 'var(--color-text-primary)' 
+                                        }}
+                                    >
+                                        Scenario Analysis
+                                    </h2>
+                                    <p 
+                                        className="text-sm mt-0.5"
+                                        style={{ color: 'var(--color-text-muted)' }}
+                                    >
+                                        Stress test against historical crises and macro scenarios
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div className="grid lg:grid-cols-2 gap-6">
                                 <CrisisSimulator />
                                 <MacroSimulator />
                             </div>
@@ -244,55 +330,104 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     </div>
                 )}
 
-                {/* ANALYSIS TAB - Screeners, Quick Valuation, Investment Thesis */}
+                {/* ANALYSIS TAB - Bloomberg Terminal Pane Style */}
                 {activeTab === 'analysis' && (
-                    <div className="space-y-10">
-                        {/* Stock Screeners - Two Column Layout */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Alpha Stock Picker - Top picks by CAS score */}
+                    <div className="space-y-8 animate-fade-in">
+                        {/* Stock Screeners - Research Report Cards */}
+                        <div className="grid lg:grid-cols-2 gap-6">
                             <AlphaStockPicker />
-                            
-                            {/* Hidden Gems Screener - Under the radar mid-caps */}
                             <HiddenGemsScreener />
                         </div>
 
-                        {/* Quick Valuation with Monte Carlo */}
-                        <ValuationTool />
+                        {/* Valuation Tools Section */}
+                        <div className="pt-4">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div 
+                                    className="w-1 h-6 rounded-full"
+                                    style={{ backgroundColor: 'var(--color-positive)' }}
+                                />
+                                <div>
+                                    <h2 
+                                        className="text-xl font-semibold"
+                                        style={{ 
+                                            fontFamily: 'var(--font-display)',
+                                            color: 'var(--color-text-primary)' 
+                                        }}
+                                    >
+                                        Valuation Terminal
+                                    </h2>
+                                    <p 
+                                        className="text-sm mt-0.5"
+                                        style={{ color: 'var(--color-text-muted)' }}
+                                    >
+                                        DCF, Monte Carlo, and multi-factor analysis
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <ValuationTool />
+                        </div>
 
-                        {/* Investment Thesis with Caria */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                            <StartAnalysisCTA
-                                onStartAnalysis={onStartAnalysis}
-                                onEnterArena={() => setShowArena(true)}
-                                id="analysis-cta-widget"
-                            />
-                            <RegimeTestWidget />
+                        {/* Thesis Testing */}
+                        <div className="pt-4">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div 
+                                    className="w-1 h-6 rounded-full"
+                                    style={{ backgroundColor: 'var(--color-accent-primary)' }}
+                                />
+                                <h2 
+                                    className="text-xl font-semibold"
+                                    style={{ 
+                                        fontFamily: 'var(--font-display)',
+                                        color: 'var(--color-text-primary)' 
+                                    }}
+                                >
+                                    Investment Thesis
+                                </h2>
+                            </div>
+                            
+                            <div className="grid lg:grid-cols-2 gap-6">
+                                <AnalysisCTA
+                                    onStartAnalysis={onStartAnalysis}
+                                    onEnterArena={() => setShowArena(true)}
+                                />
+                                <RegimeTestWidget />
+                            </div>
                         </div>
                     </div>
                 )}
 
-                {/* RESEARCH TAB - Weekly Video, Weekly Podcast, Reddit, Lectures, Community */}
+                {/* RESEARCH TAB - Editorial Newsroom Style */}
                 {activeTab === 'research' && (
-                    <div className="space-y-10">
-                        {/* Weekly Video and Podcast */}
+                    <div className="space-y-8 animate-fade-in">
+                        {/* Weekly Content */}
                         <WeeklyMedia compact={false} />
 
-                        {/* Two Column Layout: Reddit Feed and Recommended Lectures */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        {/* Two Column: Sentiment & Resources */}
+                        <div className="grid lg:grid-cols-2 gap-6">
                             <RedditSentiment />
                             <Resources />
                         </div>
 
-                        {/* Community Section - At Bottom */}
-                        <div>
-                            <h2 className="text-2xl font-bold mb-5"
-                                style={{
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-cream)'
-                                }}>
-                                Community
-                            </h2>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        {/* Community Section */}
+                        <div className="pt-4">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div 
+                                    className="w-1 h-6 rounded-full"
+                                    style={{ backgroundColor: 'var(--color-accent-primary)' }}
+                                />
+                                <h2 
+                                    className="text-xl font-semibold"
+                                    style={{ 
+                                        fontFamily: 'var(--font-display)',
+                                        color: 'var(--color-text-primary)' 
+                                    }}
+                                >
+                                    Community
+                                </h2>
+                            </div>
+                            
+                            <div className="grid lg:grid-cols-2 gap-6">
                                 <CommunityFeed />
                                 <RankingsWidget />
                             </div>
@@ -305,36 +440,47 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             {showArena && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+                    style={{ backgroundColor: 'rgba(0, 0, 0, 0.85)' }}
                     onClick={() => setShowArena(false)}
                 >
                     <div
-                        className="bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6"
+                        className="rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}
                         style={{
-                            backgroundColor: 'var(--color-bg-primary)',
-                            border: '1px solid var(--color-bg-tertiary)',
+                            backgroundColor: 'var(--color-bg-secondary)',
+                            border: '1px solid var(--color-border-default)',
                         }}
                     >
-                        <div className="flex justify-between items-center mb-4">
+                        <div 
+                            className="sticky top-0 flex justify-between items-center px-6 py-5 border-b"
+                            style={{ 
+                                backgroundColor: 'var(--color-bg-secondary)',
+                                borderColor: 'var(--color-border-subtle)'
+                            }}
+                        >
                             <h2
-                                className="text-2xl font-bold"
+                                className="text-xl font-semibold"
                                 style={{
                                     fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-cream)',
+                                    color: 'var(--color-text-primary)',
                                 }}
                             >
                                 Thesis Arena
                             </h2>
                             <button
                                 onClick={() => setShowArena(false)}
-                                className="text-2xl font-bold"
-                                style={{ color: 'var(--color-text-secondary)' }}
+                                className="w-8 h-8 rounded-lg flex items-center justify-center text-xl transition-colors"
+                                style={{ 
+                                    color: 'var(--color-text-muted)',
+                                    backgroundColor: 'var(--color-bg-surface)'
+                                }}
                             >
                                 ×
                             </button>
                         </div>
-                        <ThesisArena onClose={() => setShowArena(false)} />
+                        <div className="p-6">
+                            <ThesisArena onClose={() => setShowArena(false)} />
+                        </div>
                     </div>
                 </div>
             )}

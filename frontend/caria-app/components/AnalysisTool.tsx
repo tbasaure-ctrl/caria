@@ -3,10 +3,7 @@ import { ChatMessage } from '../types';
 import { CariaLogoIcon, XIcon, SendIcon } from './Icons';
 import { API_BASE_URL, fetchWithAuth } from '../services/apiService';
 
-
-// -----------------------------------------------
 // LocalStorage Helpers
-// -----------------------------------------------
 const getChatHistory = (): ChatMessage[] => {
     try {
         const saved = localStorage.getItem('cariaChatHistory');
@@ -21,62 +18,55 @@ const saveChatHistory = (messages: ChatMessage[]) => {
     localStorage.setItem('cariaChatHistory', JSON.stringify(messages));
 };
 
-
-// -----------------------------------------------
 // Chat Bubble Component
-// -----------------------------------------------
 const ChatMessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
     const isModel = message.role === 'model';
     const isError = message.role === 'error';
 
-    const container = `w-full flex ${isModel ? 'justify-start' : 'justify-end'}`;
-    const bubble =
-        `max-w-2xl p-4 rounded-lg text-left ` +
-        (isModel
-            ? 'bg-gray-800 text-slate-200'
-            : isError
-            ? 'bg-red-900/50 text-red-200'
-            : 'bg-slate-700 text-white'
-        );
-
     return (
-        <div className={container}>
-            <div className={bubble}>
-                <div className="whitespace-pre-wrap font-sans">{message.content}</div>
+        <div className={`w-full flex ${isModel ? 'justify-start' : 'justify-end'}`}>
+            <div 
+                className="max-w-2xl p-4 rounded-xl"
+                style={{
+                    backgroundColor: isModel 
+                        ? 'var(--color-bg-tertiary)' 
+                        : isError 
+                        ? 'var(--color-negative-muted)' 
+                        : 'var(--color-accent-primary)',
+                    color: isModel 
+                        ? 'var(--color-text-primary)' 
+                        : isError 
+                        ? 'var(--color-negative)' 
+                        : '#FFFFFF',
+                    border: isModel ? '1px solid var(--color-border-subtle)' : 'none',
+                }}
+            >
+                <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                    {message.content}
+                </div>
             </div>
         </div>
     );
 };
 
-
-// -----------------------------------------------
-// Ticker Extraction Utility
-// -----------------------------------------------
-// Only accept valid tickers: 3–5 uppercase characters, optional ".X"
+// Ticker Extraction
 const extractTicker = (text: string): string | null => {
     const upper = text.toUpperCase();
     const tickerRegex = /\b([A-Z]{3,5}(?:\.[A-Z])?)\b/g;
     const matches = upper.match(tickerRegex);
     if (matches) return matches[0];
 
-    // Fallback: company name → ticker
     const companyMap: Record<string, string> = {
         'nvidia': 'NVDA',
-        'nvidia corporation': 'NVDA',
         'apple': 'AAPL',
-        'apple inc': 'AAPL',
         'microsoft': 'MSFT',
-        'microsoft corporation': 'MSFT',
         'google': 'GOOGL',
         'alphabet': 'GOOGL',
         'amazon': 'AMZN',
-        'amazon.com': 'AMZN',
         'tesla': 'TSLA',
-        'tesla inc': 'TSLA',
         'meta': 'META',
         'facebook': 'META',
         'netflix': 'NFLX',
-        'netflix inc': 'NFLX'
     };
 
     const lower = text.toLowerCase();
@@ -87,10 +77,6 @@ const extractTicker = (text: string): string | null => {
     return null;
 };
 
-
-// -----------------------------------------------
-// Main Component
-// -----------------------------------------------
 export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [messages, setMessages] = useState<ChatMessage[]>(getChatHistory);
     const [input, setInput] = useState('');
@@ -99,15 +85,12 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
     const chatEndRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    // Persist chat history
     useEffect(() => saveChatHistory(messages), [messages]);
 
-    // Auto-scroll
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isLoading]);
 
-    // Resize textarea dynamically
     useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
@@ -115,17 +98,12 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         }
     }, [input]);
 
-    // Escape closes modal
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, [onClose]);
 
-
-    // -------------------------------------------
-    // Submit handler
-    // -------------------------------------------
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const text = input.trim();
@@ -133,7 +111,6 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
 
         const userMessage: ChatMessage = { role: 'user', content: text };
 
-        // 1) Validate thesis length (backend requires ≥ 10 chars)
         if (text.length < 10) {
             const err: ChatMessage = {
                 role: 'error',
@@ -144,7 +121,6 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             return;
         }
 
-        // 2) Extract ticker
         const ticker = extractTicker(text);
         if (!ticker) {
             const err: ChatMessage = {
@@ -156,20 +132,14 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             return;
         }
 
-        // Add user message to chat
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setIsLoading(true);
 
         try {
-            // Call Railway backend API endpoint
             const response = await fetchWithAuth(`${API_BASE_URL}/api/analysis/challenge`, {
                 method: 'POST',
-                body: JSON.stringify({
-                    thesis: text,
-                    ticker: ticker,
-                    top_k: 5
-                })
+                body: JSON.stringify({ thesis: text, ticker: ticker, top_k: 5 })
             });
             
             const data = await response.json();
@@ -178,17 +148,16 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             const biases = Array.isArray(data.identified_biases) ? data.identified_biases : [];
             const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
 
-            // More conversational, Socratic format
             let formatted = critical;
             
             if (biases.length) {
-                formatted += `\n\n**🤔 Things to Question:**\n`;
-                formatted += biases.map(b => `- ${b}`).join('\n');
+                formatted += `\n\n**Things to Question:**\n`;
+                formatted += biases.map((b: string) => `• ${b}`).join('\n');
             }
             
             if (recs.length) {
-                formatted += `\n\n**💭 Food for Thought:**\n`;
-                formatted += recs.map(r => `- ${r}`).join('\n');
+                formatted += `\n\n**Food for Thought:**\n`;
+                formatted += recs.map((r: string) => `• ${r}`).join('\n');
             }
 
             const modelMessage: ChatMessage = { role: 'model', content: formatted };
@@ -196,12 +165,9 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
 
         } catch (err: any) {
             console.error('Chat error:', err);
-            const friendlyMessage =
-                err?.message ||
-                'No se pudo completar el análisis en este momento. Intenta nuevamente en unos segundos.';
             const errorMsg: ChatMessage = {
                 role: 'error',
-                content: friendlyMessage,
+                content: err?.message || 'Analysis could not be completed. Please try again.',
             };
             setMessages((prev) => [...prev, errorMsg]);
         } finally {
@@ -209,50 +175,142 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         }
     };
 
-
-    // -------------------------------------------
-    // Render
-    // -------------------------------------------
     return (
         <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.85)' }}
             onClick={onClose}
         >
             <div
-                className="relative flex flex-col h-full max-h-[90vh] w-full max-w-4xl bg-gray-950 text-slate-200 rounded-2xl border border-slate-800/50 overflow-hidden"
+                className="relative flex flex-col h-full max-h-[90vh] w-full max-w-4xl rounded-xl overflow-hidden"
+                style={{
+                    backgroundColor: 'var(--color-bg-secondary)',
+                    border: '1px solid var(--color-border-default)',
+                }}
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* HEADER */}
-                <header className="bg-gray-900/80 p-4 border-b border-slate-800/50 flex items-center justify-between">
+                {/* Header */}
+                <header 
+                    className="px-6 py-5 flex items-center justify-between border-b"
+                    style={{ 
+                        backgroundColor: 'var(--color-bg-secondary)',
+                        borderColor: 'var(--color-border-subtle)'
+                    }}
+                >
                     <div className="flex items-center gap-3">
-                        <CariaLogoIcon className="w-7 h-7 text-slate-100" />
-                        <h1 className="text-xl font-bold">Caria Analysis</h1>
+                        <div 
+                            className="w-10 h-10 rounded-lg flex items-center justify-center"
+                            style={{ backgroundColor: 'rgba(46, 124, 246, 0.12)' }}
+                        >
+                            <CariaLogoIcon className="w-6 h-6" style={{ color: 'var(--color-accent-primary)' }} />
+                        </div>
+                        <div>
+                            <h1 
+                                className="text-lg font-semibold"
+                                style={{ 
+                                    fontFamily: 'var(--font-display)',
+                                    color: 'var(--color-text-primary)'
+                                }}
+                            >
+                                Thesis Analysis
+                            </h1>
+                            <p 
+                                className="text-xs"
+                                style={{ color: 'var(--color-text-muted)' }}
+                            >
+                                Challenge your investment ideas
+                            </p>
+                        </div>
                     </div>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white">
-                        <XIcon className="w-6 h-6" />
+                    <button 
+                        onClick={onClose} 
+                        className="w-10 h-10 rounded-lg flex items-center justify-center transition-colors"
+                        style={{ 
+                            color: 'var(--color-text-muted)',
+                            backgroundColor: 'var(--color-bg-surface)'
+                        }}
+                    >
+                        <XIcon className="w-5 h-5" />
                     </button>
                 </header>
 
-                {/* CHAT */}
-                <main className="flex-1 flex flex-col overflow-y-auto p-6 space-y-6">
+                {/* Chat Area */}
+                <main 
+                    className="flex-1 overflow-y-auto p-6 space-y-4"
+                    style={{ backgroundColor: 'var(--color-bg-primary)' }}
+                >
+                    {messages.length === 0 && (
+                        <div className="text-center py-12">
+                            <div 
+                                className="w-16 h-16 mx-auto mb-5 rounded-xl flex items-center justify-center"
+                                style={{ backgroundColor: 'rgba(46, 124, 246, 0.12)' }}
+                            >
+                                <svg className="w-8 h-8" style={{ color: 'var(--color-accent-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                            </div>
+                            <h3 
+                                className="text-lg font-semibold mb-2"
+                                style={{ color: 'var(--color-text-primary)' }}
+                            >
+                                Share Your Thesis
+                            </h3>
+                            <p 
+                                className="text-sm max-w-md mx-auto"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                            >
+                                Write your investment thesis including a ticker symbol. Caria will analyze it critically, identify potential biases, and offer alternative perspectives.
+                            </p>
+                        </div>
+                    )}
+
                     {messages.map((msg, i) => (
                         <ChatMessageBubble key={i} message={msg} />
                     ))}
 
                     {isLoading && (
                         <div className="w-full flex justify-start">
-                            <div className="max-w-2xl p-4 rounded-lg bg-gray-800 text-slate-400 flex gap-2">
-                                <div className="w-2 h-2 bg-slate-500 rounded-full animate-pulse" />
-                                <div className="w-2 h-2 bg-slate-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
-                                <div className="w-2 h-2 bg-slate-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
+                            <div 
+                                className="px-4 py-3 rounded-xl flex items-center gap-2"
+                                style={{ 
+                                    backgroundColor: 'var(--color-bg-tertiary)',
+                                    border: '1px solid var(--color-border-subtle)'
+                                }}
+                            >
+                                <div className="flex gap-1">
+                                    <div 
+                                        className="w-2 h-2 rounded-full animate-pulse"
+                                        style={{ backgroundColor: 'var(--color-accent-primary)', animationDelay: '0ms' }}
+                                    />
+                                    <div 
+                                        className="w-2 h-2 rounded-full animate-pulse"
+                                        style={{ backgroundColor: 'var(--color-accent-primary)', animationDelay: '150ms' }}
+                                    />
+                                    <div 
+                                        className="w-2 h-2 rounded-full animate-pulse"
+                                        style={{ backgroundColor: 'var(--color-accent-primary)', animationDelay: '300ms' }}
+                                    />
+                                </div>
+                                <span 
+                                    className="text-sm"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                >
+                                    Analyzing thesis...
+                                </span>
                             </div>
                         </div>
                     )}
                     <div ref={chatEndRef} />
                 </main>
 
-                {/* INPUT */}
-                <footer className="p-4 bg-gray-950/80 border-t border-slate-800/50">
+                {/* Input Area */}
+                <footer 
+                    className="p-4 border-t"
+                    style={{ 
+                        backgroundColor: 'var(--color-bg-secondary)',
+                        borderColor: 'var(--color-border-subtle)'
+                    }}
+                >
                     <form onSubmit={handleSubmit} className="flex items-end gap-3 max-w-3xl mx-auto">
                         <textarea
                             ref={textareaRef}
@@ -264,14 +322,23 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                                     handleSubmit(e as any);
                                 }
                             }}
-                            placeholder="Share your investment thesis... What makes you think this is a good opportunity?"
-                            className="flex-1 bg-gray-800 border border-slate-700 rounded-lg py-2 px-3 resize-none focus:outline-none focus:ring-2 focus:ring-slate-600 text-base max-h-40"
+                            placeholder="Share your investment thesis... (e.g., 'I think AAPL is undervalued because...')"
+                            className="flex-1 px-4 py-3 rounded-xl resize-none focus:outline-none focus:ring-2 text-sm"
+                            style={{
+                                backgroundColor: 'var(--color-bg-tertiary)',
+                                border: '1px solid var(--color-border-subtle)',
+                                color: 'var(--color-text-primary)',
+                            }}
                             rows={1}
                         />
                         <button
                             type="submit"
                             disabled={isLoading || !input.trim()}
-                            className="bg-slate-700 text-white font-bold p-3 rounded-lg hover:bg-slate-600 disabled:opacity-50"
+                            className="p-3 rounded-xl transition-colors disabled:opacity-50"
+                            style={{
+                                backgroundColor: 'var(--color-accent-primary)',
+                                color: '#FFFFFF',
+                            }}
                         >
                             <SendIcon className="w-5 h-5" />
                         </button>

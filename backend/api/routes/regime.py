@@ -220,9 +220,15 @@ def get_current_regime(
             features_used={},
         )
     
-    # Asegurar que features_used esté presente
+    # Asegurar que features_used esté presente y solo contenga valores numéricos
     if "features_used" not in result or result["features_used"] is None:
         result["features_used"] = {}
+    else:
+        # Filtrar solo valores numéricos (excluir strings como 'symbol')
+        result["features_used"] = {
+            k: float(v) for k, v in result["features_used"].items()
+            if isinstance(v, (int, float)) and not (isinstance(v, bool))
+        }
     
     return RegimeResponse(**result)
 

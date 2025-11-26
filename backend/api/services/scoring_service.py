@@ -96,22 +96,43 @@ class ScoringService:
         # We use 'standard' Z-score-like normalization using fixed market means/stds
         # derived from typical market data (approximate) to allow single-ticker scoring.
         
-        quality_score, quality_details = self._calculate_quality_score(metrics)
-        valuation_score, valuation_details = self._calculate_valuation_score(metrics)
-        momentum_score, momentum_details = self._calculate_momentum_score(metrics)
+        try:
+            quality_score, quality_details = self._calculate_quality_score(metrics)
+        except Exception as e:
+            LOGGER.warning(f"Error calculating quality score for {ticker}: {e}")
+            quality_score, quality_details = 0.0, {}
+        
+        try:
+            valuation_score, valuation_details = self._calculate_valuation_score(metrics)
+        except Exception as e:
+            LOGGER.warning(f"Error calculating valuation score for {ticker}: {e}")
+            valuation_score, valuation_details = 0.0, {}
+        
+        try:
+            momentum_score, momentum_details = self._calculate_momentum_score(metrics)
+        except Exception as e:
+            LOGGER.warning(f"Error calculating momentum score for {ticker}: {e}")
+            momentum_score, momentum_details = 0.0, {}
         
         # 4. Composite Score
         # Weights: 30% Quality, 30% Valuation, 25% Momentum, 15% Bonus/Penalty
         # We'll normalize components to 0-100 first.
         
-        hidden_gem_score = (
-            0.30 * quality_score +
-            0.30 * valuation_score +
-            0.25 * momentum_score
-            # + 0.15 * bonus (simplified for now to re-normalize the above or add specific bonuses)
-        )
-        # Adjust denominator to normalize back to 100 if we don't have the bonus term explicitly
-        hidden_gem_score = hidden_gem_score / 0.85 
+        try:
+            hidden_gem_score = (
+                0.30 * quality_score +
+                0.30 * valuation_score +
+                0.25 * momentum_score
+                # + 0.15 * bonus (simplified for now to re-normalize the above or add specific bonuses)
+            )
+            # Adjust denominator to normalize back to 100 if we don't have the bonus term explicitly
+            hidden_gem_score = hidden_gem_score / 0.85
+            # Ensure score is valid
+            if not isinstance(hidden_gem_score, (int, float)) or math.isnan(hidden_gem_score) or math.isinf(hidden_gem_score):
+                hidden_gem_score = 0.0
+        except Exception as e:
+            LOGGER.warning(f"Error calculating composite score for {ticker}: {e}")
+            hidden_gem_score = 0.0 
 
         return {
             "ticker": ticker,
@@ -362,7 +383,10 @@ class ScoringService:
         
     def _score_metric(self, val: float, min_v: float, max_v: float) -> float:
         """Map value to 0-100 range."""
-        if math.isnan(val): return 50.0
+        if val is None or math.isnan(val) or math.isinf(val):
+            return 50.0
+        if max_v == min_v:
+            return 50.0  # Avoid division by zero
         norm = (val - min_v) / (max_v - min_v)
         return _clamp(norm * 100, 0, 100)
 
@@ -388,7 +412,14 @@ class ScoringService:
 
     def _build_explanations(self, q, v, m) -> Dict[str, str]:
         # Simple explanations based on scores
-        return {
-            "summary": f"Q: {q['drivers'].get('ROIC',0)} | V: {v['drivers'].get('FCF Yield',0)} | M: {m['drivers'].get('Short Term Mom',0)}"
-        }
+        try:
+            q_drivers = q.get('drivers', {}) if isinstance(q, dict) else {}
+            v_drivers = v.get('drivers', {}) if isinstance(v, dict) else {}
+            m_drivers = m.get('drivers', {}) if isinstance(m, dict) else {}
+            return {
+                "summary": f"Q: {q_drivers.get('ROIC', 0)} | V: {v_drivers.get('FCF Yield', 0)} | M: {m_drivers.get('Short Term Mom', 0)}"
+            }
+        except Exception as e:
+            LOGGER.warning(f"Error building explanations: {e}")
+            return {"summary": "Score calculation completed"}
 

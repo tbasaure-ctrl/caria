@@ -35,17 +35,28 @@ class LLMService:
         try:
             embedding = self.embedder.embed_text(query)
             # Retry logic for PostgreSQL connection issues
-            max_retries = 2
+            max_retries = 3
             for attempt in range(max_retries):
                 try:
                     results = self.retriever.query(embedding, top_k=top_k)
                     break
                 except Exception as db_error:
-                    if "SSL connection" in str(db_error) or "OperationalError" in str(type(db_error).__name__):
+                    error_str = str(db_error)
+                    error_type = type(db_error).__name__
+                    is_ssl_error = (
+                        "SSL connection" in error_str or 
+                        "OperationalError" in error_type or
+                        "connection" in error_str.lower() and "closed" in error_str.lower()
+                    )
+                    if is_ssl_error:
                         if attempt < max_retries - 1:
-                            LOGGER.warning(f"Database connection error (attempt {attempt + 1}/{max_retries}), retrying...")
                             import time
-                            time.sleep(0.5)  # Brief delay before retry
+                            wait_time = (attempt + 1) * 0.5  # Exponential backoff: 0.5s, 1s, 1.5s
+                            LOGGER.warning(
+                                f"Database connection error (attempt {attempt + 1}/{max_retries}), "
+                                f"retrying in {wait_time}s... Error: {error_str[:100]}"
+                            )
+                            time.sleep(wait_time)
                             continue
                         else:
                             LOGGER.error(f"Database connection failed after {max_retries} attempts: {db_error}")

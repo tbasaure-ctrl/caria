@@ -113,10 +113,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSuccess, onSw
                             className="block text-xs font-medium tracking-wider uppercase mb-2"
                             style={{ color: 'var(--color-text-muted)' }}
                         >
-                            Email
+                            Username or Email
                         </label>
                         <input
-                            type="email"
+                            type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -126,7 +126,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSuccess, onSw
                                 border: '1px solid var(--color-border-subtle)',
                                 color: 'var(--color-text-primary)',
                             }}
-                            placeholder="you@example.com"
+                            placeholder="username or email@example.com"
                         />
                     </div>
 

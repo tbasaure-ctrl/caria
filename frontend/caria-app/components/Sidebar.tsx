@@ -236,13 +236,12 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onClose }) => {
                     className="block text-xs font-medium tracking-wider uppercase mb-2"
                     style={{ color: 'var(--color-text-muted)' }}
                 >
-                    Occupation
+                    Occupation <span className="text-xs normal-case" style={{ color: 'var(--color-text-subtle)' }}>(optional)</span>
                 </label>
                 <input
                     type="text"
                     value={occupation}
                     onChange={(e) => setOccupation(e.target.value)}
-                    required
                     className="w-full px-4 py-2.5 rounded-lg text-sm"
                     style={{
                         backgroundColor: 'var(--color-bg-tertiary)',
@@ -258,12 +257,11 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onClose }) => {
                     className="block text-xs font-medium tracking-wider uppercase mb-2"
                     style={{ color: 'var(--color-text-muted)' }}
                 >
-                    Self Description
+                    Tell us about yourself <span className="text-xs normal-case" style={{ color: 'var(--color-text-subtle)' }}>(optional)</span>
                 </label>
                 <textarea
                     value={selfDescription}
                     onChange={(e) => setSelfDescription(e.target.value)}
-                    required
                     rows={3}
                     className="w-full px-4 py-2.5 rounded-lg text-sm resize-none"
                     style={{

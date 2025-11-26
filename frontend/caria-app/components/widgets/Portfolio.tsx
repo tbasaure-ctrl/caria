@@ -1,7 +1,6 @@
 
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, createHolding, deleteHolding } from '../../services/apiService';
-import { ArrowUpIcon, ArrowDownIcon } from '../Icons';
 import { WidgetCard } from './WidgetCard';
 import { getErrorMessage } from '../../src/utils/errorHandling';
 
@@ -168,7 +167,6 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[] }> = ({ data })
                         color: chartColor,
                         fontFamily: 'var(--font-mono)'
                     }}>
-                    {isPositive ? <ArrowUpIcon className="w-4 h-4" /> : <ArrowDownIcon className="w-4 h-4" />}
                     <span className="font-semibold">${Math.abs(valueChange).toFixed(2)}</span>
                     <span className="font-semibold">({percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%)</span>
                     <span style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-body)' }}>

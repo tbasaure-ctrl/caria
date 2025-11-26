@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types';
-import { CariaLogoIcon, XIcon, SendIcon } from './Icons';
+import { XIcon, SendIcon } from './Icons';
 import { API_BASE_URL, fetchWithAuth } from '../services/apiService';
 
 // LocalStorage Helpers
@@ -197,30 +197,22 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                         borderColor: 'var(--color-border-subtle)'
                     }}
                 >
-                    <div className="flex items-center gap-3">
-                        <div 
-                            className="w-10 h-10 rounded-lg flex items-center justify-center"
-                            style={{ backgroundColor: 'rgba(46, 124, 246, 0.12)' }}
+                    <div>
+                        <h1 
+                            className="text-lg font-semibold"
+                            style={{ 
+                                fontFamily: 'var(--font-display)',
+                                color: 'var(--color-text-primary)'
+                            }}
                         >
-                            <CariaLogoIcon className="w-6 h-6" style={{ color: 'var(--color-accent-primary)' }} />
-                        </div>
-                        <div>
-                            <h1 
-                                className="text-lg font-semibold"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)'
-                                }}
-                            >
-                                Thesis Analysis
-                            </h1>
-                            <p 
-                                className="text-xs"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Challenge your investment ideas
-                            </p>
-                        </div>
+                            Thesis Analysis
+                        </h1>
+                        <p 
+                            className="text-xs"
+                            style={{ color: 'var(--color-text-muted)' }}
+                        >
+                            Challenge your investment ideas
+                        </p>
                     </div>
                     <button 
                         onClick={onClose} 

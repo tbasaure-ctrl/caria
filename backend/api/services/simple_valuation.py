@@ -182,11 +182,15 @@ class SimpleValuationService:
         """Perform a simplified DCF calculation."""
         try:
             fcf_per_share = metrics.get("freeCashFlowPerShareTTM") or metrics.get("freeCashFlowPerShare")
+            LOGGER.info(f"DCF calculation - FCF per share: {fcf_per_share}, Current price: {current_price}")
+
             if not fcf_per_share:
                  # Fallback to EPS
                 fcf_per_share = metrics.get("netIncomePerShareTTM") or metrics.get("netIncomePerShare") or 0
-            
+                LOGGER.info(f"No FCF found, using EPS fallback: {fcf_per_share}")
+
             if fcf_per_share <= 0:
+                LOGGER.warning(f"Negative or zero FCF ({fcf_per_share}), trying P/E and P/B fallbacks")
                 # Fallback 1: P/E Valuation
                 eps = metrics.get("netIncomePerShareTTM") or metrics.get("netIncomePerShare")
 
@@ -198,6 +202,7 @@ class SimpleValuationService:
                         fair_value = eps * industry_avg_pe
                         upside = ((fair_value - current_price) / current_price) * 100 if current_price > 0 else 0
 
+                        LOGGER.info(f"P/E Fallback successful - EPS: {eps}, Fair Value: {fair_value}, Upside: {upside}%")
                         return {
                             "method": "P/E Fallback (No FCF)",
                             "fair_value_per_share": round(fair_value, 2),
@@ -211,14 +216,19 @@ class SimpleValuationService:
                             },
                             "explanation": f"Using P/E valuation as FCF is negative. EPS: ${eps:.2f}, Target P/E: {industry_avg_pe}"
                         }
+                    else:
+                        LOGGER.warning(f"P/E ratio out of range: {pe_ratio}")
 
                 # Fallback 2: Price/Book Valuation
                 book_value_per_share = metrics.get("bookValuePerShareTTM")
+                LOGGER.info(f"Trying P/B fallback - Book Value: {book_value_per_share}")
+
                 if book_value_per_share and book_value_per_share > 0:
                     target_pb = 1.5
                     fair_value = book_value_per_share * target_pb
                     upside = ((fair_value - current_price) / current_price) * 100 if current_price > 0 else 0
 
+                    LOGGER.info(f"P/B Fallback successful - Book Value: {book_value_per_share}, Fair Value: {fair_value}, Upside: {upside}%")
                     return {
                         "method": "P/B Fallback (No FCF/Earnings)",
                         "fair_value_per_share": round(fair_value, 2),
@@ -233,6 +243,7 @@ class SimpleValuationService:
                     }
 
                 # Final fallback: return zero with detailed explanation
+                LOGGER.error("All valuation fallbacks failed - returning zero")
                 return {
                     "method": "N/A (Negative FCF/Earnings)",
                     "fair_value_per_share": 0,
@@ -245,10 +256,12 @@ class SimpleValuationService:
             # Assumptions
             growth_rate = min(metrics.get("growth", {}).get("freeCashFlowGrowth", 0.10), 0.15) # Cap at 15%
             if growth_rate < 0.02: growth_rate = 0.05 # Min 5%
-            
+
             discount_rate = 0.10 # Simplified WACC
             terminal_growth = 0.03
             years = 5
+
+            LOGGER.info(f"DCF calculation with positive FCF: {fcf_per_share}, growth: {growth_rate}, discount: {discount_rate}")
 
             # Projection
             future_cash_flows = []
@@ -262,6 +275,8 @@ class SimpleValuationService:
 
             fair_value = sum(future_cash_flows) + terminal_val_discounted
             upside = ((fair_value - current_price) / current_price) * 100
+
+            LOGGER.info(f"DCF result - Fair Value: ${fair_value:.2f}, Upside: {upside:.2f}%")
 
             return {
                 "method": "Simplified DCF (5y Growth)",

@@ -20,11 +20,38 @@ async def get_valuation(ticker: str, request: ValuationRequest):
     Legacy endpoint - use /comprehensive for full analysis.
     """
     try:
+        ticker = ticker.upper()
+        current_price = request.current_price
+
+        # If no price provided, fetch it
+        if not current_price:
+            LOGGER.info(f"Fetching current price for {ticker}")
+            try:
+                from ..services.scoring_service import ScoringService
+                scoring = ScoringService()
+                price_data = scoring.fmp.get_realtime_price(ticker)
+                if price_data and len(price_data) > 0:
+                    current_price = price_data[0].get('price', 0)
+                    LOGGER.info(f"Got price for {ticker}: ${current_price}")
+            except Exception as price_error:
+                LOGGER.error(f"Failed to fetch price for {ticker}: {price_error}")
+                raise HTTPException(status_code=400, detail=f"Could not fetch current price for {ticker}")
+
+        if not current_price or current_price <= 0:
+            raise HTTPException(status_code=400, detail=f"Invalid price for {ticker}: {current_price}")
+
         service = SimpleValuationService()
-        result = service.get_valuation(ticker, request.current_price)
+        result = service.get_valuation(ticker, current_price)
+
+        if not result:
+            raise HTTPException(status_code=500, detail=f"Valuation service returned no data for {ticker}")
+
+        LOGGER.info(f"Valuation completed for {ticker} at ${current_price}")
         return result
+    except HTTPException:
+        raise
     except Exception as e:
-        LOGGER.error(f"Valuation endpoint error: {e}")
+        LOGGER.error(f"Valuation endpoint error for {ticker}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

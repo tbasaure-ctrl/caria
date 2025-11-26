@@ -20,6 +20,20 @@ const featureDescriptions: Record<string, string> = {
     'Community': 'Join the investment community, share theses, and learn from other investors.',
 };
 
+// Personalized unlock messages for each feature
+const unlockMessages: Record<string, string> = {
+    'Portfolio Management': 'Add your first position',
+    'Portfolio Analytics': 'View your portfolio analysis',
+    'Alpha Stock Picker': 'Discover AI stock picks',
+    'Hidden Gems Screener': 'Find hidden opportunities',
+    'Investment Thesis Analysis': 'Challenge your thesis',
+    'Valuation Tool': 'Run valuation models',
+    'Crisis Simulator': 'Stress test your portfolio',
+    'Community': 'Join the community',
+    'Regime Test': 'Test market regimes',
+    'Industry Research': 'Explore industry insights',
+};
+
 export const ProtectedWidget: React.FC<ProtectedWidgetProps> = ({ children, featureName, description }) => {
     const token = getToken();
     const [showAuthModal, setShowAuthModal] = useState(false);
@@ -143,7 +157,7 @@ export const ProtectedWidget: React.FC<ProtectedWidgetProps> = ({ children, feat
                             e.currentTarget.style.boxShadow = 'none';
                         }}
                     >
-                        Unlock {featureName} →
+                        {unlockMessages[featureName] || `Unlock ${featureName}`} →
                     </button>
                 </div>
 

@@ -164,25 +164,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             className="flex-1 overflow-y-auto relative"
             style={{ backgroundColor: 'var(--color-bg-primary)' }}
         >
-            {/* Investing Legends Background - visible and inspiring */}
-            <div className="legends-background opacity-40 fixed inset-0 pointer-events-none z-0">
-                <div className="legend-figure legend-buffett"
-                    style={{backgroundImage: "url('/images/legends/warren-buffett.jpg')"}}></div>
-                <div className="legend-figure legend-munger"
-                    style={{backgroundImage: "url('/images/legends/peter-lynch.jpg')"}}></div>
-                <div className="legend-figure legend-druckenmiller"
-                    style={{backgroundImage: "url('/images/legends/ben-graham.jpg')"}}></div>
-                <div className="legend-figure legend-graham"
-                    style={{backgroundImage: "url('/images/legends/stan-druckenmiller.jpg')"}}></div>
-                <div className="legend-figure legend-lynch"
-                    style={{backgroundImage: "url('/images/legends/charlie-munger.jpg')"}}></div>
-                <div className="legend-figure legend-keynes"
-                    style={{backgroundImage: "url('/images/legends/john-keynes.jpg')"}}></div>
-                <div className="legend-figure legend-tepper"
-                    style={{backgroundImage: "url('/images/legends/david-tepper.jpg')"}}></div>
-                <div className="legend-figure legend-smith"
-                    style={{backgroundImage: "url('/images/legends/terry-smith.jpg')"}}></div>
-            </div>
             {/* Dashboard Header */}
             <div 
                 className="sticky top-0 z-40 border-b relative"
@@ -416,7 +397,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             </div>
                             
                             <div className="grid lg:grid-cols-2 gap-6">
-                                <ProtectedWidget featureName="Investment Thesis Analysis">
+                                <ProtectedWidget 
+                                    featureName="Investment Thesis Analysis"
+                                    description="Challenge your investment ideas against Caria's AI analysis. Uncover biases and strengthen your conviction."
+                                >
                                     <AnalysisCTA
                                         onStartAnalysis={onStartAnalysis}
                                         onEnterArena={() => setShowArena(true)}

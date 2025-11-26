@@ -8,12 +8,14 @@ from pydantic import BaseModel, Field
 
 from api.dependencies import get_current_user
 from api.services.scoring_service import ScoringService
+from api.services.under_the_radar_screener_service import UnderTheRadarScreenerService
 from caria.models.auth import UserInDB
 
 LOGGER = logging.getLogger("caria.api.screener")
 
 router = APIRouter(prefix="/api/screener", tags=["analysis"])
 _screener_scoring = ScoringService()
+_under_the_radar_service = UnderTheRadarScreenerService()
 
 
 class CScoreScreenRequest(BaseModel):
@@ -172,4 +174,57 @@ def get_hidden_gems(
     results.sort(key=lambda item: item.hiddenGemScore, reverse=True)
     LOGGER.info(f"Screener complete: {scored_count} scored, {filtered_count} filtered out, {len(results)} passed threshold")
     return CScoreScreenResponse(results=results[:limit])
+
+
+# ---------------------------------------------------------------------
+# Under-the-Radar Screener
+# ---------------------------------------------------------------------
+
+class UnderTheRadarCandidate(BaseModel):
+    ticker: str
+    name: str
+    sector: str
+    social_spike: dict
+    catalysts: dict
+    quality_metrics: dict
+    liquidity: dict
+    explanation: str
+
+
+class UnderTheRadarResponse(BaseModel):
+    candidates: List[UnderTheRadarCandidate]
+    message: str | None = None
+
+
+@router.get("/under-the-radar", response_model=UnderTheRadarResponse)
+def get_under_the_radar_screener(
+    current_user: UserInDB = Depends(get_current_user),
+) -> UnderTheRadarResponse:
+    """
+    Under-the-Radar Screener: Detects small-cap stocks with social momentum,
+    recent catalysts, and quality metrics.
+    
+    Returns 0-3 high-conviction candidates per week.
+    """
+    try:
+        candidates = _under_the_radar_service.screen()
+        
+        if not candidates:
+            return UnderTheRadarResponse(
+                candidates=[],
+                message="No stocks passed all filters this week. The screener looks for: "
+                        "social momentum spikes (2+ sources), recent catalysts, quality metrics "
+                        "(ROCE improvement, FCF yield), and size/liquidity (50M-800M market cap, volume spike)."
+            )
+        
+        return UnderTheRadarResponse(
+            candidates=[UnderTheRadarCandidate(**c) for c in candidates],
+            message=f"Found {len(candidates)} under-the-radar candidate(s)"
+        )
+    except Exception as e:
+        LOGGER.exception(f"Error running under-the-radar screener: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error running screener: {str(e)}"
+        )
 

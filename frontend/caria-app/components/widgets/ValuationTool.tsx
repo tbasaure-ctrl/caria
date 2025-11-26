@@ -53,10 +53,10 @@ interface QuickValuationResponse {
     ticker: string;
     currency: string;
     current_price: number;
-    dcf: DcfBlock;
-    reverse_dcf: ReverseDcfBlock;
-    multiples_valuation: MultiplesValuationBlock;
-    multiples: MultiplesBlock;
+    dcf?: DcfBlock;
+    reverse_dcf?: ReverseDcfBlock;
+    multiples_valuation?: MultiplesValuationBlock;
+    multiples?: MultiplesBlock;
 }
 
 interface MonteCarloResult {
@@ -166,9 +166,11 @@ export const ValuationTool: React.FC = () => {
             }
 
             // Run Monte Carlo
-            const horizon = valData.dcf.assumptions.horizon_years;
-            setYears(horizon);
-            await runMonteCarlo(horizon);
+            if (valData.dcf?.assumptions?.horizon_years) {
+                const horizon = valData.dcf.assumptions.horizon_years;
+                setYears(horizon);
+                await runMonteCarlo(horizon);
+            }
         } catch (err: any) {
             console.error("Valuation error:", err);
             setValError(err.message || "An unexpected error occurred.");
@@ -397,129 +399,137 @@ export const ValuationTool: React.FC = () => {
                         {/* Valuation Methods Grid */}
                         <div className="grid md:grid-cols-2 gap-4">
                             {/* Reverse DCF */}
-                            <div 
-                                className="rounded-xl p-5"
-                                style={{
-                                    backgroundColor: 'rgba(139, 92, 246, 0.08)',
-                                    border: '1px solid rgba(139, 92, 246, 0.25)',
-                                }}
-                            >
-                                <div className="flex items-center justify-between mb-3">
-                                    <span 
-                                        className="text-[10px] font-semibold tracking-widest uppercase"
+                            {valuation.reverse_dcf && (
+                                <div 
+                                    className="rounded-xl p-5"
+                                    style={{
+                                        backgroundColor: 'rgba(139, 92, 246, 0.08)',
+                                        border: '1px solid rgba(139, 92, 246, 0.25)',
+                                    }}
+                                >
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span 
+                                            className="text-[10px] font-semibold tracking-widest uppercase"
+                                            style={{ color: '#8B5CF6' }}
+                                        >
+                                            Reverse DCF
+                                        </span>
+                                        <span 
+                                            className="text-[10px]"
+                                            style={{ color: 'rgba(139, 92, 246, 0.7)' }}
+                                        >
+                                            Implied Growth
+                                        </span>
+                                    </div>
+                                    <div 
+                                        className="text-3xl font-bold font-mono mb-2"
                                         style={{ color: '#8B5CF6' }}
                                     >
-                                        Reverse DCF
-                                    </span>
-                                    <span 
-                                        className="text-[10px]"
-                                        style={{ color: 'rgba(139, 92, 246, 0.7)' }}
+                                        {valuation.reverse_dcf.implied_growth_rate != null 
+                                            ? `${(valuation.reverse_dcf.implied_growth_rate * 100).toFixed(1)}%`
+                                            : '—'}
+                                    </div>
+                                    <p 
+                                        className="text-xs leading-relaxed"
+                                        style={{ color: 'rgba(139, 92, 246, 0.8)' }}
                                     >
-                                        Implied Growth
-                                    </span>
+                                        {valuation.reverse_dcf.explanation || 'No explanation available'}
+                                    </p>
                                 </div>
-                                <div 
-                                    className="text-3xl font-bold font-mono mb-2"
-                                    style={{ color: '#8B5CF6' }}
-                                >
-                                    {(valuation.reverse_dcf.implied_growth_rate * 100).toFixed(1)}%
-                                </div>
-                                <p 
-                                    className="text-xs leading-relaxed"
-                                    style={{ color: 'rgba(139, 92, 246, 0.8)' }}
-                                >
-                                    {valuation.reverse_dcf.explanation}
-                                </p>
-                            </div>
+                            )}
 
                             {/* Multiples Valuation */}
-                            <div 
-                                className="rounded-xl p-5"
-                                style={{
-                                    backgroundColor: 'var(--color-positive-muted)',
-                                    border: '1px solid rgba(0, 200, 83, 0.25)',
-                                }}
-                            >
-                                <div className="flex items-center justify-between mb-3">
-                                    <span 
-                                        className="text-[10px] font-semibold tracking-widest uppercase"
-                                        style={{ color: 'var(--color-positive)' }}
-                                    >
-                                        Historical Multiples
-                                    </span>
-                                    <span 
-                                        className="text-[10px]"
-                                        style={{ color: 'rgba(0, 200, 83, 0.7)' }}
-                                    >
-                                        Fair Value
-                                    </span>
-                                </div>
-                                {valuation.multiples_valuation.fair_value > 0 ? (
-                                    <>
-                                        <div 
-                                            className="text-3xl font-bold font-mono mb-2"
+                            {valuation.multiples_valuation && (
+                                <div 
+                                    className="rounded-xl p-5"
+                                    style={{
+                                        backgroundColor: 'var(--color-positive-muted)',
+                                        border: '1px solid rgba(0, 200, 83, 0.25)',
+                                    }}
+                                >
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span 
+                                            className="text-[10px] font-semibold tracking-widest uppercase"
                                             style={{ color: 'var(--color-positive)' }}
                                         >
-                                            {formatMoney(valuation.multiples_valuation.fair_value)}
-                                        </div>
-                                        <p 
-                                            className="text-xs"
-                                            style={{ color: 'rgba(0, 200, 83, 0.8)' }}
+                                            Historical Multiples
+                                        </span>
+                                        <span 
+                                            className="text-[10px]"
+                                            style={{ color: 'rgba(0, 200, 83, 0.7)' }}
                                         >
-                                            EV/Sales: {valuation.multiples_valuation.ev_sales_median?.toFixed(1) ?? '—'}x • 
-                                            EV/EBITDA: {valuation.multiples_valuation.ev_ebitda_median?.toFixed(1) ?? '—'}x
-                                        </p>
-                                    </>
-                                ) : (
-                                    <div 
-                                        className="text-lg font-medium"
-                                        style={{ color: 'rgba(0, 200, 83, 0.5)' }}
-                                    >
-                                        Insufficient data
+                                            Fair Value
+                                        </span>
                                     </div>
-                                )}
-                            </div>
+                                    {valuation.multiples_valuation.fair_value != null && valuation.multiples_valuation.fair_value > 0 ? (
+                                        <>
+                                            <div 
+                                                className="text-3xl font-bold font-mono mb-2"
+                                                style={{ color: 'var(--color-positive)' }}
+                                            >
+                                                {formatMoney(valuation.multiples_valuation.fair_value)}
+                                            </div>
+                                            <p 
+                                                className="text-xs"
+                                                style={{ color: 'rgba(0, 200, 83, 0.8)' }}
+                                            >
+                                                EV/Sales: {valuation.multiples_valuation.ev_sales_median?.toFixed(1) ?? '—'}x • 
+                                                EV/EBITDA: {valuation.multiples_valuation.ev_ebitda_median?.toFixed(1) ?? '—'}x
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <div 
+                                            className="text-lg font-medium"
+                                            style={{ color: 'rgba(0, 200, 83, 0.5)' }}
+                                        >
+                                            Insufficient data
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Current Multiples Grid */}
-                        <div>
-                            <div 
-                                className="text-[10px] font-semibold tracking-widest uppercase mb-3"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Current Market Multiples
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                {Object.entries(valuation.multiples.multiples).map(([key, value]) => {
-                                    const num = Number(value);
-                                    return (
-                                        <div
-                                            key={key}
-                                            className="px-3 py-2 rounded-lg"
-                                            style={{
-                                                backgroundColor: 'var(--color-bg-tertiary)',
-                                                border: '1px solid var(--color-border-subtle)',
-                                            }}
-                                        >
-                                            <div 
-                                                className="text-[10px] mb-1"
-                                                style={{ color: 'var(--color-text-muted)' }}
+                        {valuation.multiples?.multiples && Object.keys(valuation.multiples.multiples).length > 0 && (
+                            <div>
+                                <div 
+                                    className="text-[10px] font-semibold tracking-widest uppercase mb-3"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                >
+                                    Current Market Multiples
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                    {Object.entries(valuation.multiples.multiples).map(([key, value]) => {
+                                        const num = Number(value);
+                                        return (
+                                            <div
+                                                key={key}
+                                                className="px-3 py-2 rounded-lg"
+                                                style={{
+                                                    backgroundColor: 'var(--color-bg-tertiary)',
+                                                    border: '1px solid var(--color-border-subtle)',
+                                                }}
                                             >
-                                                {key}
+                                                <div 
+                                                    className="text-[10px] mb-1"
+                                                    style={{ color: 'var(--color-text-muted)' }}
+                                                >
+                                                    {key}
+                                                </div>
+                                                <div 
+                                                    className="text-sm font-mono font-medium"
+                                                    style={{ color: 'var(--color-text-primary)' }}
+                                                >
+                                                    {key.includes("yield") || key.includes("rate")
+                                                        ? `${(num * 100).toFixed(1)}%`
+                                                        : num.toFixed(2)}
+                                                </div>
                                             </div>
-                                            <div 
-                                                className="text-sm font-mono font-medium"
-                                                style={{ color: 'var(--color-text-primary)' }}
-                                            >
-                                                {key.includes("yield") || key.includes("rate")
-                                                    ? `${(num * 100).toFixed(1)}%`
-                                                    : num.toFixed(2)}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Monte Carlo Section */}
                         <div 

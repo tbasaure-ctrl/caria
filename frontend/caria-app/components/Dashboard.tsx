@@ -11,6 +11,7 @@ import { CrisisSimulator } from './widgets/CrisisSimulator';
 import { MacroSimulator } from './widgets/MacroSimulator';
 import { ValuationTool } from './widgets/ValuationTool';
 import { AlphaStockPicker } from './widgets/AlphaStockPicker';
+import { HiddenGemsScreener } from './widgets/HiddenGemsScreener';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { RedditSentiment } from './widgets/RedditSentiment';
 import { Resources } from './widgets/Resources';

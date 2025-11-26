@@ -108,18 +108,20 @@ def get_hidden_gems(
         }
         candidates = _screener_scoring.fmp.get_stock_screener(params)
     except Exception as e:
-        LOGGER.error(f"Failed to fetch from FMP screener: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch candidates from data provider")
+        LOGGER.warning(f"FMP screener failed: {e}. Using fallback list...")
+        # Don't raise error, use fallback instead
+        candidates = None
 
-    # Fallback ticker list if FMP returns insufficient results
+    # Fallback ticker list if FMP returns insufficient results or fails
     if not candidates or len(candidates) < 5:
-        LOGGER.warning(f"FMP returned only {len(candidates) if candidates else 0} candidates, using fallback list")
+        LOGGER.info(f"Using fallback list (FMP returned {len(candidates) if candidates else 0} candidates)")
 
-        # Fallback: predefined mid-cap value stocks
+        # Fallback: predefined mid-cap value stocks (under the radar)
         fallback_tickers = [
             "INTC", "F", "WBA", "KSS", "NWL", "GPS", "M", "JWN",
             "AAL", "UAL", "LUV", "DAL", "HA", "ALK", "JBLU",
-            "UAA", "FL", "DDS", "BBWI", "RL", "PVH"
+            "UAA", "FL", "DDS", "BBWI", "RL", "PVH", "TGT", "HD",
+            "LOW", "NKE", "SBUX", "CMG", "DPZ", "YUM"
         ]
         LOGGER.info(f"Using fallback list: {len(fallback_tickers)} stocks")
         candidates = [{"symbol": t} for t in fallback_tickers]

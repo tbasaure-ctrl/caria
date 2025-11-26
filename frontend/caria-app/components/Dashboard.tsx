@@ -10,6 +10,7 @@ import { ThesisArena } from './widgets/ThesisArena';
 import { CrisisSimulator } from './widgets/CrisisSimulator';
 import { MacroSimulator } from './widgets/MacroSimulator';
 import { ValuationTool } from './widgets/ValuationTool';
+import { LynchValuationTool } from './widgets/LynchValuationTool';
 import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 import { HiddenGemsScreener } from './widgets/HiddenGemsScreener';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
@@ -410,8 +411,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                         onEnterArena={() => setShowArena(true)}
                                     />
                                 </ProtectedWidget>
+                                <ProtectedWidget featureName="Lynch Valuation Tool">
+                                    <LynchValuationTool />
+                                </ProtectedWidget>
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* RESEARCH TAB - Editorial Newsroom Style */}
+                {activeTab === 'research' && (
+                    <div className="space-y-8 animate-fade-in">
+                        {/* Weekly Content */}
+                        <WeeklyMedia compact={false} />
 
                         {/* Industry Research Section */}
                         <div className="pt-4">
@@ -443,14 +455,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                 <IndustryResearch />
                             </ProtectedWidget>
                         </div>
-                    </div>
-                )}
-
-                {/* RESEARCH TAB - Editorial Newsroom Style */}
-                {activeTab === 'research' && (
-                    <div className="space-y-8 animate-fade-in">
-                        {/* Weekly Content */}
-                        <WeeklyMedia compact={false} />
 
                         {/* Two Column: Sentiment & Resources */}
                         <div className="grid lg:grid-cols-2 gap-6">

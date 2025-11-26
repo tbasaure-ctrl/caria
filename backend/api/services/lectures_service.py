@@ -58,7 +58,14 @@ class LecturesService:
             try:
                 articles.extend(fetcher())
             except Exception as exc:  # noqa: BLE001
-                LOGGER.warning("Error fetching %s: %s", fetcher.__name__, exc)
+                # Log more specific error information
+                error_msg = str(exc)
+                if "404" in error_msg or "Not Found" in error_msg:
+                    LOGGER.debug("RSS feed not available for %s: %s", fetcher.__name__, exc)
+                elif "not well-formed" in error_msg.lower() or "invalid token" in error_msg.lower():
+                    LOGGER.warning("Malformed XML in RSS feed for %s: %s", fetcher.__name__, exc)
+                else:
+                    LOGGER.warning("Error fetching %s: %s", fetcher.__name__, exc)
 
         filtered = self._apply_quality_filter(articles)
         balanced = self._rebalance_sources(filtered)

@@ -243,16 +243,21 @@ class PortfolioAnalyticsService:
                 LOGGER.warning("Insufficient aligned data for beta calculation")
                 return 0.0
             
-            pr_aligned = aligned['portfolio']
-            br_aligned = aligned['benchmark']
+            pr_aligned = aligned['portfolio'].values
+            br_aligned = aligned['benchmark'].values
             
-            # Ensure both have same length
-            min_len = min(len(pr_aligned), len(br_aligned))
-            if min_len < 2:
+            # Ensure both arrays have same length and are 1D
+            if len(pr_aligned) != len(br_aligned):
+                min_len = min(len(pr_aligned), len(br_aligned))
+                pr_aligned = pr_aligned[:min_len]
+                br_aligned = br_aligned[:min_len]
+            
+            if len(pr_aligned) < 2:
                 return 0.0
             
-            pr_aligned = pr_aligned.iloc[:min_len]
-            br_aligned = br_aligned.iloc[:min_len]
+            # Ensure arrays are 1D
+            pr_aligned = pr_aligned.flatten()
+            br_aligned = br_aligned.flatten()
             
             cov = np.cov(pr_aligned, br_aligned)[0, 1]
             var_b = np.var(br_aligned)
@@ -278,16 +283,30 @@ class PortfolioAnalyticsService:
             
             # Calculate means - handle both Series and scalar cases
             if isinstance(pr_aligned, pd.Series):
-                excess_p = float(pr_aligned.mean()) - daily_rf
+                mean_p = pr_aligned.mean()
+                # Handle case where mean() returns a Series (shouldn't happen, but be safe)
+                if isinstance(mean_p, pd.Series):
+                    excess_p = float(mean_p.iloc[0]) - daily_rf
+                else:
+                    excess_p = float(mean_p) - daily_rf
             else:
                 excess_p = float(pr_aligned) - daily_rf
                 
             if isinstance(br_aligned, pd.Series):
-                excess_b = float(br_aligned.mean()) - daily_rf
+                mean_b = br_aligned.mean()
+                # Handle case where mean() returns a Series (shouldn't happen, but be safe)
+                if isinstance(mean_b, pd.Series):
+                    excess_b = float(mean_b.iloc[0]) - daily_rf
+                else:
+                    excess_b = float(mean_b) - daily_rf
             else:
                 excess_b = float(br_aligned) - daily_rf
             
-            return float(excess_p - beta * excess_b)
+            # Calculate result - ensure we're working with scalars
+            result = excess_p - beta * excess_b
+            if isinstance(result, pd.Series):
+                return float(result.iloc[0])
+            return float(result)
         except Exception as e:
             LOGGER.warning(f"Manual alpha computation failed: {e}")
             return 0.0

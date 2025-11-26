@@ -92,7 +92,10 @@ class RegimeService:
         if features is None:
             features = self._load_latest_features()
             if features is None:
-                LOGGER.warning("No se pudieron cargar features macro. Retornando None.")
+                LOGGER.debug(
+                    "No se pudieron cargar features macro desde archivo. "
+                    "El servicio de régimen usará fallback heurístico si está disponible."
+                )
                 return None
         
         try:
@@ -157,7 +160,11 @@ class RegimeService:
                         break
             
             if not macro_file.exists():
-                LOGGER.warning("Archivo de features macro no encontrado: %s", macro_file)
+                LOGGER.debug(
+                    "Archivo de features macro no encontrado: %s. "
+                    "El servicio de régimen usará fallback heurístico si está disponible.",
+                    macro_file
+                )
                 return None
             
             df = pd.read_parquet(macro_file)

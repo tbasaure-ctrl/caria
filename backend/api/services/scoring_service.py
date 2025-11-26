@@ -29,7 +29,7 @@ class ScoringService:
         """
         ticker = ticker.upper()
         
-        # 1. Fetch Data
+        # 1. Fetch Data with fallback to OpenBB if FMP fails
         try:
             financials = self._fetch_financials(ticker)
             prices_raw = self.fmp.get_price_history(ticker)
@@ -47,8 +47,39 @@ class ScoringService:
 
             quote = self.fmp.get_realtime_price(ticker)
         except Exception as e:
-            LOGGER.error(f"Error fetching data for {ticker}: {e}")
-            raise RuntimeError(f"Data fetch failed for {ticker}")
+            LOGGER.warning(f"FMP fetch failed for {ticker}: {e}. Trying OpenBB fallback...")
+            # Fallback to OpenBB client
+            try:
+                from api.services.openbb_client import OpenBBClient
+                obb_client = OpenBBClient()
+                
+                # Get price history from OpenBB
+                price_history = obb_client.get_price_history(ticker)
+                if price_history and hasattr(price_history, 'to_df'):
+                    df = price_history.to_df()
+                    prices = df.to_dict('records') if not df.empty else []
+                else:
+                    prices = []
+                
+                # Get current price
+                current_price = obb_client.get_current_price(ticker)
+                quote = {"price": current_price, "change": 0, "changesPercentage": 0} if current_price > 0 else None
+                
+                # Get financials from OpenBB
+                ticker_data = obb_client.get_ticker_data(ticker)
+                if ticker_data:
+                    financials = {
+                        "income": ticker_data.get("financials", {}).get("income_statement", []),
+                        "balance": [],
+                        "cash": ticker_data.get("financials", {}).get("cash_flow", []),
+                    }
+                else:
+                    financials = {"income": [], "balance": [], "cash": []}
+                    
+                LOGGER.info(f"✅ Successfully fetched {ticker} data from OpenBB fallback")
+            except Exception as fallback_error:
+                LOGGER.error(f"Both FMP and OpenBB fallback failed for {ticker}: {fallback_error}")
+                raise RuntimeError(f"Data fetch failed for {ticker}: {str(fallback_error)}")
 
         if not financials or not prices or not quote:
              LOGGER.warning(f"Insufficient data for {ticker}")

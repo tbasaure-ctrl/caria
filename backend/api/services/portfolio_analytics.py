@@ -237,8 +237,25 @@ class PortfolioAnalyticsService:
     def _compute_beta(self, pr: pd.Series, br: pd.Series) -> float:
         """Beta CAPM calculada a mano (por si no existe qs.stats.beta)."""
         try:
-            cov = np.cov(pr, br)[0, 1]
-            var_b = np.var(br)
+            # Align series by index to ensure same length
+            aligned = pd.DataFrame({'portfolio': pr, 'benchmark': br}).dropna()
+            if len(aligned) < 2:
+                LOGGER.warning("Insufficient aligned data for beta calculation")
+                return 0.0
+            
+            pr_aligned = aligned['portfolio']
+            br_aligned = aligned['benchmark']
+            
+            # Ensure both have same length
+            min_len = min(len(pr_aligned), len(br_aligned))
+            if min_len < 2:
+                return 0.0
+            
+            pr_aligned = pr_aligned.iloc[:min_len]
+            br_aligned = br_aligned.iloc[:min_len]
+            
+            cov = np.cov(pr_aligned, br_aligned)[0, 1]
+            var_b = np.var(br_aligned)
             if var_b <= 0:
                 return 0.0
             return float(cov / var_b)
@@ -250,8 +267,26 @@ class PortfolioAnalyticsService:
         """Alpha CAPM diaria (no anualizada) como fallback."""
         try:
             daily_rf = self.risk_free_rate / self.trading_days_per_year
-            excess_p = pr.mean() - daily_rf
-            excess_b = br.mean() - daily_rf
+            
+            # Align series and ensure they're Series, not single values
+            aligned = pd.DataFrame({'portfolio': pr, 'benchmark': br}).dropna()
+            if len(aligned) < 1:
+                return 0.0
+            
+            pr_aligned = aligned['portfolio']
+            br_aligned = aligned['benchmark']
+            
+            # Calculate means - handle both Series and scalar cases
+            if isinstance(pr_aligned, pd.Series):
+                excess_p = float(pr_aligned.mean()) - daily_rf
+            else:
+                excess_p = float(pr_aligned) - daily_rf
+                
+            if isinstance(br_aligned, pd.Series):
+                excess_b = float(br_aligned.mean()) - daily_rf
+            else:
+                excess_b = float(br_aligned) - daily_rf
+            
             return float(excess_p - beta * excess_b)
         except Exception as e:
             LOGGER.warning(f"Manual alpha computation failed: {e}")

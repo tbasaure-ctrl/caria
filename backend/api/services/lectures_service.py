@@ -145,27 +145,48 @@ class LecturesService:
         return articles
 
     def _fetch_rss_entries(self, feed_url: str, source: str) -> List[Dict[str, str]]:
-        resp = requests.get(feed_url, timeout=10)
-        resp.raise_for_status()
-        root = ET.fromstring(resp.text)
-        items: List[Dict[str, str]] = []
+        """Fetch RSS entries with improved error handling."""
+        try:
+            resp = requests.get(feed_url, timeout=10)
+            resp.raise_for_status()
+            
+            # Try to parse XML, handle malformed XML gracefully
+            try:
+                root = ET.fromstring(resp.text)
+            except ET.ParseError as e:
+                LOGGER.warning(f"XML parse error for {source} ({feed_url}): {e}")
+                return []
+            
+            items: List[Dict[str, str]] = []
 
-        for item in root.findall("./channel/item"):
-            title = item.findtext("title") or ""
-            link = item.findtext("link") or ""
-            pub_date = item.findtext("pubDate") or datetime.utcnow().isoformat()
-            if title and link:
-                items.append(
-                    {
-                        "title": title.strip(),
-                        "url": link.strip(),
-                        "source": source,
-                        "date": pub_date,
-                    }
-                )
-            if len(items) >= 5:
-                break
-        return items
+            for item in root.findall("./channel/item"):
+                title = item.findtext("title") or ""
+                link = item.findtext("link") or ""
+                pub_date = item.findtext("pubDate") or datetime.utcnow().isoformat()
+                if title and link:
+                    items.append(
+                        {
+                            "title": title.strip(),
+                            "url": link.strip(),
+                            "source": source,
+                            "date": pub_date,
+                        }
+                    )
+                if len(items) >= 5:
+                    break
+            return items
+        except requests.exceptions.HTTPError as e:
+            if e.response and e.response.status_code == 404:
+                LOGGER.debug(f"RSS feed not found (404) for {source}: {feed_url}")
+            else:
+                LOGGER.warning(f"HTTP error fetching {source} RSS: {e}")
+            return []
+        except requests.exceptions.RequestException as e:
+            LOGGER.warning(f"Request error fetching {source} RSS: {e}")
+            return []
+        except Exception as e:
+            LOGGER.warning(f"Unexpected error fetching {source} RSS: {e}")
+            return []
 
     def _fetch_motley_fool_rss(self) -> List[Dict[str, str]]:
         return self._fetch_rss_entries(

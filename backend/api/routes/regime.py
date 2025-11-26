@@ -148,7 +148,6 @@ def _quick_regime_from_prices(symbol: str = "SPY") -> RegimeResponse | None:
                 base_probs[key] = remainder * (base_probs[key] / total_other)
 
         features_used = {
-            "symbol": symbol,
             "ma50": round(ma50, 2),
             "ma200": round(ma200, 2),
             "return_1m_pct": round(r1m, 2),

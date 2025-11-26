@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface HeroProps {
     onLogin?: () => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
+  const navigate = useNavigate();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -18,6 +20,10 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  const handleDiscoverCaria = () => {
+    navigate('/dashboard');
+  };
 
   return (
     <section className="relative py-24 md:py-40 overflow-hidden min-h-[90vh] flex items-center">
@@ -100,6 +106,41 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
             <br className="hidden md:block" />
             creating an invaluable partner for your financial journey.
           </p>
+
+          {/* CTA Button - Discover Caria */}
+          <div className="flex justify-center fade-in delay-500">
+            <button
+              onClick={handleDiscoverCaria}
+              className="group relative px-8 py-4 text-lg font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
+              style={{
+                fontFamily: 'var(--font-display)',
+                background: 'linear-gradient(135deg, #4A90E2 0%, #5B9FE5 100%)',
+                color: '#FFFFFF',
+                boxShadow: '0 8px 24px rgba(74, 144, 226, 0.4)',
+                border: '1px solid rgba(74, 144, 226, 0.5)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 12px 32px rgba(74, 144, 226, 0.6)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, #5B9FE5 0%, #6BAEF0 100%)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(74, 144, 226, 0.4)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, #4A90E2 0%, #5B9FE5 100%)';
+              }}
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                Discover Caria
+                <svg 
+                  className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </span>
+            </button>
+          </div>
 
         </div>
       </div>

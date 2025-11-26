@@ -27,8 +27,26 @@ LOGGER = logging.getLogger("caria.api.thesis_arena")
 
 router = APIRouter(prefix="/api/thesis", tags=["Thesis Arena"])
 
-# Community names
-COMMUNITIES = ["value_investor", "crypto_bro", "growth_investor", "contrarian"]
+# Dynamic community loading
+def _get_active_communities() -> List[str]:
+    """Load communities from config or use expanded defaults."""
+    config_path = Path(__file__).parent.parent.parent / "config" / "communities.json"
+
+    if config_path.exists():
+        try:
+            with open(config_path) as f:
+                config = json.load(f)
+                return [c["id"] for c in config["communities"] if c.get("active", True)]
+        except Exception as e:
+            LOGGER.warning(f"Failed to load communities config: {e}")
+
+    # Fallback to expanded default list
+    return [
+        "value_investor", "crypto_bro", "growth_investor", "contrarian",
+        "technical_analyst", "dividend_investor", "esg_advocate", "risk_manager"
+    ]
+
+COMMUNITIES = _get_active_communities()
 
 
 def _load_community_prompt(community: str) -> str:
@@ -45,64 +63,116 @@ def _load_community_prompt(community: str) -> str:
         return f"You are a {community.replace('_', ' ')} investor. Analyze the investment thesis."
 
 
-def _call_llama_parallel(prompt: str, community: str) -> Optional[str]:
-    """Call Llama API (Groq) with community-specific prompt."""
+def _call_llm(prompt: str, community: str, provider: str = "auto") -> Optional[str]:
+    """Call LLM with automatic provider fallback."""
+    providers = ["groq", "openai", "anthropic"] if provider == "auto" else [provider]
+
+    for prov in providers:
+        try:
+            if prov == "groq":
+                return _call_groq(prompt, community)
+            elif prov == "openai":
+                return _call_openai(prompt, community)
+            elif prov == "anthropic":
+                return _call_anthropic(prompt, community)
+        except Exception as e:
+            LOGGER.warning(f"{prov} provider failed for {community}: {e}")
+            continue
+
+    LOGGER.error(f"All LLM providers failed for {community}")
+    return None
+
+
+def _call_groq(prompt: str, community: str) -> Optional[str]:
+    """Call Groq/Llama API."""
     api_key = os.getenv("LLAMA_API_KEY")
     api_url = os.getenv("LLAMA_API_URL", "https://api.groq.com/openai/v1/chat/completions")
     model = os.getenv("LLAMA_MODEL", "llama-3.1-8b-instruct")
-    
+
     if not api_key:
-        LOGGER.warning("LLAMA_API_KEY not configured")
-        return None
-    
-    # Load community prompt
+        raise ValueError("LLAMA_API_KEY not configured")
+
     community_prompt = _load_community_prompt(community)
-    
-    # Combine prompts
-    system_prompt = f"""{community_prompt}
+    system_prompt = f"{community_prompt}\n\nYou are a {community.replace('_', ' ')} investor."
 
-You are a {community.replace('_', ' ')} investor. Analyze investment theses from this perspective."""
-    
-    user_prompt = f"""Investment Thesis to Analyze:
-{prompt}
-
-Provide your analysis and response as a {community.replace('_', ' ')} investor. Be specific, challenge assumptions, and provide actionable insights."""
-    
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     payload = {
         "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
+            {"role": "user", "content": prompt}
         ],
         "temperature": 0.7,
     }
-    
-    try:
-        resp = requests.post(api_url, headers=headers, json=payload, timeout=30)
-        
-        if resp.status_code == 503:
-            LOGGER.warning(f"Llama 503 for {community}, skipping")
-            return None
-        
-        resp.raise_for_status()
-        data = resp.json()
-        
-        text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-        
-        if not text:
-            LOGGER.warning(f"Llama returned empty text for {community}")
-            return None
-        
-        LOGGER.info(f"Llama successfully returned response for {community} ({len(text)} chars)")
-        return text
-    except Exception as e:
-        LOGGER.exception(f"Error calling Llama for {community}: {e}")
-        return None
+
+    resp = requests.post(api_url, headers=headers, json=payload, timeout=30)
+    resp.raise_for_status()
+    data = resp.json()
+    text = data["choices"][0]["message"]["content"]
+    LOGGER.info(f"Groq returned response for {community} ({len(text)} chars)")
+    return text
+
+
+def _call_openai(prompt: str, community: str) -> Optional[str]:
+    """OpenAI GPT-4 fallback."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY not configured")
+
+    community_prompt = _load_community_prompt(community)
+
+    resp = requests.post(
+        "https://api.openai.com/v1/chat/completions",
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        json={
+            "model": "gpt-4-turbo-preview",
+            "messages": [
+                {"role": "system", "content": community_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.7,
+            "max_tokens": 1000
+        },
+        timeout=30
+    )
+    resp.raise_for_status()
+    text = resp.json()["choices"][0]["message"]["content"]
+    LOGGER.info(f"OpenAI returned response for {community} ({len(text)} chars)")
+    return text
+
+
+def _call_anthropic(prompt: str, community: str) -> Optional[str]:
+    """Claude fallback."""
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise ValueError("ANTHROPIC_API_KEY not configured")
+
+    community_prompt = _load_community_prompt(community)
+
+    resp = requests.post(
+        "https://api.anthropic.com/v1/messages",
+        headers={
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json"
+        },
+        json={
+            "model": "claude-3-sonnet-20240229",
+            "max_tokens": 1024,
+            "messages": [{"role": "user", "content": f"{community_prompt}\n\n{prompt}"}]
+        },
+        timeout=30
+    )
+    resp.raise_for_status()
+    text = resp.json()["content"][0]["text"]
+    LOGGER.info(f"Anthropic returned response for {community} ({len(text)} chars)")
+    return text
+
+
+# Keep old function name for backwards compatibility
+def _call_llama_parallel(prompt: str, community: str) -> Optional[str]:
+    """Legacy function - calls new _call_llm with auto provider."""
+    return _call_llm(prompt, community, provider="auto")
 
 
 def _get_db_connection():
@@ -260,6 +330,47 @@ class ArenaRespondResponse(BaseModel):
     community_responses: List[CommunityResponse]
     conviction_impact: Dict[str, Any]
     current_conviction: float
+
+
+@router.get("/ticker-support/{ticker}")
+async def check_ticker_support(
+    ticker: str,
+    current_user: UserInDB = Depends(get_current_user),
+):
+    """Check if ticker is supported by data sources."""
+    ticker = ticker.upper()
+    support_status = {
+        "ticker": ticker,
+        "supported": False,
+        "data_sources": {}
+    }
+
+    # Check FMP
+    try:
+        from api.services.scoring_service import ScoringService
+        scoring = ScoringService()
+        quote = scoring.fmp.get_realtime_price(ticker)
+        support_status["data_sources"]["fmp"] = bool(quote)
+        support_status["supported"] = support_status["supported"] or bool(quote)
+    except Exception as e:
+        LOGGER.debug(f"FMP check failed for {ticker}: {e}")
+        support_status["data_sources"]["fmp"] = False
+
+    # Check OpenBB
+    try:
+        from api.services.openbb_client import OpenBBClient
+        obb = OpenBBClient()
+        data = obb.get_ticker_data(ticker)
+        support_status["data_sources"]["openbb"] = bool(data)
+        support_status["supported"] = support_status["supported"] or bool(data)
+    except Exception as e:
+        LOGGER.debug(f"OpenBB check failed for {ticker}: {e}")
+        support_status["data_sources"]["openbb"] = False
+
+    if not support_status["supported"]:
+        support_status["message"] = f"{ticker} not available. Try major exchange tickers (NASDAQ, NYSE, AMEX)."
+
+    return support_status
 
 
 @router.post("/arena/challenge", response_model=ThesisArenaChallengeResponse)

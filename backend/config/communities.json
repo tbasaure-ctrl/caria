@@ -1,0 +1,52 @@
+{
+  "communities": [
+    {
+      "id": "value_investor",
+      "name": "Value Investor",
+      "active": true,
+      "sort_order": 1
+    },
+    {
+      "id": "crypto_bro",
+      "name": "Crypto Bro",
+      "active": true,
+      "sort_order": 2
+    },
+    {
+      "id": "growth_investor",
+      "name": "Growth Investor",
+      "active": true,
+      "sort_order": 3
+    },
+    {
+      "id": "contrarian",
+      "name": "Contrarian",
+      "active": true,
+      "sort_order": 4
+    },
+    {
+      "id": "technical_analyst",
+      "name": "Technical Analyst",
+      "active": true,
+      "sort_order": 5
+    },
+    {
+      "id": "dividend_investor",
+      "name": "Dividend Investor",
+      "active": true,
+      "sort_order": 6
+    },
+    {
+      "id": "esg_advocate",
+      "name": "ESG Advocate",
+      "active": true,
+      "sort_order": 7
+    },
+    {
+      "id": "risk_manager",
+      "name": "Risk Manager",
+      "active": true,
+      "sort_order": 8
+    }
+  ]
+}

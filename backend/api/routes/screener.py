@@ -94,12 +94,14 @@ def get_hidden_gems(
     # Criteria: Market Cap > 200M, Beta < 1.5, Dividend > 0 (optional), etc.
     # We want "hidden gems": maybe reasonable valuation?
     try:
-        # FMP Screener params
+        # FMP Screener params - relaxed for better results
         params = {
-            "marketCapMoreThan": 200_000_000,
+            "marketCapMoreThan": 50_000_000,      # Lowered from 200M to 50M
+            "marketCapLowerThan": 10_000_000_000, # Add: < 10B (mid-caps)
+            "isActivelyTrading": "true",          # Add: actively trading only
             "isEtf": "false",
             "isFund": "false",
-            "limit": 50, # Get pool of 50
+            "limit": 100,                         # Increased from 50 to 100
             "exchange": "NASDAQ,NYSE,AMEX"
         }
         candidates = _screener_scoring.fmp.get_stock_screener(params)
@@ -107,21 +109,45 @@ def get_hidden_gems(
         LOGGER.error(f"Failed to fetch from FMP screener: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch candidates from data provider")
 
+    # Fallback ticker list if FMP returns insufficient results
+    if not candidates or len(candidates) < 5:
+        LOGGER.warning(f"FMP returned only {len(candidates) if candidates else 0} candidates, using fallback list")
+
+        # Fallback: predefined mid-cap value stocks
+        fallback_tickers = [
+            "INTC", "F", "WBA", "KSS", "NWL", "GPS", "M", "JWN",
+            "AAL", "UAL", "LUV", "DAL", "HA", "ALK", "JBLU",
+            "UAA", "FL", "DDS", "BBWI", "RL", "PVH"
+        ]
+        LOGGER.info(f"Using fallback list: {len(fallback_tickers)} stocks")
+        candidates = [{"symbol": t} for t in fallback_tickers]
+
     # 2. Score them
     results: List[ScreenerItem] = []
-    # We take the first 'limit' * 2 to score, then sort.
+    # We take a larger pool to score, then sort.
     # Scoring is slow (multiple API calls), so we limit the pool we fully analyze.
-    
-    pool = candidates[: (limit * 2) if limit < 10 else 20] 
-    
+
+    pool_size = min(limit * 3, 50)  # 3x limit, max 50
+    pool = candidates[:pool_size]
+    LOGGER.info(f"Screening {len(pool)} candidates from {len(candidates)} total")
+
+    min_threshold = 35  # Lowered from 50 to 35
+    scored_count = 0
+    filtered_count = 0
+
     for cand in pool:
         ticker = cand.get("symbol")
         if not ticker:
             continue
-            
+
         try:
             score = _screener_scoring.get_scores(ticker)
-            if score["cScore"] < 50: # Basic filter
+            scored_count += 1
+
+            LOGGER.debug(f"{ticker}: cScore={score['cScore']:.1f}, Q={score['qualityScore']:.1f}, V={score['valuationScore']:.1f}")
+
+            if score["cScore"] < min_threshold:  # Lowered threshold
+                filtered_count += 1
                 continue
                 
             results.append(
@@ -138,10 +164,12 @@ def get_hidden_gems(
                     explanations=score.get("explanations"),
                 )
             )
-        except Exception:
+        except Exception as e:
+            LOGGER.warning(f"Failed to score {ticker}: {e}")
             continue
 
     # 3. Sort and limit
     results.sort(key=lambda item: item.hiddenGemScore, reverse=True)
+    LOGGER.info(f"Screener complete: {scored_count} scored, {filtered_count} filtered out, {len(results)} passed threshold")
     return CScoreScreenResponse(results=results[:limit])
 

@@ -2,6 +2,7 @@ import logging
 import os
 import statistics
 from typing import Any, Dict, Optional
+from datetime import datetime, timedelta
 
 from api.services.openbb_client import OpenBBClient
 
@@ -17,6 +18,8 @@ class SimpleValuationService:
 
     def __init__(self, obb_client: Optional[OpenBBClient] = None):
         self.obb_client = obb_client or OpenBBClient()
+        self._fetch_cache = {}
+        self._cache_ttl = 300  # 5 minutes
 
     def get_valuation(self, ticker: str, current_price: float) -> Dict[str, Any]:
         """
@@ -56,7 +59,15 @@ class SimpleValuationService:
             return self._fallback_response(ticker, current_price, str(e))
 
     def _fetch_metrics(self, ticker: str) -> Optional[Dict[str, Any]]:
-        """Fetch necessary metrics from OpenBB/FMP. Ensures FMP is used first."""
+        """Fetch necessary metrics from OpenBB/FMP with caching. Ensures FMP is used first."""
+        # Check cache first
+        cache_key = f"{ticker}_metrics"
+        if cache_key in self._fetch_cache:
+            cached_data, timestamp = self._fetch_cache[cache_key]
+            if datetime.now() - timestamp < timedelta(seconds=self._cache_ttl):
+                LOGGER.debug(f"Using cached metrics for {ticker}")
+                return cached_data
+
         try:
             # Force FMP provider for critical data
             LOGGER.info(f"Fetching metrics for {ticker} from FMP via OpenBB...")
@@ -103,7 +114,7 @@ class SimpleValuationService:
                     fmp_key = os.getenv("FMP_API_KEY")
                     if fmp_key:
                         obb.user.credentials.fmp_api_key = fmp_key
-                    
+
                     # Get key metrics directly
                     metrics_direct = obb.equity.fundamental.metrics(symbol=ticker, provider="fmp", limit=1)
                     if metrics_direct and hasattr(metrics_direct, 'to_df'):
@@ -114,7 +125,7 @@ class SimpleValuationService:
                             for k, v in direct_metrics.items():
                                 if v is not None and k not in mapped_metrics:
                                     mapped_metrics[k] = v
-                    
+
                     # Get ratios directly
                     ratios_direct = obb.equity.fundamental.ratios(symbol=ticker, provider="fmp", limit=1)
                     if ratios_direct and hasattr(ratios_direct, 'to_df'):
@@ -124,7 +135,7 @@ class SimpleValuationService:
                             for k, v in direct_ratios.items():
                                 if v is not None and k not in mapped_metrics:
                                     mapped_metrics[k] = v
-                    
+
                     LOGGER.info(f"✅ Successfully fetched additional metrics for {ticker} from FMP")
                 except Exception as direct_e:
                     LOGGER.warning(f"Direct FMP calls failed for {ticker}: {direct_e}")
@@ -133,8 +144,13 @@ class SimpleValuationService:
             if not mapped_metrics:
                 LOGGER.error(f"No metrics retrieved for {ticker}")
                 return None
-                
+
             LOGGER.info(f"✅ Retrieved {len(mapped_metrics)} metrics for {ticker}")
+
+            # Cache the result
+            cache_key = f"{ticker}_metrics"
+            self._fetch_cache[cache_key] = (mapped_metrics, datetime.now())
+
             return mapped_metrics
         except Exception as e:
             LOGGER.error(f"Error fetching OpenBB/FMP data for {ticker}: {e}")
@@ -171,13 +187,59 @@ class SimpleValuationService:
                 fcf_per_share = metrics.get("netIncomePerShareTTM") or metrics.get("netIncomePerShare") or 0
             
             if fcf_per_share <= 0:
-                 return {
+                # Fallback 1: P/E Valuation
+                eps = metrics.get("netIncomePerShareTTM") or metrics.get("netIncomePerShare")
+
+                if eps and eps > 0:
+                    pe_ratio = current_price / eps if current_price > 0 else 0
+                    industry_avg_pe = 15  # Conservative baseline
+
+                    if 0 < pe_ratio < 100:  # Sanity check
+                        fair_value = eps * industry_avg_pe
+                        upside = ((fair_value - current_price) / current_price) * 100 if current_price > 0 else 0
+
+                        return {
+                            "method": "P/E Fallback (No FCF)",
+                            "fair_value_per_share": round(fair_value, 2),
+                            "upside_percent": round(upside, 2),
+                            "implied_return_cagr": round(upside/100/5, 4),
+                            "assumptions": {
+                                **self._default_assumptions(),
+                                "pe_used": industry_avg_pe,
+                                "current_pe": round(pe_ratio, 2),
+                                "eps": round(eps, 2)
+                            },
+                            "explanation": f"Using P/E valuation as FCF is negative. EPS: ${eps:.2f}, Target P/E: {industry_avg_pe}"
+                        }
+
+                # Fallback 2: Price/Book Valuation
+                book_value_per_share = metrics.get("bookValuePerShareTTM")
+                if book_value_per_share and book_value_per_share > 0:
+                    target_pb = 1.5
+                    fair_value = book_value_per_share * target_pb
+                    upside = ((fair_value - current_price) / current_price) * 100 if current_price > 0 else 0
+
+                    return {
+                        "method": "P/B Fallback (No FCF/Earnings)",
+                        "fair_value_per_share": round(fair_value, 2),
+                        "upside_percent": round(upside, 2),
+                        "implied_return_cagr": 0,
+                        "assumptions": {
+                            **self._default_assumptions(),
+                            "pb_used": target_pb,
+                            "book_value": round(book_value_per_share, 2)
+                        },
+                        "explanation": f"Using Price-to-Book. Book Value: ${book_value_per_share:.2f}"
+                    }
+
+                # Final fallback: return zero with detailed explanation
+                return {
                     "method": "N/A (Negative FCF/Earnings)",
                     "fair_value_per_share": 0,
                     "upside_percent": 0,
                     "implied_return_cagr": 0,
                     "assumptions": self._default_assumptions(),
-                    "explanation": "Cannot calculate DCF with negative Free Cash Flow or Earnings."
+                    "explanation": "Cannot calculate valuation: negative FCF, earnings, and book value unavailable."
                 }
 
             # Assumptions

@@ -26,9 +26,10 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
         className="absolute inset-0 opacity-30 transition-all duration-1000"
         style={{
           background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%,
-            var(--color-blue-light) 0%,
-            var(--color-blue-dark) 30%,
-            transparent 70%)`,
+            rgba(74, 144, 226, 0.4) 0%,
+            rgba(58, 122, 194, 0.2) 30%,
+            rgba(15, 20, 25, 0.1) 70%,
+            transparent 100%)`,
         }}
       />
 
@@ -88,7 +89,7 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
               className="block mb-2 gradient-text"
               style={{
                 opacity: 0,
-                background: 'linear-gradient(135deg, #4A90E2 0%, #E8E6E3 50%, #4A90E2 100%)',
+                background: 'linear-gradient(135deg, #4A90E2 0%, #E8E6E3 50%, #5B9FE5 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -133,7 +134,7 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
               onClick={onLogin}
               className="group relative px-12 py-5 rounded-xl font-bold text-lg transition-all duration-500 overflow-hidden"
               style={{
-                background: 'linear-gradient(135deg, #4A90E2 0%, #2C5F8D 100%)',
+                background: 'linear-gradient(135deg, #4A90E2 0%, #3A7AC2 100%)',
                 color: '#ffffff',
                 fontFamily: "'Crimson Pro', serif",
                 boxShadow: '0 10px 40px -10px rgba(74, 144, 226, 0.6)',

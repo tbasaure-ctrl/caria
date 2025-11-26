@@ -95,7 +95,7 @@ export const ModelPortfolioWidget: React.FC = () => {
             <WidgetCard
                 title="Model Portfolio"
                 id="model-portfolio-widget"
-                tooltip="Portfolios seleccionados por el modelo basados en análisis cuantitativo. Elige entre balanced, outlier o random según tu estrategia."
+                tooltip="Portfolios selected by the model based on quantitative analysis. Choose between balanced, outlier, or random according to your strategy."
             >
                 <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     Loading model portfolios...
@@ -108,7 +108,7 @@ export const ModelPortfolioWidget: React.FC = () => {
         <WidgetCard
             title="Model Portfolio"
             id="model-portfolio-widget"
-            tooltip="Portfolios seleccionados por el modelo basados en análisis cuantitativo. Elige entre balanced, outlier o random según tu estrategia."
+            tooltip="Portfolios selected by the model based on quantitative analysis. Choose between balanced, outlier, or random according to your strategy."
         >
             <div className="space-y-4">
                 {/* Selection Controls */}

@@ -10,7 +10,7 @@ import { ThesisArena } from './widgets/ThesisArena';
 import { CrisisSimulator } from './widgets/CrisisSimulator';
 import { MacroSimulator } from './widgets/MacroSimulator';
 import { ValuationTool } from './widgets/ValuationTool';
-import { LynchValuationTool } from './widgets/LynchValuationTool';
+import { ValuationWorkshop } from './widgets/ValuationWorkshop';
 import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 import { HiddenGemsScreener } from './widgets/HiddenGemsScreener';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
@@ -146,7 +146,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 setRegimeData({ regime: data.regime, confidence: data.confidence });
             } catch (error) {
                 console.error("Failed to fetch regime data:", error);
-                setRegimeData({ regime: 'slowdown', confidence: 0 });
+                // Set to null so ModelOutlook shows default state
+                setRegimeData(null);
             } finally {
                 setIsLoadingRegime(false);
             }
@@ -411,8 +412,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                         onEnterArena={() => setShowArena(true)}
                                     />
                                 </ProtectedWidget>
-                                <ProtectedWidget featureName="Lynch Valuation Tool">
-                                    <LynchValuationTool />
+                                <ProtectedWidget featureName="Valuation Workshop">
+                                    <ValuationWorkshop />
                                 </ProtectedWidget>
                             </div>
                         </div>

@@ -636,152 +636,189 @@ export const ValuationTool: React.FC = () => {
                                     </div>
 
                                     {/* Histogram - Main Chart */}
-                                    <div 
-                                        className="rounded-lg overflow-hidden"
-                                        style={{
-                                            backgroundColor: 'var(--color-bg-tertiary)',
-                                            border: '1px solid var(--color-border-subtle)',
-                                        }}
-                                    >
-                                        <Plot
-                                            data={[
-                                                {
-                                                    x: mcResult.final_values,
-                                                    type: 'histogram',
-                                                    nbinsx: 50,
-                                                    marker: {
-                                                        color: 'rgba(100, 150, 200, 0.7)',
-                                                        line: { color: 'rgba(0, 0, 0, 0.3)', width: 1 }
-                                                    },
-                                                    name: 'Price Distribution',
-                                                },
-                                                // P10 line
-                                                {
-                                                    x: [mcResult.percentiles.p10, mcResult.percentiles.p10],
-                                                    y: [0, 1],
-                                                    type: 'scatter',
-                                                    mode: 'lines',
-                                                    line: { color: 'var(--color-negative)', width: 2, dash: 'dash' },
-                                                    name: 'P10 (Bear)',
-                                                    yaxis: 'y2',
-                                                    showlegend: false,
-                                                },
-                                                // P50 line
-                                                {
-                                                    x: [mcResult.percentiles.p50, mcResult.percentiles.p50],
-                                                    y: [0, 1],
-                                                    type: 'scatter',
-                                                    mode: 'lines',
-                                                    line: { color: 'var(--color-text-primary)', width: 3 },
-                                                    name: 'P50 (Median)',
-                                                    yaxis: 'y2',
-                                                    showlegend: false,
-                                                },
-                                                // P90 line
-                                                {
-                                                    x: [mcResult.percentiles.p90, mcResult.percentiles.p90],
-                                                    y: [0, 1],
-                                                    type: 'scatter',
-                                                    mode: 'lines',
-                                                    line: { color: 'var(--color-positive)', width: 2, dash: 'dash' },
-                                                    name: 'P90 (Bull)',
-                                                    yaxis: 'y2',
-                                                    showlegend: false,
-                                                },
-                                            ] as any}
-                                            layout={{
-                                                ...mcLayout,
-                                                title: { text: "Price Distribution (Histogram)", font: { color: "#F2F4F7", size: 14 } },
-                                                xaxis: { 
-                                                    ...mcLayout.xaxis,
-                                                    title: "Final Price ($)",
-                                                },
-                                                yaxis: {
-                                                    title: "Frequency",
-                                                    gridcolor: "#1E2733",
-                                                    color: "#6B7A8F",
-                                                    tickfont: { size: 11 }
-                                                },
-                                                yaxis2: {
-                                                    overlaying: 'y',
-                                                    range: [0, 1],
-                                                    showgrid: false,
-                                                    showticklabels: false,
-                                                },
-                                                shapes: [
-                                                    {
-                                                        type: 'line',
-                                                        xref: 'x',
-                                                        yref: 'paper',
-                                                        x0: mcResult.percentiles.p10,
-                                                        y0: 0,
-                                                        x1: mcResult.percentiles.p10,
-                                                        y1: 1,
-                                                        line: { color: 'var(--color-negative)', width: 2, dash: 'dash' }
-                                                    },
-                                                    {
-                                                        type: 'line',
-                                                        xref: 'x',
-                                                        yref: 'paper',
-                                                        x0: mcResult.percentiles.p50,
-                                                        y0: 0,
-                                                        x1: mcResult.percentiles.p50,
-                                                        y1: 1,
-                                                        line: { color: 'var(--color-text-primary)', width: 3 }
-                                                    },
-                                                    {
-                                                        type: 'line',
-                                                        xref: 'x',
-                                                        yref: 'paper',
-                                                        x0: mcResult.percentiles.p90,
-                                                        y0: 0,
-                                                        x1: mcResult.percentiles.p90,
-                                                        y1: 1,
-                                                        line: { color: 'var(--color-positive)', width: 2, dash: 'dash' }
-                                                    },
-                                                ],
-                                                annotations: [
-                                                    {
-                                                        x: mcResult.percentiles.p10,
-                                                        y: 0.95,
-                                                        yref: 'paper',
-                                                        text: 'P10',
-                                                        showarrow: false,
-                                                        font: { color: 'var(--color-negative)', size: 12 },
-                                                        bgcolor: 'rgba(0,0,0,0.5)',
-                                                        bordercolor: 'var(--color-negative)',
-                                                        borderwidth: 1,
-                                                    },
-                                                    {
-                                                        x: mcResult.percentiles.p50,
-                                                        y: 0.95,
-                                                        yref: 'paper',
-                                                        text: 'P50',
-                                                        showarrow: false,
-                                                        font: { color: 'var(--color-text-primary)', size: 12, bold: true },
-                                                        bgcolor: 'rgba(0,0,0,0.5)',
-                                                        bordercolor: 'var(--color-text-primary)',
-                                                        borderwidth: 1,
-                                                    },
-                                                    {
-                                                        x: mcResult.percentiles.p90,
-                                                        y: 0.95,
-                                                        yref: 'paper',
-                                                        text: 'P90',
-                                                        showarrow: false,
-                                                        font: { color: 'var(--color-positive)', size: 12 },
-                                                        bgcolor: 'rgba(0,0,0,0.5)',
-                                                        bordercolor: 'var(--color-positive)',
-                                                        borderwidth: 1,
-                                                    },
-                                                ],
-                                                height: 320,
-                                            }}
-                                            config={{ displayModeBar: false, responsive: true }}
-                                            style={{ width: "100%", height: "320px" }}
-                                            useResizeHandler
-                                        />
-                                    </div>
+                                    {(() => {
+                                        // Calculate dynamic X-axis range based on price distribution
+                                        const finalValues = mcResult.final_values;
+                                        const minPrice = Math.min(...finalValues);
+                                        const maxPrice = Math.max(...finalValues);
+                                        
+                                        // Use percentiles for a focused view (P5 to P95 covers 90% of outcomes)
+                                        const p5 = mcResult.percentiles.p5 || minPrice;
+                                        const p95 = mcResult.percentiles.p95 || maxPrice;
+                                        
+                                        // Calculate range and add 15% padding on each side for readability
+                                        const percentileRange = p95 - p5;
+                                        const padding = percentileRange * 0.15;
+                                        
+                                        // Set axis bounds with padding, ensuring we don't go below 0
+                                        let xAxisMin = Math.max(0, p5 - padding);
+                                        let xAxisMax = p95 + padding;
+                                        
+                                        // If current price is available, ensure it's visible in context
+                                        const currentPrice = valuation?.current_price;
+                                        if (currentPrice) {
+                                            // Expand range if current price is outside the percentile range
+                                            if (currentPrice < p5) {
+                                                xAxisMin = Math.max(0, currentPrice * 0.8);
+                                            }
+                                            if (currentPrice > p95) {
+                                                xAxisMax = currentPrice * 1.2;
+                                            }
+                                        }
+                                        
+                                        const adjustedMin = xAxisMin;
+                                        const adjustedMax = xAxisMax;
+                                        
+                                        return (
+                                            <div 
+                                                className="rounded-lg overflow-hidden"
+                                                style={{
+                                                    backgroundColor: 'var(--color-bg-tertiary)',
+                                                    border: '1px solid var(--color-border-subtle)',
+                                                }}
+                                            >
+                                                <Plot
+                                                    data={[
+                                                        {
+                                                            x: mcResult.final_values,
+                                                            type: 'histogram',
+                                                            nbinsx: 50,
+                                                            marker: {
+                                                                color: 'rgba(100, 150, 200, 0.7)',
+                                                                line: { color: 'rgba(0, 0, 0, 0.3)', width: 1 }
+                                                            },
+                                                            name: 'Price Distribution',
+                                                        },
+                                                        // P10 line
+                                                        {
+                                                            x: [mcResult.percentiles.p10, mcResult.percentiles.p10],
+                                                            y: [0, 1],
+                                                            type: 'scatter',
+                                                            mode: 'lines',
+                                                            line: { color: 'var(--color-negative)', width: 2, dash: 'dash' },
+                                                            name: 'P10 (Bear)',
+                                                            yaxis: 'y2',
+                                                            showlegend: false,
+                                                        },
+                                                        // P50 line
+                                                        {
+                                                            x: [mcResult.percentiles.p50, mcResult.percentiles.p50],
+                                                            y: [0, 1],
+                                                            type: 'scatter',
+                                                            mode: 'lines',
+                                                            line: { color: 'var(--color-text-primary)', width: 3 },
+                                                            name: 'P50 (Median)',
+                                                            yaxis: 'y2',
+                                                            showlegend: false,
+                                                        },
+                                                        // P90 line
+                                                        {
+                                                            x: [mcResult.percentiles.p90, mcResult.percentiles.p90],
+                                                            y: [0, 1],
+                                                            type: 'scatter',
+                                                            mode: 'lines',
+                                                            line: { color: 'var(--color-positive)', width: 2, dash: 'dash' },
+                                                            name: 'P90 (Bull)',
+                                                            yaxis: 'y2',
+                                                            showlegend: false,
+                                                        },
+                                                    ] as any}
+                                                    layout={{
+                                                        ...mcLayout,
+                                                        title: { text: "Price Distribution (Histogram)", font: { color: "#F2F4F7", size: 14 } },
+                                                        xaxis: { 
+                                                            ...mcLayout.xaxis,
+                                                            title: "Final Price ($)",
+                                                            range: [adjustedMin, adjustedMax],
+                                                        },
+                                                        yaxis: {
+                                                            title: "Frequency",
+                                                            gridcolor: "#1E2733",
+                                                            color: "#6B7A8F",
+                                                            tickfont: { size: 11 }
+                                                        },
+                                                        yaxis2: {
+                                                            overlaying: 'y',
+                                                            range: [0, 1],
+                                                            showgrid: false,
+                                                            showticklabels: false,
+                                                        },
+                                                        shapes: [
+                                                            {
+                                                                type: 'line',
+                                                                xref: 'x',
+                                                                yref: 'paper',
+                                                                x0: mcResult.percentiles.p10,
+                                                                y0: 0,
+                                                                x1: mcResult.percentiles.p10,
+                                                                y1: 1,
+                                                                line: { color: 'var(--color-negative)', width: 2, dash: 'dash' }
+                                                            },
+                                                            {
+                                                                type: 'line',
+                                                                xref: 'x',
+                                                                yref: 'paper',
+                                                                x0: mcResult.percentiles.p50,
+                                                                y0: 0,
+                                                                x1: mcResult.percentiles.p50,
+                                                                y1: 1,
+                                                                line: { color: 'var(--color-text-primary)', width: 3 }
+                                                            },
+                                                            {
+                                                                type: 'line',
+                                                                xref: 'x',
+                                                                yref: 'paper',
+                                                                x0: mcResult.percentiles.p90,
+                                                                y0: 0,
+                                                                x1: mcResult.percentiles.p90,
+                                                                y1: 1,
+                                                                line: { color: 'var(--color-positive)', width: 2, dash: 'dash' }
+                                                            },
+                                                        ],
+                                                        annotations: [
+                                                            {
+                                                                x: mcResult.percentiles.p10,
+                                                                y: 0.95,
+                                                                yref: 'paper',
+                                                                text: 'P10',
+                                                                showarrow: false,
+                                                                font: { color: 'var(--color-negative)', size: 12 },
+                                                                bgcolor: 'rgba(0,0,0,0.5)',
+                                                                bordercolor: 'var(--color-negative)',
+                                                                borderwidth: 1,
+                                                            },
+                                                            {
+                                                                x: mcResult.percentiles.p50,
+                                                                y: 0.95,
+                                                                yref: 'paper',
+                                                                text: 'P50',
+                                                                showarrow: false,
+                                                                font: { color: 'var(--color-text-primary)', size: 12, bold: true },
+                                                                bgcolor: 'rgba(0,0,0,0.5)',
+                                                                bordercolor: 'var(--color-text-primary)',
+                                                                borderwidth: 1,
+                                                            },
+                                                            {
+                                                                x: mcResult.percentiles.p90,
+                                                                y: 0.95,
+                                                                yref: 'paper',
+                                                                text: 'P90',
+                                                                showarrow: false,
+                                                                font: { color: 'var(--color-positive)', size: 12 },
+                                                                bgcolor: 'rgba(0,0,0,0.5)',
+                                                                bordercolor: 'var(--color-positive)',
+                                                                borderwidth: 1,
+                                                            },
+                                                        ],
+                                                        height: 320,
+                                                    }}
+                                                    config={{ displayModeBar: false, responsive: true }}
+                                                    style={{ width: "100%", height: "320px" }}
+                                                    useResizeHandler
+                                                />
+                                            </div>
+                                        );
+                                    })()}
 
                                     {/* Probability Explanation */}
                                     <div 

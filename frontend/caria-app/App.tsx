@@ -35,14 +35,6 @@ const App: React.FC = () => {
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
 
-  // Effect to check for token on initial load
-  useEffect(() => {
-    const token = getToken();
-    if (token) {
-      setAuthToken(token);
-    }
-  }, []);
-
   const handleShowLogin = () => {
     setLoginModalOpen(true);
     setRegisterModalOpen(false);
@@ -52,6 +44,22 @@ const App: React.FC = () => {
     setRegisterModalOpen(true);
     setLoginModalOpen(false);
   };
+
+  // Effect to check for token on initial load
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      setAuthToken(token);
+    }
+    
+    // Check for login query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('login') === 'true' && !token) {
+      handleShowLogin();
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const handleLoginSuccess = (token: string) => {
     saveToken(token);
@@ -98,16 +106,12 @@ const App: React.FC = () => {
             )
           } />
 
-          {/* Protected Routes */}
-          <Route element={
-            <ProtectedRoute>
-              <DashboardLayout onLogout={handleLogout} />
-            </ProtectedRoute>
-          }>
+          {/* Dashboard Routes - accessible without login, but widgets may require auth */}
+          <Route element={<DashboardLayout onLogout={handleLogout} />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/resources" element={<ResourcesPage />} />
-            {/* Fallback for unknown protected routes */}
+            {/* Fallback for unknown routes */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Routes>

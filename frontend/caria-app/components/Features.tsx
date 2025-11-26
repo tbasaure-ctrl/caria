@@ -44,15 +44,15 @@ const useOnScreen = (ref: React.RefObject<HTMLElement>, threshold: number = 0.1)
 const featuresData: Feature[] = [
   {
     title: 'AI-Powered Portfolio Intelligence',
-    description: 'Track your investments with real-time analytics, advanced metrics (Sharpe, Alpha, Beta), and stress test your portfolio against different economic scenarios with Monte Carlo simulations. Our comprehensive portfolio analysis provides deep insights into your holdings, risk exposure, and performance attribution. Monitor your investments with institutional-grade tools that help you make informed decisions and optimize your asset allocation for long-term success.',
+    description: 'Real-time analytics, advanced metrics, and Monte Carlo simulations. Track performance, analyze risk, and optimize allocation with institutional-grade tools.',
   },
   {
     title: 'Market Intelligence & Regime Detection',
-    description: 'Stay ahead with our proprietary macroeconomic regime detection that adapts your strategy to market conditions in real-time. Understand market cycles, identify regime shifts, and position your portfolio accordingly. Our advanced algorithms analyze multiple economic indicators, sentiment data, and historical patterns to provide you with actionable insights that help you navigate volatile markets with confidence.',
+    description: 'Proprietary algorithms detect market regimes in real-time. Adapt your strategy to changing conditions with actionable insights from economic indicators and sentiment data.',
   },
   {
     title: 'Collaborative Insights',
-    description: 'Explore investment ideas, share your analysis, and learn from a community of driven investors in our exclusive forum. Engage in thoughtful discussions, challenge investment theses, and discover new opportunities through peer-to-peer learning. Connect with like-minded investors who value fundamental analysis, long-term thinking, and evidence-based decision making.',
+    description: 'Share ideas, challenge theses, and learn from a community of driven investors. Thoughtful discussions and peer-to-peer learning to elevate your analysis.',
   },
 ];
 

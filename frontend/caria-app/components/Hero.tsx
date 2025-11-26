@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 interface HeroProps {
-    onLogin: () => void;
+    onLogin?: () => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
@@ -61,11 +61,8 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
               textAlign: 'center',
               letterSpacing: '-0.03em',
             }}>
-            <span className="block mb-3" style={{ opacity: 0, animation: 'fadeIn 0.8s ease-out 0.2s forwards' }}>
-              Aim Higher
-            </span>
             <span
-              className="block mb-3 gradient-text"
+              className="block gradient-text"
               style={{
                 opacity: 0,
                 background: 'linear-gradient(135deg, #4A90E2 0%, #E8E6E3 50%, #5B9FE5 100%)',
@@ -75,10 +72,7 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
                 backgroundSize: '200% auto',
                 animation: 'fadeIn 0.8s ease-out 0.5s forwards, shimmer 3s linear infinite',
               }}>
-              Build Your Own
-            </span>
-            <span className="block" style={{ opacity: 0, animation: 'fadeIn 0.8s ease-out 0.8s forwards' }}>
-              Financial Freedom
+              Own Your Investments
             </span>
           </h1>
 
@@ -107,42 +101,6 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
             creating an invaluable partner for your financial journey.
           </p>
 
-          {/* CTA - modern and engaging */}
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-5 fade-in delay-500">
-            <button
-              onClick={onLogin}
-              className="group relative px-12 py-5 rounded-xl font-bold text-lg transition-all duration-500 overflow-hidden"
-              style={{
-                background: 'linear-gradient(135deg, #4A90E2 0%, #3A7AC2 100%)',
-                color: '#ffffff',
-                fontFamily: "'Crimson Pro', serif",
-                boxShadow: '0 10px 40px -10px rgba(74, 144, 226, 0.6)',
-                border: '1px solid rgba(74, 144, 226, 0.5)',
-                letterSpacing: '0.02em',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
-                e.currentTarget.style.boxShadow = '0 20px 60px -10px rgba(74, 144, 226, 0.8)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = '0 10px 40px -10px rgba(74, 144, 226, 0.6)';
-              }}
-            >
-              <span className="relative z-10 flex items-center gap-3">
-                Discover Caria
-                <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </span>
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%)',
-                }}
-              ></div>
-            </button>
-          </div>
         </div>
       </div>
 

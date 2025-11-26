@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CariaLogoIcon } from './Icons';
 
 interface HeaderProps {
-    onLogin: () => void;
+    onLogin?: () => void;
     onRegister?: () => void;
 }
 
@@ -141,28 +141,6 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onRegister }) => {
                             </a>
                         </nav>
 
-                        {/* Auth Buttons */}
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={onRegister || onLogin}
-                                className="px-5 py-2.5 text-sm font-semibold rounded-md transition-all duration-200"
-                                style={{
-                                    backgroundColor: 'var(--color-accent-primary)',
-                                    color: '#FFFFFF',
-                                    fontFamily: 'var(--font-body)'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'var(--color-accent-secondary)';
-                                    e.currentTarget.style.transform = 'translateY(-1px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'var(--color-accent-primary)';
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                }}
-                            >
-                                Get Started
-                            </button>
-                        </div>
                     </div>
                 </div>
             </header>

@@ -5,8 +5,8 @@ import { Features } from './Features';
 import { Footer } from './Footer';
 
 interface LandingPageProps {
-    onLogin: () => void;
-    onRegister: () => void;
+    onLogin?: () => void;
+    onRegister?: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onRegister }) => {

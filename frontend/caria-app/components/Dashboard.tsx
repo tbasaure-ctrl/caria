@@ -5,6 +5,7 @@ import { CommunityFeed } from './widgets/CommunityFeed';
 import { RankingsWidget } from './widgets/RankingsWidget';
 import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
 import { RegimeTestWidget } from './widgets/RegimeTestWidget';
+import { IndustryResearch } from './widgets/IndustryResearch';
 import { ThesisArena } from './widgets/ThesisArena';
 import { CrisisSimulator } from './widgets/CrisisSimulator';
 import { MacroSimulator } from './widgets/MacroSimulator';
@@ -348,6 +349,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             
                             <div className="grid lg:grid-cols-2 gap-6">
                                 <MacroSimulator />
+                                <ProtectedWidget featureName="Regime Test">
+                                    <RegimeTestWidget />
+                                </ProtectedWidget>
                             </div>
                         </div>
                     </div>
@@ -422,8 +426,38 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                         onEnterArena={() => setShowArena(true)}
                                     />
                                 </ProtectedWidget>
-                                <RegimeTestWidget />
                             </div>
+                        </div>
+
+                        {/* Industry Research Section */}
+                        <div className="pt-4">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div 
+                                    className="w-1 h-6 rounded-full"
+                                    style={{ backgroundColor: 'var(--color-accent-primary)' }}
+                                />
+                                <div>
+                                    <h2 
+                                        className="text-xl font-semibold"
+                                        style={{ 
+                                            fontFamily: 'var(--font-display)',
+                                            color: 'var(--color-text-primary)' 
+                                        }}
+                                    >
+                                        Industry Research
+                                    </h2>
+                                    <p 
+                                        className="text-sm mt-0.5"
+                                        style={{ color: 'var(--color-text-muted)' }}
+                                    >
+                                        Sector deep dives and industry analysis
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <ProtectedWidget featureName="Industry Research">
+                                <IndustryResearch />
+                            </ProtectedWidget>
                         </div>
                     </div>
                 )}

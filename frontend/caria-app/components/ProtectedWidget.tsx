@@ -10,14 +10,7 @@ interface ProtectedWidgetProps {
 
 // Feature descriptions to intrigue users
 const featureDescriptions: Record<string, string> = {
-    'Portfolio Management': 'Track your investments, analyze performance, and optimize your portfolio allocation in real-time.',
-    'Portfolio Analytics': 'Deep dive into your portfolio\'s risk-return profile, sector allocation, and performance metrics.',
-    'Alpha Stock Picker': 'Discover AI-powered stock picks based on momentum, quality, valuation, and catalyst analysis.',
-    'Hidden Gems Screener': 'Uncover undervalued opportunities before the market catches on.',
-    'Investment Thesis Analysis': 'Challenge your investment ideas against Caria\'s AI analysis. Uncover biases and strengthen your conviction.',
-    'Valuation Tool': 'Run DCF models, Monte Carlo simulations, and multi-factor analysis to determine fair value.',
-    'Crisis Simulator': 'Stress test your portfolio against historical market crashes and economic downturns.',
-    'Community': 'Join the investment community, share theses, and learn from other investors.',
+    'Portfolio Management': 'Add your holdings to track your investments, analyze performance, and optimize your portfolio allocation in real-time. An account is required to save and follow your portfolio.',
 };
 
 // Personalized unlock messages for each feature
@@ -43,7 +36,10 @@ export const ProtectedWidget: React.FC<ProtectedWidgetProps> = ({ children, feat
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const featureDescription = description || featureDescriptions[featureName] || `Unlock ${featureName} to access powerful investment tools and insights.`;
+    // Only protect Portfolio Management - all other features are open
+    const shouldProtect = featureName === 'Portfolio Management';
+    
+    const featureDescription = description || featureDescriptions[featureName] || `An account is required to add holdings and track your portfolio. This allows Caria to provide you with personalized insights and follow your investment journey.`;
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -86,6 +82,11 @@ export const ProtectedWidget: React.FC<ProtectedWidgetProps> = ({ children, feat
             setIsLoading(false);
         }
     };
+
+    // If feature doesn't need protection, render children directly
+    if (!shouldProtect) {
+        return <>{children}</>;
+    }
 
     if (!token) {
         return (
@@ -135,6 +136,21 @@ export const ProtectedWidget: React.FC<ProtectedWidgetProps> = ({ children, feat
                     >
                         {featureDescription}
                     </p>
+                    <div 
+                        className="px-4 py-3 rounded-lg text-xs mb-4 max-w-md mx-auto"
+                        style={{
+                            backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                            border: '1px solid rgba(74, 144, 226, 0.2)',
+                            color: 'var(--color-text-secondary)',
+                        }}
+                    >
+                        <p className="mb-1 font-medium" style={{ color: 'var(--color-accent-primary)' }}>
+                            Why create an account?
+                        </p>
+                        <p>
+                            An account is required to add holdings and track your portfolio. This allows Caria to provide you with personalized insights and follow your investment journey. All other features are available without an account.
+                        </p>
+                    </div>
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
@@ -157,7 +173,7 @@ export const ProtectedWidget: React.FC<ProtectedWidgetProps> = ({ children, feat
                             e.currentTarget.style.boxShadow = 'none';
                         }}
                     >
-                        {unlockMessages[featureName] || `Unlock ${featureName}`} →
+                        Create Account to Add Holdings →
                     </button>
                 </div>
 

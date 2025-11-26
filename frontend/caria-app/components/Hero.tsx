@@ -114,18 +114,20 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
               className="group relative px-8 py-4 text-lg font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
               style={{
                 fontFamily: 'var(--font-display)',
-                background: 'linear-gradient(135deg, #4A90E2 0%, #5B9FE5 100%)',
-                color: '#FFFFFF',
-                boxShadow: '0 8px 24px rgba(74, 144, 226, 0.4)',
-                border: '1px solid rgba(74, 144, 226, 0.5)',
+                background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+                color: '#E8E6E3',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(232, 230, 227, 0.1)',
+                border: '1px solid rgba(232, 230, 227, 0.2)',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 12px 32px rgba(74, 144, 226, 0.6)';
-                e.currentTarget.style.background = 'linear-gradient(135deg, #5B9FE5 0%, #6BAEF0 100%)';
+                e.currentTarget.style.boxShadow = '0 12px 32px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(232, 230, 227, 0.2)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%)';
+                e.currentTarget.style.borderColor = 'rgba(232, 230, 227, 0.3)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 8px 24px rgba(74, 144, 226, 0.4)';
-                e.currentTarget.style.background = 'linear-gradient(135deg, #4A90E2 0%, #5B9FE5 100%)';
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(232, 230, 227, 0.1)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)';
+                e.currentTarget.style.borderColor = 'rgba(232, 230, 227, 0.2)';
               }}
             >
               <span className="relative z-10 flex items-center gap-2">

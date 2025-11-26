@@ -11,8 +11,6 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [occupation, setOccupation] = useState('');
-    const [selfDescription, setSelfDescription] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -20,13 +18,28 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
         e.preventDefault();
         setError(null);
 
-        if (password !== confirmPassword) {
-            setError('Passwords do not match');
+        // Validate email
+        if (!email || !email.trim()) {
+            setError('Email is required');
             return;
         }
 
-        if (password.length < 8) {
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
+        // Validate password
+        if (!password || password.length < 8) {
             setError('Password must be at least 8 characters');
+            return;
+        }
+
+        // Validate password match
+        if (password !== confirmPassword) {
+            setError('Passwords do not match');
             return;
         }
 
@@ -39,10 +52,8 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
-                    email, 
-                    password,
-                    occupation: occupation || undefined,
-                    self_description: selfDescription || undefined
+                    email: email.trim(), 
+                    password
                 }),
             });
 
@@ -110,7 +121,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
                             className="text-sm mt-0.5"
                             style={{ color: 'var(--color-text-muted)' }}
                         >
-                            Join Caria for professional-grade research
+                            Create an account to track your portfolio and get personalized insights
                         </p>
                     </div>
                     <button
@@ -151,7 +162,6 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            required
                             className="w-full px-4 py-3 rounded-lg text-sm"
                             style={{
                                 backgroundColor: 'var(--color-bg-tertiary)',
@@ -173,7 +183,6 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            required
                             className="w-full px-4 py-3 rounded-lg text-sm"
                             style={{
                                 backgroundColor: 'var(--color-bg-tertiary)',
@@ -195,7 +204,6 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
                             type="password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
                             className="w-full px-4 py-3 rounded-lg text-sm"
                             style={{
                                 backgroundColor: 'var(--color-bg-tertiary)',
@@ -206,46 +214,20 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
                         />
                     </div>
 
-                    <div>
-                        <label 
-                            className="block text-xs font-medium tracking-wider uppercase mb-2"
-                            style={{ color: 'var(--color-text-muted)' }}
-                        >
-                            Occupation <span className="text-xs normal-case" style={{ color: 'var(--color-text-subtle)' }}>(optional)</span>
-                        </label>
-                        <input
-                            type="text"
-                            value={occupation}
-                            onChange={(e) => setOccupation(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg text-sm"
-                            style={{
-                                backgroundColor: 'var(--color-bg-tertiary)',
-                                border: '1px solid var(--color-border-subtle)',
-                                color: 'var(--color-text-primary)',
-                            }}
-                            placeholder="What do you do for a living?"
-                        />
-                    </div>
-
-                    <div>
-                        <label 
-                            className="block text-xs font-medium tracking-wider uppercase mb-2"
-                            style={{ color: 'var(--color-text-muted)' }}
-                        >
-                            Tell us about yourself <span className="text-xs normal-case" style={{ color: 'var(--color-text-subtle)' }}>(optional)</span>
-                        </label>
-                        <textarea
-                            value={selfDescription}
-                            onChange={(e) => setSelfDescription(e.target.value)}
-                            rows={3}
-                            className="w-full px-4 py-3 rounded-lg text-sm resize-none"
-                            style={{
-                                backgroundColor: 'var(--color-bg-tertiary)',
-                                border: '1px solid var(--color-border-subtle)',
-                                color: 'var(--color-text-primary)',
-                            }}
-                            placeholder="Tell us a bit about yourself..."
-                        />
+                    <div 
+                        className="px-4 py-3 rounded-lg text-xs"
+                        style={{
+                            backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                            border: '1px solid rgba(74, 144, 226, 0.2)',
+                            color: 'var(--color-text-secondary)',
+                        }}
+                    >
+                        <p className="mb-1 font-medium" style={{ color: 'var(--color-accent-primary)' }}>
+                            Why create an account?
+                        </p>
+                        <p>
+                            An account is required to add holdings and track your portfolio. This allows Caria to provide you with personalized insights and follow your investment journey. All other features are available without an account.
+                        </p>
                     </div>
 
                     <button

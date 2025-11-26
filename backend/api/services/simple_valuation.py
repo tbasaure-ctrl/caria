@@ -339,23 +339,62 @@ class SimpleValuationService:
         Solves for 'g' such that DCF(g) == current_price.
         """
         try:
-            fcf_per_share = metrics.get("freeCashFlowPerShareTTM") or metrics.get("freeCashFlowPerShare")
-            if not fcf_per_share:
-                fcf_per_share = metrics.get("netIncomePerShareTTM") or metrics.get("netIncomePerShare") or 0
+            # Try multiple sources for FCF per share
+            fcf_per_share = (
+                metrics.get("freeCashFlowPerShareTTM") or 
+                metrics.get("freeCashFlowPerShare") or
+                metrics.get("freeCashFlowPerShareAnnual") or
+                0
+            )
             
-            if fcf_per_share <= 0:
-                return {"implied_growth_rate": 0, "explanation": "N/A (Negative FCF)"}
+            # If no FCF, try net income per share as proxy
+            if not fcf_per_share or fcf_per_share <= 0:
+                fcf_per_share = (
+                    metrics.get("netIncomePerShareTTM") or 
+                    metrics.get("netIncomePerShare") or
+                    metrics.get("netIncomePerShareAnnual") or
+                    0
+                )
+            
+            # If still no data, try to calculate from total FCF and shares
+            if not fcf_per_share or fcf_per_share <= 0:
+                total_fcf = (
+                    metrics.get("freeCashFlow") or
+                    metrics.get("freeCashFlowTTM") or
+                    metrics.get("operatingCashFlow") or
+                    0
+                )
+                shares_outstanding = (
+                    metrics.get("sharesOutstanding") or
+                    metrics.get("weightedAverageSharesOutstanding") or
+                    0
+                )
+                if total_fcf > 0 and shares_outstanding > 0:
+                    fcf_per_share = total_fcf / shares_outstanding
+            
+            if not fcf_per_share or fcf_per_share <= 0:
+                LOGGER.warning(f"Insufficient FCF data for reverse DCF calculation")
+                return {
+                    "implied_growth_rate": 0, 
+                    "explanation": "Insufficient cash flow data to calculate implied growth rate."
+                }
 
             discount_rate = assumptions.get("discount_rate", 0.10)
             terminal_growth = assumptions.get("terminal_growth_rate", 0.03)
             years = 5
 
+            # Ensure terminal_growth < discount_rate for valid terminal value calculation
+            if terminal_growth >= discount_rate:
+                terminal_growth = discount_rate - 0.01
+                LOGGER.warning(f"Terminal growth adjusted to {terminal_growth:.2%} to be less than discount rate")
+
             # Binary search for implied growth
             low = -0.50
             high = 1.00
             implied_growth = 0.0
+            tolerance = 0.001  # 0.1% tolerance
             
-            for _ in range(20): # 20 iterations is enough precision
+            for iteration in range(50):  # Increased iterations for better precision
                 mid = (low + high) / 2
                 
                 # Calculate DCF with 'mid' growth
@@ -364,9 +403,15 @@ class SimpleValuationService:
                     fcf = fcf_per_share * ((1 + mid) ** i)
                     future_cash_flows.append(fcf / ((1 + discount_rate) ** i))
                 
+                # Terminal value calculation
                 terminal_val = (fcf_per_share * ((1 + mid) ** years) * (1 + terminal_growth)) / (discount_rate - terminal_growth)
                 terminal_val_discounted = terminal_val / ((1 + discount_rate) ** years)
                 fair_val = sum(future_cash_flows) + terminal_val_discounted
+                
+                # Check convergence
+                if abs(fair_val - current_price) / current_price < tolerance:
+                    implied_growth = mid
+                    break
                 
                 if fair_val > current_price:
                     high = mid
@@ -374,13 +419,30 @@ class SimpleValuationService:
                     low = mid
                 implied_growth = mid
 
+            # Validate result
+            if abs(implied_growth) > 2.0:  # Unrealistic growth (>200%)
+                LOGGER.warning(f"Implied growth rate seems unrealistic: {implied_growth:.2%}")
+                return {
+                    "implied_growth_rate": 0,
+                    "explanation": "Calculated growth rate appears unrealistic. Stock may be mispriced or data insufficient."
+                }
+
             return {
                 "implied_growth_rate": round(implied_growth, 4),
-                "explanation": f"The market is pricing in a {implied_growth*100:.1f}% annual growth rate for the next 5 years."
+                "explanation": f"The market is pricing in a {implied_growth*100:.1f}% annual growth rate for the next {years} years."
+            }
+        except ZeroDivisionError:
+            LOGGER.error("Reverse DCF error: Division by zero in terminal value calculation")
+            return {
+                "implied_growth_rate": 0, 
+                "explanation": "Calculation error: Invalid discount rate or terminal growth assumptions."
             }
         except Exception as e:
-            LOGGER.error(f"Reverse DCF error: {e}")
-            return {"implied_growth_rate": 0, "explanation": "Calculation failed"}
+            LOGGER.error(f"Reverse DCF error: {e}", exc_info=True)
+            return {
+                "implied_growth_rate": 0, 
+                "explanation": f"Calculation failed: {str(e)[:100]}"
+            }
 
     def _calculate_historical_multiples_valuation(
         self,

@@ -168,36 +168,40 @@ async def handle_chat_message(sid: str, data: dict):
     
     if llm_service:
         try:
-            # 1. Get RAG context
-            evidence_text, chunks = llm_service.get_rag_context(message_text)
+            # 1. Detect language and companies mentioned
+            user_language = _detect_language(message_text)
+            mentioned_companies = _extract_companies(message_text)
             
-            # 2. Build prompt
-            system_prompt = (
-                "You are Caria, a legendary and wise investment mentor. "
-                "Blend rigorous fundamental analysis with decades of portfolio management experience. "
-                "Use the retrieved context to ground your answer; if it is insufficient, say so and explain any assumptions. "
-                "Challenge the investor respectfully, highlight asymmetric risks, portfolio sizing implications, and always explain the why. "
-                "Answer in the user's language (Spanish if the user writes in Spanish) and never give trading instructions—focus on insight and reasoning."
+            # 2. Get conversation history for context
+            conversation_context = _build_conversation_context(chat_history.get(user_id, []), max_messages=10)
+            
+            # 3. Get RAG context (enhanced with company-specific queries if companies detected)
+            rag_query = message_text
+            if mentioned_companies:
+                # Enhance query with company context
+                rag_query = f"{message_text} [Companies mentioned: {', '.join(mentioned_companies)}]"
+            
+            evidence_text, chunks = llm_service.get_rag_context(rag_query)
+            
+            # 4. Build Socratic, conversational prompt
+            system_prompt = _build_socratic_system_prompt(user_language, mentioned_companies)
+            
+            # 5. Build conversational prompt with context
+            prompt = _build_conversational_prompt(
+                message_text,
+                evidence_text,
+                conversation_context,
+                mentioned_companies,
+                user_language
             )
             
-            prompt = f"""Context from knowledge base:
-{evidence_text}
-
-User Question:
-{message_text}
-
-Answer:"""
-            
-            # 3. Call LLM
-            # Note: LLMService is synchronous, but we are in async function.
-            # For high load, this should be run in executor, but for now direct call is acceptable
-            # or we can use run_in_executor if we want to be strictly non-blocking.
+            # 6. Call LLM
             import asyncio
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(None, llm_service.call_llm, prompt, system_prompt)
             
             if response:
-                ai_response_text = response
+                ai_response_text = response.strip()
             else:
                 ai_response_text = "I couldn't generate a response at this time."
                 
@@ -223,6 +227,105 @@ Answer:"""
     })
     
     await sio.emit('chat_message', response_record, room=sid)
+
+
+def _detect_language(text: str) -> str:
+    """Detect user's language from message text."""
+    # Simple heuristic: check for Spanish indicators
+    spanish_indicators = ['qué', 'cómo', 'cuál', 'dónde', 'por qué', 'tiene', 'crees', 'va a']
+    text_lower = text.lower()
+    if any(indicator in text_lower for indicator in spanish_indicators):
+        return "es"
+    return "en"
+
+
+def _extract_companies(text: str) -> list[str]:
+    """Extract potential company tickers/names from text."""
+    import re
+    # Common ticker pattern: 1-5 uppercase letters
+    tickers = re.findall(r'\b[A-Z]{1,5}\b', text)
+    # Filter out common words that aren't tickers
+    common_words = {'THE', 'AND', 'OR', 'FOR', 'ARE', 'BUT', 'NOT', 'YOU', 'ALL', 'CAN', 'HER', 'WAS', 'ONE', 'OUR', 'OUT', 'DAY', 'GET', 'HAS', 'HIM', 'HIS', 'HOW', 'ITS', 'MAY', 'NEW', 'NOW', 'OLD', 'SEE', 'TWO', 'WAY', 'WHO', 'BOY', 'DID', 'ITS', 'LET', 'PUT', 'SAY', 'SHE', 'TOO', 'USE'}
+    tickers = [t for t in tickers if t not in common_words and len(t) >= 1]
+    
+    # Also look for common company names
+    company_names = ['apple', 'microsoft', 'google', 'amazon', 'nvidia', 'meta', 'tesla', 'nvidia']
+    found_names = []
+    text_lower = text.lower()
+    for name in company_names:
+        if name in text_lower:
+            found_names.append(name.upper())
+    
+    return list(set(tickers + found_names))
+
+
+def _build_conversation_context(messages: list[dict], max_messages: int = 10) -> str:
+    """Build conversation context from recent messages."""
+    if not messages:
+        return ""
+    
+    recent_messages = messages[-max_messages:]
+    context_parts = []
+    for msg in recent_messages:
+        role = msg.get('role', 'user')
+        content = msg.get('message', '')
+        if role == 'user':
+            context_parts.append(f"User: {content}")
+        elif role == 'assistant':
+            context_parts.append(f"Assistant: {content}")
+    
+    return "\n".join(context_parts)
+
+
+def _build_socratic_system_prompt(language: str, companies: list[str]) -> str:
+    """Build a Socratic, conversational system prompt."""
+    lang_instruction = "Responde en español." if language == "es" else "Respond in English."
+    
+    company_context = ""
+    if companies:
+        company_context = f"\nThe user has mentioned: {', '.join(companies)}. If relevant, reference specific metrics or facts about these companies naturally in conversation."
+    
+    return f"""You are Caria, a wise and engaging investment mentor who uses the Socratic method. You guide users through their thinking with thoughtful questions rather than just giving answers.
+
+Your approach:
+- Be conversational and natural, like a trusted advisor having a coffee chat
+- Ask probing questions that help users think deeper about their investments
+- Sometimes respond with ONLY questions (e.g., "NVDA? Has a current P/E of XX. Do you think that will grow next year? What drives their sales?")
+- Use RAG context naturally—don't cite sources, just weave facts into conversation
+- Adapt to the user's language: {lang_instruction}
+- Recognize when companies are mentioned and engage with specific metrics naturally
+- Challenge assumptions gently: "What makes you think that?" "Have you considered...?"
+- Be flexible: sometimes give insights, sometimes just ask questions
+- Never use structured formats like [identified, bias]—be natural and conversational
+{company_context}
+
+Remember: You're not a search engine. You're a mentor having a dialogue. Engage, question, and guide—don't just inform."""
+
+
+def _build_conversational_prompt(
+    user_message: str,
+    rag_context: str,
+    conversation_history: str,
+    companies: list[str],
+    language: str
+) -> str:
+    """Build a natural, conversational prompt."""
+    parts = []
+    
+    if conversation_history:
+        parts.append(f"Previous conversation:\n{conversation_history}\n")
+    
+    if rag_context and rag_context.strip():
+        parts.append(f"Relevant context:\n{rag_context}\n")
+    
+    if companies:
+        parts.append(f"Companies mentioned: {', '.join(companies)}\n")
+    
+    parts.append(f"User's current message:\n{user_message}\n")
+    
+    parts.append("\nRespond naturally and conversationally. Use the Socratic method—ask questions, challenge thinking, guide the user. Be engaging, not robotic.")
+    
+    return "\n".join(parts)
 
 
 def get_chat_history(user_id: str, since_timestamp: Optional[str] = None) -> list[dict]:

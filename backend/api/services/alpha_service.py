@@ -49,10 +49,35 @@ class AlphaService:
         # valuation_score <- value
         # catalyst_score <- growth (proxy)
         
-        df["momentum_score"] = df.get("momentum", 50.0)
-        df["quality_score"] = df.get("profitability", 50.0)
-        df["valuation_score"] = df.get("value", 50.0)
-        df["catalyst_score"] = df.get("growth", 50.0)
+        # Map factor scores to required columns
+        # Use direct column access - create columns if they don't exist
+        df["momentum_score"] = df["momentum"] if "momentum" in df.columns else pd.Series(dtype=float, index=df.index)
+        df["quality_score"] = df["profitability"] if "profitability" in df.columns else pd.Series(dtype=float, index=df.index)
+        df["valuation_score"] = df["value"] if "value" in df.columns else pd.Series(dtype=float, index=df.index)
+        df["catalyst_score"] = df["growth"] if "growth" in df.columns else pd.Series(dtype=float, index=df.index)
+        
+        # Filter out rows where all scores are missing (don't use defaults that make everything equal)
+        required_cols = ["momentum_score", "quality_score", "valuation_score", "catalyst_score"]
+        df = df.dropna(subset=required_cols, how='all')  # Keep rows with at least some data
+        
+        # For rows with partial data, fill only missing individual scores with median of that column
+        # This preserves differentiation between stocks
+        for col in required_cols:
+            if col in df.columns:
+                median_val = df[col].median()
+                if pd.notna(median_val):
+                    df[col] = df[col].fillna(median_val)
+                else:
+                    # If no valid data at all, use 0 instead of 50 to flag as incomplete
+                    df[col] = df[col].fillna(0)
+        
+        # Final check: remove stocks with all zeros (no valid data)
+        df = df[~((df["momentum_score"] == 0) & (df["quality_score"] == 0) & 
+                  (df["valuation_score"] == 0) & (df["catalyst_score"] == 0))]
+        
+        if len(df) == 0:
+            LOGGER.error("No valid candidates after filtering - all stocks have missing data")
+            return []
 
         # 3. Calculate Percentile Ranks
         df["mom_r"] = df["momentum_score"].rank(pct=True)
@@ -237,8 +262,35 @@ class AlphaService:
                     # Calculate scores directly from fundamentals
                     quality_score = self._calculate_quality_from_data(data)
                     valuation_score = self._calculate_valuation_from_data(data, current_price)
-                    momentum_score = 50.0  # Default, would need price history for real momentum
+                    
+                    # Try to calculate real momentum from price history
+                    momentum_score = None
+                    try:
+                        price_history = obb_client.get_price_history(ticker, start_date=None, period="1y")
+                        if price_history:
+                            # Calculate momentum as 1-year return
+                            if hasattr(price_history, 'to_df'):
+                                df_prices = price_history.to_df()
+                                if not df_prices.empty and 'close' in df_prices.columns:
+                                    closes = df_prices['close'].dropna()
+                                    if len(closes) > 20:  # Need at least 20 days
+                                        start_price = closes.iloc[0]
+                                        end_price = closes.iloc[-1]
+                                        if start_price > 0:
+                                            momentum_score = min(max((end_price / start_price - 1) * 100, 0), 100)
+                    except Exception as e:
+                        LOGGER.debug(f"Could not calculate momentum for {ticker}: {e}")
+                    
+                    # Calculate growth score
                     growth_score = self._calculate_growth_from_data(data)
+                    
+                    # If momentum calculation failed, use a proxy based on other factors
+                    if momentum_score is None:
+                        # Use growth as proxy for momentum, or average of quality/valuation if growth unavailable
+                        if growth_score > 0:
+                            momentum_score = min(growth_score * 0.8, 100)  # Momentum typically lower than growth
+                        else:
+                            momentum_score = (quality_score + valuation_score) / 2 * 0.6  # Conservative proxy
                     
                     # Composite score (same weights as CAS)
                     composite = (

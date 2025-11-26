@@ -19,25 +19,32 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onSuccess, onSw
         setError(null);
 
         try {
-            const formData = new URLSearchParams();
-            formData.append('username', email);
-            formData.append('password', password);
-
             const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
                 },
-                body: formData.toString(),
+                body: JSON.stringify({
+                    username: email,
+                    password: password,
+                }),
             });
 
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.detail || 'Login failed');
+                const errorData = await response.json().catch(() => ({ detail: 'Login failed' }));
+                throw new Error(errorData.detail || 'Login failed');
             }
 
             const data = await response.json();
-            onSuccess(data.access_token);
+            // Backend returns { user: {...}, token: { access_token: "...", ... } }
+            if (data.token && data.token.access_token) {
+                onSuccess(data.token.access_token);
+            } else if (data.access_token) {
+                // Fallback for different response format
+                onSuccess(data.access_token);
+            } else {
+                throw new Error('Invalid response format from server');
+            }
         } catch (err: any) {
             setError(err.message || 'An error occurred during login');
         } finally {

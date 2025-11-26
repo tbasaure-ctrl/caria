@@ -87,7 +87,6 @@ const LandingScreen: React.FC<{ onSelectMode: (mode: Mode) => void }> = ({ onSel
                     }}
                 >
                     <div className="text-center">
-                        <div className="text-5xl mb-4">🌱</div>
                         <h3 
                             className="text-xl font-semibold mb-3"
                             style={{ color: 'var(--color-accent-primary)' }}
@@ -118,7 +117,6 @@ const LandingScreen: React.FC<{ onSelectMode: (mode: Mode) => void }> = ({ onSel
                     }}
                 >
                     <div className="text-center">
-                        <div className="text-5xl mb-4">🚀</div>
                         <h3 
                             className="text-xl font-semibold mb-3"
                             style={{ color: 'var(--color-accent-primary)' }}
@@ -136,242 +134,524 @@ const LandingScreen: React.FC<{ onSelectMode: (mode: Mode) => void }> = ({ onSel
 };
 
 const BeginnerWorkspace: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+    const [currentStep, setCurrentStep] = useState(1);
+    const totalSteps = 6;
+    
     const [netIncome, setNetIncome] = useState(2500000);
     const [shares, setShares] = useState(1000000);
+    const [category, setCategory] = useState('stalwart');
     const [peRatio, setPeRatio] = useState(15);
     const [cashFlow, setCashFlow] = useState(2500000);
+    const [growthRate, setGrowthRate] = useState(12);
+    const [dividendYield, setDividendYield] = useState(3);
+    const [equity, setEquity] = useState(10000000);
+    const [debt, setDebt] = useState(5000000);
 
+    const categoryPEs: Record<string, number> = {
+        slow: 10,
+        stalwart: 15,
+        fast: 25,
+        cyclical: 8,
+    };
+
+    const changeStep = (n: number) => {
+        const nextStep = currentStep + n;
+        if (nextStep >= 1 && nextStep <= totalSteps) {
+            setCurrentStep(nextStep);
+        }
+    };
+
+    // Calculations
     const eps = netIncome / shares;
     const price = eps * peRatio;
     const qualityRatio = cashFlow / netIncome;
+    const score = (growthRate + dividendYield) / peRatio;
+    const deRatio = debt / equity;
 
+    // Quality status
     let qualityStatus = '';
     let qualityColor = '';
     let qualityMessage = '';
-
     if (qualityRatio >= 1.0) {
-        qualityStatus = 'High Quality';
-        qualityColor = 'var(--color-positive)';
-        qualityMessage = 'Excellent. The business is generating real cash equal to or greater than its reported profit. The valuation is credible.';
+        qualityStatus = 'High Quality Earnings';
+        qualityColor = '#27ae60';
+        qualityMessage = 'High';
     } else if (qualityRatio >= 0.8) {
-        qualityStatus = 'Caution';
-        qualityColor = 'var(--color-warning)';
-        qualityMessage = 'Cash flow is slightly lower than profit. This might be normal (buying inventory), but check the financial notes.';
+        qualityStatus = 'Acceptable Quality';
+        qualityColor = '#f39c12';
+        qualityMessage = 'Medium';
     } else {
-        qualityStatus = 'Red Flag';
-        qualityColor = 'var(--color-negative)';
-        qualityMessage = 'Warning! Profit is high, but cash is low. Management might be manipulating numbers or customers aren\'t paying bills. Be very careful.';
+        qualityStatus = 'Low Quality (Warning)';
+        qualityColor = '#c0392b';
+        qualityMessage = 'Low';
     }
 
-    let priceAnalysis = '';
-    if (peRatio < 12) {
-        priceAnalysis = 'This is a conservative valuation. The market thinks the company is growing slowly or faces risks.';
-    } else if (peRatio > 25) {
-        priceAnalysis = 'This is a "Growth" valuation. Investors are betting the company will make much more money in the future.';
+    // Valuation score status
+    let scoreStatus = '';
+    let scoreColor = '';
+    let scoreMessage = '';
+    if (score < 1.0) {
+        scoreStatus = 'Overpriced (Poor Value)';
+        scoreColor = '#c0392b';
+        scoreMessage = 'Poor';
+    } else if (score < 1.5) {
+        scoreStatus = 'Fairly Priced';
+        scoreColor = '#f39c12';
+        scoreMessage = 'Fair';
     } else {
-        priceAnalysis = 'At a 15x multiple, the market is saying: "We expect this company to grow at an average pace."';
+        scoreStatus = 'Undervalued (Bargain)';
+        scoreColor = '#27ae60';
+        scoreMessage = 'Bargain';
     }
+
+    // Debt status
+    let deStatus = '';
+    let deColor = '';
+    let deMessage = '';
+    if (deRatio < 0.5) {
+        deStatus = 'Very Safe (Low Debt)';
+        deColor = '#27ae60';
+        deMessage = 'Safe';
+    } else if (deRatio < 1.0) {
+        deStatus = 'Normal / Moderate';
+        deColor = '#f39c12';
+        deMessage = 'Moderate';
+    } else {
+        deStatus = 'Risky (High Leverage)';
+        deColor = '#c0392b';
+        deMessage = 'Risky';
+    }
+
+    // Final verdict
+    let finalVerdict = '';
+    if (qualityMessage === 'High' && scoreMessage === 'Bargain' && deMessage === 'Safe') {
+        finalVerdict = 'STRONG BUY';
+    } else if (qualityMessage === 'Low' || deMessage === 'Risky') {
+        finalVerdict = 'AVOID / SELL';
+    } else {
+        finalVerdict = 'HOLD / WATCH';
+    }
+
+    const progressPercent = ((currentStep - 1) / (totalSteps - 1)) * 100;
 
     return (
-        <div className="space-y-8">
-            <button
-                onClick={onBack}
-                className="text-sm font-medium mb-4"
-                style={{ color: 'var(--color-text-muted)' }}
-            >
-                ← Back to Menu
-            </button>
-
-            {/* Step 1: The Profit Pie */}
-            <div className="space-y-4 pb-6 border-b" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                <h2 
-                    className="text-xl font-semibold"
-                    style={{ color: 'var(--color-text-primary)' }}
-                >
-                    Step 1: The Profit Pie
-                </h2>
-                <p style={{ color: 'var(--color-text-secondary)' }}>
-                    Before we value the whole business, we need to know how much profit belongs to a single share of stock.
-                </p>
-
-                <div className="space-y-4">
-                    <div>
-                        <label className="flex items-center gap-2 mb-2">
-                            <span style={{ color: 'var(--color-text-secondary)', fontWeight: 700 }}>
-                                Total Net Income
-                            </span>
-                            <HelpIcon tooltip="Net Income is the 'bottom line' profit found on the Income Statement. It's what's left after paying all expenses and taxes." />
-                            <span className="ml-auto font-mono font-bold" style={{ color: 'var(--color-accent-primary)' }}>
-                                {formatMoney(netIncome)}
-                            </span>
-                        </label>
-                        <input
-                            type="range"
-                            min="100000"
-                            max="10000000"
-                            step="100000"
-                            value={netIncome}
-                            onChange={(e) => setNetIncome(parseInt(e.target.value))}
-                            className="w-full"
-                            style={{ accentColor: 'var(--color-accent-primary)' }}
-                        />
-                    </div>
-
-                    <div>
-                        <label className="flex items-center gap-2 mb-2">
-                            <span style={{ color: 'var(--color-text-secondary)', fontWeight: 700 }}>
-                                Total Shares Outstanding
-                            </span>
-                            <HelpIcon tooltip="The total number of 'slices' the company is cut into. You can find this on the front of the Balance Sheet or Income Statement." />
-                            <span className="ml-auto font-mono font-bold" style={{ color: 'var(--color-accent-primary)' }}>
-                                {formatNum(shares)}
-                            </span>
-                        </label>
-                        <input
-                            type="range"
-                            min="100000"
-                            max="5000000"
-                            step="50000"
-                            value={shares}
-                            onChange={(e) => setShares(parseInt(e.target.value))}
-                            className="w-full"
-                            style={{ accentColor: 'var(--color-accent-primary)' }}
-                        />
-                    </div>
-                </div>
-
-                <div 
-                    className="p-5 rounded-lg border-l-4"
-                    style={{
-                        backgroundColor: 'rgba(46, 124, 246, 0.1)',
-                        borderLeftColor: 'var(--color-accent-primary)',
+        <div className="space-y-6" style={{ minHeight: '600px' }}>
+            {/* Header */}
+            <div className="text-center">
+                <h1 
+                    className="text-2xl font-bold mb-2"
+                    style={{ 
+                        fontFamily: 'var(--font-display)',
+                        color: 'var(--color-text-primary)' 
                     }}
                 >
-                    <h3 className="text-sm font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-primary)' }}>
-                        Earnings Per Share (EPS)
-                    </h3>
-                    <div className="text-3xl font-bold font-mono mb-2" style={{ color: 'var(--color-accent-primary)' }}>
-                        {formatMoney(eps)}
-                    </div>
-                    <p style={{ color: 'var(--color-text-secondary)' }}>
-                        This means for every share you buy, the company earns this much profit.
-                    </p>
+                    Valuation Engine
+                </h1>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="relative px-10 py-5">
+                <div 
+                    className="absolute top-1/2 left-10 right-10 h-1 -translate-y-1/2"
+                    style={{ backgroundColor: '#eee' }}
+                />
+                <div 
+                    className="absolute top-1/2 left-10 h-1 -translate-y-1/2 transition-all duration-400"
+                    style={{ 
+                        backgroundColor: '#3498db',
+                        width: `${progressPercent}%`
+                    }}
+                />
+                <div className="relative flex justify-between">
+                    {[1, 2, 3, 4, 5, 6].map((step) => (
+                        <div
+                            key={step}
+                            className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-400"
+                            style={{
+                                backgroundColor: step <= currentStep ? '#3498db' : '#fff',
+                                border: `3px solid ${step <= currentStep ? '#3498db' : '#eee'}`,
+                                color: step <= currentStep ? '#fff' : '#7f8c8d',
+                                transform: step === currentStep ? 'scale(1.2)' : 'scale(1)',
+                            }}
+                        >
+                            {step === 6 ? '🏁' : step}
+                        </div>
+                    ))}
                 </div>
             </div>
 
-            {/* Step 2: The Price Tag */}
-            <div className="space-y-4 pb-6 border-b" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                <h2 
-                    className="text-xl font-semibold"
-                    style={{ color: 'var(--color-text-primary)' }}
+            {/* Content Area */}
+            <div className="relative" style={{ minHeight: '400px' }}>
+                {/* Card 1: Profitability */}
+                <div
+                    className={`absolute inset-0 transition-all duration-400 ${currentStep === 1 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12 pointer-events-none'}`}
+                    style={{ padding: '20px 40px' }}
                 >
-                    Step 2: The Price Tag
-                </h2>
-                <p style={{ color: 'var(--color-text-secondary)' }}>
-                    The stock price isn't random. It's the EPS multiplied by a "Sentiment Factor."
-                </p>
+                    <h2 className="text-xl font-semibold mb-2" style={{ color: '#3498db' }}>
+                        Layer 1: Profitability
+                    </h2>
+                    <p className="text-sm mb-6" style={{ color: '#7f8c8d', lineHeight: '1.5' }}>
+                        Before valuing the whole business, we must determine how much profit belongs to a single share of stock. This is the "Unit Price" of the business.
+                    </p>
 
-                <div>
-                    <label className="flex items-center gap-2 mb-2">
-                        <span style={{ color: 'var(--color-text-secondary)', fontWeight: 700 }}>
-                            The Multiplier (P/E Ratio)
-                        </span>
-                        <HelpIcon tooltip="P/E (Price to Earnings) tells you how many years it would take to earn back your investment if profits stayed the same. 10x = Cheap/Slow Growth, 15x = Average, 25x+ = Expensive/High Growth" />
-                        <span className="ml-auto font-mono font-bold" style={{ color: 'var(--color-accent-primary)' }}>
-                            {peRatio}x
-                        </span>
-                    </label>
-                    <input
-                        type="range"
-                        min="5"
-                        max="50"
-                        step="1"
-                        value={peRatio}
-                        onChange={(e) => setPeRatio(parseInt(e.target.value))}
-                        className="w-full"
-                        style={{ accentColor: 'var(--color-accent-primary)' }}
-                    />
+                    <div className="space-y-6 mb-6">
+                        <div>
+                            <label className="flex justify-between items-center mb-2 font-semibold">
+                                <span>Net Income</span>
+                                <span style={{ color: '#3498db' }}>{formatMoney(netIncome)}</span>
+                            </label>
+                            <input
+                                type="range"
+                                min="500000"
+                                max="10000000"
+                                step="100000"
+                                value={netIncome}
+                                onChange={(e) => setNetIncome(parseInt(e.target.value))}
+                                className="w-full"
+                                style={{ accentColor: '#2c3e50' }}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="flex justify-between items-center mb-2 font-semibold">
+                                <span>Shares Outstanding</span>
+                                <span style={{ color: '#3498db' }}>{formatNum(shares)}</span>
+                            </label>
+                            <input
+                                type="range"
+                                min="100000"
+                                max="5000000"
+                                step="50000"
+                                value={shares}
+                                onChange={(e) => setShares(parseInt(e.target.value))}
+                                className="w-full"
+                                style={{ accentColor: '#2c3e50' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="p-5 rounded-lg text-center border" style={{ backgroundColor: '#f8f9fa', borderColor: '#e1e1e1' }}>
+                        <div className="text-xs uppercase tracking-wide mb-2" style={{ color: '#7f8c8d' }}>
+                            Earnings Per Share (EPS)
+                        </div>
+                        <div className="text-3xl font-bold" style={{ color: '#2c3e50' }}>
+                            ${eps.toFixed(2)}
+                        </div>
+                    </div>
                 </div>
 
-                <div 
-                    className="p-5 rounded-lg border-l-4"
-                    style={{
-                        backgroundColor: 'rgba(46, 124, 246, 0.1)',
-                        borderLeftColor: 'var(--color-accent-primary)',
-                    }}
+                {/* Card 2: Market Sentiment */}
+                <div
+                    className={`absolute inset-0 transition-all duration-400 ${currentStep === 2 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12 pointer-events-none'}`}
+                    style={{ padding: '20px 40px' }}
                 >
-                    <h3 className="text-sm font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-primary)' }}>
-                        Estimated Stock Price
-                    </h3>
-                    <div className="text-3xl font-bold font-mono mb-2" style={{ color: 'var(--color-accent-primary)' }}>
-                        {formatMoney(price)}
+                    <h2 className="text-xl font-semibold mb-2" style={{ color: '#3498db' }}>
+                        Layer 2: Market Sentiment
+                    </h2>
+                    <p className="text-sm mb-6" style={{ color: '#7f8c8d', lineHeight: '1.5' }}>
+                        The stock price is rarely just the EPS. It is the EPS multiplied by investor expectations (the P/E Ratio). How much is the market willing to pay for $1 of earnings?
+                    </p>
+
+                    <div className="space-y-6 mb-6">
+                        <div>
+                            <label className="block mb-2 font-semibold">Category Profile</label>
+                            <select
+                                value={category}
+                                onChange={(e) => {
+                                    setCategory(e.target.value);
+                                    setPeRatio(categoryPEs[e.target.value]);
+                                }}
+                                className="w-full p-2 rounded border"
+                                style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: '#ccc' }}
+                            >
+                                <option value="slow">Slow Grower (Utilities)</option>
+                                <option value="stalwart">Stalwart (Steady Brands)</option>
+                                <option value="fast">Fast Grower (Tech/New Retail)</option>
+                                <option value="cyclical">Cyclical (Auto/Heavy Industry)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="flex justify-between items-center mb-2 font-semibold">
+                                <span>P/E Multiplier</span>
+                                <span style={{ color: '#3498db' }}>{peRatio}x</span>
+                            </label>
+                            <input
+                                type="range"
+                                min="5"
+                                max="50"
+                                step="1"
+                                value={peRatio}
+                                onChange={(e) => setPeRatio(parseInt(e.target.value))}
+                                className="w-full"
+                                style={{ accentColor: '#2c3e50' }}
+                            />
+                        </div>
                     </div>
-                    <div 
-                        className="p-3 rounded mt-3 text-sm italic"
-                        style={{
-                            backgroundColor: 'var(--color-bg-tertiary)',
-                            color: 'var(--color-text-secondary)',
-                        }}
-                    >
-                        {priceAnalysis}
+
+                    <div className="p-5 rounded-lg text-center border" style={{ backgroundColor: '#f8f9fa', borderColor: '#e1e1e1' }}>
+                        <div className="text-xs uppercase tracking-wide mb-2" style={{ color: '#7f8c8d' }}>
+                            Implied Share Price
+                        </div>
+                        <div className="text-3xl font-bold" style={{ color: '#2c3e50' }}>
+                            ${price.toFixed(2)}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Card 3: Cash Reality Check */}
+                <div
+                    className={`absolute inset-0 transition-all duration-400 ${currentStep === 3 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12 pointer-events-none'}`}
+                    style={{ padding: '20px 40px' }}
+                >
+                    <h2 className="text-xl font-semibold mb-2" style={{ color: '#3498db' }}>
+                        Layer 3: The Cash Reality Check
+                    </h2>
+                    <p className="text-sm mb-6" style={{ color: '#7f8c8d', lineHeight: '1.5' }}>
+                        Accounting profit is an opinion; Cash is a fact. Does the company actually collect the money it claims to earn? If Cash Flow is lower than Profit, be suspicious.
+                    </p>
+
+                    <div className="space-y-6 mb-6">
+                        <div>
+                            <label className="flex justify-between items-center mb-2 font-semibold">
+                                <span>Operating Cash Flow</span>
+                                <span style={{ color: '#3498db' }}>{formatMoney(cashFlow)}</span>
+                            </label>
+                            <input
+                                type="range"
+                                min="0"
+                                max="5000000"
+                                step="100000"
+                                value={cashFlow}
+                                onChange={(e) => setCashFlow(parseInt(e.target.value))}
+                                className="w-full"
+                                style={{ accentColor: '#2c3e50' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="p-5 rounded-lg text-center border" style={{ backgroundColor: '#f8f9fa', borderColor: '#e1e1e1' }}>
+                        <div className="text-xs uppercase tracking-wide mb-2" style={{ color: '#7f8c8d' }}>
+                            Quality Ratio
+                        </div>
+                        <div className="text-3xl font-bold mb-3" style={{ color: '#2c3e50' }}>
+                            {qualityRatio.toFixed(2)}
+                        </div>
+                        <div className="p-2 rounded text-sm font-bold text-white" style={{ backgroundColor: qualityColor }}>
+                            {qualityStatus}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Card 4: Growth Valuation */}
+                <div
+                    className={`absolute inset-0 transition-all duration-400 ${currentStep === 4 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12 pointer-events-none'}`}
+                    style={{ padding: '20px 40px' }}
+                >
+                    <h2 className="text-xl font-semibold mb-2" style={{ color: '#3498db' }}>
+                        Layer 4: The Growth Valuation
+                    </h2>
+                    <p className="text-sm mb-6" style={{ color: '#7f8c8d', lineHeight: '1.5' }}>
+                        Is the stock cheap or expensive relative to its growth? We use a Fair Value formula: (Growth Rate + Dividend Yield) / P/E Ratio.
+                    </p>
+
+                    <div className="space-y-6 mb-6">
+                        <div>
+                            <label className="flex justify-between items-center mb-2 font-semibold">
+                                <span>Growth Rate</span>
+                                <span style={{ color: '#3498db' }}>{growthRate}%</span>
+                            </label>
+                            <input
+                                type="range"
+                                min="0"
+                                max="40"
+                                step="1"
+                                value={growthRate}
+                                onChange={(e) => setGrowthRate(parseInt(e.target.value))}
+                                className="w-full"
+                                style={{ accentColor: '#2c3e50' }}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="flex justify-between items-center mb-2 font-semibold">
+                                <span>Dividend Yield</span>
+                                <span style={{ color: '#3498db' }}>{dividendYield}%</span>
+                            </label>
+                            <input
+                                type="range"
+                                min="0"
+                                max="10"
+                                step="0.5"
+                                value={dividendYield}
+                                onChange={(e) => setDividendYield(parseFloat(e.target.value))}
+                                className="w-full"
+                                style={{ accentColor: '#2c3e50' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="p-5 rounded-lg text-center border" style={{ backgroundColor: '#f8f9fa', borderColor: '#e1e1e1' }}>
+                        <div className="text-xs uppercase tracking-wide mb-2" style={{ color: '#7f8c8d' }}>
+                            Valuation Score
+                        </div>
+                        <div className="text-3xl font-bold mb-3" style={{ color: '#2c3e50' }}>
+                            {score.toFixed(2)}
+                        </div>
+                        <div className="p-2 rounded text-sm font-bold text-white" style={{ backgroundColor: scoreColor }}>
+                            {scoreStatus}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Card 5: Financial Health */}
+                <div
+                    className={`absolute inset-0 transition-all duration-400 ${currentStep === 5 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12 pointer-events-none'}`}
+                    style={{ padding: '20px 40px' }}
+                >
+                    <h2 className="text-xl font-semibold mb-2" style={{ color: '#3498db' }}>
+                        Layer 5: Financial Health
+                    </h2>
+                    <p className="text-sm mb-6" style={{ color: '#7f8c8d', lineHeight: '1.5' }}>
+                        Can the company survive a downturn? We check the <strong>Debt-to-Equity Ratio</strong>. If a company has too much debt, earnings don't matter—it could go bankrupt.
+                    </p>
+
+                    <div className="space-y-6 mb-6">
+                        <div>
+                            <label className="flex justify-between items-center mb-2 font-semibold">
+                                <span>Total Equity</span>
+                                <span style={{ color: '#3498db' }}>{formatNum(equity)}</span>
+                            </label>
+                            <input
+                                type="range"
+                                min="1000000"
+                                max="20000000"
+                                step="500000"
+                                value={equity}
+                                onChange={(e) => setEquity(parseInt(e.target.value))}
+                                className="w-full"
+                                style={{ accentColor: '#2c3e50' }}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="flex justify-between items-center mb-2 font-semibold">
+                                <span>Total Debt</span>
+                                <span style={{ color: '#3498db' }}>{formatNum(debt)}</span>
+                            </label>
+                            <input
+                                type="range"
+                                min="0"
+                                max="20000000"
+                                step="500000"
+                                value={debt}
+                                onChange={(e) => setDebt(parseInt(e.target.value))}
+                                className="w-full"
+                                style={{ accentColor: '#2c3e50' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="p-5 rounded-lg text-center border" style={{ backgroundColor: '#f8f9fa', borderColor: '#e1e1e1' }}>
+                        <div className="text-xs uppercase tracking-wide mb-2" style={{ color: '#7f8c8d' }}>
+                            Debt-to-Equity Ratio
+                        </div>
+                        <div className="text-3xl font-bold mb-3" style={{ color: '#2c3e50' }}>
+                            {deRatio.toFixed(2)}
+                        </div>
+                        <div className="p-2 rounded text-sm font-bold text-white" style={{ backgroundColor: deColor }}>
+                            {deStatus}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Card 6: Summary Dashboard */}
+                <div
+                    className={`absolute inset-0 transition-all duration-400 ${currentStep === 6 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12 pointer-events-none'}`}
+                    style={{ padding: '20px 40px' }}
+                >
+                    <h2 className="text-xl font-semibold mb-2" style={{ color: '#3498db' }}>
+                        Valuation Dashboard
+                    </h2>
+                    <p className="text-sm mb-6" style={{ color: '#7f8c8d', lineHeight: '1.5' }}>
+                        Here is the complete picture of the business based on your inputs.
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="p-4 rounded-lg border" style={{ backgroundColor: '#fff', borderColor: '#eee' }}>
+                            <div className="text-xs uppercase tracking-wide mb-2" style={{ color: '#7f8c8d' }}>
+                                Target Price
+                            </div>
+                            <div className="text-2xl font-bold" style={{ color: '#2c3e50' }}>
+                                ${price.toFixed(2)}
+                            </div>
+                        </div>
+                        <div className="p-4 rounded-lg border" style={{ backgroundColor: '#fff', borderColor: '#eee' }}>
+                            <div className="text-xs uppercase tracking-wide mb-2" style={{ color: '#7f8c8d' }}>
+                                Earnings Quality
+                            </div>
+                            <div className="text-lg font-bold" style={{ color: qualityColor }}>
+                                {qualityMessage}
+                            </div>
+                        </div>
+                        <div className="p-4 rounded-lg border" style={{ backgroundColor: '#fff', borderColor: '#eee' }}>
+                            <div className="text-xs uppercase tracking-wide mb-2" style={{ color: '#7f8c8d' }}>
+                                Valuation
+                            </div>
+                            <div className="text-lg font-bold" style={{ color: scoreColor }}>
+                                {scoreMessage}
+                            </div>
+                        </div>
+                        <div className="p-4 rounded-lg border" style={{ backgroundColor: '#fff', borderColor: '#eee' }}>
+                            <div className="text-xs uppercase tracking-wide mb-2" style={{ color: '#7f8c8d' }}>
+                                Solvency
+                            </div>
+                            <div className="text-lg font-bold" style={{ color: deColor }}>
+                                {deMessage}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-5 rounded-lg text-center" style={{ backgroundColor: '#2c3e50', color: '#fff' }}>
+                        <div className="text-xs uppercase tracking-wide mb-2" style={{ color: '#eee' }}>
+                            Final Verdict
+                        </div>
+                        <div className="text-2xl font-bold">
+                            {finalVerdict}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Step 3: Is the Money Real? */}
-            <div className="space-y-4">
-                <h2 
-                    className="text-xl font-semibold"
-                    style={{ color: 'var(--color-text-primary)' }}
-                >
-                    Step 3: Is the Money Real?
-                </h2>
-                <p style={{ color: 'var(--color-text-secondary)' }}>
-                    Accounting profit (Net Income) is an opinion. Cash is a fact. We must verify if the business actually collects the cash it claims to earn.
-                </p>
-
-                <div>
-                    <label className="flex items-center gap-2 mb-2">
-                        <span style={{ color: 'var(--color-text-secondary)', fontWeight: 700 }}>
-                            Cash From Operations
-                        </span>
-                        <HelpIcon tooltip="Found on the Statement of Cash Flows. It shows the actual cash deposited in the bank from selling goods or services." />
-                        <span className="ml-auto font-mono font-bold" style={{ color: 'var(--color-accent-primary)' }}>
-                            {formatMoney(cashFlow)}
-                        </span>
-                    </label>
-                    <input
-                        type="range"
-                        min="0"
-                        max="5000000"
-                        step="100000"
-                        value={cashFlow}
-                        onChange={(e) => setCashFlow(parseInt(e.target.value))}
-                        className="w-full"
-                        style={{ accentColor: 'var(--color-accent-primary)' }}
-                    />
-                </div>
-
-                <div 
-                    className="p-5 rounded-lg border-l-4"
+            {/* Footer Controls */}
+            <div className="flex justify-between pt-4 border-t" style={{ borderColor: '#eee' }}>
+                <button
+                    onClick={() => changeStep(-1)}
+                    className={`px-6 py-3 rounded-lg font-semibold transition-all ${currentStep === 1 ? 'invisible' : ''}`}
                     style={{
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        borderLeftColor: qualityColor,
+                        backgroundColor: 'transparent',
+                        color: '#7f8c8d',
                     }}
                 >
-                    <h3 className="text-sm font-semibold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-text-primary)' }}>
-                        Quality Check
-                    </h3>
-                    <div 
-                        className="inline-block px-3 py-1 rounded-full text-sm font-bold mb-3"
-                        style={{ backgroundColor: qualityColor, color: '#FFFFFF' }}
+                    Back
+                </button>
+                {currentStep < totalSteps ? (
+                    <button
+                        onClick={() => changeStep(1)}
+                        className="px-6 py-3 rounded-lg font-semibold text-white transition-all"
+                        style={{ backgroundColor: '#2c3e50' }}
                     >
-                        {qualityStatus}
-                    </div>
-                    <p style={{ color: 'var(--color-text-secondary)' }}>
-                        {qualityMessage}
-                    </p>
-                </div>
+                        Next Step
+                    </button>
+                ) : (
+                    <button
+                        onClick={onBack}
+                        className="px-6 py-3 rounded-lg font-semibold text-white transition-all"
+                        style={{ backgroundColor: '#2c3e50' }}
+                    >
+                        Finish
+                    </button>
+                )}
             </div>
         </div>
     );

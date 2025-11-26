@@ -86,6 +86,27 @@ export const FearGreedIndex: React.FC = () => {
         // Calculate dash offset for semicircle fill
         const circumference = Math.PI * 40; // radius is 40
         const dashOffset = circumference - (clampedValue / 100) * circumference;
+        
+        // Resolve CSS variable to actual color value
+        const getComputedColor = (cssVar: string): string => {
+            if (cssVar.startsWith('var(')) {
+                // Extract variable name
+                const varName = cssVar.match(/var\(--([^)]+)\)/)?.[1];
+                if (varName) {
+                    // Map CSS variables to actual colors
+                    const colorMap: Record<string, string> = {
+                        'color-positive': '#27ae60',
+                        'color-negative': '#c0392b',
+                        'color-warning': '#f39c12',
+                        'color-accent-primary': '#3498db',
+                        'color-text-muted': '#7f8c8d',
+                    };
+                    return colorMap[varName] || '#3498db';
+                }
+            }
+            return color;
+        };
+        const resolvedColor = getComputedColor(color);
 
         return (
             <div className="relative w-48 h-24 mx-auto mb-4">
@@ -102,15 +123,14 @@ export const FearGreedIndex: React.FC = () => {
                     <path
                         d="M 10 50 A 40 40 0 0 1 90 50"
                         fill="none"
-                        stroke={color}
+                        stroke={resolvedColor}
                         strokeWidth="10"
                         strokeDasharray={circumference}
                         strokeDashoffset={dashOffset}
                         strokeLinecap="round"
-                        opacity={0.9}
+                        opacity={1}
                         style={{
                             transition: 'stroke-dashoffset 0.8s ease-out',
-                            filter: 'drop-shadow(0 0 8px currentColor)',
                         }}
                     />
                 </svg>

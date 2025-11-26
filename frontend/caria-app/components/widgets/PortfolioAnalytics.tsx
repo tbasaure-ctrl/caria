@@ -43,7 +43,7 @@ export const PortfolioAnalytics: React.FC = () => {
                 const data = await response.json();
                 setAnalytics(data);
             } catch (err: unknown) {
-                setError('Coming soon... Portfolio analytics are being enhanced with more advanced metrics.');
+                setError(null); // Don't show error, show CTA instead
             } finally {
                 setIsLoading(false);
             }
@@ -123,6 +123,67 @@ export const PortfolioAnalytics: React.FC = () => {
                 {error && (
                     <div className="bg-red-900/20 border border-red-700/50 rounded-md p-4 text-red-400 text-sm">
                         {error}
+                    </div>
+                )}
+
+                {!analytics && !isLoading && !error && (
+                    <div className="text-center py-8">
+                        <div 
+                            className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center"
+                            style={{ backgroundColor: 'rgba(46, 124, 246, 0.12)' }}
+                        >
+                            <svg 
+                                className="w-8 h-8" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                                style={{ color: 'var(--color-accent-primary)' }}
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <h3 
+                            className="text-lg font-semibold mb-2"
+                            style={{ 
+                                fontFamily: 'var(--font-display)',
+                                color: 'var(--color-text-primary)' 
+                            }}
+                        >
+                            Create an Account
+                        </h3>
+                        <p 
+                            className="text-sm mb-6 leading-relaxed max-w-md mx-auto"
+                            style={{ color: 'var(--color-text-secondary)' }}
+                        >
+                            Let us analyze your portfolio with advanced metrics including Sharpe Ratio, Alpha, Beta, volatility, and comparison with benchmarks.
+                        </p>
+                        <button
+                            onClick={() => {
+                                const token = localStorage.getItem('caria-auth-token');
+                                if (!token) {
+                                    // Trigger auth modal by clicking on Portfolio Management widget
+                                    const portfolioWidget = document.querySelector('[data-feature="Portfolio Management"]');
+                                    if (portfolioWidget) {
+                                        (portfolioWidget as HTMLElement).click();
+                                    }
+                                }
+                            }}
+                            className="px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200"
+                            style={{
+                                backgroundColor: 'var(--color-accent-primary)',
+                                color: '#FFFFFF',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(46, 124, 246, 0.3)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = 'none';
+                            }}
+                        >
+                            Get Started →
+                        </button>
                     </div>
                 )}
 

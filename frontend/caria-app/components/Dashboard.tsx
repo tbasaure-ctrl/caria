@@ -201,26 +201,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         
                         {/* Quick Stats */}
                         <div className="hidden md:flex items-center gap-6">
-                            <div className="text-right">
-                                <div 
-                                    className="text-xs font-medium uppercase tracking-wide"
-                                    style={{ color: 'var(--color-text-muted)' }}
-                                >
-                                    Market Status
-                                </div>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span 
-                                        className="w-2 h-2 rounded-full animate-pulse"
-                                        style={{ backgroundColor: 'var(--color-positive)' }}
-                                    />
-                                    <span 
-                                        className="text-sm font-medium"
-                                        style={{ color: 'var(--color-positive)' }}
-                                    >
-                                        Markets Open
-                                    </span>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -379,9 +359,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                 </div>
                             </div>
                             
-                            <ProtectedWidget featureName="Valuation Tool">
-                                <ValuationTool />
-                            </ProtectedWidget>
+                            <ValuationTool />
                         </div>
 
                         {/* Thesis Testing */}

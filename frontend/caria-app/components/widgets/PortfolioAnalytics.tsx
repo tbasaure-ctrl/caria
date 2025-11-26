@@ -61,27 +61,35 @@ export const PortfolioAnalytics: React.FC = () => {
     };
 
     const [showReport, setShowReport] = useState(false);
-    const [reportUrl, setReportUrl] = useState<string | null>(null);
+    const [reportHtml, setReportHtml] = useState<string | null>(null);
+    const [loadingReport, setLoadingReport] = useState(false);
 
     const openFullReport = async () => {
         try {
             if (showReport) {
                 setShowReport(false);
+                setReportHtml(null);
                 return;
             }
             
-            const token = localStorage.getItem('caria_token');
-            if (!token) {
-                setError('Please log in to view the report');
-                return;
+            setLoadingReport(true);
+            setError(null);
+            
+            const response = await fetchWithAuth(
+                `${API_BASE_URL}/api/portfolio/analysis/report?benchmark=${benchmark}`
+            );
+            
+            if (!response.ok) {
+                throw new Error('Failed to load report');
             }
             
-            // The backend should handle auth via headers, but we can add token as query param for iframe
-            const url = `${API_BASE_URL}/api/portfolio/analysis/report?benchmark=${benchmark}`;
-            setReportUrl(url);
+            const htmlContent = await response.text();
+            setReportHtml(htmlContent);
             setShowReport(true);
         } catch (err: unknown) {
-            setError('Failed to load report. Please try again.');
+            setError('Failed to load report. Please ensure you have holdings in your portfolio.');
+        } finally {
+            setLoadingReport(false);
         }
     };
 
@@ -184,19 +192,19 @@ export const PortfolioAnalytics: React.FC = () => {
                         {/* Full Report Button */}
                         <button
                             onClick={openFullReport}
-                            className="w-full mt-4 bg-slate-800 text-white font-bold py-2 px-4 rounded-md hover:bg-slate-700 transition-colors text-sm"
+                            disabled={loadingReport}
+                            className="w-full mt-4 bg-slate-800 text-white font-bold py-2 px-4 rounded-md hover:bg-slate-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {showReport ? 'Hide Full Report' : 'View Full Report'}
+                            {loadingReport ? 'Loading Report...' : showReport ? 'Hide Full Report' : 'View Full Report'}
                         </button>
 
                         {/* Report Display */}
-                        {showReport && reportUrl && (
-                            <div className="mt-4 rounded-lg overflow-hidden border border-slate-700" style={{ minHeight: '400px' }}>
-                                <iframe
-                                    src={reportUrl}
-                                    className="w-full"
-                                    style={{ height: '600px', border: 'none' }}
-                                    title="Portfolio Analysis Report"
+                        {showReport && reportHtml && (
+                            <div className="mt-4 rounded-lg overflow-hidden border border-slate-700" style={{ minHeight: '400px', maxHeight: '800px', overflowY: 'auto' }}>
+                                <div 
+                                    className="p-4"
+                                    dangerouslySetInnerHTML={{ __html: reportHtml }}
+                                    style={{ backgroundColor: '#ffffff', color: '#000000' }}
                                 />
                             </div>
                         )}

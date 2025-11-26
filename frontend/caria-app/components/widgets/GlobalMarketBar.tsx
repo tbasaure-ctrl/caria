@@ -185,11 +185,10 @@ export const GlobalMarketBar: React.FC<{ id?: string }> = ({ id }) => {
                 setLoading(false);
             } catch (err: unknown) {
                 const message = getErrorMessage(err);
-                if (message.includes('401') || message.includes('403')) {
-                    setError('Please log in to view market data');
-                } else {
-                    setError('Market data temporarily unavailable');
-                }
+                // Don't show error for unauthenticated users - prices should work without auth
+                console.warn('Error fetching prices:', message);
+                // Set empty prices but don't show error - allow display to continue
+                setPrices({});
                 setLoading(false);
             }
         };
@@ -210,7 +209,7 @@ export const GlobalMarketBar: React.FC<{ id?: string }> = ({ id }) => {
                 onClick: () => {}
             } : undefined}
         >
-            {error && (
+            {error && error !== 'Market data temporarily unavailable' && (
                 <div 
                     className="mb-4 px-4 py-3 rounded-lg text-sm"
                     style={{

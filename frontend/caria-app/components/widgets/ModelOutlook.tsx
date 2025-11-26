@@ -41,30 +41,36 @@ const regimeConfig: { [key: string]: { label: string; value: number; color: stri
 
 const Gauge: React.FC<{ value: number; color: string }> = ({ value, color }) => {
     const angle = -90 + (value / 100) * 180;
+    // Ensure value is between 0 and 100
+    const clampedValue = Math.max(0, Math.min(100, value));
+    // Calculate dash offset for semicircle fill
+    const circumference = Math.PI * 40; // radius is 40
+    const dashOffset = circumference - (clampedValue / 100) * circumference;
 
     return (
         <div className="relative w-48 h-24 mx-auto mb-4">
             <svg viewBox="0 0 100 50" className="w-full h-full">
-                {/* Background arc - more visible */}
+                {/* Background arc - darker base */}
                 <path
                     d="M 10 50 A 40 40 0 0 1 90 50"
                     fill="none"
-                    stroke="rgba(107, 122, 143, 0.2)"
-                    strokeWidth="8"
+                    stroke="rgba(107, 122, 143, 0.3)"
+                    strokeWidth="10"
                     strokeLinecap="round"
                 />
-                {/* Colored progress arc */}
+                {/* Colored progress arc - bright but dark fill */}
                 <path
                     d="M 10 50 A 40 40 0 0 1 90 50"
                     fill="none"
                     stroke={color}
-                    strokeWidth="8"
-                    strokeDasharray="125.6"
-                    strokeDashoffset={125.6 - (value / 100) * 125.6}
+                    strokeWidth="10"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={dashOffset}
                     strokeLinecap="round"
+                    opacity={0.9}
                     style={{
                         transition: 'stroke-dashoffset 0.8s ease-out',
-                        filter: 'drop-shadow(0 0 6px currentColor)'
+                        filter: 'drop-shadow(0 0 8px currentColor)',
                     }}
                 />
             </svg>
@@ -108,11 +114,16 @@ export const ModelOutlook: React.FC<{ regimeData: RegimeData | null; isLoading: 
         }
         
         const currentRegimeKey = regimeData?.regime && regimeConfig[regimeData.regime] ? regimeData.regime : 'default';
-        const { label, value, color, description } = regimeConfig[currentRegimeKey];
+        const { label, value: defaultValue, color, description } = regimeConfig[currentRegimeKey];
+        
+        // Use actual confidence score (0-1) converted to 0-100, or fallback to default value
+        const gaugeValue = regimeData?.confidence !== undefined 
+            ? regimeData.confidence * 100 
+            : defaultValue;
 
         return (
             <div className="flex flex-col items-center">
-                <Gauge value={value} color={color} />
+                <Gauge value={gaugeValue} color={color} />
                 
                 <div 
                     className="text-2xl font-bold mt-2 mb-2"

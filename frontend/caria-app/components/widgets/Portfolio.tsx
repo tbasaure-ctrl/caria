@@ -103,6 +103,11 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[]; timeRange?: st
     const height = 150;
     const padding = { top: 20, right: 10, bottom: 20, left: 10 };
 
+    // Reset hover state when data or timeRange changes
+    useEffect(() => {
+        setHoveredPoint(null);
+    }, [data, timeRange]);
+
     const { dataPoints, path, areaPath, lastValue, valueChange, percentChange, isPositive } = useMemo(() => {
         if (!data || data.length === 0) return { dataPoints: [], path: '', areaPath: '', lastValue: 0, valueChange: 0, percentChange: 0, isPositive: true };
 

@@ -111,63 +111,55 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
 
         const userMessage: ChatMessage = { role: 'user', content: text };
 
-        if (text.length < 10) {
+        if (text.length < 3) {
             const err: ChatMessage = {
                 role: 'error',
-                content: 'Your thesis is too short. Please write at least 10 characters.'
+                content: 'Por favor escribe al menos 3 caracteres.'
             };
             setMessages(prev => [...prev, userMessage, err]);
             setInput('');
             return;
         }
 
+        // Extract ticker if present, but don't require it
         const ticker = extractTicker(text);
-        if (!ticker) {
-            const err: ChatMessage = {
-                role: 'error',
-                content: 'Please include a valid ticker (e.g., AAPL, TSLA, NVDA).'
-            };
-            setMessages(prev => [...prev, userMessage, err]);
-            setInput('');
-            return;
-        }
 
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setIsLoading(true);
 
         try {
+            // Build conversation history from current messages
+            const conversationHistory = messages
+                .filter(msg => msg.role === 'user' || msg.role === 'model')
+                .map(msg => ({
+                    role: msg.role === 'user' ? 'user' : 'assistant',
+                    content: msg.content
+                }));
+
             const response = await fetchWithAuth(`${API_BASE_URL}/api/analysis/challenge`, {
                 method: 'POST',
-                body: JSON.stringify({ thesis: text, ticker: ticker, top_k: 5 })
+                body: JSON.stringify({ 
+                    thesis: text, 
+                    ticker: ticker || undefined, 
+                    top_k: 5,
+                    conversation_history: conversationHistory
+                })
             });
             
             const data = await response.json();
 
-            const critical = data.critical_analysis || 'No analysis provided.';
-            const biases = Array.isArray(data.identified_biases) ? data.identified_biases : [];
-            const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
+            // New response format: just a simple conversational response
+            const responseText = data.response || 'Lo siento, no pude generar una respuesta.';
 
-            let formatted = critical;
-            
-            if (biases.length) {
-                formatted += `\n\n**Things to Question:**\n`;
-                formatted += biases.map((b: string) => `• ${b}`).join('\n');
-            }
-            
-            if (recs.length) {
-                formatted += `\n\n**Food for Thought:**\n`;
-                formatted += recs.map((r: string) => `• ${r}`).join('\n');
-            }
-
-            const modelMessage: ChatMessage = { role: 'model', content: formatted };
+            const modelMessage: ChatMessage = { role: 'model', content: responseText };
             setMessages(prev => [...prev, modelMessage]);
 
         } catch (err: any) {
             console.error('Chat error:', err);
             const errorMsg: ChatMessage = {
                 role: 'error',
-                content: err?.message || 'Analysis could not be completed. Please try again.',
+                content: err?.message || 'No se pudo completar el análisis. Por favor intenta de nuevo.',
             };
             setMessages((prev) => [...prev, errorMsg]);
         } finally {
@@ -205,13 +197,13 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                                 color: 'var(--color-text-primary)'
                             }}
                         >
-                            Thesis Analysis
+                            Chat con Caria
                         </h1>
                         <p 
                             className="text-xs"
                             style={{ color: 'var(--color-text-muted)' }}
                         >
-                            Challenge your investment ideas
+                            Conversa sobre tus ideas de inversión
                         </p>
                     </div>
                     <button 
@@ -245,13 +237,13 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                                 className="text-lg font-semibold mb-2"
                                 style={{ color: 'var(--color-text-primary)' }}
                             >
-                                Share Your Thesis
+                                Habla con Caria
                             </h3>
                             <p 
                                 className="text-sm max-w-md mx-auto"
                                 style={{ color: 'var(--color-text-secondary)' }}
                             >
-                                Write your investment thesis including a ticker symbol. Caria will analyze it critically, identify potential biases, and offer alternative perspectives.
+                                Conversa con Caria sobre tus ideas de inversión. Haz preguntas, comparte tus tesis, o pide su opinión sobre empresas. Caria te ayudará a pensar más profundamente.
                             </p>
                         </div>
                     )}
@@ -287,7 +279,7 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                                     className="text-sm"
                                     style={{ color: 'var(--color-text-muted)' }}
                                 >
-                                    Analyzing thesis...
+                                    Caria está pensando...
                                 </span>
                             </div>
                         </div>
@@ -314,7 +306,7 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                                     handleSubmit(e as any);
                                 }
                             }}
-                            placeholder="Share your investment thesis... (e.g., 'I think AAPL is undervalued because...')"
+                            placeholder="Escribe tu mensaje... (ej: 'Me interesa comprar ASTS', '¿Qué opinas de NVDA?')"
                             className="flex-1 px-4 py-3 rounded-xl resize-none focus:outline-none focus:ring-2 text-sm"
                             style={{
                                 backgroundColor: 'var(--color-bg-tertiary)',

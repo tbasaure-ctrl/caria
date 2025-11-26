@@ -80,15 +80,15 @@ class ChallengeThesisRequest(BaseModel):
         le=20,
         description="Número de fragmentos a recuperar (1-20)",
     )
+    conversation_history: list[dict[str, str]] = Field(
+        default_factory=list,
+        description="Historial de conversación previo para contexto",
+    )
 
 
 class ChallengeThesisResponse(BaseModel):
-    thesis: str
-    retrieved_chunks: list[WisdomResult]
-    critical_analysis: str
-    identified_biases: list[str]
-    recommendations: list[str]
-    confidence_score: float
+    response: str = Field(..., description="Respuesta conversacional corta de Caria")
+    retrieved_chunks: list[WisdomResult] = Field(default_factory=list)
 
 
 # ---------- Helpers de infraestructura ----------
@@ -318,36 +318,53 @@ def challenge_thesis(
     user_language = detect_language(payload.thesis)
     is_spanish = user_language == "Spanish"
     
-    # 3) Build prompt in detected language
-    ticker_str = payload.ticker or "N/A"
-    analysis_system_prompt = (
-        "You are Caria, a Socratic investment mentor who guides through thoughtful questions rather than giving prefabricated answers. "
-        "Your goal is to help investors think more deeply about their thesis by asking probing questions, challenging assumptions, "
-        "and encouraging self-discovery. Be conversational, engaging, and curious. Use questions to uncover blind spots. "
-        "Respond in the user's language (Spanish if the thesis is in Spanish)."
-    )
-    prompt = f"""
-Contexto recuperado (puede estar vac�o o tener ruido):
-{evidence_text}
+    # 3) Build conversation context from history
+    conversation_context = ""
+    if payload.conversation_history:
+        context_parts = []
+        for msg in payload.conversation_history[-10:]:  # Last 10 messages
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            if role == "user":
+                context_parts.append(f"Usuario: {content}")
+            elif role == "assistant" or role == "model":
+                context_parts.append(f"Caria: {content}")
+        if context_parts:
+            conversation_context = "\n".join(context_parts) + "\n\n"
+    
+    # 4) Build conversational system prompt
+    lang_instruction = "Responde en español de forma natural." if is_spanish else "Respond in English naturally."
+    ticker_str = payload.ticker or ""
+    
+    analysis_system_prompt = f"""You are Caria, a wise and engaging investment mentor. You have natural conversations with users about their investment ideas.
 
-Tesis del usuario:
-- Thesis: "{payload.thesis}"
-- Ticker: {ticker_str}
+Your approach:
+- Be conversational and natural, like a trusted advisor having a coffee chat
+- Keep responses SHORT (2-4 sentences max) - this is a chat, not an essay
+- Be flexible: sometimes ask thoughtful questions, sometimes share your position ("Mi posición sobre {ticker_str} es..." or "My position on {ticker_str} is...")
+- Use RAG context naturally—weave facts into conversation without citing sources
+- Challenge assumptions gently with questions like "¿Qué te hace pensar eso?" or "Have you considered...?"
+- Never use structured formats, lists, or JSON—just natural conversation
+- {lang_instruction}
 
-Instrucciones:
-1. Analiza la calidad del negocio, valuaci�n, catalizadores, riesgos y sizing recomendado.
-2. Se�ala sesgos cognitivos concretos (confirmation, optimism, anchoring, FOMO, etc.).
-3. Entrega recomendaciones accionables (datos a validar, m�tricas a monitorear, escenarios).
-4. Asigna un confidence_score entre 0 y 1 sobre la robustez de la tesis.
-
-Responde SOLO en JSON v�lido con la forma:
-{{
-  "critical_analysis": "texto detallado",
-  "identified_biases": ["bias 1", "bias 2"],
-  "recommendations": ["reco 1", "reco 2"],
-  "confidence_score": 0.0-1.0
-}}
-"""
+Remember: You're having a dialogue, not writing a report. Be engaging, concise, and conversational."""
+    # 5) Build conversational prompt
+    prompt_parts = []
+    
+    if conversation_context:
+        prompt_parts.append(f"Conversación previa:\n{conversation_context}")
+    
+    if evidence_text and evidence_text.strip() and "no disponible" not in evidence_text.lower():
+        prompt_parts.append(f"Contexto relevante de la base de conocimiento:\n{evidence_text}\n")
+    
+    prompt_parts.append(f"Mensaje actual del usuario:\n{payload.thesis}")
+    
+    if ticker_str:
+        prompt_parts.append(f"\nEl usuario menciona el ticker: {ticker_str}")
+    
+    prompt_parts.append("\nResponde de forma natural y conversacional. Sé breve (2-4 oraciones). Puedes hacer una pregunta, compartir tu posición, o ambos. No uses formatos estructurados.")
+    
+    prompt = "\n".join(prompt_parts)
 
     llm_response_text: Optional[str] = None
     llm_error: Optional[str] = None
@@ -363,37 +380,37 @@ Responde SOLO en JSON v�lido con la forma:
         else:
             llm_error = "Groq Llama fallback returned no response"
 
+    # 6) Return conversational response (no JSON parsing needed)
     if llm_response_text:
-        critical, biases, recs, conf = _parse_llm_json(llm_response_text)
+        # Clean up response - remove any JSON formatting if present
+        response_text = llm_response_text.strip()
+        # Remove markdown code blocks if present
+        if response_text.startswith("```"):
+            response_text = response_text.split("```")[1]
+            if response_text.startswith("json") or response_text.startswith("text"):
+                response_text = response_text.split("\n", 1)[1] if "\n" in response_text else ""
+            response_text = response_text.strip()
+        # Remove JSON structure if accidentally included
+        if response_text.startswith("{") and '"response"' in response_text:
+            try:
+                parsed = json.loads(response_text)
+                response_text = parsed.get("response", response_text)
+            except:
+                pass
+        
         return ChallengeThesisResponse(
-            thesis=payload.thesis,
+            response=response_text,
             retrieved_chunks=retrieved_chunks,
-            critical_analysis=critical,
-            identified_biases=biases,
-            recommendations=recs,
-            confidence_score=conf,
         )
 
+    # Fallback response
     ticker_info = f" sobre {payload.ticker}" if payload.ticker else ""
-    basic_analysis = f"""An�lisis de la tesis{ticker_info}: "{payload.thesis}".
-
-No se pudo acceder al modelo Groq Llama ({llm_error or 'motivo desconocido'}).
-Se muestra un checklist b�sico para que revises tu propia tesis.
-"""
+    if is_spanish:
+        fallback_response = f"Interesante tesis sobre {payload.ticker or 'esa empresa'}. ¿Qué te llevó a considerar esta inversión? ¿Has analizado su valuación y riesgos?"
+    else:
+        fallback_response = f"Interesting thesis on {payload.ticker or 'that company'}. What led you to consider this investment? Have you analyzed its valuation and risks?"
 
     return ChallengeThesisResponse(
-        thesis=payload.thesis,
+        response=fallback_response,
         retrieved_chunks=retrieved_chunks,
-        critical_analysis=basic_analysis,
-        identified_biases=[
-            "Confirmation bias: solo buscar informaci�n que confirma tu tesis",
-            "Overconfidence: subestimar riesgos y volatilidad",
-        ],
-        recommendations=[
-            "Revisar m�ltiple evidencia independiente (fuera de redes sociales)",
-            "Analizar estados financieros y valuaci�n frente a su historia y pares",
-            "Definir un rango de escenarios (pesimista, base, optimista) y su impacto",
-            "Decidir un tama�o de posici�n acorde a tu convicci�n y a tu portafolio total",
-        ],
-        confidence_score=0.5,
     )

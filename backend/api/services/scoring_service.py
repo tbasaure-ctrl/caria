@@ -32,7 +32,19 @@ class ScoringService:
         # 1. Fetch Data
         try:
             financials = self._fetch_financials(ticker)
-            prices = self.fmp.get_price_history(ticker) # Returns list of dicts
+            prices_raw = self.fmp.get_price_history(ticker)
+
+            # Convert prices to list of dicts if needed
+            prices = []
+            if isinstance(prices_raw, list):
+                prices = prices_raw
+            elif hasattr(prices_raw, '__iter__'):
+                for item in prices_raw:
+                    if isinstance(item, dict):
+                        prices.append(item)
+                    elif hasattr(item, '__dict__'):
+                        prices.append(item.__dict__)
+
             quote = self.fmp.get_realtime_price(ticker)
         except Exception as e:
             LOGGER.error(f"Error fetching data for {ticker}: {e}")

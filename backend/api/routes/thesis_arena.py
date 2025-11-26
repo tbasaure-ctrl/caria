@@ -85,9 +85,9 @@ def _call_llm(prompt: str, community: str, provider: str = "auto") -> Optional[s
 
 def _call_groq(prompt: str, community: str) -> Optional[str]:
     """Call Groq/Llama API."""
-    api_key = os.getenv("LLAMA_API_KEY")
-    api_url = os.getenv("LLAMA_API_URL", "https://api.groq.com/openai/v1/chat/completions")
-    model = os.getenv("LLAMA_MODEL", "llama-3.1-8b-instruct")
+    api_key = os.getenv("LLAMA_API_KEY", "").strip()
+    api_url = os.getenv("LLAMA_API_URL", "https://api.groq.com/openai/v1/chat/completions").strip()
+    model = os.getenv("LLAMA_MODEL", "llama-3.1-8b-instant").strip()
 
     if not api_key:
         raise ValueError("LLAMA_API_KEY not configured")
@@ -115,7 +115,7 @@ def _call_groq(prompt: str, community: str) -> Optional[str]:
 
 def _call_openai(prompt: str, community: str) -> Optional[str]:
     """OpenAI GPT-4 fallback."""
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
     if not api_key:
         raise ValueError("OPENAI_API_KEY not configured")
 
@@ -248,23 +248,25 @@ async def _save_arena_thread(
             )
             
             # Insert first round
+            # Note: Skipping detailed round storage for now as arena_rounds schema needs migration
+            # The thread is saved in arena_threads which is sufficient for MVP
             round_id = uuid4()
-            cur.execute(
-                """
-                INSERT INTO arena_rounds
-                (id, thread_id, round_number, community_responses, conviction_before, conviction_after, conviction_change)
-                VALUES (%s, %s, %s, %s::jsonb, %s, %s, %s)
-                """,
-                (
-                    round_id,
-                    thread_id,
-                    1,
-                    json.dumps(community_responses),
-                    conviction_before,
-                    conviction_after,
-                    conviction_after - conviction_before,
-                )
-            )
+            # cur.execute(
+            #     """
+            #     INSERT INTO arena_rounds
+            #     (id, thread_id, round_number, community_responses, conviction_before, conviction_after, conviction_change)
+            #     VALUES (%s, %s, %s, %s::jsonb, %s, %s, %s)
+            #     """,
+            #     (
+            #         round_id,
+            #         thread_id,
+            #         1,
+            #         json.dumps(community_responses),
+            #         conviction_before,
+            #         conviction_after,
+            #         conviction_after - conviction_before,
+            #     )
+            # )
             
             conn.commit()
             return str(thread_id)

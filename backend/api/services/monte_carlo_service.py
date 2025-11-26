@@ -190,9 +190,31 @@ class MonteCarloService:
 
         try:
             history = openbb_client.get_price_history(ticker, start_date="2018-01-01")
-            closes = [float(item["close"]) for item in history if item.get("close") is not None]
+
+            # Handle different return formats from OpenBB
+            closes = []
+            if history and hasattr(history, 'to_df'):
+                # OBBject with DataFrame
+                df = history.to_df()
+                if not df.empty and 'close' in df.columns:
+                    closes = df['close'].dropna().tolist()
+            elif isinstance(history, list):
+                # List of dicts
+                closes = [float(item.get("close")) for item in history if item.get("close") is not None]
+            elif hasattr(history, '__iter__'):
+                # Iterable of objects with .close attribute
+                for item in history:
+                    if isinstance(item, dict):
+                        close_val = item.get("close")
+                    elif hasattr(item, 'close'):
+                        close_val = item.close
+                    else:
+                        continue
+                    if close_val is not None:
+                        closes.append(float(close_val))
+
             if len(closes) < 30:
-                raise ValueError(f"No historical data available for {ticker}")
+                raise ValueError(f"Insufficient historical data for {ticker} (got {len(closes)} points, need 30+)")
 
             returns = np.diff(closes) / np.array(closes[:-1])
             mu_annual = float(np.mean(returns) * self.trading_days_per_year)

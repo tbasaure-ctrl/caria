@@ -207,10 +207,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             </div>
 
             {/* Tab Content */}
-            <div className="fade-in delay-200" style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
+            <div className="fade-in delay-200" style={{ padding: '2rem 1rem', maxWidth: '1600px', margin: '0 auto' }}>
                 {/* PORTFOLIO TAB - Market overview, portfolio management, and stress testing */}
                 {activeTab === 'portfolio' && (
-                    <div className="space-y-12">
+                    <div className="space-y-10">
                         {/* Global Market Bar - Full Width */}
                         <GlobalMarketBar id="market-bar-widget" />
 
@@ -246,7 +246,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* ANALYSIS TAB - Screeners, Quick Valuation, Investment Thesis */}
                 {activeTab === 'analysis' && (
-                    <div className="space-y-12">
+                    <div className="space-y-10">
                         {/* Stock Screeners - Two Column Layout */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {/* Alpha Stock Picker - Top picks by CAS score */}
@@ -273,7 +273,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* RESEARCH TAB - Weekly Video, Weekly Podcast, Reddit, Lectures, Community */}
                 {activeTab === 'research' && (
-                    <div className="space-y-12">
+                    <div className="space-y-10">
                         {/* Weekly Video and Podcast */}
                         <WeeklyMedia compact={false} />
 

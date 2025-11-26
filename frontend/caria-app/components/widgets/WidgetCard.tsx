@@ -16,11 +16,14 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({ title, children, id, cla
   return (
     <div
       id={id}
-      className={`rounded-lg p-5 transition-all duration-300 ${className}`}
+      className={`rounded-xl p-6 transition-all duration-300 ${className}`}
       style={{
-        backgroundColor: 'var(--color-bg-secondary)',
-        border: '1px solid var(--color-bg-tertiary)',
-        boxShadow: isHovered ? '0 4px 20px rgba(0,0,0,0.3)' : '0 2px 10px rgba(0,0,0,0.1)',
+        backgroundColor: 'rgba(19, 23, 28, 0.8)',
+        border: '1px solid rgba(74, 144, 226, 0.15)',
+        boxShadow: isHovered 
+          ? '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(74, 144, 226, 0.2)' 
+          : '0 4px 16px rgba(0,0,0,0.2)',
+        backdropFilter: 'blur(10px)',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

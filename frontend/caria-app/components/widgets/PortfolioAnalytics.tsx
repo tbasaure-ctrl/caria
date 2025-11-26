@@ -60,12 +60,29 @@ export const PortfolioAnalytics: React.FC = () => {
         return value.toFixed(2);
     };
 
-    const openFullReport = () => {
-        const token = localStorage.getItem('caria_token');
-        if (!token) return;
-        
-        const reportUrl = `${API_BASE_URL}/api/portfolio/analysis/report?benchmark=${benchmark}`;
-        window.open(`${reportUrl}&token=${token}`, '_blank');
+    const [showReport, setShowReport] = useState(false);
+    const [reportUrl, setReportUrl] = useState<string | null>(null);
+
+    const openFullReport = async () => {
+        try {
+            if (showReport) {
+                setShowReport(false);
+                return;
+            }
+            
+            const token = localStorage.getItem('caria_token');
+            if (!token) {
+                setError('Please log in to view the report');
+                return;
+            }
+            
+            // The backend should handle auth via headers, but we can add token as query param for iframe
+            const url = `${API_BASE_URL}/api/portfolio/analysis/report?benchmark=${benchmark}`;
+            setReportUrl(url);
+            setShowReport(true);
+        } catch (err: unknown) {
+            setError('Failed to load report. Please try again.');
+        }
     };
 
     return (
@@ -169,8 +186,20 @@ export const PortfolioAnalytics: React.FC = () => {
                             onClick={openFullReport}
                             className="w-full mt-4 bg-slate-800 text-white font-bold py-2 px-4 rounded-md hover:bg-slate-700 transition-colors text-sm"
                         >
-                            View Full Report
+                            {showReport ? 'Hide Full Report' : 'View Full Report'}
                         </button>
+
+                        {/* Report Display */}
+                        {showReport && reportUrl && (
+                            <div className="mt-4 rounded-lg overflow-hidden border border-slate-700" style={{ minHeight: '400px' }}>
+                                <iframe
+                                    src={reportUrl}
+                                    className="w-full"
+                                    style={{ height: '600px', border: 'none' }}
+                                    title="Portfolio Analysis Report"
+                                />
+                            </div>
+                        )}
 
                         {analytics.analysis_date && (
                             <p className="text-xs text-slate-500 text-center mt-2">

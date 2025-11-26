@@ -17,7 +17,6 @@ import { Resources } from './widgets/Resources';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
 import { ModelOutlook } from './widgets/ModelOutlook';
 import { FearGreedIndex } from './widgets/FearGreedIndex';
-import { ModelPortfolioWidget } from './widgets/ModelPortfolioWidget';
 import { ProtectedWidget } from './ProtectedWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
@@ -155,9 +154,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     }, []);
 
     const tabs = [
-        { id: 'portfolio' as DashboardTab, label: 'Portfolio', icon: '📊' },
-        { id: 'analysis' as DashboardTab, label: 'Analysis', icon: '🔬' },
-        { id: 'research' as DashboardTab, label: 'Research', icon: '📰' },
+        { id: 'portfolio' as DashboardTab, label: 'Portfolio' },
+        { id: 'analysis' as DashboardTab, label: 'Analysis' },
+        { id: 'research' as DashboardTab, label: 'Research' },
     ];
 
     return (
@@ -259,10 +258,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                     borderTopRightRadius: '8px',
                                 }}
                             >
-                                <span className="flex items-center gap-2">
-                                    <span>{tab.icon}</span>
-                                    {tab.label}
-                                </span>
+                                {tab.label}
                                 {activeTab === tab.id && (
                                     <div 
                                         className="absolute bottom-0 left-0 right-0 h-0.5"
@@ -323,11 +319,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                 <CrisisSimulator />
                             </ProtectedWidget>
                         </div>
-
-                        {/* Model Portfolio */}
-                        <ProtectedWidget featureName="Model Portfolio">
-                            <ModelPortfolioWidget />
-                        </ProtectedWidget>
 
                         {/* Scenario Analysis Section */}
                         <div className="pt-4">

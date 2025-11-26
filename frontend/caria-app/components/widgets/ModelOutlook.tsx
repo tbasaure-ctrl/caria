@@ -45,12 +45,12 @@ const Gauge: React.FC<{ value: number; color: string }> = ({ value, color }) => 
     return (
         <div className="relative w-48 h-24 mx-auto mb-4">
             <svg viewBox="0 0 100 50" className="w-full h-full">
-                {/* Background arc */}
+                {/* Background arc - more visible */}
                 <path
                     d="M 10 50 A 40 40 0 0 1 90 50"
                     fill="none"
-                    stroke="var(--color-bg-surface)"
-                    strokeWidth="6"
+                    stroke="rgba(107, 122, 143, 0.2)"
+                    strokeWidth="8"
                     strokeLinecap="round"
                 />
                 {/* Colored progress arc */}
@@ -58,13 +58,13 @@ const Gauge: React.FC<{ value: number; color: string }> = ({ value, color }) => 
                     d="M 10 50 A 40 40 0 0 1 90 50"
                     fill="none"
                     stroke={color}
-                    strokeWidth="6"
+                    strokeWidth="8"
                     strokeDasharray="125.6"
                     strokeDashoffset={125.6 - (value / 100) * 125.6}
                     strokeLinecap="round"
                     style={{
                         transition: 'stroke-dashoffset 0.8s ease-out',
-                        filter: 'drop-shadow(0 0 4px currentColor)'
+                        filter: 'drop-shadow(0 0 6px currentColor)'
                     }}
                 />
             </svg>

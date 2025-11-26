@@ -30,59 +30,27 @@ interface SimulationResult {
     };
 }
 
-type Timeframe = '1d' | '1m' | '1y';
+// Crisis event dates for markers
+const CRISIS_EVENTS: Record<string, { date: string; label: string; time?: string }> = {
+    '2008_gfc': { date: '2008-09-15', label: 'Lehman Brothers Bankruptcy', time: '08:00' },
+    '2001_911': { date: '2001-09-11', label: '9/11 Attacks', time: '08:46' },
+    '1987_black_monday': { date: '1987-10-19', label: 'Black Monday', time: '09:30' },
+    '1963_jfk': { date: '1963-11-22', label: 'JFK Assassination', time: '12:30' },
+    '1962_cuban_missile': { date: '1962-10-16', label: 'Cuban Missile Crisis Start' },
+    '2020_covid': { date: '2020-03-16', label: 'COVID-19 Market Crash' },
+    '2000_dot_com': { date: '2000-03-10', label: 'Dot Com Peak' },
+    '1929_depression': { date: '1929-10-24', label: 'Black Thursday' },
+    '1939_wwii': { date: '1939-09-01', label: 'WWII Start' },
+    '2011_euro_debt': { date: '2011-05-02', label: 'Greek Bailout' },
+    '2018_trade_war': { date: '2018-09-24', label: 'Trade War Escalation' },
+    '2022_inflation': { date: '2022-01-26', label: 'Fed Rate Hike Start' },
+};
 
 export const CrisisSimulator: React.FC = () => {
     const [selectedCrisis, setSelectedCrisis] = useState(CRISES[7].id);
-    const [timeframe, setTimeframe] = useState<Timeframe>('1m');
     const [result, setResult] = useState<SimulationResult | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    
-    const timeframeLabels = { '1d': '1 Day', '1m': '1 Month', '1y': '1 Year' };
-    const timeframeMessages = {
-        '1d': 'Even the worst days eventually end.',
-        '1m': 'Markets often recover faster than fear suggests.',
-        '1y': 'History shows: this too shall pass.'
-    };
-
-    const filterDataByTimeframe = (data: SimulationResult, tf: Timeframe): SimulationResult => {
-        if (!data.dates || data.dates.length === 0) return data;
-        
-        const dates = data.dates.map(d => new Date(d));
-        let endIndex = dates.length;
-        
-        if (tf === '1d') endIndex = Math.min(1, dates.length);
-        else if (tf === '1m') endIndex = Math.min(22, dates.length);
-        
-        const filteredDates = dates.slice(0, endIndex).map(d => d.toISOString().split('T')[0]);
-        const filteredPortfolio = data.portfolio_values.slice(0, endIndex);
-        const filteredBenchmark = data.benchmark_values.slice(0, endIndex);
-        
-        const initialPortfolio = filteredPortfolio[0] || 100;
-        const finalPortfolio = filteredPortfolio[filteredPortfolio.length - 1] || 100;
-        const portfolioReturn = (finalPortfolio / initialPortfolio) - 1;
-        
-        const initialBenchmark = filteredBenchmark[0] || 100;
-        const finalBenchmark = filteredBenchmark[filteredBenchmark.length - 1] || 100;
-        const benchmarkReturn = (finalBenchmark / initialBenchmark) - 1;
-        
-        let maxDrawdown = 0;
-        let peak = initialPortfolio;
-        for (const value of filteredPortfolio) {
-            if (value > peak) peak = value;
-            const drawdown = (value - peak) / peak;
-            if (drawdown < maxDrawdown) maxDrawdown = drawdown;
-        }
-        
-        return {
-            ...data,
-            dates: filteredDates,
-            portfolio_values: filteredPortfolio,
-            benchmark_values: filteredBenchmark,
-            metrics: { max_drawdown: maxDrawdown, total_return: portfolioReturn, benchmark_return: benchmarkReturn }
-        };
-    };
 
     const handleSimulate = async () => {
         setLoading(true);
@@ -102,7 +70,7 @@ export const CrisisSimulator: React.FC = () => {
             if (!response.ok) throw new Error('Simulation failed');
 
             const data = await response.json();
-            setResult(filterDataByTimeframe(data, timeframe));
+            setResult(data);
         } catch (err: any) {
             setError(err.message || 'Failed to run simulation');
         } finally {
@@ -144,37 +112,6 @@ export const CrisisSimulator: React.FC = () => {
                                 </option>
                             ))}
                         </select>
-                    </div>
-
-                    {/* Timeframe Selector */}
-                    <div>
-                        <label 
-                            className="block text-xs font-medium tracking-wider uppercase mb-2"
-                            style={{ color: 'var(--color-text-muted)' }}
-                        >
-                            Recovery View
-                        </label>
-                        <div 
-                            className="flex gap-2"
-                        >
-                            {(['1d', '1m', '1y'] as Timeframe[]).map((tf) => (
-                                <button
-                                    key={tf}
-                                    onClick={() => {
-                                        setTimeframe(tf);
-                                        if (result) setResult(filterDataByTimeframe(result, tf));
-                                    }}
-                                    className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all"
-                                    style={{
-                                        backgroundColor: timeframe === tf ? 'var(--color-accent-primary)' : 'var(--color-bg-tertiary)',
-                                        color: timeframe === tf ? '#FFFFFF' : 'var(--color-text-secondary)',
-                                        border: timeframe === tf ? '1px solid var(--color-accent-primary)' : '1px solid var(--color-border-subtle)',
-                                    }}
-                                >
-                                    {timeframeLabels[tf]}
-                                </button>
-                            ))}
-                        </div>
                     </div>
 
                     {/* Run Button */}
@@ -350,10 +287,33 @@ export const CrisisSimulator: React.FC = () => {
                                             name: 'S&P 500',
                                             line: { color: '#6B7A8F', width: 2, dash: 'dot' },
                                         },
+                                        // Event marker - find closest date index
+                                        ...(CRISIS_EVENTS[selectedCrisis] && result.dates.length > 0 ? (() => {
+                                            const eventDate = CRISIS_EVENTS[selectedCrisis].date;
+                                            const dates = result.dates.map(d => new Date(d).toISOString().split('T')[0]);
+                                            const eventIndex = dates.findIndex(d => d >= eventDate);
+                                            const markerIndex = eventIndex >= 0 ? eventIndex : Math.floor(dates.length / 2);
+                                            const markerY = result.portfolio_values[markerIndex] || result.portfolio_values[0] || 100;
+                                            return [{
+                                                x: [result.dates[markerIndex] || eventDate],
+                                                y: [markerY],
+                                                type: 'scatter',
+                                                mode: 'markers',
+                                                name: CRISIS_EVENTS[selectedCrisis].label,
+                                                marker: { 
+                                                    size: 15, 
+                                                    color: '#ef4444',
+                                                    symbol: 'diamond',
+                                                    line: { width: 2, color: '#FFFFFF' }
+                                                },
+                                                showlegend: false,
+                                                hovertemplate: `${CRISIS_EVENTS[selectedCrisis].label}${CRISIS_EVENTS[selectedCrisis].time ? ` (${CRISIS_EVENTS[selectedCrisis].time})` : ''}<extra></extra>`,
+                                            }];
+                                        })() : []),
                                     ]}
                                     layout={{
                                         autosize: true,
-                                        margin: { l: 60, r: 30, t: 30, b: 50 },
+                                        margin: { l: 60, r: 30, t: 50, b: 50 },
                                         paper_bgcolor: '#0F1419',
                                         plot_bgcolor: '#0F1419',
                                         xaxis: {
@@ -373,27 +333,35 @@ export const CrisisSimulator: React.FC = () => {
                                             xanchor: 'center',
                                             font: { color: '#B4BCC8', size: 12 },
                                         },
+                                        annotations: CRISIS_EVENTS[selectedCrisis] && result.dates.length > 0 ? (() => {
+                                            const eventDate = CRISIS_EVENTS[selectedCrisis].date;
+                                            const dates = result.dates.map(d => new Date(d).toISOString().split('T')[0]);
+                                            const eventIndex = dates.findIndex(d => d >= eventDate);
+                                            const markerIndex = eventIndex >= 0 ? eventIndex : Math.floor(dates.length / 2);
+                                            const markerY = result.portfolio_values[markerIndex] || result.portfolio_values[0] || 100;
+                                            return [{
+                                                x: result.dates[markerIndex] || eventDate,
+                                                y: markerY,
+                                                text: CRISIS_EVENTS[selectedCrisis].label + (CRISIS_EVENTS[selectedCrisis].time ? ` (${CRISIS_EVENTS[selectedCrisis].time})` : ''),
+                                                showarrow: true,
+                                                arrowhead: 2,
+                                                arrowsize: 1,
+                                                arrowwidth: 2,
+                                                arrowcolor: '#ef4444',
+                                                ax: 0,
+                                                ay: -40,
+                                                font: { color: '#ef4444', size: 11 },
+                                                bgcolor: 'rgba(239, 68, 68, 0.1)',
+                                                bordercolor: '#ef4444',
+                                                borderwidth: 1,
+                                                borderpad: 4,
+                                            }];
+                                        })() : [],
                                     }}
                                     useResizeHandler
                                     style={{ width: '100%', height: '300px' }}
                                     config={{ displayModeBar: false }}
                                 />
-                            </div>
-                            
-                            {/* Inspirational Message */}
-                            <div 
-                                className="text-center py-3 px-4 rounded-lg"
-                                style={{
-                                    backgroundColor: 'var(--color-positive-muted)',
-                                    border: '1px solid rgba(0, 200, 83, 0.25)',
-                                }}
-                            >
-                                <p 
-                                    className="text-sm italic"
-                                    style={{ color: 'var(--color-positive)' }}
-                                >
-                                    "{timeframeMessages[timeframe]}"
-                                </p>
                             </div>
                         </div>
                     )}

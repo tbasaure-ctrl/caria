@@ -95,7 +95,7 @@ const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
 type PerformanceGraphPoint = { date: string, value: number };
 type MappedPoint = PerformanceGraphPoint & { x: number; y: number };
 
-const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[] }> = ({ data }) => {
+const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[]; timeRange?: string }> = ({ data, timeRange = '1Y' }) => {
     const [hoveredPoint, setHoveredPoint] = useState<MappedPoint | null>(null);
     const svgRef = useRef<SVGSVGElement>(null);
 
@@ -170,7 +170,7 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[] }> = ({ data })
                     <span className="font-semibold">${Math.abs(valueChange).toFixed(2)}</span>
                     <span className="font-semibold">({percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%)</span>
                     <span style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-body)' }}>
-                        All Time
+                        {timeRange === '1D' ? '1 Day' : timeRange === '1Y' ? '1 Year' : timeRange === 'YTD' ? 'Year to Date' : 'Since Start'}
                     </span>
                 </div>
             </div>
@@ -261,7 +261,7 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[] }> = ({ data })
 };
 
 const TimeRangeSelector: React.FC<{ selected: string; onSelect: (range: string) => void }> = ({ selected, onSelect }) => {
-    const ranges = ['1D', '1W', '1M', 'YTD', 'START'];
+    const ranges = ['1D', '1Y', 'YTD', 'START'];
     return (
         <div className="flex items-center rounded-md p-1 gap-1"
             style={{
@@ -318,7 +318,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
     const [portfolioData, setPortfolioData] = useState<HoldingsWithPrices | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [timeRange, setTimeRange] = useState('1M');
+    const [timeRange, setTimeRange] = useState('1Y');
     const [formData, setFormData] = useState<HoldingFormState>(createDefaultFormState());
     const [formError, setFormError] = useState<string | null>(null);
     const [sortOption, setSortOption] = useState<'value' | 'return' | 'ticker'>('value');
@@ -382,9 +382,9 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                 startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                 dataPoints = 7;
                 break;
-            case '1M':
-                startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-                dataPoints = 30;
+            case '1Y':
+                startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+                dataPoints = 252; // trading days
                 break;
             case 'YTD':
                 startDate = new Date(now.getFullYear(), 0, 1);
@@ -595,7 +595,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                             </h4>
                                             <TimeRangeSelector selected={timeRange} onSelect={setTimeRange} />
                                         </div>
-                                        <PerformanceGraph data={performanceData} />
+                                        <PerformanceGraph key={timeRange} data={performanceData} timeRange={timeRange} />
                                     </div>
                                 )}
 

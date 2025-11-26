@@ -111,6 +111,22 @@ async def get_valuation(ticker: str, request: ValuationRequest):
             ev_ebitda_str = f"{ev_ebitda:.2f}" if ev_ebitda and ev_ebitda > 0 else "N/A"
             ev_sales_str = f"{ev_sales:.2f}" if ev_sales and ev_sales > 0 else "N/A"
             
+            # Calculate Reverse DCF using SimpleValuationService
+            reverse_dcf_result = {"implied_growth_rate": 0, "explanation": "N/A"}
+            try:
+                from ..services.simple_valuation import SimpleValuationService
+                val_service = SimpleValuationService()
+                # Fetch metrics for reverse DCF calculation
+                metrics = val_service._fetch_metrics(ticker)
+                if metrics:
+                    assumptions = val_service._default_assumptions()
+                    reverse_dcf_result = val_service._calculate_reverse_dcf(metrics, current_price, assumptions)
+                    LOGGER.info(f"Reverse DCF calculated for {ticker}: {reverse_dcf_result.get('implied_growth_rate', 0):.2%}")
+                else:
+                    LOGGER.warning(f"Could not fetch metrics for reverse DCF for {ticker}")
+            except Exception as e:
+                LOGGER.warning(f"Reverse DCF calculation failed for {ticker}: {e}")
+            
             result = {
                 "ticker": ticker,
                 "currency": "USD",
@@ -127,10 +143,8 @@ async def get_valuation(ticker: str, request: ValuationRequest):
                     "explanation": f"Valuation based on {method}. P/E: {pe_str}, EV/EBITDA: {ev_ebitda_str}, EV/Sales: {ev_sales_str}"
                 },
                 "reverse_dcf": {
-                    "method": "N/A",
-                    "fair_value_per_share": round(fair_value, 2),
-                    "upside_percent": round(upside, 2),
-                    "explanation": "Simplified valuation using multiples"
+                    "implied_growth_rate": reverse_dcf_result.get("implied_growth_rate", 0),
+                    "explanation": reverse_dcf_result.get("explanation", "N/A")
                 },
                 "multiples_valuation": {
                     "method": method,

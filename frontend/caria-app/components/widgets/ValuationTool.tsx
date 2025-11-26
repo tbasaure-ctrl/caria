@@ -594,7 +594,7 @@ export const ValuationTool: React.FC = () => {
 
                             {mcResult && (
                                 <div className="space-y-4">
-                                    {/* Percentiles */}
+                                    {/* Percentiles Summary */}
                                     <div className="grid grid-cols-3 gap-3">
                                         {[
                                             { label: 'Bear (P10)', value: mcResult.percentiles.p10, color: 'var(--color-negative)' },
@@ -625,7 +625,7 @@ export const ValuationTool: React.FC = () => {
                                         ))}
                                     </div>
 
-                                    {/* Chart */}
+                                    {/* Histogram - Main Chart */}
                                     <div 
                                         className="rounded-lg overflow-hidden"
                                         style={{
@@ -634,13 +634,199 @@ export const ValuationTool: React.FC = () => {
                                         }}
                                     >
                                         <Plot
-                                            data={[mcResult.plotly_data] as any}
-                                            layout={mcLayout}
+                                            data={[
+                                                {
+                                                    x: mcResult.final_values,
+                                                    type: 'histogram',
+                                                    nbinsx: 50,
+                                                    marker: {
+                                                        color: 'rgba(100, 150, 200, 0.7)',
+                                                        line: { color: 'rgba(0, 0, 0, 0.3)', width: 1 }
+                                                    },
+                                                    name: 'Price Distribution',
+                                                },
+                                                // P10 line
+                                                {
+                                                    x: [mcResult.percentiles.p10, mcResult.percentiles.p10],
+                                                    y: [0, 1],
+                                                    type: 'scatter',
+                                                    mode: 'lines',
+                                                    line: { color: 'var(--color-negative)', width: 2, dash: 'dash' },
+                                                    name: 'P10 (Bear)',
+                                                    yaxis: 'y2',
+                                                    showlegend: false,
+                                                },
+                                                // P50 line
+                                                {
+                                                    x: [mcResult.percentiles.p50, mcResult.percentiles.p50],
+                                                    y: [0, 1],
+                                                    type: 'scatter',
+                                                    mode: 'lines',
+                                                    line: { color: 'var(--color-text-primary)', width: 3 },
+                                                    name: 'P50 (Median)',
+                                                    yaxis: 'y2',
+                                                    showlegend: false,
+                                                },
+                                                // P90 line
+                                                {
+                                                    x: [mcResult.percentiles.p90, mcResult.percentiles.p90],
+                                                    y: [0, 1],
+                                                    type: 'scatter',
+                                                    mode: 'lines',
+                                                    line: { color: 'var(--color-positive)', width: 2, dash: 'dash' },
+                                                    name: 'P90 (Bull)',
+                                                    yaxis: 'y2',
+                                                    showlegend: false,
+                                                },
+                                            ] as any}
+                                            layout={{
+                                                ...mcLayout,
+                                                title: { text: "Price Distribution (Histogram)", font: { color: "#F2F4F7", size: 14 } },
+                                                xaxis: { 
+                                                    ...mcLayout.xaxis,
+                                                    title: "Final Price ($)",
+                                                },
+                                                yaxis: {
+                                                    title: "Frequency",
+                                                    gridcolor: "#1E2733",
+                                                    color: "#6B7A8F",
+                                                    tickfont: { size: 11 }
+                                                },
+                                                yaxis2: {
+                                                    overlaying: 'y',
+                                                    range: [0, 1],
+                                                    showgrid: false,
+                                                    showticklabels: false,
+                                                },
+                                                shapes: [
+                                                    {
+                                                        type: 'line',
+                                                        xref: 'x',
+                                                        yref: 'paper',
+                                                        x0: mcResult.percentiles.p10,
+                                                        y0: 0,
+                                                        x1: mcResult.percentiles.p10,
+                                                        y1: 1,
+                                                        line: { color: 'var(--color-negative)', width: 2, dash: 'dash' }
+                                                    },
+                                                    {
+                                                        type: 'line',
+                                                        xref: 'x',
+                                                        yref: 'paper',
+                                                        x0: mcResult.percentiles.p50,
+                                                        y0: 0,
+                                                        x1: mcResult.percentiles.p50,
+                                                        y1: 1,
+                                                        line: { color: 'var(--color-text-primary)', width: 3 }
+                                                    },
+                                                    {
+                                                        type: 'line',
+                                                        xref: 'x',
+                                                        yref: 'paper',
+                                                        x0: mcResult.percentiles.p90,
+                                                        y0: 0,
+                                                        x1: mcResult.percentiles.p90,
+                                                        y1: 1,
+                                                        line: { color: 'var(--color-positive)', width: 2, dash: 'dash' }
+                                                    },
+                                                ],
+                                                annotations: [
+                                                    {
+                                                        x: mcResult.percentiles.p10,
+                                                        y: 0.95,
+                                                        yref: 'paper',
+                                                        text: 'P10',
+                                                        showarrow: false,
+                                                        font: { color: 'var(--color-negative)', size: 12 },
+                                                        bgcolor: 'rgba(0,0,0,0.5)',
+                                                        bordercolor: 'var(--color-negative)',
+                                                        borderwidth: 1,
+                                                    },
+                                                    {
+                                                        x: mcResult.percentiles.p50,
+                                                        y: 0.95,
+                                                        yref: 'paper',
+                                                        text: 'P50',
+                                                        showarrow: false,
+                                                        font: { color: 'var(--color-text-primary)', size: 12, bold: true },
+                                                        bgcolor: 'rgba(0,0,0,0.5)',
+                                                        bordercolor: 'var(--color-text-primary)',
+                                                        borderwidth: 1,
+                                                    },
+                                                    {
+                                                        x: mcResult.percentiles.p90,
+                                                        y: 0.95,
+                                                        yref: 'paper',
+                                                        text: 'P90',
+                                                        showarrow: false,
+                                                        font: { color: 'var(--color-positive)', size: 12 },
+                                                        bgcolor: 'rgba(0,0,0,0.5)',
+                                                        bordercolor: 'var(--color-positive)',
+                                                        borderwidth: 1,
+                                                    },
+                                                ],
+                                                height: 320,
+                                            }}
                                             config={{ displayModeBar: false, responsive: true }}
-                                            style={{ width: "100%", height: "240px" }}
+                                            style={{ width: "100%", height: "320px" }}
                                             useResizeHandler
                                         />
                                     </div>
+
+                                    {/* Probability Explanation */}
+                                    <div 
+                                        className="rounded-lg p-4"
+                                        style={{
+                                            backgroundColor: 'var(--color-bg-tertiary)',
+                                            border: '1px solid var(--color-border-subtle)',
+                                        }}
+                                    >
+                                        <div 
+                                            className="text-xs font-semibold mb-2"
+                                            style={{ color: 'var(--color-text-primary)' }}
+                                        >
+                                            Probabilistic Interpretation
+                                        </div>
+                                        <div 
+                                            className="text-xs leading-relaxed space-y-1"
+                                            style={{ color: 'var(--color-text-secondary)' }}
+                                        >
+                                            <p>
+                                                • <strong>10% probability</strong> the price falls below <strong>{formatMoney(mcResult.percentiles.p10)}</strong> (bear case)
+                                            </p>
+                                            <p>
+                                                • <strong>50% probability</strong> the price is below <strong>{formatMoney(mcResult.percentiles.p50)}</strong> (median outcome)
+                                            </p>
+                                            <p>
+                                                • <strong>90% probability</strong> the price is below <strong>{formatMoney(mcResult.percentiles.p90)}</strong> (bull case)
+                                            </p>
+                                            {mcResult.metrics && (
+                                                <p className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                                                    Expected value: <strong>{formatMoney(mcResult.metrics.mean)}</strong> • 
+                                                    Std deviation: <strong>{formatMoney(mcResult.metrics.std)}</strong>
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Paths Chart - Secondary */}
+                                    <details className="rounded-lg overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border-subtle)' }}>
+                                        <summary 
+                                            className="px-4 py-2 cursor-pointer text-xs font-medium"
+                                            style={{ color: 'var(--color-text-muted)' }}
+                                        >
+                                            View Simulation Paths (Secondary)
+                                        </summary>
+                                        <div className="p-4 pt-2">
+                                            <Plot
+                                                data={[mcResult.plotly_data] as any}
+                                                layout={mcLayout}
+                                                config={{ displayModeBar: false, responsive: true }}
+                                                style={{ width: "100%", height: "240px" }}
+                                                useResizeHandler
+                                            />
+                                        </div>
+                                    </details>
                                 </div>
                             )}
                         </div>

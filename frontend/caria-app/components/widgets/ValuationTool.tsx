@@ -100,14 +100,6 @@ interface MonteCarloResult {
     };
 }
 
-interface ScoringResponse {
-    ticker: string;
-    qualityScore: number;
-    valuationScore: number;
-    momentumScore: number;
-    compositeScore: number;
-    valuation_upside_pct: number | null;
-}
 
 const formatMoney = (v: number) =>
     `$${v.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
@@ -115,13 +107,11 @@ const formatMoney = (v: number) =>
 export const ValuationTool: React.FC = () => {
     const [ticker, setTicker] = useState("AAPL");
     const [valuation, setValuation] = useState<QuickValuationResponse | null>(null);
-    const [scoring, setScoring] = useState<ScoringResponse | null>(null);
-    const [scoringError, setScoringError] = useState<string | null>(null);
     const [isLoadingValuation, setIsLoadingValuation] = useState(false);
     const [valError, setValError] = useState<string | null>(null);
 
-    // Monte Carlo
-    const [years, setYears] = useState(5);
+    // Monte Carlo - Fixed to 2 years
+    const years = 2;
     const [simulations] = useState(10_000);
     const [mcResult, setMcResult] = useState<MonteCarloResult | null>(null);
     const [isLoadingMC, setIsLoadingMC] = useState(false);
@@ -130,8 +120,6 @@ export const ValuationTool: React.FC = () => {
     const handleAnalyze = async () => {
         setIsLoadingValuation(true);
         setValError(null);
-        setScoring(null);
-        setScoringError(null);
         setMcResult(null);
         setMcError(null);
 
@@ -149,7 +137,7 @@ export const ValuationTool: React.FC = () => {
                 throw new Error("Invalid current price from API.");
             }
 
-            // Get valuation
+            // Get valuation (quick multiples)
             const valResp = await fetchWithAuth(`${API_BASE_URL}/api/valuation/${cleanTicker}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -164,22 +152,8 @@ export const ValuationTool: React.FC = () => {
             const valData: QuickValuationResponse = await valResp.json();
             setValuation(valData);
 
-            // Get scoring
-            try {
-                const scoringResp = await fetchWithAuth(`${API_BASE_URL}/api/analysis/scoring/${cleanTicker}`);
-                if (scoringResp.ok) {
-                    setScoring(await scoringResp.json());
-                }
-            } catch {
-                setScoringError("Scoring temporarily unavailable");
-            }
-
-            // Run Monte Carlo
-            if (valData.dcf?.assumptions?.horizon_years) {
-                const horizon = valData.dcf.assumptions.horizon_years;
-                setYears(horizon);
-                await runMonteCarlo(horizon);
-            }
+            // Run Monte Carlo with fixed 2 years
+            await runMonteCarlo();
         } catch (err: any) {
             console.error("Valuation error:", err);
             setValError(err.message || "An unexpected error occurred.");
@@ -188,8 +162,7 @@ export const ValuationTool: React.FC = () => {
         }
     };
 
-    const runMonteCarlo = async (yearsForSim?: number) => {
-        const yearsToUse = yearsForSim ?? years;
+    const runMonteCarlo = async () => {
         setIsLoadingMC(true);
         setMcError(null);
         setMcResult(null);
@@ -200,7 +173,7 @@ export const ValuationTool: React.FC = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ticker: ticker.toUpperCase(),
-                    horizon_years: yearsToUse,
+                    horizon_years: years, // Fixed to 2 years
                     simulations: simulations,
                 }),
             });
@@ -232,6 +205,7 @@ export const ValuationTool: React.FC = () => {
     };
 
     return (
+<<<<<<< HEAD
         <div className="space-y-4">
             {/* Ticker Input */}
             <div className="flex gap-3 items-end">
@@ -261,6 +235,19 @@ export const ValuationTool: React.FC = () => {
                     style={{
                         backgroundColor: 'var(--color-accent-primary)',
                         color: '#FFFFFF',
+=======
+        <WidgetCard
+            title="MONTE CARLO FORECAST SIMULATION"
+            tooltip="Quick multiples valuation and Monte Carlo price simulations (2-year horizon)."
+        >
+            <div className="space-y-6">
+                {/* Ticker Input */}
+                <div 
+                    className="flex gap-3 p-4 rounded-lg"
+                    style={{ 
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        border: '1px solid var(--color-border-subtle)'
+>>>>>>> f3ceca1c75e663723be8bbc281d5858a05d81c49
                     }}
                 >
                     {isLoadingValuation ? "Analyzing..." : "Analyze"}
@@ -280,127 +267,10 @@ export const ValuationTool: React.FC = () => {
                     </div>
                 )}
 
-                {/* C-Score Section */}
-                {scoring && (
-                    <div 
-                        className="rounded-xl p-6 relative overflow-hidden"
-                        style={{
-                            backgroundColor: 'var(--color-bg-tertiary)',
-                            border: '1px solid var(--color-border-subtle)',
-                        }}
-                    >
-                        <div className="flex flex-col md:flex-row gap-8 items-center">
-                            {/* Main Score */}
-                            <div className="text-center min-w-[140px]">
-                                <div 
-                                    className="text-[10px] font-semibold tracking-widest uppercase mb-2"
-                                    style={{ color: 'var(--color-text-muted)' }}
-                                >
-                                    Caria C-Score
-                                </div>
-                                <div 
-                                    className="text-5xl font-bold font-mono"
-                                    style={{
-                                        color: scoring.compositeScore >= 80 ? 'var(--color-positive)' : 
-                                               scoring.compositeScore >= 60 ? 'var(--color-warning)' : 
-                                               'var(--color-text-secondary)',
-                                    }}
-                                >
-                                    {scoring.compositeScore.toFixed(0)}
-                                </div>
-                                <div 
-                                    className="text-xs font-medium mt-2 px-3 py-1 rounded-full inline-block"
-                                    style={{
-                                        backgroundColor: scoring.compositeScore >= 80 ? 'var(--color-positive-muted)' : 
-                                                        scoring.compositeScore >= 60 ? 'var(--color-warning-muted)' : 
-                                                        'var(--color-bg-surface)',
-                                        color: scoring.compositeScore >= 80 ? 'var(--color-positive)' : 
-                                               scoring.compositeScore >= 60 ? 'var(--color-warning)' : 
-                                               'var(--color-text-muted)',
-                                    }}
-                                >
-                                    {scoring.compositeScore >= 80 ? 'PROBABLE OUTLIER' : 
-                                     scoring.compositeScore >= 60 ? 'HIGH-QUALITY' : 'STANDARD'}
-                                </div>
-                            </div>
-
-                            {/* Divider */}
-                            <div 
-                                className="hidden md:block w-px h-20"
-                                style={{ backgroundColor: 'var(--color-border-subtle)' }}
-                            />
-
-                            {/* Breakdown */}
-                            <div className="flex-1 grid grid-cols-3 gap-6">
-                                {[
-                                    { label: 'Quality', value: scoring.qualityScore, weight: '35%', color: 'var(--color-accent-primary)' },
-                                    { label: 'Valuation', value: scoring.valuationScore, weight: '25%', color: '#8B5CF6' },
-                                    { label: 'Momentum', value: scoring.momentumScore, weight: '20%', color: 'var(--color-warning)' },
-                                ].map((metric) => (
-                                    <div key={metric.label}>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span 
-                                                className="text-[10px] font-medium tracking-wider uppercase"
-                                                style={{ color: 'var(--color-text-muted)' }}
-                                            >
-                                                {metric.label}
-                                            </span>
-                                            <span 
-                                                className="text-[10px]"
-                                                style={{ color: 'var(--color-text-subtle)' }}
-                                            >
-                                                {metric.weight}
-                                            </span>
-                                        </div>
-                                        <div 
-                                            className="h-2 rounded-full overflow-hidden mb-2"
-                                            style={{ backgroundColor: 'var(--color-bg-surface)' }}
-                                        >
-                                            <div 
-                                                className="h-full rounded-full"
-                                                style={{ width: `${metric.value}%`, backgroundColor: metric.color }}
-                                            />
-                                        </div>
-                                        <div 
-                                            className="text-lg font-bold font-mono"
-                                            style={{ color: 'var(--color-text-primary)' }}
-                                        >
-                                            {metric.value.toFixed(0)}
-                                            <span 
-                                                className="text-xs font-normal"
-                                                style={{ color: 'var(--color-text-muted)' }}
-                                            >
-                                                /100
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {scoringError && (
-                    <div 
-                        className="px-4 py-2 rounded-lg text-xs"
-                        style={{
-                            backgroundColor: 'var(--color-warning-muted)',
-                            color: 'var(--color-warning)',
-                        }}
-                    >
-                        {scoringError}
-                    </div>
-                )}
-
                 {/* Valuation Results */}
                 {valuation && (
                     <div className="space-y-6">
-                        {/* Projection Valuation */}
-                        <div className="mb-6">
-                            <ProjectionValuation />
-                        </div>
-
-                        {/* Valuation Methods Grid */}
+                        {/* Quick Multiples Valuation */}
                         <div className="grid md:grid-cols-2 gap-4">
 
                             {/* Multiples Valuation */}
@@ -501,57 +371,18 @@ export const ValuationTool: React.FC = () => {
                             className="pt-6 border-t"
                             style={{ borderColor: 'var(--color-border-subtle)' }}
                         >
-                            <div className="flex items-center justify-between mb-4">
-                                <div>
-                                    <div 
-                                        className="text-sm font-semibold"
-                                        style={{ color: 'var(--color-text-primary)' }}
-                                    >
-                                        Monte Carlo Price Forecast
-                                    </div>
-                                    <div 
-                                        className="text-xs"
-                                        style={{ color: 'var(--color-text-muted)' }}
-                                    >
-                                        {simulations.toLocaleString()} simulations based on historical volatility
-                                    </div>
+                            <div className="mb-4">
+                                <div 
+                                    className="text-sm font-semibold"
+                                    style={{ color: 'var(--color-text-primary)' }}
+                                >
+                                    Monte Carlo Price Forecast (2-Year Horizon)
                                 </div>
-                                
-                                <div className="flex items-center gap-3">
-                                    <div>
-                                        <label 
-                                            className="text-[10px] block mb-1"
-                                            style={{ color: 'var(--color-text-muted)' }}
-                                        >
-                                            Years
-                                        </label>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            max="10"
-                                            value={years}
-                                            onChange={(e) => setYears(Math.min(10, Math.max(1, parseInt(e.target.value) || 1)))}
-                                            className="w-16 px-2 py-1.5 rounded text-sm font-mono"
-                                            style={{
-                                                backgroundColor: 'var(--color-bg-surface)',
-                                                border: '1px solid var(--color-border-subtle)',
-                                                color: 'var(--color-text-primary)',
-                                            }}
-                                            disabled={isLoadingMC}
-                                        />
-                                    </div>
-                                    <button
-                                        onClick={() => runMonteCarlo()}
-                                        disabled={isLoadingMC}
-                                        className="px-4 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                                        style={{
-                                            backgroundColor: 'var(--color-bg-surface)',
-                                            color: 'var(--color-text-secondary)',
-                                            border: '1px solid var(--color-border-subtle)',
-                                        }}
-                                    >
-                                        {isLoadingMC ? "Running..." : "Re-run"}
-                                    </button>
+                                <div 
+                                    className="text-xs"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                >
+                                    {simulations.toLocaleString()} simulations based on historical volatility
                                 </div>
                             </div>
 

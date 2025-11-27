@@ -33,6 +33,8 @@ class CariaScoreEngine:
         quote = self._fetch("quote", symbol)
         price_change = self._fetch("stock-price-change", symbol)
         insiders = self._fetch("insider-trading", symbol, "&limit=10")
+        # AGREGAR: Descargar perfil para tener Sector y Nombre correcto
+        profile = self._fetch("profile", symbol)
 
         return {
             "ratios_ttm": ratios_ttm[0] if ratios_ttm else {},
@@ -41,7 +43,8 @@ class CariaScoreEngine:
             "ratios_hist": ratios_hist,
             "quote": quote[0] if quote else {},
             "price_change": price_change[0] if price_change else {},
-            "insider_trading": insiders
+            "insider_trading": insiders,
+            "profile": profile[0] if profile else {}  # Nuevo campo
         }
 
     # --- MOTORES DE CÁLCULO (Resumidos para no ocupar tanto espacio, usan tu lógica) ---
@@ -96,6 +99,15 @@ class CariaScoreEngine:
         results = []
         for sym in self.symbols:
             d = self.get_financial_data(sym)
+            
+            # Extraer Datos de Identidad
+            profile_data = d.get("profile", {})
+            quote_data = d.get("quote", {})
+            
+            # Usamos 'get' con un valor por defecto por si falla la API
+            company_name = profile_data.get("companyName", quote_data.get("name", sym))
+            sector = profile_data.get("sector", "Unknown")  # Si no hay sector, ponemos Unknown
+            
             q = self.analyze_quality(d)
             v = self.analyze_valuation(d)
             m = self.analyze_momentum(d)
@@ -107,6 +119,8 @@ class CariaScoreEngine:
             
             results.append({
                 "Ticker": sym,
+                "company_name": company_name,  # ¡ESTO FALTABA!
+                "sector": sector,              # ¡ESTO FALTABA!
                 "C_Score": round(final, 1),
                 "Desglose": {"Quality": round(q,1), "Valuation": round(v,1), "Momentum": round(m,1), "Catalysts": round(c,1), "Risk_Safety": round(r,1)}
             })

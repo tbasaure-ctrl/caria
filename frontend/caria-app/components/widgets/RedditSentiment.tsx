@@ -106,24 +106,6 @@ export const RedditSentiment: React.FC = () => {
                     <span className="text-lg font-bold" style={{color: 'var(--color-cream)'}}>
                         ${stock.ticker}
                     </span>
-                    <span
-                        className="text-xs px-1.5 py-0.5 rounded"
-                        style={{
-                            backgroundColor: stock.source === 'reddit' ? '#FF4500' + '20' : '#00D9FF' + '20',
-                            color: stock.source === 'reddit' ? '#FF4500' : '#00D9FF',
-                        }}
-                    >
-                        {stock.source === 'reddit' ? '📱 Reddit' : '💬 StockTwits'}
-                    </span>
-                    <span
-                        className="text-sm px-2 py-1 rounded"
-                        style={{
-                            backgroundColor: getSentimentColor(stock.sentiment) + '20',
-                            color: getSentimentColor(stock.sentiment)
-                        }}
-                    >
-                        {getSentimentEmoji(stock.sentiment)} {stock.sentiment}
-                    </span>
                 </div>
                 <div className="text-right">
                     <div className="text-sm font-bold" style={{color: 'var(--color-cream)'}}>

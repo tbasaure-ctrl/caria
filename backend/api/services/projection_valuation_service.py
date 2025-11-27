@@ -18,47 +18,39 @@ class ProjectionValuationService:
         if not self.fmp_api_key:
             LOGGER.warning("FMP_API_KEY not configured, projection valuation may fail")
     
-    def get_base_data(self, ticker: str) -> Dict[str, Any]:
-        """Fetches TTM or latest full year data to serve as the base year."""
+    def get_financial_data(self, ticker: str) -> Optional[Dict[str, Any]]:
+        """Obtiene los datos base reales de FMP"""
         base_url = "https://financialmodelingprep.com/api/v3"
-        
         try:
-            # Fetch Income Statement (Annual)
-            inc_stmt = requests.get(
+            inc = requests.get(
                 f"{base_url}/income-statement/{ticker}?limit=1&apikey={self.fmp_api_key}",
                 timeout=10
             ).json()
-            
-            # Fetch Key Metrics (for shares, etc)
-            metrics = requests.get(
-                f"{base_url}/key-metrics-ttm/{ticker}?limit=1&apikey={self.fmp_api_key}",
-                timeout=10
-            ).json()
-            
-            # Fetch Quote (for current price)
             quote = requests.get(
                 f"{base_url}/quote/{ticker}?apikey={self.fmp_api_key}",
                 timeout=10
             ).json()
             
-            if not inc_stmt:
-                raise ValueError("Could not fetch data. Check API Key or Ticker.")
+            if not inc or not quote:
+                return None
             
-            data = inc_stmt[0]
-            curr_metrics = metrics[0] if metrics else {}
-            curr_price = quote[0]['price'] if quote and len(quote) > 0 else 0
+            data = inc[0]
+            revenue = data.get("revenue", 0)
+            op_inc = data.get("operatingIncome", 0)
             
             return {
-                "revenue": data.get("revenue", 0),
-                "operating_income": data.get("operatingIncome", 0),
+                "symbol": data.get("symbol"),
+                "revenue": revenue,
+                "op_income": op_inc,
                 "net_income": data.get("netIncome", 0),
-                "shares_outstanding": data.get("weightedAverageShsOutDil", 0) or curr_metrics.get("sharesOutstanding", 0),
-                "price": curr_price,
-                "fcf": (data.get("operatingIncome", 0) * 0.8)  # Rough estimate
+                "shares": data.get("weightedAverageShsOutDil", 0),
+                "price": quote[0].get("price", 0) if quote else 0,
+                "op_margin": op_inc / revenue if revenue else 0,
+                "net_margin": data.get("netIncome", 0) / revenue if revenue else 0,
             }
         except Exception as e:
-            LOGGER.error(f"Error fetching base data for {ticker}: {e}")
-            raise
+            LOGGER.error(f"Error fetching financial data for {ticker}: {e}")
+            return None
     
     def run_projection_model(
         self, 
@@ -200,89 +192,103 @@ class ProjectionValuationService:
     ) -> Dict[str, Any]:
         """
         Main method to get projection-based valuation.
+        Now automatically detects if company is high-margin (NVDA) or low-margin (Walmart) and projects accordingly.
         Returns JSON-serializable dict.
         """
-        try:
-            # Fetch base data
-            base_data = self.get_base_data(ticker)
+        # 1. Obtener Realidad Actual
+        base = self.get_financial_data(ticker)
+        if not base:
+            raise ValueError(f"Ticker {ticker} no encontrado o datos insuficientes")
+
+        # 2. Configurar Penalizaciones por Riesgo
+        # El riesgo macro afecta al múltiplo de salida (PE) y al crecimiento
+        # El riesgo industria afecta a los márgenes
+        risk_growth_penalty = (macro_risk * 0.03) + (industry_risk * 0.01)
+        risk_margin_penalty = industry_risk * 0.05  # Si es alto, baja 5% el margen
+        risk_multiple_penalty = macro_risk * 5  # Si riesgo es 1, baja 5 puntos el PE
+
+        # 3. Proyección a 5 Años
+        years = list(range(2025, 2030))
+        projections = []
+        
+        prev_revenue = base["revenue"]
+        prev_shares = base["shares"]
+        
+        # Supuestos dinámicos basados en la empresa
+        # Detecta automáticamente si es Tech (alto margen) o Retail (bajo margen)
+        base_growth = 0.15 if base["op_margin"] > 0.20 else 0.05  # Si es Tech crece más, si es retail menos
+        base_pe = 25 if base["op_margin"] > 0.20 else 15  # PE base según perfil
+
+        for year in years:
+            # Ajustar Crecimiento (Decae con el tiempo + Riesgo)
+            growth_rate = max(0.02, base_growth - risk_growth_penalty - ((year - 2025) * 0.01))
             
-            # Default assumptions (can be customized per ticker)
-            assumptions_map = {
-                2025: {
-                    'growth': 0.045, 
-                    'op_margin': 0.175, 
-                    'net_margin': 0.160, 
-                    'fcf_margin': 0.20, 
-                    'buybacks': 6_000_000_000, 
-                    'est_price_per_share': 85, 
-                    'pe_multiple': 16
-                },
-                2026: {
-                    'growth': 0.050, 
-                    'op_margin': 0.180, 
-                    'net_margin': 0.165, 
-                    'fcf_margin': 0.21, 
-                    'buybacks': 6_250_000_000, 
-                    'est_price_per_share': 100, 
-                    'pe_multiple': 16
-                },
-                2027: {
-                    'growth': 0.060, 
-                    'op_margin': 0.185, 
-                    'net_margin': 0.170, 
-                    'fcf_margin': 0.215, 
-                    'buybacks': 6_500_000_000, 
-                    'est_price_per_share': 120, 
-                    'pe_multiple': 18
-                },
-                2028: {
-                    'growth': 0.070, 
-                    'op_margin': 0.1875, 
-                    'net_margin': 0.1725, 
-                    'fcf_margin': 0.2175, 
-                    'buybacks': 6_750_000_000, 
-                    'est_price_per_share': 140, 
-                    'pe_multiple': 18
-                },
-                2029: {
-                    'growth': 0.070, 
-                    'op_margin': 0.190, 
-                    'net_margin': 0.175, 
-                    'fcf_margin': 0.22, 
-                    'buybacks': 7_000_000_000, 
-                    'est_price_per_share': 166, 
-                    'pe_multiple': 18
-                },
-            }
+            # Ajustar Margen (Se mantiene estable o baja por competencia)
+            op_margin = max(0.05, base["op_margin"] - risk_margin_penalty)
+            net_margin = max(0.03, base["net_margin"] - risk_margin_penalty)
             
-            # Risk profile
-            risk_profile = {
-                'macro_risk': macro_risk,
-                'industry_risk': industry_risk
-            }
+            # Cálculos Financieros
+            revenue = prev_revenue * (1 + growth_rate)
+            op_income = revenue * op_margin
+            net_income = revenue * net_margin
+            fcf = op_income * 0.80  # Estimación FCF
             
-            # Run projection model
-            projection_data = self.run_projection_model(
-                base_data, 
-                assumptions_map, 
-                risk_profile
-            )
+            # Recompras (asumimos usa el 30% del FCF para recomprar acciones)
+            buyback_cash = fcf * 0.30 
+            est_share_price = base["price"] * (1.08 ** (year - 2024))  # Precio sube teóricamente
+            shares_repurchased = buyback_cash / est_share_price if est_share_price > 0 else 0
+            shares = max(prev_shares - shares_repurchased, 0)
             
-            # Extract key metrics
-            current_price = base_data['price']
-            target_2029 = projection_data.get("Price Target (FCF)", {}).get(2029, 0)
-            upside = ((target_2029 / current_price) - 1) * 100 if current_price > 0 else 0
+            fcf_per_share = fcf / shares if shares > 0 else 0
             
-            return {
-                "ticker": ticker.upper(),
-                "current_price": round(current_price, 2),
-                "target_price_2029": round(target_2029, 2),
-                "upside": round(upside, 2),
-                "base_revenue": base_data['revenue'],
-                "projection_data": projection_data,
-                "base_data": base_data
-            }
-        except Exception as e:
-            LOGGER.error(f"Error in projection valuation for {ticker}: {e}")
-            raise
+            projections.append({
+                "year": year,
+                "revenue": revenue,
+                "growth": growth_rate,
+                "op_margin": op_margin,
+                "net_margin": net_margin,
+                "fcf": fcf,
+                "shares": shares,
+                "fcf_per_share": fcf_per_share
+            })
+            
+            prev_revenue = revenue
+            prev_shares = shares
+
+        # 4. Valoración Final (Año 2029)
+        last_year = projections[-1]
+        
+        # Múltiplo de Salida ajustado por riesgo
+        exit_multiple = base_pe - risk_multiple_penalty
+        target_price = last_year["fcf_per_share"] * exit_multiple
+        
+        upside = ((target_price / base["price"]) - 1) * 100 if base["price"] > 0 else 0
+
+        # Formatear proyecciones para compatibilidad con frontend
+        projection_data = {}
+        for proj in projections:
+            year = proj["year"]
+            if "Revenue" not in projection_data:
+                projection_data["Total Revenue"] = {}
+            if "Revenue Growth" not in projection_data:
+                projection_data["Revenue Growth"] = {}
+            if "Op Margin" not in projection_data:
+                projection_data["Op Margin"] = {}
+            if "FCF Per Share" not in projection_data:
+                projection_data["FCF Per Share"] = {}
+            
+            projection_data["Total Revenue"][year] = proj["revenue"]
+            projection_data["Revenue Growth"][year] = proj["growth"]
+            projection_data["Op Margin"][year] = proj["op_margin"]
+            projection_data["FCF Per Share"][year] = proj["fcf_per_share"]
+
+        return {
+            "ticker": base["symbol"],
+            "current_price": round(base["price"], 2),
+            "fair_value": round(target_price, 2),
+            "upside_percentage": round(upside, 2),
+            "risk_score": round(((macro_risk + industry_risk) / 2) * 100, 2),
+            "projections": projections,  # Enviamos la tabla completa por si el usuario quiere ver detalles
+            "projection_data": projection_data  # Formato legacy para compatibilidad
+        }
 

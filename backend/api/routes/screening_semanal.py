@@ -2,6 +2,8 @@
 Screening Semanal - Endpoints para calcular y guardar screenings usando CariaScoreEngine
 """
 from fastapi import APIRouter, BackgroundTasks, HTTPException
+from typing import Optional, List
+from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 
@@ -21,7 +23,23 @@ EMPRESAS_DEFAULT = ["AAPL", "TSLA", "UNH", "NVDA", "AMD", "MSFT"]
 # Inicializar base de datos al importar el módulo
 init_db()
 
-@router.get("/")
+# Definir el modelo de datos (Schema)
+class DesgloseScore(BaseModel):
+    Quality: float
+    Valuation: float
+    Momentum: float
+    Catalysts: float
+    Risk_Safety: float
+
+class ScreeningItem(BaseModel):
+    Ticker: str
+    # Usamos Optional[str] = None para que si llega vacío, no dé error
+    company_name: Optional[str] = "Empresa Desconocida"
+    sector: Optional[str] = "General"
+    C_Score: float
+    Desglose: DesgloseScore
+
+@router.get("/", response_model=List[ScreeningItem])
 def get_screening_live():
     """
     Calcula los scores en tiempo real y devuelve el JSON.
@@ -32,6 +50,7 @@ def get_screening_live():
 
     engine = CariaScoreEngine(API_KEY, EMPRESAS_DEFAULT)
     df = engine.calculate_scores()
+    # Asegurarse de que devuelve una lista de diccionarios
     return df.to_dict(orient="records")
 
 @router.post("/run-weekly-job")

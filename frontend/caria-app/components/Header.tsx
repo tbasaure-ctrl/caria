@@ -21,7 +21,7 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onRegister }) => {
                 }}
             >
                 {/* Main Header */}
-                <div className="container mx-auto px-4 sm:px-6 lg:px-10">
+                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16 md:h-20">
                         {/* Logo - Left */}
                         <div className="flex items-center gap-2 flex-shrink-0">

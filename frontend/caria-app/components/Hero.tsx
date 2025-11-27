@@ -13,7 +13,7 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
   };
 
   return (
-    <section className="relative py-20 md:py-32 lg:py-40 overflow-hidden min-h-[70vh] md:min-h-[80vh] flex items-center">
+    <section className="relative py-20 md:py-32 lg:py-40 overflow-hidden min-h-[70vh] md:min-h-[80vh] flex items-center justify-center">
       {/* Subtle gradient background */}
       <div
         className="absolute inset-0 opacity-20 transition-all duration-1000"
@@ -25,8 +25,8 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
         }}
       />
 
-      <div className="container mx-auto px-4 sm:px-6 md:px-12 relative z-10">
-        <div className="max-w-5xl mx-auto text-center">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-4xl mx-auto text-center">
           {/* Eyebrow */}
           <div className="mb-6 md:mb-8">
             <span

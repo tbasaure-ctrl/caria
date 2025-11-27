@@ -108,20 +108,21 @@ const FeatureCard: React.FC<{ feature: Feature, index: number }> = ({ feature, i
 export const Features: React.FC = () => {
   return (
     <section id="features" className="py-20 md:py-32 relative overflow-hidden" style={{backgroundColor: 'var(--color-bg-primary)'}}>
-      <div className="container mx-auto px-4 sm:px-6 md:px-12 relative z-10">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="text-center mb-16 md:mb-20">
             <h2
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 mx-auto"
               style={{
                 fontFamily: "'Instrument Serif', Georgia, serif",
                 color: 'var(--color-cream)',
                 letterSpacing: '-0.02em',
+                maxWidth: '900px',
               }}>
               Everything you need to navigate the markets
             </h2>
             <p
-              className="max-w-xl mx-auto text-base md:text-lg px-4"
+              className="max-w-xl mx-auto text-base md:text-lg"
               style={{
                 fontFamily: "'Crimson Pro', Georgia, serif",
                 color: 'rgba(232, 230, 227, 0.6)',
@@ -132,7 +133,7 @@ export const Features: React.FC = () => {
         </div>
 
         {/* Feature Cards Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto">
           {featuresData.map((feature, index) => (
             <FeatureCard key={feature.title} feature={feature} index={index} />
           ))}

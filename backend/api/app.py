@@ -372,6 +372,10 @@ from api.routes.weekly_screening import router as weekly_screening_router
 app.include_router(weekly_screening_router)
 app.include_router(simulation_router)  # Crisis Simulator and Macro Multiverse
 
+# Screening semanal con CariaScoreEngine
+from api.routes.screening_semanal import router as screening_semanal_router
+app.include_router(screening_semanal_router)
+
 
 # Mount SocketIO app for WebSocket support per audit document
 # This combines FastAPI with SocketIO to handle both HTTP and WebSocket connections

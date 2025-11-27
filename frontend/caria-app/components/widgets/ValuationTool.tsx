@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import Plot from "react-plotly.js";
-import { WidgetCard } from "./WidgetCard";
 import { fetchWithAuth, API_BASE_URL } from "../../services/apiService";
-import { ProjectionValuation } from "./ProjectionValuation";
 
 // Types
 interface DcfAssumptions {
@@ -234,50 +232,40 @@ export const ValuationTool: React.FC = () => {
     };
 
     return (
-        <WidgetCard
-            title="VALUATION TERMINAL"
-            tooltip="Multi-method valuation: DCF, reverse DCF, historical multiples, and Monte Carlo price simulations."
-        >
-            <div className="space-y-6">
-                {/* Ticker Input */}
-                <div 
-                    className="flex gap-3 p-4 rounded-lg"
-                    style={{ 
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border-subtle)'
+        <div className="space-y-4">
+            {/* Ticker Input */}
+            <div className="flex gap-3 items-end">
+                <div className="flex-1">
+                    <label 
+                        className="block text-xs font-medium tracking-wider uppercase mb-1.5"
+                        style={{ color: 'var(--color-text-muted)' }}
+                    >
+                        Ticker Symbol
+                    </label>
+                    <input
+                        value={ticker}
+                        onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                        className="w-full px-3 py-2 rounded-lg text-sm font-mono"
+                        style={{
+                            backgroundColor: 'var(--color-bg-tertiary)',
+                            border: '1px solid var(--color-border-subtle)',
+                            color: 'var(--color-text-primary)',
+                        }}
+                        placeholder="AAPL"
+                    />
+                </div>
+                <button
+                    onClick={handleAnalyze}
+                    disabled={isLoadingValuation || !ticker.trim()}
+                    className="px-5 py-2 rounded-lg font-semibold text-sm transition-all duration-200 disabled:opacity-50"
+                    style={{
+                        backgroundColor: 'var(--color-accent-primary)',
+                        color: '#FFFFFF',
                     }}
                 >
-                    <div className="flex-1">
-                        <label 
-                            className="block text-[10px] font-medium tracking-wider uppercase mb-1.5"
-                            style={{ color: 'var(--color-text-muted)' }}
-                        >
-                            Ticker Symbol
-                        </label>
-                        <input
-                            value={ticker}
-                            onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                            className="w-full px-4 py-2.5 rounded-lg text-base font-mono font-semibold"
-                            style={{
-                                backgroundColor: 'var(--color-bg-surface)',
-                                border: '1px solid var(--color-border-subtle)',
-                                color: 'var(--color-text-primary)',
-                            }}
-                            placeholder="AAPL, MSFT, NVDA..."
-                        />
-                    </div>
-                    <button
-                        onClick={handleAnalyze}
-                        disabled={isLoadingValuation || !ticker.trim()}
-                        className="self-end px-6 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 disabled:opacity-50"
-                        style={{
-                            backgroundColor: 'var(--color-accent-primary)',
-                            color: '#FFFFFF',
-                        }}
-                    >
-                        {isLoadingValuation ? "Analyzing..." : "Analyze"}
-                    </button>
-                </div>
+                    {isLoadingValuation ? "Analyzing..." : "Analyze"}
+                </button>
+            </div>
 
                 {valError && (
                     <div 
@@ -852,7 +840,6 @@ export const ValuationTool: React.FC = () => {
                         </p>
                     </div>
                 )}
-            </div>
-        </WidgetCard>
+        </div>
     );
 };

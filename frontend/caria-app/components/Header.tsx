@@ -14,109 +14,108 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onRegister }) => {
             <header 
                 className="sticky top-0 z-50 border-b transition-all duration-300"
                 style={{
-                    backgroundColor: 'rgba(10, 14, 20, 0.92)',
+                    backgroundColor: 'rgba(10, 14, 20, 0.95)',
                     backdropFilter: 'blur(16px)',
                     WebkitBackdropFilter: 'blur(16px)',
                     borderColor: 'var(--color-border-subtle)',
                 }}
             >
                 {/* Main Header */}
-                <div className="container mx-auto px-6 lg:px-10">
-                    <div className="flex items-center h-20">
-                        {/* Auth Buttons - Left Aligned */}
-                        <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-10">
+                    <div className="flex items-center justify-between h-16 md:h-20">
+                        {/* Logo - Left */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <CariaLogoIcon 
+                                className="w-7 h-7 md:w-8 md:h-8" 
+                                style={{ color: 'var(--color-cream)' }}
+                            />
+                            <span 
+                                className="text-lg md:text-xl font-semibold hidden sm:block"
+                                style={{
+                                    fontFamily: 'var(--font-display)',
+                                    color: 'var(--color-cream)',
+                                    letterSpacing: '-0.01em'
+                                }}
+                            >
+                                Caria
+                            </span>
+                        </div>
+
+                        {/* Navigation - Center (hidden on mobile) */}
+                        <nav 
+                            className="hidden md:flex items-center justify-center gap-8"
+                            style={{
+                                fontFamily: 'var(--font-body)',
+                                fontSize: '14px',
+                                fontWeight: 500
+                            }}
+                        >
+                            <a 
+                                href="#features"
+                                className="transition-colors duration-200 py-2"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                            >
+                                Features
+                            </a>
+                            <a 
+                                href="#community"
+                                className="transition-colors duration-200 py-2"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                            >
+                                Community
+                            </a>
+                            <a 
+                                href="#pricing"
+                                className="transition-colors duration-200 py-2"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                            >
+                                Pricing
+                            </a>
+                        </nav>
+
+                        {/* Auth Buttons - Right */}
+                        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                             <button
                                 onClick={onLogin}
-                                className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                                className="px-3 sm:px-4 py-2 text-sm font-medium transition-all duration-200"
                                 style={{
                                     color: 'var(--color-text-secondary)',
-                                    backgroundColor: 'transparent',
-                                    border: '1px solid var(--color-border-subtle)'
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.color = 'var(--color-text-primary)';
-                                    e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.color = 'var(--color-text-secondary)';
-                                    e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
                                 }}
                             >
-                                Sign In
+                                Login
                             </button>
                             <button
                                 onClick={onRegister}
-                                className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
+                                className="px-4 sm:px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
                                 style={{
-                                    backgroundColor: 'var(--color-accent-primary)',
-                                    color: '#FFFFFF',
+                                    backgroundColor: 'var(--color-bg-tertiary)',
+                                    color: 'var(--color-text-primary)',
+                                    border: '1px solid var(--color-border-subtle)',
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.opacity = '0.9';
+                                    e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
+                                    e.currentTarget.style.backgroundColor = 'var(--color-bg-surface)';
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.opacity = '1';
+                                    e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
+                                    e.currentTarget.style.backgroundColor = 'var(--color-bg-tertiary)';
                                 }}
                             >
-                                Get Started
+                                Sign Up
                             </button>
                         </div>
-
-                        {/* Centered Content */}
-                        <div className="flex-1 flex flex-col items-center justify-center px-4">
-                            {/* Logo and Title */}
-                            <div className="flex items-center gap-3 mb-4">
-                                <CariaLogoIcon 
-                                    className="w-8 h-8" 
-                                    style={{ color: 'var(--color-accent-primary)' }}
-                                />
-                                <h1 
-                                    className="text-lg font-bold tracking-tight leading-tight text-center max-w-4xl"
-                                    style={{
-                                        fontFamily: 'var(--font-display)',
-                                        color: 'var(--color-text-primary)',
-                                        letterSpacing: '-0.02em'
-                                    }}
-                                >
-                                    CARIA: We do not intend to make financial advisement, we want to join your journey to financial freedom.
-                                </h1>
-                            </div>
-
-                            {/* Navigation - Centered and Spaced */}
-                            <nav 
-                                className="flex items-center justify-center gap-12"
-                                style={{
-                                    fontFamily: 'var(--font-body)',
-                                    fontSize: '14px',
-                                    fontWeight: 500
-                                }}
-                            >
-                                <a 
-                                    href="#portfolio"
-                                    className="transition-colors duration-200 hover:text-text-primary px-4 py-2"
-                                    style={{ color: 'var(--color-text-secondary)' }}
-                                >
-                                    Portfolio
-                                </a>
-                                <a 
-                                    href="#analysis"
-                                    className="transition-colors duration-200 hover:text-text-primary px-4 py-2"
-                                    style={{ color: 'var(--color-text-secondary)' }}
-                                >
-                                    Analysis
-                                </a>
-                                <a 
-                                    href="#research"
-                                    className="transition-colors duration-200 hover:text-text-primary px-4 py-2"
-                                    style={{ color: 'var(--color-text-secondary)' }}
-                                >
-                                    Research
-                                </a>
-                            </nav>
-                        </div>
-
-                        {/* Right Spacer - Same width as left buttons for balance */}
-                        <div className="flex-shrink-0" style={{ width: '180px' }}></div>
                     </div>
                 </div>
             </header>

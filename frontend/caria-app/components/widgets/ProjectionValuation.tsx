@@ -77,101 +77,107 @@ export const ProjectionValuation: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {/* Input Section */}
-            <div 
-                className="rounded-xl p-6"
-                style={{
-                    backgroundColor: 'var(--color-bg-secondary)',
-                    border: '1px solid var(--color-border-subtle)',
-                }}
-            >
-                <div className="flex flex-col gap-4">
-                    <div className="flex gap-4 items-end">
-                        <div className="flex-1">
-                            <label 
-                                className="block text-xs font-medium mb-2 uppercase tracking-wider"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Ticker Symbol
-                            </label>
-                            <input
-                                type="text"
-                                value={ticker}
-                                onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                                placeholder="Enter Ticker (e.g. PYPL)"
-                                className="w-full px-4 py-2.5 rounded-lg text-sm"
-                                style={{
-                                    backgroundColor: 'var(--color-bg-tertiary)',
-                                    border: '1px solid var(--color-border-subtle)',
-                                    color: 'var(--color-text-primary)',
-                                }}
-                                onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
-                                        handleCalculate();
-                                    }
-                                }}
-                            />
-                        </div>
-                        <button
-                            onClick={handleCalculate}
-                            disabled={loading || !ticker.trim()}
-                            className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                            style={{
-                                backgroundColor: 'var(--color-accent-primary)',
-                                color: '#FFFFFF',
-                            }}
+            <div className="flex flex-col gap-4">
+                <div className="flex gap-3 items-end">
+                    <div className="flex-1">
+                        <label 
+                            className="block text-xs font-medium mb-1.5 uppercase tracking-wider"
+                            style={{ color: 'var(--color-text-muted)' }}
                         >
-                            {loading ? 'Calculating...' : 'Run Projection'}
-                        </button>
+                            Ticker Symbol
+                        </label>
+                        <input
+                            type="text"
+                            value={ticker}
+                            onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                            placeholder="e.g. NVDA"
+                            className="w-full px-3 py-2 rounded-lg text-sm font-mono"
+                            style={{
+                                backgroundColor: 'var(--color-bg-tertiary)',
+                                border: '1px solid var(--color-border-subtle)',
+                                color: 'var(--color-text-primary)',
+                            }}
+                            onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleCalculate();
+                                }
+                            }}
+                        />
                     </div>
+                    <button
+                        onClick={handleCalculate}
+                        disabled={loading || !ticker.trim()}
+                        className="px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{
+                            backgroundColor: 'var(--color-accent-primary)',
+                            color: '#FFFFFF',
+                        }}
+                    >
+                        {loading ? 'Calculating...' : 'Run Valuation Model'}
+                    </button>
+                </div>
 
-                    {/* Risk Adjustments */}
-                    <div className="grid grid-cols-2 gap-4 pt-2">
-                        <div>
+                {/* Risk Adjustments - Sliders */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <div className="flex justify-between mb-1">
                             <label 
-                                className="block text-xs font-medium mb-2 uppercase tracking-wider"
+                                className="text-xs font-medium uppercase tracking-wider"
                                 style={{ color: 'var(--color-text-muted)' }}
                             >
-                                Macro Risk (0-1)
+                                Macro Risk
                             </label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="1"
-                                step="0.1"
-                                value={macroRisk}
-                                onChange={(e) => setMacroRisk(parseFloat(e.target.value) || 0)}
-                                className="w-full px-4 py-2 rounded-lg text-sm"
-                                style={{
-                                    backgroundColor: 'var(--color-bg-tertiary)',
-                                    border: '1px solid var(--color-border-subtle)',
-                                    color: 'var(--color-text-primary)',
-                                }}
-                            />
+                            <span 
+                                className="text-xs font-mono"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                            >
+                                {Math.round(macroRisk * 100)}%
+                            </span>
                         </div>
-                        <div>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.1"
+                            value={macroRisk}
+                            onChange={(e) => setMacroRisk(parseFloat(e.target.value))}
+                            className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                            style={{
+                                backgroundColor: 'var(--color-bg-tertiary)',
+                                accentColor: 'var(--color-accent-primary)',
+                            }}
+                        />
+                    </div>
+                    <div>
+                        <div className="flex justify-between mb-1">
                             <label 
-                                className="block text-xs font-medium mb-2 uppercase tracking-wider"
+                                className="text-xs font-medium uppercase tracking-wider"
                                 style={{ color: 'var(--color-text-muted)' }}
                             >
-                                Industry Risk (0-1)
+                                Industry Risk
                             </label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="1"
-                                step="0.1"
-                                value={industryRisk}
-                                onChange={(e) => setIndustryRisk(parseFloat(e.target.value) || 0)}
-                                className="w-full px-4 py-2 rounded-lg text-sm"
-                                style={{
-                                    backgroundColor: 'var(--color-bg-tertiary)',
-                                    border: '1px solid var(--color-border-subtle)',
-                                    color: 'var(--color-text-primary)',
-                                }}
-                            />
+                            <span 
+                                className="text-xs font-mono"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                            >
+                                {Math.round(industryRisk * 100)}%
+                            </span>
                         </div>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.1"
+                            value={industryRisk}
+                            onChange={(e) => setIndustryRisk(parseFloat(e.target.value))}
+                            className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                            style={{
+                                backgroundColor: 'var(--color-bg-tertiary)',
+                                accentColor: 'var(--color-positive)',
+                            }}
+                        />
                     </div>
                 </div>
             </div>
@@ -192,64 +198,52 @@ export const ProjectionValuation: React.FC = () => {
 
             {/* Results */}
             {data && (
-                <div className="space-y-6">
-                    {/* Summary Cards */}
-                    <div className="grid md:grid-cols-3 gap-4">
-                        <div 
-                            className="rounded-xl p-5"
-                            style={{
-                                backgroundColor: 'var(--color-bg-secondary)',
-                                border: '1px solid var(--color-border-subtle)',
-                            }}
-                        >
+                <div className="space-y-4">
+                    {/* Summary Row */}
+                    <div 
+                        className="grid grid-cols-3 gap-3 p-4 rounded-lg"
+                        style={{
+                            backgroundColor: 'var(--color-bg-tertiary)',
+                            border: '1px solid var(--color-border-subtle)',
+                        }}
+                    >
+                        <div className="text-center">
                             <div 
-                                className="text-xs font-semibold uppercase tracking-wider mb-2"
+                                className="text-[10px] font-medium uppercase tracking-wider mb-1"
                                 style={{ color: 'var(--color-text-muted)' }}
                             >
-                                Current Price
+                                Current
                             </div>
                             <div 
-                                className="text-2xl font-bold font-mono"
+                                className="text-lg font-bold font-mono"
                                 style={{ color: 'var(--color-text-primary)' }}
                             >
                                 {formatMoney(data.current_price)}
                             </div>
                         </div>
-                        <div 
-                            className="rounded-xl p-5"
-                            style={{
-                                backgroundColor: 'var(--color-bg-secondary)',
-                                border: '1px solid var(--color-border-subtle)',
-                            }}
-                        >
+                        <div className="text-center">
                             <div 
-                                className="text-xs font-semibold uppercase tracking-wider mb-2"
+                                className="text-[10px] font-medium uppercase tracking-wider mb-1"
                                 style={{ color: 'var(--color-text-muted)' }}
                             >
                                 2029 Target
                             </div>
                             <div 
-                                className="text-2xl font-bold font-mono"
+                                className="text-lg font-bold font-mono"
                                 style={{ color: 'var(--color-positive)' }}
                             >
                                 {formatMoney(data.target_price_2029)}
                             </div>
                         </div>
-                        <div 
-                            className="rounded-xl p-5"
-                            style={{
-                                backgroundColor: 'var(--color-bg-secondary)',
-                                border: '1px solid var(--color-border-subtle)',
-                            }}
-                        >
+                        <div className="text-center">
                             <div 
-                                className="text-xs font-semibold uppercase tracking-wider mb-2"
+                                className="text-[10px] font-medium uppercase tracking-wider mb-1"
                                 style={{ color: 'var(--color-text-muted)' }}
                             >
-                                Upside Potential
+                                Upside
                             </div>
                             <div 
-                                className={`text-2xl font-bold font-mono`}
+                                className="text-lg font-bold font-mono"
                                 style={{ 
                                     color: data.upside >= 0 
                                         ? 'var(--color-positive)' 
@@ -261,30 +255,28 @@ export const ProjectionValuation: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Projection Table */}
+                    {/* Projection Table - Collapsible */}
                     {data.projection_data && (
-                        <div 
-                            className="rounded-xl p-6 overflow-x-auto"
+                        <details 
+                            className="rounded-lg overflow-hidden"
                             style={{
-                                backgroundColor: 'var(--color-bg-secondary)',
+                                backgroundColor: 'var(--color-bg-tertiary)',
                                 border: '1px solid var(--color-border-subtle)',
                             }}
                         >
-                            <h3 
-                                className="text-lg font-semibold mb-4"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)' 
-                                }}
+                            <summary 
+                                className="px-4 py-3 cursor-pointer text-sm font-medium flex items-center justify-between"
+                                style={{ color: 'var(--color-text-secondary)' }}
                             >
-                                Projection Model (2024-2029)
-                            </h3>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
+                                <span>View Projection Details (2024-2029)</span>
+                                <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Click to expand</span>
+                            </summary>
+                            <div className="p-4 pt-0 overflow-x-auto">
+                                <table className="w-full text-xs">
                                     <thead>
                                         <tr style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
                                             <th 
-                                                className="text-left py-3 px-4 font-semibold"
+                                                className="text-left py-2 px-2 font-semibold"
                                                 style={{ color: 'var(--color-text-muted)' }}
                                             >
                                                 Metric
@@ -292,7 +284,7 @@ export const ProjectionValuation: React.FC = () => {
                                             {[2024, 2025, 2026, 2027, 2028, 2029].map(year => (
                                                 <th 
                                                     key={year}
-                                                    className="text-right py-3 px-4 font-semibold"
+                                                    className="text-right py-2 px-2 font-semibold"
                                                     style={{ color: 'var(--color-text-muted)' }}
                                                 >
                                                     {year}
@@ -307,7 +299,7 @@ export const ProjectionValuation: React.FC = () => {
                                                 style={{ borderBottom: '1px solid var(--color-border-subtle)' }}
                                             >
                                                 <td 
-                                                    className="py-3 px-4 font-medium"
+                                                    className="py-2 px-2 font-medium"
                                                     style={{ color: 'var(--color-text-primary)' }}
                                                 >
                                                     {metric}
@@ -325,7 +317,7 @@ export const ProjectionValuation: React.FC = () => {
                                                     return (
                                                         <td 
                                                             key={year}
-                                                            className="text-right py-3 px-4 font-mono"
+                                                            className="text-right py-2 px-2 font-mono"
                                                             style={{ color: 'var(--color-text-secondary)' }}
                                                         >
                                                             {isMoney 
@@ -342,7 +334,7 @@ export const ProjectionValuation: React.FC = () => {
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        </details>
                     )}
                 </div>
             )}

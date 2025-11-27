@@ -64,58 +64,42 @@ const FeatureCard: React.FC<{ feature: Feature, index: number }> = ({ feature, i
         <div
             ref={cardRef}
             className={`
-                rounded-2xl p-10 md:p-12 flex flex-col relative overflow-hidden group
-                transition-all ease-out duration-700
-                ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}
+                rounded-xl p-6 sm:p-8 flex flex-col relative overflow-hidden group
+                transition-all ease-out duration-500
+                ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}
             `}
             style={{
-                backgroundColor: 'rgba(28, 33, 39, 0.6)',
-                border: '1px solid rgba(74, 144, 226, 0.2)',
-                transitionDelay: `${index * 150}ms`,
-                backdropFilter: 'blur(10px)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-                minHeight: '280px',
+                backgroundColor: 'rgba(25, 30, 38, 0.8)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                transitionDelay: `${index * 100}ms`,
             }}
             onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(74, 144, 226, 0.6)';
-                e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
-                e.currentTarget.style.boxShadow = '0 20px 60px rgba(74, 144, 226, 0.3)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                e.currentTarget.style.transform = 'translateY(-4px)';
             }}
             onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(74, 144, 226, 0.2)';
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.transform = 'translateY(0)';
             }}
         >
-            {/* Animated gradient background on hover */}
-            <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500"
+            <h3
+                className="text-xl sm:text-2xl font-semibold mb-3"
                 style={{
-                    background: 'radial-gradient(circle at top left, var(--color-blue-light), transparent)',
-                }}
-            />
-
-            <div className="relative z-10">
-                <h3
-                    className="text-2xl md:text-3xl font-bold mb-6"
-                    style={{
-                        fontFamily: "'Instrument Serif', Georgia, serif",
-                        color: 'var(--color-cream)',
-                        letterSpacing: '-0.01em',
-                    }}>
-                    {feature.title}
-                </h3>
-                <p
-                    className="flex-grow leading-relaxed"
-                    style={{
-                        fontFamily: "'Crimson Pro', Georgia, serif",
-                        color: 'rgba(232, 230, 227, 0.8)',
-                        fontSize: '1.1rem',
-                        lineHeight: '1.8',
-                    }}>
-                    {feature.description}
-                </p>
-            </div>
+                    fontFamily: "'Instrument Serif', Georgia, serif",
+                    color: 'var(--color-cream)',
+                    letterSpacing: '-0.01em',
+                }}>
+                {feature.title}
+            </h3>
+            <p
+                className="flex-grow leading-relaxed text-sm sm:text-base"
+                style={{
+                    fontFamily: "'Crimson Pro', Georgia, serif",
+                    color: 'rgba(232, 230, 227, 0.7)',
+                    lineHeight: '1.7',
+                }}>
+                {feature.description}
+            </p>
         </div>
     );
 };
@@ -123,19 +107,12 @@ const FeatureCard: React.FC<{ feature: Feature, index: number }> = ({ feature, i
 
 export const Features: React.FC = () => {
   return (
-    <section className="py-32 md:py-48 relative overflow-hidden" style={{backgroundColor: 'var(--color-bg-primary)'}}>
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl"
-             style={{background: 'radial-gradient(circle, var(--color-blue-light) 0%, transparent 70%)'}}></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-3xl"
-             style={{background: 'radial-gradient(circle, var(--color-blue-dark) 0%, transparent 70%)'}}></div>
-      </div>
-
-      <div className="container mx-auto px-6 md:px-12 relative z-10">
-        <div className="text-center mb-32">
+    <section id="features" className="py-20 md:py-32 relative overflow-hidden" style={{backgroundColor: 'var(--color-bg-primary)'}}>
+      <div className="container mx-auto px-4 sm:px-6 md:px-12 relative z-10">
+        {/* Section Header */}
+        <div className="text-center mb-16 md:mb-20">
             <h2
-              className="text-4xl md:text-6xl font-black mb-6 fade-in"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6"
               style={{
                 fontFamily: "'Instrument Serif', Georgia, serif",
                 color: 'var(--color-cream)',
@@ -144,16 +121,18 @@ export const Features: React.FC = () => {
               Everything you need to navigate the markets
             </h2>
             <p
-              className="mt-6 max-w-2xl mx-auto text-lg md:text-xl fade-in delay-200"
+              className="max-w-xl mx-auto text-base md:text-lg px-4"
               style={{
                 fontFamily: "'Crimson Pro', Georgia, serif",
-                color: 'rgba(232, 230, 227, 0.7)',
-                lineHeight: '1.8',
+                color: 'rgba(232, 230, 227, 0.6)',
+                lineHeight: '1.7',
               }}>
                 Powerful tools and a vibrant community to elevate your investing journey.
             </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-12 md:gap-16">
+
+        {/* Feature Cards Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
           {featuresData.map((feature, index) => (
             <FeatureCard key={feature.title} feature={feature} index={index} />
           ))}

@@ -237,8 +237,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             </div>
 
             {/* Tab Content */}
-            <div className="max-w-[1800px] mx-auto px-6 lg:px-10 py-8 relative z-10">
+            <div className="max-w-[1800px] mx-auto px-6 lg:px-10 py-6 md:py-8 relative z-10">
                 
+                {/* Tagline Banner */}
+                <div 
+                    className="mb-6 md:mb-8 text-center py-3 px-4 rounded-lg"
+                    style={{ 
+                        backgroundColor: 'rgba(74, 144, 226, 0.08)',
+                        border: '1px solid rgba(74, 144, 226, 0.15)'
+                    }}
+                >
+                    <p 
+                        className="text-sm md:text-base"
+                        style={{ 
+                            color: 'rgba(232, 230, 227, 0.7)',
+                            fontFamily: "'Crimson Pro', Georgia, serif",
+                            fontStyle: 'italic'
+                        }}
+                    >
+                        We don't intend to offer financial advice — we want to join your journey to financial freedom.
+                    </p>
+                </div>
+
                 {/* PORTFOLIO TAB */}
                 {activeTab === 'portfolio' && (
                     <div className="space-y-8 animate-fade-in">
@@ -321,134 +341,92 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     </div>
                 )}
 
-                {/* ANALYSIS TAB - Bloomberg Terminal Pane Style */}
+                {/* ANALYSIS TAB - Clean Uniform Layout */}
                 {activeTab === 'analysis' && (
-                    <div className="space-y-8 animate-fade-in">
-                        {/* Projection Valuation - Top Section */}
-                        <div>
-                            <div className="flex items-center gap-3 mb-6">
-                                <div 
-                                    className="w-1 h-6 rounded-full"
-                                    style={{ backgroundColor: 'var(--color-accent-primary)' }}
-                                />
-                                <div>
-                                    <h2 
-                                        className="text-xl font-semibold"
+                    <div className="space-y-6 animate-fade-in">
+                        {/* Two Column Layout for Main Tools */}
+                        <div className="grid lg:grid-cols-2 gap-6">
+                            {/* Left Column - Projection Valuation */}
+                            <div 
+                                className="rounded-xl p-6"
+                                style={{
+                                    backgroundColor: 'var(--color-bg-secondary)',
+                                    border: '1px solid var(--color-border-subtle)',
+                                }}
+                            >
+                                <div className="mb-4">
+                                    <h3 
+                                        className="text-lg font-semibold"
                                         style={{ 
                                             fontFamily: 'var(--font-display)',
                                             color: 'var(--color-text-primary)' 
                                         }}
                                     >
                                         Valuation Analysis
-                                    </h2>
+                                    </h3>
                                     <p 
-                                        className="text-sm mt-0.5"
+                                        className="text-sm mt-1"
                                         style={{ color: 'var(--color-text-muted)' }}
                                     >
                                         5-year projection model with risk adjustments
                                     </p>
                                 </div>
+                                <ProjectionValuation />
                             </div>
-                            <ProjectionValuation />
-                        </div>
 
-                        {/* Chat and Arena Section */}
-                        <div className="pt-4">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div 
-                                    className="w-1 h-6 rounded-full"
-                                    style={{ backgroundColor: 'var(--color-accent-primary)' }}
-                                />
-                                <h2 
-                                    className="text-xl font-semibold"
-                                    style={{ 
-                                        fontFamily: 'var(--font-display)',
-                                        color: 'var(--color-text-primary)' 
-                                    }}
-                                >
-                                    Investment Thesis
-                                </h2>
-                            </div>
-                            
-                            <div className="grid lg:grid-cols-2 gap-6">
-                                <ProtectedWidget 
-                                    featureName="Investment Thesis Analysis"
-                                    description="Challenge your investment ideas against Caria's AI analysis. Uncover biases and strengthen your conviction."
-                                >
-                                    <AnalysisCTA
-                                        onStartAnalysis={onStartAnalysis}
-                                        onEnterArena={() => setShowArena(true)}
-                                    />
-                                </ProtectedWidget>
-                                <ProtectedWidget featureName="Valuation Workshop">
-                                    <ValuationWorkshop />
-                                </ProtectedWidget>
-                            </div>
-                        </div>
-
-                        {/* Valuation Terminal Section */}
-                        <div className="pt-4">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div 
-                                    className="w-1 h-6 rounded-full"
-                                    style={{ backgroundColor: 'var(--color-positive)' }}
-                                />
-                                <div>
-                                    <h2 
-                                        className="text-xl font-semibold"
+                            {/* Right Column - Monte Carlo */}
+                            <div 
+                                className="rounded-xl p-6"
+                                style={{
+                                    backgroundColor: 'var(--color-bg-secondary)',
+                                    border: '1px solid var(--color-border-subtle)',
+                                }}
+                            >
+                                <div className="mb-4">
+                                    <h3 
+                                        className="text-lg font-semibold"
                                         style={{ 
                                             fontFamily: 'var(--font-display)',
                                             color: 'var(--color-text-primary)' 
                                         }}
                                     >
-                                        Valuation Terminal
-                                    </h2>
+                                        Monte Carlo Forecast Simulation
+                                    </h3>
                                     <p 
-                                        className="text-sm mt-0.5"
+                                        className="text-sm mt-1"
                                         style={{ color: 'var(--color-text-muted)' }}
                                     >
-                                        DCF, Monte Carlo, and multi-factor analysis
+                                        Quick multiples valuation and 2-year Monte Carlo simulations
                                     </p>
                                 </div>
+                                <ValuationTool />
                             </div>
-                            
-                            <ValuationTool />
                         </div>
 
-                        {/* Stock Screeners - Bottom Section */}
-                        <div className="pt-4">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div 
-                                    className="w-1 h-6 rounded-full"
-                                    style={{ backgroundColor: 'var(--color-warning)' }}
+                        {/* Investment Thesis Row */}
+                        <div className="grid lg:grid-cols-2 gap-6">
+                            <ProtectedWidget 
+                                featureName="Investment Thesis Analysis"
+                                description="Challenge your investment ideas against Caria's AI analysis."
+                            >
+                                <AnalysisCTA
+                                    onStartAnalysis={onStartAnalysis}
+                                    onEnterArena={() => setShowArena(true)}
                                 />
-                                <div>
-                                    <h2 
-                                        className="text-xl font-semibold"
-                                        style={{ 
-                                            fontFamily: 'var(--font-display)',
-                                            color: 'var(--color-text-primary)' 
-                                        }}
-                                    >
-                                        Stock Screeners
-                                    </h2>
-                                    <p 
-                                        className="text-sm mt-0.5"
-                                        style={{ color: 'var(--color-text-muted)' }}
-                                    >
-                                        Discover opportunities with AI-powered screeners
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <div className="grid lg:grid-cols-2 gap-6">
-                                <ProtectedWidget featureName="Alpha Stock Picker">
-                                    <AlphaStockPicker />
-                                </ProtectedWidget>
-                                <ProtectedWidget featureName="Hidden Gems Screener">
-                                    <HiddenGemsScreener />
-                                </ProtectedWidget>
-                            </div>
+                            </ProtectedWidget>
+                            <ProtectedWidget featureName="Valuation Workshop">
+                                <ValuationWorkshop />
+                            </ProtectedWidget>
+                        </div>
+
+                        {/* Stock Screeners Row */}
+                        <div className="grid lg:grid-cols-2 gap-6">
+                            <ProtectedWidget featureName="Alpha Stock Picker">
+                                <AlphaStockPicker />
+                            </ProtectedWidget>
+                            <ProtectedWidget featureName="Hidden Gems Screener">
+                                <HiddenGemsScreener />
+                            </ProtectedWidget>
                         </div>
                     </div>
                 )}

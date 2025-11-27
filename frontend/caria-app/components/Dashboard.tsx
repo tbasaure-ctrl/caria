@@ -17,6 +17,7 @@ import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 import { HiddenGemsScreener } from './widgets/HiddenGemsScreener';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { RedditSentiment } from './widgets/RedditSentiment';
+import { OpportunityRadar } from './widgets/OpportunityRadar';
 import { Resources } from './widgets/Resources';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
 import { ModelOutlook } from './widgets/ModelOutlook';
@@ -576,17 +577,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                     color: 'var(--color-text-primary)' 
                                 }}
                             >
-                                Social Sentiment & Resources
+                                Market Signals & Resources
                             </h2>
                             <p 
                                 className="text-sm mb-6"
                                 style={{ color: 'var(--color-text-muted)' }}
                             >
-                                Reddit trends and learning materials
+                                Real-time volume anomalies and learning materials
                             </p>
                             
                             <div className="grid lg:grid-cols-2 gap-8">
-                                <RedditSentiment />
+                                <OpportunityRadar />
                                 <Resources />
                             </div>
                         </section>

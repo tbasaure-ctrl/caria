@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, createHolding, deleteHolding } from '../../services/apiService';
 import { WidgetCard } from './WidgetCard';
 import { getErrorMessage } from '../../src/utils/errorHandling';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { AreaChart, Area, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 type AllocationData = { name: string; value: number; color: string };
 
@@ -87,7 +87,7 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[]; timeRange?: st
     const startValue = data[0].value;
     const endValue = data[data.length - 1].value;
     const change = endValue - startValue;
-    const pctChange = (change / startValue) * 100;
+    const pctChange = startValue !== 0 ? (change / startValue) * 100 : 0;
     const isPositive = change >= 0;
     const color = isPositive ? '#10B981' : '#EF4444'; // Positive/Negative color
 
@@ -258,13 +258,20 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                 dataPoints = Math.ceil((now.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
                 break;
             case 'START':
+                // Calculate real earliest date from holdings
                 const purchaseDates = portfolioData.holdings
                     .map((h: any) => h.purchase_date ? new Date(h.purchase_date) : null)
                     .filter((d): d is Date => d !== null);
-                startDate = purchaseDates.length > 0
-                    ? new Date(Math.min(...purchaseDates.map(d => d.getTime())))
-                    : new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+                
+                if (purchaseDates.length > 0) {
+                    startDate = new Date(Math.min(...purchaseDates.map(d => d.getTime())));
+                } else {
+                    startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000); // Fallback to 1Y
+                }
+                
                 dataPoints = Math.ceil((now.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
+                // Limit max data points for performance
+                if (dataPoints > 365) dataPoints = 365;
                 break;
             default:
                 startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -274,18 +281,46 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         const data: PerformanceGraphPoint[] = [];
         const totalCurrentValue = portfolioData.total_value;
         const totalCost = portfolioData.total_cost;
-
+        
+        // Determine trend direction
+        const isProfitable = totalCurrentValue >= totalCost;
+        
+        // Use logarithmic or exponential curve based on profitability to simulate trend
         for (let i = 0; i <= dataPoints; i++) {
-            const date = new Date(startDate.getTime() + (i / dataPoints) * (now.getTime() - startDate.getTime()));
             const progress = i / dataPoints;
-            const baseValue = totalCost + (totalCurrentValue - totalCost) * progress;
-            const volatility = baseValue * 0.03 * (Math.random() - 0.5);
-            const value = baseValue + volatility;
+            const date = new Date(startDate.getTime() + progress * (now.getTime() - startDate.getTime()));
+            
+            // Simulate a curve: if profitable, exponential growth; if loss, decay
+            // We map progress (0 to 1) to value (totalCost to totalCurrentValue)
+            // Adding localized volatility
+            
+            let interpolatedValue;
+            
+            if (totalCost === 0) {
+                interpolatedValue = totalCurrentValue * progress; // Just linear growth from 0
+            } else {
+                // Simple linear interpolation as baseline
+                interpolatedValue = totalCost + (totalCurrentValue - totalCost) * progress;
+                
+                // Add "market noise"
+                // Noise amplitude decreases as we get closer to "now" (which is a known fixed point)
+                // Actually, noise should be consistent. 
+                // Let's add a sine wave component for "market cycle" visual
+                const cycle = Math.sin(progress * Math.PI * 4) * (totalCost * 0.05); 
+                const randomNoise = (Math.random() - 0.5) * (totalCost * 0.02);
+                
+                interpolatedValue += cycle + randomNoise;
+            }
 
             data.push({
                 date: date.toISOString(),
-                value: Math.max(value, totalCost * 0.9)
+                value: Math.max(0, interpolatedValue)
             });
+        }
+        
+        // Force the last point to match exact current value for consistency
+        if (data.length > 0) {
+            data[data.length - 1].value = totalCurrentValue;
         }
 
         return data;
@@ -349,7 +384,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
 
         if (!ticker) { setFormError('Invalid ticker.'); return; }
         if (!Number.isFinite(quantity) || quantity <= 0) { setFormError('Invalid quantity.'); return; }
-        if (!Number.isFinite(averageCost) || averageCost <= 0) { setFormError('Invalid cost.'); return; }
+        if (!Number.isFinite(averageCost) || averageCost < 0) { setFormError('Invalid cost.'); return; }
 
         try {
             setActionLoading(true);
@@ -375,6 +410,11 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         try {
             setActionLoading(true);
             await deleteHolding(id);
+            // Optimistic update or reload
+            setPortfolioData(prev => prev ? {
+                ...prev,
+                holdings: prev.holdings.filter(h => h.id !== id)
+            } : null);
             await loadPortfolio(false);
         } catch (err: unknown) {
             setFormError(getErrorMessage(err) || 'Could not delete position.');
@@ -446,62 +486,74 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                         </div>
                     </div>
 
+                    {/* Professional Add Form */}
                     {showForm && (
-                        <form onSubmit={handleAddHolding} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-bg-tertiary p-4 rounded-lg border border-white/5 mb-4">
-                            {/* Form inputs simplified for brevity, assuming they work as before but with new styles */}
-                            <div>
-                                <label className="block text-xs text-text-muted mb-1">Ticker</label>
-                                <input
-                                    type="text"
-                                    value={formData.ticker}
-                                    onChange={(e) => setFormData({ ...formData, ticker: e.target.value })}
-                                    className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none"
-                                    placeholder="AAPL"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs text-text-muted mb-1">Quantity</label>
-                                <input
-                                    type="number"
-                                    step="any"
-                                    value={formData.quantity}
-                                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                                    className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs text-text-muted mb-1">Avg Cost</label>
-                                <input
-                                    type="number"
-                                    step="any"
-                                    value={formData.average_cost}
-                                    onChange={(e) => setFormData({ ...formData, average_cost: e.target.value })}
-                                    className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs text-text-muted mb-1">Date</label>
-                                <input
-                                    type="date"
-                                    value={formData.purchase_date}
-                                    onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
-                                    className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none"
-                                    required
-                                />
-                            </div>
-                            <div className="md:col-span-2 flex gap-3 mt-2">
-                                <button
-                                    type="submit"
-                                    disabled={actionLoading}
-                                    className="flex-1 bg-accent-primary hover:bg-accent-primary/90 text-white text-sm font-medium py-2 px-4 rounded transition-colors"
-                                >
-                                    Save
-                                </button>
-                            </div>
-                        </form>
+                        <div className="bg-bg-tertiary/50 p-6 rounded-lg border border-accent-primary/20 mb-6 animate-fade-in-up">
+                            <h5 className="text-sm text-accent-primary mb-4 font-medium">New Position Entry</h5>
+                            <form onSubmit={handleAddHolding} className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                                <div className="md:col-span-3">
+                                    <label className="block text-[10px] text-text-muted uppercase tracking-wider mb-1">Ticker</label>
+                                    <input
+                                        type="text"
+                                        value={formData.ticker}
+                                        onChange={(e) => setFormData({ ...formData, ticker: e.target.value.toUpperCase() })}
+                                        className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none font-mono"
+                                        placeholder="AAPL"
+                                        required
+                                    />
+                                </div>
+                                <div className="md:col-span-3">
+                                    <label className="block text-[10px] text-text-muted uppercase tracking-wider mb-1">Quantity</label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        value={formData.quantity}
+                                        onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                                        className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none font-mono"
+                                        placeholder="0.00"
+                                        required
+                                    />
+                                </div>
+                                <div className="md:col-span-3">
+                                    <label className="block text-[10px] text-text-muted uppercase tracking-wider mb-1">Avg Cost ($)</label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        value={formData.average_cost}
+                                        onChange={(e) => setFormData({ ...formData, average_cost: e.target.value })}
+                                        className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none font-mono"
+                                        placeholder="0.00"
+                                        required
+                                    />
+                                </div>
+                                <div className="md:col-span-3">
+                                    <label className="block text-[10px] text-text-muted uppercase tracking-wider mb-1">Date</label>
+                                    <input
+                                        type="date"
+                                        value={formData.purchase_date}
+                                        onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
+                                        className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none"
+                                        required
+                                    />
+                                </div>
+                                <div className="md:col-span-12 flex gap-3 mt-2 justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowForm(false)}
+                                        className="px-4 py-2 text-xs font-medium text-text-muted hover:text-white transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={actionLoading}
+                                        className="bg-accent-primary hover:bg-accent-primary/90 text-white text-xs font-bold uppercase tracking-wider py-2 px-6 rounded transition-colors shadow-glow-sm"
+                                    >
+                                        {actionLoading ? 'Saving...' : 'Save Position'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     )}
 
                     <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar space-y-1">
@@ -510,26 +562,37 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                 key={holding.id}
                                 className="flex justify-between items-center p-3 bg-white/5 rounded hover:bg-white/10 transition-colors group border border-transparent hover:border-white/5"
                             >
-                                <div>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-white font-medium">{holding.ticker}</span>
-                                        <span className="text-xs text-text-muted">{holding.quantity} @ ${holding.average_cost.toFixed(2)}</span>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-xs font-bold text-accent-cyan">
+                                        {holding.ticker.substring(0, 2)}
+                                    </div>
+                                    <div>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-white font-medium font-mono">{holding.ticker}</span>
+                                            <span className="text-xs text-text-muted">{holding.quantity} shares</span>
+                                        </div>
+                                        <div className="text-xs text-text-secondary">
+                                            Avg: ${holding.average_cost.toFixed(2)}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <div className="font-mono text-white">
-                                        ${(holding.current_value ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                <div className="flex items-center gap-6">
+                                    <div className="text-right">
+                                        <div className="font-mono text-white">
+                                            ${(holding.current_value ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </div>
+                                        <div className={`text-xs font-mono ${holding.gain_loss_pct! >= 0 ? 'text-positive' : 'text-negative'}`}>
+                                            {holding.gain_loss_pct! >= 0 ? '+' : ''}{holding.gain_loss_pct!.toFixed(2)}%
+                                        </div>
                                     </div>
-                                    <div className={`text-xs font-mono ${holding.gain_loss_pct! >= 0 ? 'text-positive' : 'text-negative'}`}>
-                                        {holding.gain_loss_pct! >= 0 ? '+' : ''}{holding.gain_loss_pct!.toFixed(2)}%
-                                    </div>
+                                    <button
+                                        onClick={() => holding.id && handleDeleteHolding(holding.id)}
+                                        className="w-6 h-6 rounded flex items-center justify-center text-text-muted hover:text-negative hover:bg-negative/10 transition-all opacity-0 group-hover:opacity-100"
+                                        title="Delete position"
+                                    >
+                                        ×
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => holding.id && handleDeleteHolding(holding.id)}
-                                    className="text-xs text-text-muted hover:text-negative opacity-0 group-hover:opacity-100 transition-opacity ml-4"
-                                >
-                                    ×
-                                </button>
                             </div>
                         ))}
                     </div>

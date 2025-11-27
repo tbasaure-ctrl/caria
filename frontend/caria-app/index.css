@@ -6,9 +6,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
 
 :root {
-  /* Maps to tailwind config */
+  /* Core Theme Variables */
   --color-bg-primary: #020408;
-  --color-bg-secondary: #0B101B;
+  --color-bg-secondary: #0B101B; /* Slightly lighter navy */
   --color-bg-tertiary: #151E32;
   
   --color-text-primary: #F1F5F9;
@@ -29,15 +29,18 @@ html {
 }
 
 body {
-  background-color: var(--color-bg-primary);
+  /* Main Gradient Background: Deep Black to Navy */
+  background: linear-gradient(180deg, #020408 0%, #050A14 40%, #0B1221 100%);
+  background-attachment: fixed; /* Keeps gradient fixed while scrolling */
   color: var(--color-text-primary);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
 /* Utilities */
 .text-gradient-hero {
-  background: linear-gradient(to right, #FFFFFF 20%, #22D3EE 80%);
+  background: linear-gradient(to right, #FFFFFF 30%, #22D3EE 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -56,35 +59,22 @@ body {
   border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-.shimmer-border {
-    position: relative;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
-.shimmer-border::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--color-bg-primary);
-}
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+/* Animations */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

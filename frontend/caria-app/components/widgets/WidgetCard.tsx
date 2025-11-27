@@ -29,77 +29,75 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({
             id={id}
             className={`rounded-lg transition-all duration-300 ${className}`}
             style={{
-                backgroundColor: 'var(--color-bg-secondary)', // Darker background
-                border: '1px solid rgba(148, 163, 184, 0.1)', // Very subtle border
+                backgroundColor: 'transparent', // Transparent to let global gradient show, or semi-transparent
+                // Removing border here to reduce visual noise, focusing on the header lines
             }}
         >
-            {/* Widget Header - Clean & Minimal */}
-            <div 
-                className={`flex items-center justify-between ${compact ? 'px-5 py-4' : 'px-6 py-5'} border-b border-white/5`}
-            >
-                <div className="flex items-center gap-3">
-                    {/* Minimalist Title */}
-                    <h3
-                        className="text-sm font-medium tracking-wide text-text-primary"
-                        style={{ fontFamily: 'var(--font-display)' }}
+            {/* Widget Header - "Blue Line - Box - Blue Line" Style */}
+            <div className="flex items-center justify-center mb-4 relative group">
+                {/* Left Line */}
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-accent-cyan/30 to-accent-cyan/60" />
+                
+                {/* Title Box */}
+                <div className="mx-4 relative">
+                    <div 
+                        className="px-6 py-1.5 rounded border border-accent-cyan/30 bg-accent-cyan/5 backdrop-blur-sm shadow-[0_0_15px_rgba(34,211,238,0.1)] flex items-center gap-2"
                     >
-                        {title}
-                    </h3>
-
-                    {/* Info Tooltip */}
-                    {tooltip && (
-                        <div className="relative">
+                        <h3
+                            className="text-xs font-bold tracking-[0.15em] uppercase text-accent-cyan whitespace-nowrap"
+                            style={{ fontFamily: 'var(--font-mono)', textShadow: '0 0 10px rgba(34,211,238,0.4)' }}
+                        >
+                            {title}
+                        </h3>
+                        
+                        {/* Tooltip Icon - Integrated nicely */}
+                        {tooltip && (
                             <button
-                                className="opacity-40 hover:opacity-100 transition-opacity text-text-muted"
+                                className="text-accent-cyan/50 hover:text-accent-cyan transition-colors ml-1"
                                 onMouseEnter={() => setShowTooltip(true)}
                                 onMouseLeave={() => setShowTooltip(false)}
                                 onClick={() => setShowTooltip(!showTooltip)}
-                                aria-label="Information"
                             >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </button>
-                            
-                            {/* Tooltip Popup */}
-                            {showTooltip && (
-                                <div
-                                    className="absolute z-50 w-72 p-3 rounded-lg shadow-xl animate-fade-in left-1/2 -translate-x-1/2 top-full mt-2 bg-bg-elevated border border-white/10"
-                                >
-                                    <div className="text-xs text-text-secondary leading-relaxed">
-                                        {tooltip}
-                                    </div>
-                                </div>
-                            )}
+                        )}
+                    </div>
+
+                    {/* Tooltip Popup */}
+                    {showTooltip && (
+                        <div className="absolute z-50 w-64 p-3 rounded-lg shadow-xl animate-fade-in left-1/2 -translate-x-1/2 top-full mt-3 bg-[#0B1221] border border-accent-cyan/20">
+                            <div className="text-xs text-text-secondary leading-relaxed text-center">
+                                {tooltip}
+                            </div>
                         </div>
                     )}
                 </div>
 
-                {/* Action Button */}
+                {/* Right Line */}
+                <div className="h-px flex-1 bg-gradient-to-l from-transparent via-accent-cyan/30 to-accent-cyan/60" />
+
+                {/* Action Button (Absolute positioned to not break symmetry) */}
                 {action && (
                     <button
                         onClick={action.onClick}
-                        className="text-xs font-medium px-3 py-1 rounded hover:bg-white/5 transition-colors text-accent-cyan"
+                        className="absolute right-0 text-[10px] font-medium px-2 py-1 rounded text-accent-cyan/70 hover:text-accent-cyan hover:bg-accent-cyan/10 transition-colors uppercase tracking-wider"
                     >
                         {action.label}
                     </button>
                 )}
             </div>
 
-            {/* Widget Content */}
-            <div className={compact ? 'p-5' : 'p-6'}>
+            {/* Widget Content - Reduced padding for tighter fit */}
+            <div className={`bg-[#0B1221]/60 border border-white/5 rounded-xl ${compact ? 'p-4' : 'p-5'}`}>
                 {children}
             </div>
         </div>
     );
 };
 
-// Exporting other components as they were, but updated styles if needed...
-// For brevity, I'm keeping the WidgetCard core update here. 
-// If DataCard/MetricRow are used, they should be in separate files or updated here. 
-// I will assume for now the user mainly cares about the container.
-// I'll re-add DataCard and MetricRow to ensure no breaks.
-
+// Helper Components (Updated to match)
 interface DataCardProps {
     label: string;
     value: string | number;
@@ -110,26 +108,22 @@ interface DataCardProps {
 
 export const DataCard: React.FC<DataCardProps> = ({ label, value, change, isPositive, sublabel }) => {
     return (
-        <div 
-            className="p-4 rounded-lg bg-bg-tertiary border border-white/5"
-        >
-            <div className="text-xs font-medium tracking-wide uppercase mb-2 text-text-muted">
+        <div className="p-4 rounded-lg bg-[#0F1623] border border-white/5 hover:border-accent-cyan/20 transition-colors">
+            <div className="text-[10px] font-bold tracking-widest uppercase mb-2 text-text-muted">
                 {label}
             </div>
             <div className="flex items-baseline gap-2">
-                <span className="text-xl font-mono text-text-primary">
+                <span className="text-xl font-mono text-text-primary text-shadow-sm">
                     {value}
                 </span>
                 {change && (
-                    <span 
-                        className={`text-sm font-mono font-medium ${isPositive ? 'text-positive' : 'text-negative'}`}
-                    >
+                    <span className={`text-xs font-mono font-medium ${isPositive ? 'text-positive' : 'text-negative'}`}>
                         {change}
                     </span>
                 )}
             </div>
             {sublabel && (
-                <div className="text-xs mt-1 text-text-subtle">
+                <div className="text-[10px] mt-1 text-text-subtle uppercase tracking-wide">
                     {sublabel}
                 </div>
             )}
@@ -143,14 +137,14 @@ interface MetricRowProps {
 
 export const MetricRow: React.FC<MetricRowProps> = ({ items }) => {
     return (
-        <div className="flex divide-x divide-white/5 rounded-lg overflow-hidden bg-bg-tertiary border border-white/5">
+        <div className="flex divide-x divide-white/5 rounded-lg overflow-hidden bg-[#0F1623] border border-white/5">
             {items.map((item, idx) => (
-                <div key={idx} className="flex-1 px-4 py-3 text-center">
-                    <div className="text-[10px] font-medium tracking-wider uppercase mb-1 text-text-muted">
+                <div key={idx} className="flex-1 px-3 py-2 text-center">
+                    <div className="text-[9px] font-bold tracking-widest uppercase mb-1 text-text-muted">
                         {item.label}
                     </div>
                     <div 
-                        className="text-lg font-mono"
+                        className="text-sm font-mono"
                         style={{ color: item.color || 'var(--color-text-primary)' }}
                     >
                         {item.value}
@@ -167,13 +161,13 @@ interface SectionDividerProps {
 
 export const SectionDivider: React.FC<SectionDividerProps> = ({ label }) => {
     return (
-        <div className="relative my-6">
+        <div className="relative my-8">
             <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                <div className="w-full h-px bg-white/5" />
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             </div>
             {label && (
                 <div className="relative flex justify-center">
-                    <span className="px-3 text-xs font-medium tracking-wide uppercase bg-bg-secondary text-text-muted">
+                    <span className="px-4 py-1 text-[10px] font-bold tracking-[0.2em] uppercase text-text-muted bg-bg-primary">
                         {label}
                     </span>
                 </div>

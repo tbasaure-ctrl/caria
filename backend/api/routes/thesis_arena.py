@@ -9,6 +9,7 @@ import asyncio
 import logging
 import os
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from uuid import UUID, uuid4
@@ -26,6 +27,29 @@ from caria.models.auth import UserInDB
 LOGGER = logging.getLogger("caria.api.thesis_arena")
 
 router = APIRouter(prefix="/api/thesis", tags=["Thesis Arena"])
+
+# Common English words to ignore when extracting tickers
+COMMON_WORDS = {
+    "I", "A", "AM", "AN", "AT", "BE", "BY", "DO", "GO", "HE", "HI", "IF", "IN", "IS", "IT", "ME", "MY", 
+    "NO", "OF", "ON", "OR", "SO", "TO", "UP", "US", "WE", "WANT", "BUY", "SELL", "HOLD", "GET", "PUT", 
+    "SEE", "SAY", "ASK", "CAN", "DID", "LET", "RUN", "TRY", "USE", "WAY", "WHO", "WHY", "YES", "YOU", 
+    "THE", "AND", "BUT", "FOR", "NOT", "NOW", "OUT", "TOO", "THAT", "THIS", "ARE", "WAS", "WERE", "HAVE",
+    "HAS", "HAD", "WILL", "WOULD", "SHOULD", "COULD", "BEEN", "BEING", "DOES", "DID", "DOING", "MAKING",
+    "MADE", "MAKE", "LOOK", "LOOKING", "LIKE", "LIKES", "NEED", "NEEDS", "KNOW", "KNOWS", "THINK", "THINKS"
+}
+
+def _extract_ticker(text: str) -> Optional[str]:
+    """Extract potential ticker from text."""
+    # Look for 2-5 uppercase letters
+    candidates = re.findall(r'\b[A-Z]{2,5}\b', text)
+    # Filter out common words
+    valid_candidates = [c for c in candidates if c not in COMMON_WORDS]
+    
+    if valid_candidates:
+        # Return the first one that looks most like a ticker (heuristic)
+        # Ideally we would validate against a ticker database
+        return valid_candidates[0]
+    return None
 
 # Dynamic community loading
 def _get_active_communities() -> List[str]:
@@ -52,15 +76,28 @@ COMMUNITIES = _get_active_communities()
 def _load_community_prompt(community: str) -> str:
     """Load community prompt from file."""
     prompt_path = Path(__file__).parent.parent.parent / "prompts" / "communities" / f"{community}.txt"
+    base_prompt = ""
     try:
         if prompt_path.exists():
-            return prompt_path.read_text(encoding="utf-8")
+            base_prompt = prompt_path.read_text(encoding="utf-8")
         else:
             LOGGER.warning(f"Prompt file not found: {prompt_path}")
-            return f"You are a {community.replace('_', ' ')} investor. Analyze the investment thesis."
+            base_prompt = f"You are a {community.replace('_', ' ')} investor."
     except Exception as e:
         LOGGER.exception(f"Error loading prompt for {community}: {e}")
-        return f"You are a {community.replace('_', ' ')} investor. Analyze the investment thesis."
+        base_prompt = f"You are a {community.replace('_', ' ')} investor."
+        
+    # Add Socratic instructions
+    socratic_instruction = (
+        "\n\nIMPORTANT INSTRUCTIONS:\n"
+        "1. Be CONCISE. Keep responses short (2-4 sentences).\n"
+        "2. Use the SOCRATIC METHOD. Ask thought-provoking questions to guide the user's reflection.\n"
+        "3. Do not lecture. Engage in a dialogue.\n"
+        "4. Challenge the user's assumptions based on your persona.\n"
+        "5. Focus on the investment thesis logic, not just the ticker."
+    )
+    
+    return base_prompt + socratic_instruction
 
 
 def _call_llm(prompt: str, community: str, provider: str = "auto") -> Optional[str]:
@@ -247,27 +284,6 @@ async def _save_arena_thread(
                 (thread_id, user_id, thesis, ticker, initial_conviction, current_conviction)
             )
             
-            # Insert first round
-            # Note: Skipping detailed round storage for now as arena_rounds schema needs migration
-            # The thread is saved in arena_threads which is sufficient for MVP
-            round_id = uuid4()
-            # cur.execute(
-            #     """
-            #     INSERT INTO arena_rounds
-            #     (id, thread_id, round_number, community_responses, conviction_before, conviction_after, conviction_change)
-            #     VALUES (%s, %s, %s, %s::jsonb, %s, %s, %s)
-            #     """,
-            #     (
-            #         round_id,
-            #         thread_id,
-            #         1,
-            #         json.dumps(community_responses),
-            #         conviction_before,
-            #         conviction_after,
-            #         conviction_after - conviction_before,
-            #     )
-            # )
-            
             conn.commit()
             return str(thread_id)
     except Exception as e:
@@ -382,37 +398,27 @@ async def challenge_thesis_arena(
 ) -> ThesisArenaChallengeResponse:
     """
     Challenge investment thesis with parallel community responses.
-    
-    Calls Llama API (Groq) in parallel for each of the 4 communities:
-    - value_investor
-    - crypto_bro
-    - growth_investor
-    - contrarian
-    
-    Each community responds from their perspective, and conviction impact
-    is calculated from their responses.
-    
-    Args:
-        request: Thesis challenge request
-        current_user: Current authenticated user
-        
-    Returns:
-        Response with all community responses and conviction impact
     """
     # Build prompt with ticker if provided
+    ticker = request.ticker
+    
+    # If no ticker provided, try to extract it
+    if not ticker:
+        extracted = _extract_ticker(request.thesis)
+        if extracted:
+            ticker = extracted
+            LOGGER.info(f"Extracted ticker {ticker} from thesis")
+            
     prompt = request.thesis
-    if request.ticker:
-        prompt = f"Ticker: {request.ticker.upper()}\n\nThesis: {request.thesis}"
+    if ticker:
+        prompt = f"Ticker: {ticker.upper()}\n\nThesis: {request.thesis}"
     
     # Call all communities in parallel
     LOGGER.info(f"Challenging thesis with {len(COMMUNITIES)} communities in parallel")
     
-    # Use asyncio to run requests in parallel
-    # Note: FastAPI runs in async context, so we can use asyncio directly
     try:
         loop = asyncio.get_event_loop()
     except RuntimeError:
-        # If no event loop exists, create one
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
     
@@ -438,12 +444,11 @@ async def challenge_thesis_arena(
         
         community_responses_dict[community] = response_text
         
-        # Calculate impact score (will be refined by conviction service)
         community_responses_list.append(
             CommunityResponse(
                 community=community,
                 response=response_text,
-                impact_score=0.0,  # Will be updated below
+                impact_score=0.0,
             )
         )
     
@@ -454,16 +459,16 @@ async def challenge_thesis_arena(
         initial_conviction=request.initial_conviction,
     )
     
-    # Update impact scores in responses
+    # Update impact scores
     for response in community_responses_list:
         impact_data = conviction_impact["community_impacts"].get(response.community, {})
         response.impact_score = impact_data.get("weighted_impact", 0.0)
     
-    # Save to database for multi-round conversations
+    # Save to database
     thread_id = await _save_arena_thread(
         user_id=current_user.id,
         thesis=request.thesis,
-        ticker=request.ticker,
+        ticker=ticker,  # Save inferred or provided ticker
         initial_conviction=request.initial_conviction,
         current_conviction=conviction_impact["new_conviction"],
         community_responses=community_responses_dict,
@@ -473,7 +478,7 @@ async def challenge_thesis_arena(
     
     return ThesisArenaChallengeResponse(
         thesis=request.thesis,
-        ticker=request.ticker,
+        ticker=ticker,
         initial_conviction=request.initial_conviction,
         community_responses=community_responses_list,
         conviction_impact=conviction_impact,
@@ -489,16 +494,6 @@ async def respond_in_arena(
 ) -> ArenaRespondResponse:
     """
     Respond in an existing arena thread with a follow-up message.
-    
-    Communities will respond to the user's follow-up, and conviction
-    will be updated based on their responses.
-    
-    Args:
-        request: Arena respond request with thread_id and user_message
-        current_user: Current authenticated user
-        
-    Returns:
-        Response with new round of community responses and updated conviction
     """
     conn = None
     try:
@@ -534,7 +529,7 @@ async def respond_in_arena(
             last_round_row = cur.fetchone()
             next_round = (last_round_row[0] or 0) + 1
             
-            # Build prompt with context
+            # Build prompt with context - Including Socratic instructions implicitly via system prompt load
             context_prompt = f"""Previous Thesis: {thesis}
 """
             if ticker:
@@ -543,9 +538,11 @@ async def respond_in_arena(
 User's Follow-up Question/Response:
 {request.user_message}
 
-Please respond to the user's follow-up from your community perspective. Consider the previous thesis and provide a thoughtful response."""
+Please respond to the user's follow-up from your community perspective. 
+Remember to be Socratic, concise (2-4 sentences), and challenge assumptions. 
+Do not give financial advice, but guide the user's thinking."""
         
-        # Call all communities in parallel with follow-up
+        # Call all communities
         try:
             loop = asyncio.get_event_loop()
         except RuntimeError:
@@ -578,7 +575,7 @@ Please respond to the user's follow-up from your community perspective. Consider
                 CommunityResponse(
                     community=community,
                     response=response_text,
-                    impact_score=0.0,  # Will be updated below
+                    impact_score=0.0,
                 )
             )
         
@@ -591,12 +588,11 @@ Please respond to the user's follow-up from your community perspective. Consider
         
         new_conviction = conviction_impact["new_conviction"]
         
-        # Update impact scores
         for response in community_responses_list:
             impact_data = conviction_impact["community_impacts"].get(response.community, {})
             response.impact_score = impact_data.get("weighted_impact", 0.0)
         
-        # Save round to database
+        # Save round
         with conn.cursor() as cur:
             round_id = uuid4()
             cur.execute(
@@ -617,7 +613,6 @@ Please respond to the user's follow-up from your community perspective. Consider
                 )
             )
             
-            # Update thread current conviction
             cur.execute(
                 """
                 UPDATE thesis_arena_threads

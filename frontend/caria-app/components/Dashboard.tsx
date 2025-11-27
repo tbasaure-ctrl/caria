@@ -31,7 +31,7 @@ const AnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => v
     onEnterArena 
 }) => (
     <div
-        className="rounded-xl p-6 transition-all duration-300 cursor-pointer group"
+        className="rounded-lg p-8 transition-all duration-300 cursor-pointer group h-full flex flex-col justify-center"
         style={{
             backgroundColor: 'var(--color-bg-secondary)',
             border: '1px solid var(--color-border-subtle)',
@@ -46,48 +46,31 @@ const AnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => v
     >
         <div className="flex flex-col items-center text-center">
             <div 
-                className="w-14 h-14 rounded-xl flex items-center justify-center mb-5"
-                style={{ backgroundColor: 'rgba(46, 124, 246, 0.12)' }}
+                className="w-16 h-16 rounded-full flex items-center justify-center mb-6"
+                style={{ backgroundColor: 'rgba(56, 189, 248, 0.1)' }}
             >
-                <ThesisIcon className="w-7 h-7" style={{ color: 'var(--color-accent-primary)' }} />
+                <ThesisIcon className="w-8 h-8" style={{ color: 'var(--color-accent-primary)' }} />
             </div>
             
             <h3 
-                className="text-xl font-semibold mb-2"
-                style={{ 
-                    fontFamily: 'var(--font-display)',
-                    color: 'var(--color-text-primary)' 
-                }}
+                className="text-2xl font-display font-medium mb-3 text-text-primary"
             >
                 Challenge Your Thesis
             </h3>
             
             <p 
-                className="text-sm leading-relaxed mb-6 max-w-sm"
-                style={{ color: 'var(--color-text-secondary)' }}
+                className="text-base text-text-secondary leading-relaxed mb-8 max-w-md font-light"
             >
                 Test your investment ideas against Caria's AI analysis. Uncover biases and strengthen your conviction.
             </p>
             
-            <div className="flex flex-col gap-3 w-full max-w-xs">
+            <div className="flex flex-col gap-4 w-full max-w-xs">
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         onStartAnalysis();
                     }}
-                    className="py-3 px-6 rounded-lg font-semibold text-sm transition-all duration-200"
-                    style={{
-                        backgroundColor: 'var(--color-accent-primary)',
-                        color: '#FFFFFF',
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(46, 124, 246, 0.3)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    className="py-3 px-6 rounded-lg font-medium text-sm transition-all duration-300 bg-accent-primary text-white shadow-glow-sm hover:shadow-glow-md transform hover:-translate-y-0.5"
                 >
                     Start Analysis
                 </button>
@@ -97,20 +80,7 @@ const AnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => v
                         e.stopPropagation();
                         onEnterArena();
                     }}
-                    className="py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200"
-                    style={{
-                        backgroundColor: 'transparent',
-                        color: 'var(--color-text-secondary)',
-                        border: '1px solid var(--color-border-subtle)',
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
-                        e.currentTarget.style.color = 'var(--color-accent-primary)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
-                        e.currentTarget.style.color = 'var(--color-text-secondary)';
-                    }}
+                    className="py-3 px-6 rounded-lg text-sm font-medium transition-all duration-300 text-text-secondary border border-white/10 hover:border-accent-primary/50 hover:text-white"
                 >
                     Enter Thesis Arena →
                 </button>
@@ -192,183 +162,111 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
     return (
         <main 
-            className="flex-1 overflow-y-auto relative"
-            style={{ backgroundColor: 'var(--color-bg-primary)' }}
+            className="flex-1 overflow-y-auto relative min-h-screen bg-bg-primary"
         >
             {/* Dashboard Header */}
             <div 
-                className="sticky top-0 z-40 border-b relative"
-                style={{ 
-                    backgroundColor: 'rgba(10, 14, 20, 0.95)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    borderColor: 'var(--color-border-subtle)'
-                }}
+                className="sticky top-0 z-40 border-b border-white/5 bg-bg-primary/95 backdrop-blur-xl"
             >
-                <div className="max-w-[1800px] mx-auto px-6 lg:px-10">
-                    {/* Tab Navigation - Bloomberg Style */}
-                    <div className="flex gap-1 -mb-px">
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => handleTabChange(tab.id)}
-                                className="relative px-5 py-3 font-medium text-sm transition-all duration-200"
-                                style={{
-                                    color: activeTab === tab.id 
-                                        ? 'var(--color-text-primary)' 
-                                        : 'var(--color-text-muted)',
-                                    backgroundColor: activeTab === tab.id 
-                                        ? 'var(--color-bg-secondary)' 
-                                        : 'transparent',
-                                    borderTopLeftRadius: '8px',
-                                    borderTopRightRadius: '8px',
-                                }}
-                            >
-                                {tab.label}
-                                {activeTab === tab.id && (
-                                    <div 
-                                        className="absolute bottom-0 left-0 right-0 h-0.5"
-                                        style={{ backgroundColor: 'var(--color-accent-primary)' }}
-                                    />
-                                )}
-                            </button>
-                        ))}
+                <div className="w-full px-6 lg:px-12 py-4">
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-2xl font-display text-white tracking-wide hidden md:block">
+                            Terminal
+                        </h1>
+                        {/* Tab Navigation - Centered & Minimal */}
+                        <div className="flex gap-8">
+                            {tabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => handleTabChange(tab.id)}
+                                    className={`
+                                        relative py-2 text-sm font-medium tracking-widest uppercase transition-colors duration-300
+                                        ${activeTab === tab.id ? 'text-accent-cyan' : 'text-text-muted hover:text-text-secondary'}
+                                    `}
+                                >
+                                    {tab.label}
+                                    {activeTab === tab.id && (
+                                        <div className="absolute -bottom-5 left-0 right-0 h-0.5 bg-accent-cyan shadow-glow-sm" />
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="w-24 hidden md:block"></div> {/* Spacer for centering */}
                     </div>
                 </div>
             </div>
 
-            {/* Tab Content */}
-            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 relative z-10">
+            {/* Tab Content - Expanded Layout */}
+            <div className="w-full px-6 lg:px-12 py-12 relative z-10">
                 
-                {/* Tagline Banner */}
-                <div 
-                    className="mb-6 md:mb-8 text-center py-3 px-4 rounded-lg"
-                    style={{ 
-                        backgroundColor: 'rgba(74, 144, 226, 0.08)',
-                        border: '1px solid rgba(74, 144, 226, 0.15)'
-                    }}
-                >
-                    <p 
-                        className="text-sm md:text-base"
-                        style={{ 
-                            color: 'rgba(232, 230, 227, 0.7)',
-                            fontFamily: "'Crimson Pro', Georgia, serif",
-                            fontStyle: 'italic'
-                        }}
-                    >
-                        We don't intend to offer financial advice — we want to join your journey to financial freedom.
-                    </p>
-                </div>
-
                 {/* PORTFOLIO TAB */}
                 {activeTab === 'portfolio' && (
-                    <div className="space-y-12 animate-fade-in">
+                    <div className="space-y-16 animate-fade-in max-w-[1800px] mx-auto">
                         {/* Section: Market Overview */}
                         <section>
-                            <h2 
-                                className="text-2xl font-bold mb-2"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)' 
-                                }}
-                            >
-                                Market Overview
-                            </h2>
-                            <p 
-                                className="text-sm mb-6"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Global indices and market sentiment
-                            </p>
+                            <div className="mb-8">
+                                <h2 className="text-3xl font-display text-white mb-2">Market Overview</h2>
+                                <p className="text-text-muted font-light">Global indices and macro sentiment</p>
+                            </div>
                             
-                            <GlobalMarketBar id="market-bar-widget" />
+                            <div className="mb-8">
+                                <GlobalMarketBar id="market-bar-widget" />
+                            </div>
                             
-                            <div className="grid lg:grid-cols-2 gap-8 mt-8">
-                                <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
-                                <FearGreedIndex />
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div className="min-h-[400px]">
+                                    <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                                </div>
+                                <div className="min-h-[400px]">
+                                    <FearGreedIndex />
+                                </div>
                             </div>
                         </section>
 
-                        {/* Divider */}
-                        <hr style={{ borderColor: 'var(--color-border-subtle)', borderTopWidth: '1px' }} />
+                        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
                         {/* Section: Portfolio Management */}
                         <section>
-                            <h2 
-                                className="text-2xl font-bold mb-2"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)' 
-                                }}
-                            >
-                                Portfolio Management
-                            </h2>
-                            <p 
-                                className="text-sm mb-6"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Track holdings and analyze performance
-                            </p>
+                            <div className="mb-8">
+                                <h2 className="text-3xl font-display text-white mb-2">Portfolio Management</h2>
+                                <p className="text-text-muted font-light">Track holdings, allocation and performance</p>
+                            </div>
 
-                            <div className="grid lg:grid-cols-2 gap-8">
-                                <ProtectedWidget featureName="Portfolio Management">
-                                    <Portfolio id="portfolio-widget" />
-                                </ProtectedWidget>
-                                <ProtectedWidget featureName="Portfolio Analytics">
-                                    <PortfolioAnalytics />
-                                </ProtectedWidget>
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                                <div className="xl:col-span-1 min-h-[500px]">
+                                    <ProtectedWidget featureName="Portfolio Management">
+                                        <Portfolio id="portfolio-widget" />
+                                    </ProtectedWidget>
+                                </div>
+                                <div className="xl:col-span-1 min-h-[500px]">
+                                    <ProtectedWidget featureName="Portfolio Analytics">
+                                        <PortfolioAnalytics />
+                                    </ProtectedWidget>
+                                </div>
                             </div>
                         </section>
 
-                        {/* Divider */}
-                        <hr style={{ borderColor: 'var(--color-border-subtle)', borderTopWidth: '1px' }} />
+                        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-                        {/* Section: Crisis Simulator */}
+                        {/* Section: Risk & Scenario */}
                         <section>
-                            <h2 
-                                className="text-2xl font-bold mb-2"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)' 
-                                }}
-                            >
-                                Crisis Simulator
-                            </h2>
-                            <p 
-                                className="text-sm mb-6"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Test your portfolio against historical crashes
-                            </p>
+                            <div className="mb-8">
+                                <h2 className="text-3xl font-display text-white mb-2">Risk & Scenarios</h2>
+                                <p className="text-text-muted font-light">Stress testing and macro simulation</p>
+                            </div>
                             
-                            <ProtectedWidget featureName="Crisis Simulator">
-                                <CrisisSimulator />
-                            </ProtectedWidget>
-                        </section>
-
-                        {/* Divider */}
-                        <hr style={{ borderColor: 'var(--color-border-subtle)', borderTopWidth: '1px' }} />
-
-                        {/* Section: Scenario Analysis */}
-                        <section>
-                            <h2 
-                                className="text-2xl font-bold mb-2"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)' 
-                                }}
-                            >
-                                Scenario Analysis
-                            </h2>
-                            <p 
-                                className="text-sm mb-6"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Macro simulations and regime detection
-                            </p>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div className="lg:col-span-2 min-h-[450px]">
+                                    <ProtectedWidget featureName="Crisis Simulator">
+                                        <CrisisSimulator />
+                                    </ProtectedWidget>
+                                </div>
+                                <div className="lg:col-span-1 min-h-[450px]">
+                                    <MacroSimulator />
+                                </div>
+                            </div>
                             
-                            <div className="grid lg:grid-cols-2 gap-8">
-                                <MacroSimulator />
+                            <div className="mt-8">
                                 <ProtectedWidget featureName="Regime Test">
                                     <RegimeTestWidget />
                                 </ProtectedWidget>
@@ -379,94 +277,39 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* ANALYSIS TAB */}
                 {activeTab === 'analysis' && (
-                    <div className="space-y-12 animate-fade-in">
+                    <div className="space-y-16 animate-fade-in max-w-[1800px] mx-auto">
                         {/* Section: Valuation Tools */}
                         <section>
-                            <h2 
-                                className="text-2xl font-bold mb-2"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)' 
-                                }}
-                            >
-                                Valuation Tools
-                            </h2>
-                            <p 
-                                className="text-sm mb-6"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Fundamental analysis and price simulations
-                            </p>
+                            <div className="mb-8">
+                                <h2 className="text-3xl font-display text-white mb-2">Valuation Intelligence</h2>
+                                <p className="text-text-muted font-light">Deep fundamental analysis and probabilistic forecasting</p>
+                            </div>
                             
-                            <div className="grid lg:grid-cols-2 gap-8">
-                                <div 
-                                    className="rounded-xl p-6"
-                                    style={{
-                                        backgroundColor: 'var(--color-bg-secondary)',
-                                        border: '1px solid var(--color-border-subtle)',
-                                    }}
-                                >
-                                    <h3 
-                                        className="text-base font-semibold mb-1"
-                                        style={{ color: 'var(--color-text-primary)' }}
-                                    >
-                                        Valuation Analysis
-                                    </h3>
-                                    <p 
-                                        className="text-xs mb-5"
-                                        style={{ color: 'var(--color-text-muted)' }}
-                                    >
-                                        5-year projection model with risk adjustments
-                                    </p>
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                                <div className="bg-bg-secondary border border-white/5 rounded-lg p-8 min-h-[600px]">
+                                    <h3 className="text-xl font-display text-white mb-1">DCF & Multiples</h3>
+                                    <p className="text-sm text-text-muted mb-6">5-year projection model with risk adjustments</p>
                                     <ProjectionValuation />
                                 </div>
 
-                                <div 
-                                    className="rounded-xl p-6"
-                                    style={{
-                                        backgroundColor: 'var(--color-bg-secondary)',
-                                        border: '1px solid var(--color-border-subtle)',
-                                    }}
-                                >
-                                    <h3 
-                                        className="text-base font-semibold mb-1"
-                                        style={{ color: 'var(--color-text-primary)' }}
-                                    >
-                                        Monte Carlo Forecast
-                                    </h3>
-                                    <p 
-                                        className="text-xs mb-5"
-                                        style={{ color: 'var(--color-text-muted)' }}
-                                    >
-                                        2-year price simulations based on volatility
-                                    </p>
+                                <div className="bg-bg-secondary border border-white/5 rounded-lg p-8 min-h-[600px]">
+                                    <h3 className="text-xl font-display text-white mb-1">Monte Carlo Simulation</h3>
+                                    <p className="text-sm text-text-muted mb-6">Probabilistic price discovery based on volatility</p>
                                     <ValuationTool />
                                 </div>
                             </div>
                         </section>
 
-                        {/* Divider */}
-                        <hr style={{ borderColor: 'var(--color-border-subtle)', borderTopWidth: '1px' }} />
+                        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
                         {/* Section: Investment Thesis */}
                         <section>
-                            <h2 
-                                className="text-2xl font-bold mb-2"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)' 
-                                }}
-                            >
-                                Investment Thesis
-                            </h2>
-                            <p 
-                                className="text-sm mb-6"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Challenge your ideas and learn valuation
-                            </p>
+                            <div className="mb-8">
+                                <h2 className="text-3xl font-display text-white mb-2">Thesis Arena</h2>
+                                <p className="text-text-muted font-light">Challenge your conviction against AI counter-arguments</p>
+                            </div>
                             
-                            <div className="grid lg:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                                 <ProtectedWidget 
                                     featureName="Investment Thesis Analysis"
                                     description="Challenge your investment ideas against Caria's AI analysis."
@@ -476,34 +319,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                         onEnterArena={() => setShowArena(true)}
                                     />
                                 </ProtectedWidget>
-                                <ProtectedWidget featureName="Valuation Workshop">
-                                    <ValuationWorkshop />
-                                </ProtectedWidget>
+                                <div className="min-h-[400px]">
+                                    <ProtectedWidget featureName="Valuation Workshop">
+                                        <ValuationWorkshop />
+                                    </ProtectedWidget>
+                                </div>
                             </div>
                         </section>
 
-                        {/* Divider */}
-                        <hr style={{ borderColor: 'var(--color-border-subtle)', borderTopWidth: '1px' }} />
+                        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-                        {/* Section: Stock Screeners */}
+                        {/* Section: Screeners */}
                         <section>
-                            <h2 
-                                className="text-2xl font-bold mb-2"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)' 
-                                }}
-                            >
-                                Stock Screeners
-                            </h2>
-                            <p 
-                                className="text-sm mb-6"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Discover opportunities with curated screens
-                            </p>
+                            <div className="mb-8">
+                                <h2 className="text-3xl font-display text-white mb-2">Discovery Engines</h2>
+                                <p className="text-text-muted font-light">Algorithmic screening and hidden gem detection</p>
+                            </div>
                             
-                            <div className="grid lg:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                                 <ProtectedWidget featureName="Alpha Stock Picker">
                                     <AlphaStockPicker />
                                 </ProtectedWidget>
@@ -517,103 +350,51 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* RESEARCH TAB */}
                 {activeTab === 'research' && (
-                    <div className="space-y-12 animate-fade-in">
-                        {/* Section: Weekly Content */}
+                    <div className="space-y-16 animate-fade-in max-w-[1800px] mx-auto">
+                        {/* Section: Market Signals */}
                         <section>
-                            <h2 
-                                className="text-2xl font-bold mb-2"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)' 
-                                }}
-                            >
-                                Weekly Picks
-                            </h2>
-                            <p 
-                                className="text-sm mb-6"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Curated content for the week
-                            </p>
+                            <div className="mb-8">
+                                <h2 className="text-3xl font-display text-white mb-2">Market Signals</h2>
+                                <p className="text-text-muted font-light">Real-time volume anomalies and social sentiment</p>
+                            </div>
                             
-                            <WeeklyMedia compact={false} />
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div className="lg:col-span-2">
+                                    <OpportunityRadar />
+                                </div>
+                                <div className="lg:col-span-1">
+                                    <WeeklyMedia compact={false} />
+                                </div>
+                            </div>
                         </section>
 
-                        {/* Divider */}
-                        <hr style={{ borderColor: 'var(--color-border-subtle)', borderTopWidth: '1px' }} />
+                        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-                        {/* Section: Industry Research */}
+                        {/* Section: Deep Research */}
                         <section>
-                            <h2 
-                                className="text-2xl font-bold mb-2"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)' 
-                                }}
-                            >
-                                Industry Research
-                            </h2>
-                            <p 
-                                className="text-sm mb-6"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Sector deep dives and industry analysis
-                            </p>
+                            <div className="mb-8">
+                                <h2 className="text-3xl font-display text-white mb-2">Deep Research</h2>
+                                <p className="text-text-muted font-light">Industry analysis and educational resources</p>
+                            </div>
                             
-                            <ProtectedWidget featureName="Industry Research">
-                                <IndustryResearch />
-                            </ProtectedWidget>
-                        </section>
-
-                        {/* Divider */}
-                        <hr style={{ borderColor: 'var(--color-border-subtle)', borderTopWidth: '1px' }} />
-
-                        {/* Section: Social & Resources */}
-                        <section>
-                            <h2 
-                                className="text-2xl font-bold mb-2"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)' 
-                                }}
-                            >
-                                Market Signals & Resources
-                            </h2>
-                            <p 
-                                className="text-sm mb-6"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Real-time volume anomalies and learning materials
-                            </p>
-                            
-                            <div className="grid lg:grid-cols-2 gap-8">
-                                <OpportunityRadar />
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                                <ProtectedWidget featureName="Industry Research">
+                                    <IndustryResearch />
+                                </ProtectedWidget>
                                 <Resources />
                             </div>
                         </section>
 
-                        {/* Divider */}
-                        <hr style={{ borderColor: 'var(--color-border-subtle)', borderTopWidth: '1px' }} />
+                        <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
                         {/* Section: Community */}
                         <section>
-                            <h2 
-                                className="text-2xl font-bold mb-2"
-                                style={{ 
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)' 
-                                }}
-                            >
-                                Community
-                            </h2>
-                            <p 
-                                className="text-sm mb-6"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Connect with other investors
-                            </p>
+                            <div className="mb-8">
+                                <h2 className="text-3xl font-display text-white mb-2">Community Intelligence</h2>
+                                <p className="text-text-muted font-light">Peer insights and rankings</p>
+                            </div>
                             
-                            <div className="grid lg:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                                 <ProtectedWidget featureName="Community">
                                     <CommunityFeed />
                                 </ProtectedWidget>
@@ -627,46 +408,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             {/* Thesis Arena Modal */}
             {showArena && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    style={{ backgroundColor: 'rgba(0, 0, 0, 0.85)' }}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
                     onClick={() => setShowArena(false)}
                 >
                     <div
-                        className="rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                        className="rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto bg-bg-secondary border border-white/10 shadow-2xl"
                         onClick={(e) => e.stopPropagation()}
-                        style={{
-                            backgroundColor: 'var(--color-bg-secondary)',
-                            border: '1px solid var(--color-border-default)',
-                        }}
                     >
-                        <div 
-                            className="sticky top-0 flex justify-between items-center px-6 py-5 border-b"
-                            style={{ 
-                                backgroundColor: 'var(--color-bg-secondary)',
-                                borderColor: 'var(--color-border-subtle)'
-                            }}
-                        >
-                            <h2
-                                className="text-xl font-semibold"
-                                style={{
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)',
-                                }}
-                            >
+                        <div className="sticky top-0 flex justify-between items-center px-8 py-6 border-b border-white/5 bg-bg-secondary/95 backdrop-blur">
+                            <h2 className="text-2xl font-display text-white">
                                 Thesis Arena
                             </h2>
                             <button
                                 onClick={() => setShowArena(false)}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center text-xl transition-colors"
-                                style={{ 
-                                    color: 'var(--color-text-muted)',
-                                    backgroundColor: 'var(--color-bg-surface)'
-                                }}
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-xl text-text-muted hover:text-white hover:bg-white/5 transition-colors"
                             >
                                 ×
                             </button>
                         </div>
-                        <div className="p-6">
+                        <div className="p-8">
                             <ThesisArena onClose={() => setShowArena(false)} />
                         </div>
                     </div>

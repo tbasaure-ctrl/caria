@@ -1,90 +1,77 @@
 
-import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, createHolding, deleteHolding } from '../../services/apiService';
 import { WidgetCard } from './WidgetCard';
 import { getErrorMessage } from '../../src/utils/errorHandling';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 type AllocationData = { name: string; value: number; color: string };
 
-const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
-    // ... (unchanged)
-    const [activeSlice, setActiveSlice] = useState<AllocationData | null>(data.length > 0 ? data[0] : null);
-    const total = data.reduce((acc, item) => acc + (item.value || 0), 0);
+const CustomPieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
+    const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-    if (!data.length || total <= 0 || !Number.isFinite(total)) {
+    if (!data.length) {
         return (
-            <div className="flex flex-col gap-2 text-slate-400 text-sm">
-                <p>No allocation data yet.</p>
-                <p>Add positions to visualize your weights.</p>
+            <div className="flex flex-col gap-2 text-text-muted text-sm items-center justify-center h-48">
+                <p>No allocation data.</p>
             </div>
         );
     }
 
-    const radius = 1;
-    const innerRadius = 0.6;
-    let cumulative = 0;
+    const activeItem = activeIndex !== null ? data[activeIndex] : data[0];
 
     return (
-        <div className="flex items-center gap-4">
-            <div className="relative w-24 h-24">
-                <svg viewBox="-1 -1 2 2" className="w-full h-full transform -rotate-90">
-                    {data.map(item => {
-                        const angleStart = (cumulative / total) * 2 * Math.PI;
-                        cumulative += item.value;
-                        const angleEnd = (cumulative / total) * 2 * Math.PI;
-
-                        const startX = Math.cos(angleStart) * radius;
-                        const startY = Math.sin(angleStart) * radius;
-                        const endX = Math.cos(angleEnd) * radius;
-                        const endY = Math.sin(angleEnd) * radius;
-
-                        const innerStartX = Math.cos(angleStart) * innerRadius;
-                        const innerStartY = Math.sin(angleStart) * innerRadius;
-                        const innerEndX = Math.cos(angleEnd) * innerRadius;
-                        const innerEndY = Math.sin(angleEnd) * innerRadius;
-
-                        const largeArcFlag = (angleEnd - angleStart) > Math.PI ? 1 : 0;
-
-                        const pathData = [
-                            `M ${startX} ${startY}`,
-                            `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`,
-                            `L ${innerEndX} ${innerEndY}`,
-                            `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${innerStartX} ${innerStartY}`,
-                            'Z'
-                        ].join(' ');
-
-                        return (
-                            <path
-                                key={item.name}
-                                d={pathData}
-                                fill={item.color}
-                                onClick={() => setActiveSlice(item)}
-                                className="cursor-pointer transition-opacity duration-200"
-                                style={{ opacity: activeSlice && activeSlice.name !== item.name ? 0.6 : 1 }}
-                            />
-                        );
-                    })}
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center select-none">
-                    {activeSlice ? (
+        <div className="flex flex-col items-center">
+            <div className="relative w-48 h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            data={data}
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                            stroke="none"
+                            onMouseEnter={(_, index) => setActiveIndex(index)}
+                            onMouseLeave={() => setActiveIndex(null)}
+                        >
+                            {data.map((entry, index) => (
+                                <Cell 
+                                    key={`cell-${index}`} 
+                                    fill={entry.color} 
+                                    opacity={activeIndex === null || activeIndex === index ? 1 : 0.3}
+                                    className="transition-opacity duration-300"
+                                />
+                            ))}
+                        </Pie>
+                        <Tooltip 
+                            contentStyle={{ backgroundColor: '#0B101B', borderColor: 'rgba(255,255,255,0.1)', color: '#F1F5F9' }}
+                            itemStyle={{ color: '#F1F5F9' }}
+                            formatter={(value: number) => `${value.toFixed(1)}%`}
+                        />
+                    </PieChart>
+                </ResponsiveContainer>
+                {/* Center Text */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    {activeItem && (
                         <>
-                            <span className="text-xl font-bold font-mono text-slate-100">{activeSlice.value.toFixed(0)}%</span>
-                            <span className="text-xs text-slate-400">{activeSlice.name}</span>
-                        </>
-                    ) : (
-                        <>
-                            <span className="text-xs text-slate-400">Click a</span>
-                            <span className="text-xs text-slate-400">slice</span>
+                            <span className="text-2xl font-display text-white font-bold">
+                                {activeItem.value.toFixed(0)}%
+                            </span>
+                            <span className="text-xs text-text-muted uppercase tracking-widest">
+                                {activeItem.name}
+                            </span>
                         </>
                     )}
                 </div>
             </div>
-            <div className="text-xs space-y-1">
-                {data.map(item => (
-                    <div key={item.name} className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: item.color }}></div>
-                        <span className="text-slate-300">{item.name}</span>
-                        <span className="font-mono text-slate-400">{item.value.toFixed(0)}%</span>
+            
+            {/* Legend */}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-4 text-xs w-full">
+                {data.slice(0, 6).map((item, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                        <span className="text-text-secondary truncate">{item.name}</span>
                     </div>
                 ))}
             </div>
@@ -93,173 +80,64 @@ const PieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
 };
 
 type PerformanceGraphPoint = { date: string, value: number };
-type MappedPoint = PerformanceGraphPoint & { x: number; y: number };
 
 const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[]; timeRange?: string }> = ({ data, timeRange = '1Y' }) => {
-    const [hoveredPoint, setHoveredPoint] = useState<MappedPoint | null>(null);
-    const svgRef = useRef<SVGSVGElement>(null);
+    if (!data || data.length === 0) return null;
 
-    const width = 500;
-    const height = 150;
-    const padding = { top: 20, right: 10, bottom: 20, left: 10 };
-
-    // Reset hover state when data or timeRange changes
-    useEffect(() => {
-        setHoveredPoint(null);
-    }, [data, timeRange]);
-
-    const { dataPoints, path, areaPath, lastValue, valueChange, percentChange, isPositive } = useMemo(() => {
-        if (!data || data.length === 0) return { dataPoints: [], path: '', areaPath: '', lastValue: 0, valueChange: 0, percentChange: 0, isPositive: true };
-
-        // Filter out invalid data points
-        const validData = data.filter(p => Number.isFinite(p.value));
-        if (validData.length === 0) return { dataPoints: [], path: '', areaPath: '', lastValue: 0, valueChange: 0, percentChange: 0, isPositive: true };
-
-        const maxValue = Math.max(...validData.map(p => p.value));
-        const minValue = Math.min(...validData.map(p => p.value));
-        const valueRange = maxValue - minValue > 0 ? maxValue - minValue : 1;
-
-        const points: MappedPoint[] = validData.map((point, i) => {
-            const x = (i / (validData.length - 1)) * (width - padding.left - padding.right) + padding.left;
-            const y = height - padding.bottom - ((point.value - minValue) / valueRange * (height - padding.top - padding.bottom));
-            return { ...point, x: Number.isFinite(x) ? x : 0, y: Number.isFinite(y) ? y : 0 };
-        });
-
-        const pathD = points.map((p, i) => (i === 0 ? 'M' : 'L') + `${p.x},${p.y}`).join(' ');
-        const areaPathD = `M ${padding.left},${height - padding.bottom} ` + pathD + ` L ${width - padding.right},${height - padding.bottom} Z`;
-
-        const startValue = validData[0].value;
-        const endValue = validData[validData.length - 1].value;
-        const valChange = endValue - startValue;
-        const pctChange = startValue !== 0 ? (valChange / startValue) * 100 : 0;
-
-        return {
-            dataPoints: points,
-            path: pathD,
-            areaPath: areaPathD,
-            lastValue: endValue,
-            valueChange: valChange,
-            percentChange: pctChange,
-            isPositive: valChange >= 0
-        };
-    }, [data]);
-
-    const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
-        if (!svgRef.current) return;
-        const svgRect = svgRef.current.getBoundingClientRect();
-        const mouseX = event.clientX - svgRect.left;
-
-        const closestPoint = dataPoints.reduce((closest, point) =>
-            Math.abs(point.x - mouseX) < Math.abs(closest.x - mouseX) ? point : closest
-        );
-        setHoveredPoint(closestPoint);
-    };
-
-    const handleMouseLeave = () => setHoveredPoint(null);
-
-    const chartColor = isPositive ? '#10b981' : '#ef4444'; // green or red like Yahoo Finance
-    const gridColor = 'rgba(232, 230, 227, 0.1)';
+    const startValue = data[0].value;
+    const endValue = data[data.length - 1].value;
+    const change = endValue - startValue;
+    const pctChange = (change / startValue) * 100;
+    const isPositive = change >= 0;
+    const color = isPositive ? '#10B981' : '#EF4444'; // Positive/Negative color
 
     return (
-        <div>
-            <div className="mb-4">
-                <p className="text-3xl font-bold mb-1"
-                    style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-cream)' }}>
-                    ${lastValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </p>
-                <div className="flex items-center gap-2 text-sm"
-                    style={{
-                        color: chartColor,
-                        fontFamily: 'var(--font-mono)'
-                    }}>
-                    <span className="font-semibold">${Math.abs(valueChange).toFixed(2)}</span>
-                    <span className="font-semibold">({percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%)</span>
-                    <span style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-body)' }}>
-                        {timeRange === '1D' ? '1 Day' : timeRange === '1Y' ? '1 Year' : timeRange === 'YTD' ? 'Year to Date' : 'Since Start'}
+        <div className="h-full flex flex-col">
+            <div className="mb-4 px-2">
+                <div className="flex items-baseline gap-3">
+                    <span className="text-3xl font-display text-white">
+                        ${endValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className={`text-sm font-mono font-medium ${isPositive ? 'text-positive' : 'text-negative'}`}>
+                        {isPositive ? '+' : ''}{change.toFixed(2)} ({pctChange.toFixed(2)}%)
                     </span>
                 </div>
+                <div className="text-xs text-text-muted uppercase tracking-widest mt-1">
+                    Portfolio Value • {timeRange}
+                </div>
             </div>
-            <div className="relative" style={{ backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '16px' }}>
-                <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full h-auto cursor-crosshair" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
-                    <defs>
-                        <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style={{ stopColor: chartColor, stopOpacity: 0.4 }} />
-                            <stop offset="100%" style={{ stopColor: chartColor, stopOpacity: 0 }} />
-                        </linearGradient>
-                    </defs>
-
-                    {/* Horizontal gridlines */}
-                    {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-                        const y = padding.top + (height - padding.top - padding.bottom) * ratio;
-                        return (
-                            <line
-                                key={ratio}
-                                x1={padding.left}
-                                y1={y}
-                                x2={width - padding.right}
-                                y2={y}
-                                stroke={gridColor}
-                                strokeWidth="1"
-                                strokeDasharray="2,2"
-                            />
-                        );
-                    })}
-
-                    {/* Area fill */}
-                    <path d={areaPath} fill="url(#areaGradient)" />
-
-                    {/* Main line with smooth curve */}
-                    <path
-                        d={path}
-                        fill="none"
-                        stroke={chartColor}
-                        strokeWidth="3"
-                        strokeLinejoin="round"
-                        strokeLinecap="round"
-                        style={{ filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.3))' }}
-                    />
-
-                    {hoveredPoint && (
-                        <g>
-                            <line
-                                x1={hoveredPoint.x}
-                                y1={height - padding.bottom}
-                                x2={hoveredPoint.x}
-                                y2={padding.top}
-                                stroke="rgba(232, 230, 227, 0.5)"
-                                strokeWidth="1"
-                                strokeDasharray="4,4"
-                            />
-                            <circle
-                                cx={hoveredPoint.x}
-                                cy={hoveredPoint.y}
-                                r="6"
-                                fill={chartColor}
-                                stroke="var(--color-cream)"
-                                strokeWidth="2"
-                                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
-                            />
-                        </g>
-                    )}
-                </svg>
-                {hoveredPoint && (
-                    <div className="absolute p-3 text-xs rounded-md pointer-events-none"
-                        style={{
-                            left: hoveredPoint.x > width / 2 ? `${hoveredPoint.x - 120}px` : `${hoveredPoint.x + 15}px`,
-                            top: `${hoveredPoint.y - 30}px`,
-                            transform: 'translateY(-100%)',
-                            backgroundColor: 'var(--color-bg-secondary)',
-                            border: '1px solid var(--color-bg-tertiary)',
-                            backdropFilter: 'blur(8px)'
-                        }}>
-                        <p className="font-bold mb-1" style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-cream)' }}>
-                            ${hoveredPoint.value.toFixed(2)}
-                        </p>
-                        <p style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)' }}>
-                            {new Date(hoveredPoint.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </p>
-                    </div>
-                )}
+            
+            <div className="flex-1 min-h-[200px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data}>
+                        <defs>
+                            <linearGradient id="colorPerf" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor={color} stopOpacity={0}/>
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: '#0B101B',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '8px',
+                                color: '#F1F5F9',
+                                fontFamily: 'var(--font-mono)'
+                            }}
+                            labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                            formatter={(value: number) => [`$${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 'Value']}
+                        />
+                        <Area 
+                            type="monotone" 
+                            dataKey="value" 
+                            stroke={color} 
+                            strokeWidth={2} 
+                            fillOpacity={1} 
+                            fill="url(#colorPerf)" 
+                        />
+                    </AreaChart>
+                </ResponsiveContainer>
             </div>
         </div>
     );
@@ -268,31 +146,16 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[]; timeRange?: st
 const TimeRangeSelector: React.FC<{ selected: string; onSelect: (range: string) => void }> = ({ selected, onSelect }) => {
     const ranges = ['1D', '1Y', 'YTD', 'START'];
     return (
-        <div className="flex items-center rounded-md p-1 gap-1"
-            style={{
-                backgroundColor: 'var(--color-bg-tertiary)',
-                border: '1px solid var(--color-bg-tertiary)'
-            }}>
+        <div className="flex bg-bg-tertiary border border-white/5 rounded p-0.5 gap-1">
             {ranges.map(range => (
                 <button
                     key={range}
                     onClick={() => onSelect(range)}
-                    className="px-3 py-1.5 text-xs font-semibold rounded transition-all duration-200"
-                    style={{
-                        backgroundColor: selected === range ? 'var(--color-primary)' : 'transparent',
-                        color: selected === range ? 'var(--color-cream)' : 'var(--color-text-muted)',
-                        fontFamily: 'var(--font-mono)'
-                    }}
-                    onMouseEnter={(e) => {
-                        if (selected !== range) {
-                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
-                        }
-                    }}
-                    onMouseLeave={(e) => {
-                        if (selected !== range) {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                        }
-                    }}
+                    className={`px-3 py-1 text-xs font-medium rounded transition-all duration-200 ${
+                        selected === range 
+                            ? 'bg-white/10 text-white shadow-sm' 
+                            : 'text-text-muted hover:text-text-secondary'
+                    }`}
                 >
                     {range}
                 </button>
@@ -333,13 +196,12 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
 
     const loadPortfolio = useCallback(
         async (showSpinner = true) => {
-            // Always start loading state to prevent hook mismatches
             if (showSpinner) {
                 setLoading(true);
             } else {
                 setIsRefreshing(true);
             }
-            setError(null); // Reset error state
+            setError(null);
 
             try {
                 const data = await fetchHoldingsWithPrices();
@@ -381,7 +243,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         switch (timeRange) {
             case '1D':
                 startDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
-                dataPoints = 24; // hourly
+                dataPoints = 24;
                 break;
             case '1W':
                 startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -389,14 +251,13 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                 break;
             case '1Y':
                 startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-                dataPoints = 252; // trading days
+                dataPoints = 252;
                 break;
             case 'YTD':
                 startDate = new Date(now.getFullYear(), 0, 1);
                 dataPoints = Math.ceil((now.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
                 break;
             case 'START':
-                // Find earliest purchase date
                 const purchaseDates = portfolioData.holdings
                     .map((h: any) => h.purchase_date ? new Date(h.purchase_date) : null)
                     .filter((d): d is Date => d !== null);
@@ -410,23 +271,20 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                 dataPoints = 30;
         }
 
-        // Generate simulated historical data based on current values
         const data: PerformanceGraphPoint[] = [];
         const totalCurrentValue = portfolioData.total_value;
         const totalCost = portfolioData.total_cost;
 
         for (let i = 0; i <= dataPoints; i++) {
             const date = new Date(startDate.getTime() + (i / dataPoints) * (now.getTime() - startDate.getTime()));
-            // Interpolate value from cost to current value with some randomness
             const progress = i / dataPoints;
             const baseValue = totalCost + (totalCurrentValue - totalCost) * progress;
-            // Add some volatility (±3%)
             const volatility = baseValue * 0.03 * (Math.random() - 0.5);
             const value = baseValue + volatility;
 
             data.push({
                 date: date.toISOString(),
-                value: Math.max(value, totalCost * 0.9) // Don't go below 90% of cost
+                value: Math.max(value, totalCost * 0.9)
             });
         }
 
@@ -439,7 +297,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         if (!portfolioData || portfolioData.holdings.length === 0 || portfolioData.total_value <= 0) {
             return [];
         }
-        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+        const colors = ['#D4AF37', '#22D3EE', '#38BDF8', '#94A3B8', '#F1F5F9', '#64748B']; // Gold, Cyan, Blue, Grey, White
         return portfolioData.holdings.map((holding, i) => {
             const holdingValue = holding.current_value ?? holding.current_price * holding.quantity;
             return {
@@ -464,28 +322,19 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         }
     }, [portfolioData, sortOption]);
 
-    // Early returns MUST happen AFTER all hooks are declared
     if (loading) {
         return (
-            <WidgetCard
-                id={id}
-                title="PORTFOLIO SNAPSHOT"
-                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
-            >
-                <div className="text-slate-400 text-sm">Cargando portfolio...</div>
+            <WidgetCard id={id} title="PORTFOLIO SNAPSHOT">
+                <div className="text-text-muted text-sm">Loading portfolio...</div>
             </WidgetCard>
         );
     }
 
     if (error) {
         return (
-            <WidgetCard
-                id={id}
-                title="PORTFOLIO SNAPSHOT"
-                tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
-            >
-                <div className="text-red-400 text-sm">{error}</div>
-                <div className="text-slate-500 text-xs mt-1">Inicia sesión para ver tu portfolio</div>
+            <WidgetCard id={id} title="PORTFOLIO SNAPSHOT">
+                <div className="text-negative text-sm">{error}</div>
+                <div className="text-text-muted text-xs mt-1">Please sign in to view your portfolio.</div>
             </WidgetCard>
         );
     }
@@ -498,18 +347,9 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         const quantity = parseFloat(formData.quantity);
         const averageCost = parseFloat(formData.average_cost);
 
-        if (!ticker) {
-            setFormError('Ingresa un ticker válido.');
-            return;
-        }
-        if (!Number.isFinite(quantity) || quantity <= 0) {
-            setFormError('Please enter a valid quantity.');
-            return;
-        }
-        if (!Number.isFinite(averageCost) || averageCost <= 0) {
-            setFormError('Please enter a valid average cost.');
-            return;
-        }
+        if (!ticker) { setFormError('Invalid ticker.'); return; }
+        if (!Number.isFinite(quantity) || quantity <= 0) { setFormError('Invalid quantity.'); return; }
+        if (!Number.isFinite(averageCost) || averageCost <= 0) { setFormError('Invalid cost.'); return; }
 
         try {
             setActionLoading(true);
@@ -531,15 +371,13 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
     };
 
     const handleDeleteHolding = async (id: string) => {
-        if (!window.confirm('Delete this position?')) {
-            return;
-        }
+        if (!window.confirm('Delete this position?')) return;
         try {
             setActionLoading(true);
             await deleteHolding(id);
             await loadPortfolio(false);
         } catch (err: unknown) {
-            setFormError(getErrorMessage(err) || 'No se pudo eliminar la posición.');
+            setFormError(getErrorMessage(err) || 'Could not delete position.');
         } finally {
             setActionLoading(false);
         }
@@ -549,251 +387,151 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         <WidgetCard
             id={id}
             title="PORTFOLIO SNAPSHOT"
-            tooltip="Vista general de tu cartera de inversión con holdings actuales, valores de mercado, y rendimiento histórico."
+            tooltip="Overview of your current holdings, allocation, and performance."
         >
-            <div className="space-y-6">
+            <div className="space-y-8">
+                {/* Header Actions */}
                 <div className="flex items-center justify-between">
-                    <div>
-                        <h4 className="text-xs text-slate-400 mb-2">Resumen</h4>
-                    </div>
                     {isRefreshing && (
-                        <span className="text-xs text-slate-500 animate-pulse">Actualizando…</span>
+                        <span className="text-xs text-accent-cyan animate-pulse">Syncing...</span>
                     )}
+                    <div className="flex gap-2 ml-auto">
+                        <TimeRangeSelector selected={timeRange} onSelect={setTimeRange} />
+                    </div>
                 </div>
-                {portfolioData && (
-                    <>
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-300">Total Value:</span>
-                                <span className="font-mono text-slate-100">
-                                    ${portfolioData.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-slate-300">Total Cost:</span>
-                                <span className="font-mono text-slate-300">
-                                    ${portfolioData.total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </span>
-                            </div>
-                            <div className={`flex justify-between text-sm ${portfolioData.total_gain_loss >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                                <span>Gain/Loss:</span>
-                                <span className="font-mono">
-                                    ${portfolioData.total_gain_loss.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({portfolioData.total_gain_loss_pct >= 0 ? '+' : ''}{portfolioData.total_gain_loss_pct.toFixed(2)}%)
-                                </span>
-                            </div>
+
+                {portfolioData && hasHoldings ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Left: Performance Graph (Span 2) */}
+                        <div className="lg:col-span-2">
+                            <PerformanceGraph data={performanceData} timeRange={timeRange} />
                         </div>
 
-                        {hasHoldings ? (
-                            <>
-                                {performanceData.length > 0 && (
-                                    <div>
-                                        <div className="flex justify-between items-center mb-4">
-                                            <h4
-                                                className="text-xs"
-                                                style={{
-                                                    fontFamily: 'var(--font-mono)',
-                                                    color: 'var(--color-text-muted)',
-                                                    letterSpacing: '0.05em',
-                                                }}
-                                            >
-                                                PERFORMANCE
-                                            </h4>
-                                            <TimeRangeSelector selected={timeRange} onSelect={setTimeRange} />
-                                        </div>
-                                        <PerformanceGraph key={timeRange} data={performanceData} timeRange={timeRange} />
-                                    </div>
-                                )}
-
-                                {allocationData.length > 0 && (
-                                    <div>
-                                        <h4 className="text-xs text-slate-400 mb-2">Allocation</h4>
-                                        <PieChart data={allocationData} />
-                                    </div>
-                                )}
-                            </>
-                        ) : (
-                            <div className="rounded-lg border border-dashed border-slate-700 p-4 text-sm text-slate-400">
-                                Your portfolio is empty. Add your first position to start tracking performance.
-                            </div>
-                        )}
-                    </>
+                        {/* Right: Allocation Pie */}
+                        <div className="lg:col-span-1 flex flex-col justify-center">
+                            <h4 className="text-xs text-text-muted uppercase tracking-widest mb-4 text-center">Asset Allocation</h4>
+                            <CustomPieChart data={allocationData} />
+                        </div>
+                    </div>
+                ) : (
+                    <div className="rounded-lg border border-dashed border-white/10 p-8 text-center text-sm text-text-muted">
+                        Your portfolio is empty. Add your first position to start tracking.
+                    </div>
                 )}
 
-                <div className="border border-slate-800 rounded-lg p-4 space-y-4">
-                    <div className="flex flex-wrap items-center gap-4 justify-between">
-                        <div>
-                            <h4 className="text-sm font-semibold" style={{ color: 'var(--color-cream)' }}>
-                                Position Management
-                            </h4>
-                            <p className="text-xs text-slate-500">Track purchases, sales, and key notes.</p>
-                        </div>
-                        <div className="flex bg-slate-900/70 rounded-md overflow-hidden">
+                {/* Position Management Table */}
+                <div className="border-t border-white/5 pt-6">
+                    <div className="flex flex-wrap items-center gap-4 justify-between mb-4">
+                        <h4 className="text-sm font-medium text-white uppercase tracking-widest">
+                            Positions
+                        </h4>
+                        <div className="flex gap-2">
+                            <div className="flex bg-bg-tertiary border border-white/5 rounded p-0.5">
+                                {['value', 'return', 'ticker'].map(opt => (
+                                    <button
+                                        key={opt}
+                                        onClick={() => setSortOption(opt as any)}
+                                        className={`px-3 py-1 text-xs uppercase font-medium rounded transition-colors ${sortOption === opt ? 'bg-white/10 text-white' : 'text-text-muted hover:text-text-secondary'}`}
+                                    >
+                                        {opt === 'ticker' ? 'AZ' : opt === 'value' ? '$' : '%'}
+                                    </button>
+                                ))}
+                            </div>
                             <button
-                                onClick={() => setSortOption('value')}
-                                className={`px-3 py-1 text-xs font-mono ${sortOption === 'value' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                                onClick={() => setShowForm((prev) => !prev)}
+                                className="text-xs font-medium px-4 py-1.5 rounded bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors border border-accent-primary/20"
                             >
-                                $
-                            </button>
-                            <button
-                                onClick={() => setSortOption('return')}
-                                className={`px-3 py-1 text-xs font-mono ${sortOption === 'return' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200'}`}
-                            >
-                                %
-                            </button>
-                            <button
-                                onClick={() => setSortOption('ticker')}
-                                className={`px-3 py-1 text-xs font-mono ${sortOption === 'ticker' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200'}`}
-                            >
-                                AZ
+                                {showForm ? 'Close' : 'Add +'}
                             </button>
                         </div>
-                        <button
-                            onClick={() => setShowForm((prev) => !prev)}
-                            className="text-xs font-semibold px-4 py-2 rounded-md transition-colors"
-                            style={{
-                                backgroundColor: 'var(--color-primary)',
-                                color: 'var(--color-cream)',
-                            }}
-                        >
-                            {showForm ? 'Close Form' : 'Add Position'}
-                        </button>
                     </div>
 
                     {showForm && (
-                        <form onSubmit={handleAddHolding} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-900/50 p-4 rounded-lg border border-slate-800">
+                        <form onSubmit={handleAddHolding} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-bg-tertiary p-4 rounded-lg border border-white/5 mb-4">
+                            {/* Form inputs simplified for brevity, assuming they work as before but with new styles */}
                             <div>
-                                <label className="block text-xs text-slate-400 mb-1">Ticker</label>
+                                <label className="block text-xs text-text-muted mb-1">Ticker</label>
                                 <input
                                     type="text"
                                     value={formData.ticker}
                                     onChange={(e) => setFormData({ ...formData, ticker: e.target.value })}
-                                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
+                                    className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none"
                                     placeholder="AAPL"
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-400 mb-1">Quantity</label>
+                                <label className="block text-xs text-text-muted mb-1">Quantity</label>
                                 <input
                                     type="number"
-                                    step="0.01"
+                                    step="any"
                                     value={formData.quantity}
                                     onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
-                                    placeholder="10"
+                                    className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none"
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-400 mb-1">Average Cost</label>
+                                <label className="block text-xs text-text-muted mb-1">Avg Cost</label>
                                 <input
                                     type="number"
-                                    step="0.01"
+                                    step="any"
                                     value={formData.average_cost}
                                     onChange={(e) => setFormData({ ...formData, average_cost: e.target.value })}
-                                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
-                                    placeholder="150.00"
+                                    className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none"
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-slate-400 mb-1">Purchase Date</label>
+                                <label className="block text-xs text-text-muted mb-1">Date</label>
                                 <input
                                     type="date"
                                     value={formData.purchase_date}
                                     onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
-                                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
+                                    className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none"
                                     required
                                 />
                             </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-xs text-slate-400 mb-1">Notes (optional)</label>
-                                <input
-                                    type="text"
-                                    value={formData.notes}
-                                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                    className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
-                                    placeholder="Catalysts, thesis summary, etc."
-                                />
-                            </div>
-                            <div className="md:col-span-2 flex gap-3">
+                            <div className="md:col-span-2 flex gap-3 mt-2">
                                 <button
                                     type="submit"
                                     disabled={actionLoading}
-                                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded transition-colors disabled:opacity-50"
+                                    className="flex-1 bg-accent-primary hover:bg-accent-primary/90 text-white text-sm font-medium py-2 px-4 rounded transition-colors"
                                 >
-                                    Save Position
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setShowForm(false);
-                                        setFormData(createDefaultFormState());
-                                        setFormError(null);
-                                    }}
-                                    className="px-4 py-2 rounded text-sm font-semibold text-slate-300 border border-slate-700 hover:border-slate-500"
-                                >
-                                    Cancel
+                                    Save
                                 </button>
                             </div>
                         </form>
                     )}
 
-                    {formError && (
-                        <div className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded p-2">
-                            {formError}
-                        </div>
-                    )}
-
-                    <div>
-                        {sortedHoldings.length === 0 ? (
-                            <div className="text-center text-sm text-slate-500 py-8">
-                                No positions recorded yet.
-                            </div>
-                        ) : (
-                            <div className="space-y-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
-                                {sortedHoldings.map((holding: HoldingWithPrice) => (
-                                    <div
-                                        key={holding.id}
-                                        className="flex justify-between items-center p-2 bg-slate-900/40 rounded border border-slate-800"
-                                    >
-                                        <div>
-                                            <div className="flex items-baseline gap-2">
-                                                <span className="text-slate-200 font-semibold">{holding.ticker}</span>
-                                                {holding.gain_loss_pct !== undefined && (
-                                                    <span className={`text-xs ${holding.gain_loss_pct >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                        {holding.gain_loss_pct >= 0 ? '+' : ''}
-                                                        {holding.gain_loss_pct.toFixed(2)}%
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="text-xs text-slate-400">
-                                                {holding.quantity} @ ${holding.average_cost.toFixed(2)}
-                                            </div>
-                                            {holding.notes && (
-                                                <div className="text-xs text-slate-500 mt-1">{holding.notes}</div>
-                                            )}
-                                        </div>
-                                        <div className="text-right space-y-1">
-                                            <div className="font-mono text-slate-100">
-                                                ${(holding.current_value ?? holding.current_price * holding.quantity).toLocaleString(undefined, {
-                                                    minimumFractionDigits: 0,
-                                                    maximumFractionDigits: 0,
-                                                })}
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => holding.id && handleDeleteHolding(holding.id)}
-                                                disabled={actionLoading}
-                                                className="text-xs text-red-400 hover:text-red-300"
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
+                    <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar space-y-1">
+                        {sortedHoldings.map((holding: HoldingWithPrice) => (
+                            <div
+                                key={holding.id}
+                                className="flex justify-between items-center p-3 bg-white/5 rounded hover:bg-white/10 transition-colors group border border-transparent hover:border-white/5"
+                            >
+                                <div>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-white font-medium">{holding.ticker}</span>
+                                        <span className="text-xs text-text-muted">{holding.quantity} @ ${holding.average_cost.toFixed(2)}</span>
                                     </div>
-                                ))}
+                                </div>
+                                <div className="text-right">
+                                    <div className="font-mono text-white">
+                                        ${(holding.current_value ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                    </div>
+                                    <div className={`text-xs font-mono ${holding.gain_loss_pct! >= 0 ? 'text-positive' : 'text-negative'}`}>
+                                        {holding.gain_loss_pct! >= 0 ? '+' : ''}{holding.gain_loss_pct!.toFixed(2)}%
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => holding.id && handleDeleteHolding(holding.id)}
+                                    className="text-xs text-text-muted hover:text-negative opacity-0 group-hover:opacity-100 transition-opacity ml-4"
+                                >
+                                    ×
+                                </button>
                             </div>
-                        )}
+                        ))}
                     </div>
                 </div>
             </div>

@@ -1,10 +1,10 @@
 /**
  * Professional Holdings Graph with Recharts
- * Displays portfolio holdings with bar chart visualization and sortable table
+ * Displays portfolio holdings with artistic area chart visualization
  */
 
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { fetchHoldingsWithPrices, HoldingWithPrice } from '../../services/apiService';
 import { WidgetCard } from './WidgetCard';
 
@@ -63,7 +63,7 @@ export const HoldingsGraph: React.FC = () => {
     if (loading) {
         return (
             <WidgetCard title="HOLDINGS GRAPH" tooltip="Visual breakdown of your portfolio holdings">
-                <div className="text-sm text-slate-400">Loading...</div>
+                <div className="text-sm text-text-muted">Loading...</div>
             </WidgetCard>
         );
     }
@@ -71,120 +71,131 @@ export const HoldingsGraph: React.FC = () => {
     if (error) {
         return (
             <WidgetCard title="HOLDINGS GRAPH" tooltip="Visual breakdown of your portfolio holdings">
-                <div className="text-sm text-red-400">{error}</div>
+                <div className="text-sm text-negative">{error}</div>
             </WidgetCard>
         );
     }
 
     return (
         <WidgetCard title="HOLDINGS GRAPH" tooltip="Visual breakdown of your portfolio holdings by market value and return">
-            <div className="space-y-4">
+            <div className="space-y-6">
                 {/* Sort Controls */}
                 <div className="flex justify-between items-center">
-                    <div className="text-sm text-slate-400">
-                        Total Value: <span className="text-slate-200 font-semibold">${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <div className="text-sm text-text-muted font-mono">
+                        Total Value: <span className="text-text-primary font-semibold text-lg ml-2">${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
-                    <div className="flex bg-slate-800 rounded p-0.5 gap-1">
+                    <div className="flex bg-bg-tertiary border border-white/5 rounded p-0.5 gap-1">
                         <button
                             onClick={() => setSortOption('value')}
-                            className={`px-3 py-1 text-xs rounded transition-colors ${sortOption === 'value'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-slate-400 hover:text-slate-200'
+                            className={`px-3 py-1 text-xs font-medium rounded transition-colors ${sortOption === 'value'
+                                    ? 'bg-accent-primary/20 text-accent-primary'
+                                    : 'text-text-muted hover:text-text-primary'
                                 }`}
                         >
-                            By Value
+                            Value
                         </button>
                         <button
                             onClick={() => setSortOption('return')}
-                            className={`px-3 py-1 text-xs rounded transition-colors ${sortOption === 'return'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-slate-400 hover:text-slate-200'
+                            className={`px-3 py-1 text-xs font-medium rounded transition-colors ${sortOption === 'return'
+                                    ? 'bg-accent-primary/20 text-accent-primary'
+                                    : 'text-text-muted hover:text-text-primary'
                                 }`}
                         >
-                            By Return %
+                            Return %
                         </button>
                         <button
                             onClick={() => setSortOption('ticker')}
-                            className={`px-3 py-1 text-xs rounded transition-colors ${sortOption === 'ticker'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'text-slate-400 hover:text-slate-200'
+                            className={`px-3 py-1 text-xs font-medium rounded transition-colors ${sortOption === 'ticker'
+                                    ? 'bg-accent-primary/20 text-accent-primary'
+                                    : 'text-text-muted hover:text-text-primary'
                                 }`}
                         >
-                            By Ticker
+                            Ticker
                         </button>
                     </div>
                 </div>
 
                 {holdings.length === 0 ? (
-                    <div className="text-center text-sm text-slate-500 py-8">
-                        No holdings to display. Add holdings to see the graph.
+                    <div className="text-center text-sm text-text-muted py-12">
+                        No holdings to display. Add holdings to see the visualization.
                     </div>
                 ) : (
                     <>
-                        {/* Bar Chart */}
-                        <div className="bg-gray-900/50 p-4 rounded-md border border-slate-800">
-                            <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                        {/* Area Chart - Artistic Style */}
+                        <div className="h-[300px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.3}/>
+                                            <stop offset="95%" stopColor="#D4AF37" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                                     <XAxis
                                         dataKey="ticker"
-                                        stroke="#94a3b8"
-                                        tick={{ fill: '#94a3b8', fontSize: 12 }}
+                                        stroke="#64748B"
+                                        tick={{ fill: '#64748B', fontSize: 11 }}
+                                        axisLine={false}
+                                        tickLine={false}
                                     />
                                     <YAxis
-                                        stroke="#94a3b8"
-                                        tick={{ fill: '#94a3b8', fontSize: 12 }}
+                                        stroke="#64748B"
+                                        tick={{ fill: '#64748B', fontSize: 11 }}
                                         tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                                        axisLine={false}
+                                        tickLine={false}
                                     />
                                     <Tooltip
                                         contentStyle={{
-                                            backgroundColor: '#1e293b',
-                                            border: '1px solid #475569',
-                                            borderRadius: '0.375rem',
-                                            color: '#e2e8f0'
+                                            backgroundColor: '#0B101B',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            borderRadius: '8px',
+                                            color: '#F1F5F9',
+                                            fontFamily: 'var(--font-mono)'
                                         }}
                                         formatter={(value: number) => [`$${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 'Value']}
+                                        cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
                                     />
-                                    <Legend wrapperStyle={{ color: '#94a3b8' }} />
-                                    <Bar dataKey="value" name="Market Value">
-                                        {chartData.map((entry, index) => (
-                                            <Cell
-                                                key={`cell-${index}`}
-                                                fill={entry.returnPct >= 0 ? '#10b981' : '#ef4444'}
-                                            />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
+                                    <Area 
+                                        type="monotone" 
+                                        dataKey="value" 
+                                        stroke="#D4AF37" 
+                                        strokeWidth={2}
+                                        fillOpacity={1} 
+                                        fill="url(#colorValue)" 
+                                    />
+                                </AreaChart>
                             </ResponsiveContainer>
                         </div>
 
-                        {/* Table */}
+                        {/* Modern Table */}
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="border-b border-slate-800">
-                                        <th className="text-left py-2 px-3 text-slate-400 font-semibold">Ticker</th>
-                                        <th className="text-right py-2 px-3 text-slate-400 font-semibold">Quantity</th>
-                                        <th className="text-right py-2 px-3 text-slate-400 font-semibold">Avg Cost</th>
-                                        <th className="text-right py-2 px-3 text-slate-400 font-semibold">Market Value</th>
-                                        <th className="text-right py-2 px-3 text-slate-400 font-semibold">Return %</th>
+                                    <tr className="border-b border-white/5 text-xs uppercase tracking-wider">
+                                        <th className="text-left py-3 px-4 text-text-muted font-medium">Ticker</th>
+                                        <th className="text-right py-3 px-4 text-text-muted font-medium">Quantity</th>
+                                        <th className="text-right py-3 px-4 text-text-muted font-medium">Avg Cost</th>
+                                        <th className="text-right py-3 px-4 text-text-muted font-medium">Market Value</th>
+                                        <th className="text-right py-3 px-4 text-text-muted font-medium">Return</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody className="divide-y divide-white/5">
                                     {sortedData.map((holding) => (
                                         <tr
                                             key={holding.id}
-                                            className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors"
+                                            className="hover:bg-white/5 transition-colors group"
                                         >
-                                            <td className="py-2 px-3 text-slate-200 font-semibold">{holding.ticker}</td>
-                                            <td className="py-2 px-3 text-right text-slate-300">{holding.quantity}</td>
-                                            <td className="py-2 px-3 text-right text-slate-300">
+                                            <td className="py-3 px-4 text-text-primary font-medium group-hover:text-accent-cyan transition-colors">{holding.ticker}</td>
+                                            <td className="py-3 px-4 text-right text-text-secondary font-mono">{holding.quantity}</td>
+                                            <td className="py-3 px-4 text-right text-text-secondary font-mono">
                                                 ${holding.average_cost.toFixed(2)}
                                             </td>
-                                            <td className="py-2 px-3 text-right text-slate-200 font-mono">
+                                            <td className="py-3 px-4 text-right text-text-primary font-mono font-medium">
                                                 ${(holding.current_value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                             </td>
-                                            <td className={`py-2 px-3 text-right font-semibold ${(holding.gain_loss_pct || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+                                            <td className={`py-3 px-4 text-right font-mono font-medium ${(holding.gain_loss_pct || 0) >= 0 ? 'text-positive' : 'text-negative'
                                                 }`}>
                                                 {(holding.gain_loss_pct || 0) >= 0 ? '+' : ''}
                                                 {(holding.gain_loss_pct || 0).toFixed(2)}%

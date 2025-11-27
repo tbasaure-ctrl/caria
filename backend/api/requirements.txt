@@ -8,6 +8,8 @@ matplotlib>=3.8.0
 pyarrow
 sentence-transformers>=3.0.0
 requests>=2.31.0
+pandas>=2.0.0
+numpy>=1.24.0
 
 
 # WebSocket support (per audit document - 3-part solution)

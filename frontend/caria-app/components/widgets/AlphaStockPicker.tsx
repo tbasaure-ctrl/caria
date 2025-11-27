@@ -195,25 +195,6 @@ const ResearchCard: React.FC<{ pick: AlphaPick }> = ({ pick }) => {
                 </div>
             </div>
 
-            {/* CTA */}
-            <button
-                className="w-full py-2.5 rounded-lg text-sm font-medium transition-colors"
-                style={{
-                    backgroundColor: 'var(--color-bg-surface)',
-                    color: 'var(--color-text-secondary)',
-                    border: '1px solid var(--color-border-subtle)',
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
-                    e.currentTarget.style.color = 'var(--color-accent-primary)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
-                    e.currentTarget.style.color = 'var(--color-text-secondary)';
-                }}
-            >
-                View Deep Dive →
-            </button>
         </div>
     );
 };
@@ -439,11 +420,25 @@ export const AlphaStockPicker: React.FC = () => {
 
             {/* Results */}
             {generated && !loading && !error && (
-                <div className="grid md:grid-cols-3 gap-4 animate-fade-in">
-                    {picks.map(pick => (
-                        <ResearchCard key={pick.ticker} pick={pick} />
-                    ))}
-                </div>
+                <>
+                    <div className="grid md:grid-cols-3 gap-4 animate-fade-in">
+                        {picks.map(pick => (
+                            <ResearchCard key={pick.ticker} pick={pick} />
+                        ))}
+                    </div>
+                    {/* Disclaimer */}
+                    <div 
+                        className="mt-6 pt-4 border-t text-center"
+                        style={{ borderColor: 'var(--color-border-subtle)' }}
+                    >
+                        <p 
+                            className="text-xs"
+                            style={{ color: 'var(--color-text-muted)' }}
+                        >
+                            Not financial advice
+                        </p>
+                    </div>
+                </>
             )}
         </WidgetCard>
     );

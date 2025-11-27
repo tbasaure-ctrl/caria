@@ -11,7 +11,7 @@ import { IndustryResearch } from './widgets/IndustryResearch';
  * ResearchSection - Groups related research and analysis widgets together
  * 
  * This component provides a cohesive "Research & Analysis" section that includes:
- * - ValuationTool: Quick DCF-based valuation and Monte Carlo simulations
+ * - ValuationTool: Quick multiples valuation and Monte Carlo simulations (2-year horizon)
  * - RedditSentiment: Social sentiment analysis from Reddit
  * - Resources: Recommended articles, books, and educational content
  * - WeeklyContent: Curated podcast and video of the week
@@ -32,7 +32,7 @@ export const ResearchSection: React.FC = () => {
                 {/* Under-the-Radar Screener - New Stock Screener */}
                 <UnderTheRadarScreener />
                 
-                {/* Valuation Tool - Full Width (includes Monte Carlo price simulation) */}
+                {/* Monte Carlo Forecast Simulation - Quick multiples valuation and 2-year Monte Carlo simulations */}
                 <ValuationTool />
 
                 {/* Alpha Stock Picker - Find undervalued opportunities */}

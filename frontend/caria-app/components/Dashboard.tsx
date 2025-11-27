@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Portfolio } from './widgets/Portfolio';
 import { ThesisIcon } from './Icons';
 import { CommunityFeed } from './widgets/CommunityFeed';
@@ -11,6 +12,7 @@ import { CrisisSimulator } from './widgets/CrisisSimulator';
 import { MacroSimulator } from './widgets/MacroSimulator';
 import { ValuationTool } from './widgets/ValuationTool';
 import { ValuationWorkshop } from './widgets/ValuationWorkshop';
+import { ProjectionValuation } from './widgets/ProjectionValuation';
 import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 import { HiddenGemsScreener } from './widgets/HiddenGemsScreener';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
@@ -129,10 +131,35 @@ interface RegimeData {
 type DashboardTab = 'portfolio' | 'analysis' | 'research';
 
 export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [regimeData, setRegimeData] = useState<RegimeData | null>(null);
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
     const [showArena, setShowArena] = useState(false);
-    const [activeTab, setActiveTab] = useState<DashboardTab>('portfolio');
+    
+    // Get tab from URL or default to 'portfolio'
+    const tabFromUrl = searchParams.get('tab') as DashboardTab;
+    const [activeTab, setActiveTab] = useState<DashboardTab>(
+        tabFromUrl && ['portfolio', 'analysis', 'research'].includes(tabFromUrl) 
+            ? tabFromUrl 
+            : 'portfolio'
+    );
+
+    // Update tab when URL changes
+    useEffect(() => {
+        const tabFromUrl = searchParams.get('tab') as DashboardTab;
+        if (tabFromUrl && ['portfolio', 'analysis', 'research'].includes(tabFromUrl)) {
+            setActiveTab(tabFromUrl);
+        } else if (!tabFromUrl) {
+            // If no tab in URL, set default to portfolio
+            setSearchParams({ tab: 'portfolio' }, { replace: true });
+        }
+    }, [searchParams, setSearchParams]);
+
+    // Update URL when tab changes
+    const handleTabChange = (tab: DashboardTab) => {
+        setActiveTab(tab);
+        setSearchParams({ tab });
+    };
 
     useEffect(() => {
         const fetchRegimeData = async () => {
@@ -178,38 +205,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 }}
             >
                 <div className="max-w-[1800px] mx-auto px-6 lg:px-10">
-                    {/* Top Section */}
-                    <div className="flex items-center justify-between py-5">
-                        <div>
-                            <h1 
-                                className="text-2xl md:text-3xl font-bold"
-                                style={{
-                                    fontFamily: 'var(--font-display)',
-                                    color: 'var(--color-text-primary)',
-                                    letterSpacing: '-0.02em'
-                                }}
-                            >
-                                Terminal
-                            </h1>
-                            <p 
-                                className="text-sm mt-1"
-                                style={{ color: 'var(--color-text-muted)' }}
-                            >
-                                Professional investment intelligence
-                            </p>
-                        </div>
-                        
-                        {/* Quick Stats */}
-                        <div className="hidden md:flex items-center gap-6">
-                        </div>
-                    </div>
-
                     {/* Tab Navigation - Bloomberg Style */}
                     <div className="flex gap-1 -mb-px">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
+                                onClick={() => handleTabChange(tab.id)}
                                 className="relative px-5 py-3 font-medium text-sm transition-all duration-200"
                                 style={{
                                     color: activeTab === tab.id 
@@ -323,22 +324,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {/* ANALYSIS TAB - Bloomberg Terminal Pane Style */}
                 {activeTab === 'analysis' && (
                     <div className="space-y-8 animate-fade-in">
-                        {/* Stock Screeners - Research Report Cards */}
-                        <div className="grid lg:grid-cols-2 gap-6">
-                            <ProtectedWidget featureName="Alpha Stock Picker">
-                                <AlphaStockPicker />
-                            </ProtectedWidget>
-                            <ProtectedWidget featureName="Hidden Gems Screener">
-                                <HiddenGemsScreener />
-                            </ProtectedWidget>
-                        </div>
-
-                        {/* Valuation Tools Section */}
-                        <div className="pt-4">
+                        {/* Projection Valuation - Top Section */}
+                        <div>
                             <div className="flex items-center gap-3 mb-6">
                                 <div 
                                     className="w-1 h-6 rounded-full"
-                                    style={{ backgroundColor: 'var(--color-positive)' }}
+                                    style={{ backgroundColor: 'var(--color-accent-primary)' }}
                                 />
                                 <div>
                                     <h2 
@@ -348,21 +339,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                             color: 'var(--color-text-primary)' 
                                         }}
                                     >
-                                        Valuation Terminal
+                                        Valuation Analysis
                                     </h2>
                                     <p 
                                         className="text-sm mt-0.5"
                                         style={{ color: 'var(--color-text-muted)' }}
                                     >
-                                        DCF, Monte Carlo, and multi-factor analysis
+                                        5-year projection model with risk adjustments
                                     </p>
                                 </div>
                             </div>
-                            
-                            <ValuationTool />
+                            <ProjectionValuation />
                         </div>
 
-                        {/* Thesis Testing */}
+                        {/* Chat and Arena Section */}
                         <div className="pt-4">
                             <div className="flex items-center gap-3 mb-6">
                                 <div 
@@ -392,6 +382,71 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                 </ProtectedWidget>
                                 <ProtectedWidget featureName="Valuation Workshop">
                                     <ValuationWorkshop />
+                                </ProtectedWidget>
+                            </div>
+                        </div>
+
+                        {/* Valuation Terminal Section */}
+                        <div className="pt-4">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div 
+                                    className="w-1 h-6 rounded-full"
+                                    style={{ backgroundColor: 'var(--color-positive)' }}
+                                />
+                                <div>
+                                    <h2 
+                                        className="text-xl font-semibold"
+                                        style={{ 
+                                            fontFamily: 'var(--font-display)',
+                                            color: 'var(--color-text-primary)' 
+                                        }}
+                                    >
+                                        Valuation Terminal
+                                    </h2>
+                                    <p 
+                                        className="text-sm mt-0.5"
+                                        style={{ color: 'var(--color-text-muted)' }}
+                                    >
+                                        DCF, Monte Carlo, and multi-factor analysis
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <ValuationTool />
+                        </div>
+
+                        {/* Stock Screeners - Bottom Section */}
+                        <div className="pt-4">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div 
+                                    className="w-1 h-6 rounded-full"
+                                    style={{ backgroundColor: 'var(--color-warning)' }}
+                                />
+                                <div>
+                                    <h2 
+                                        className="text-xl font-semibold"
+                                        style={{ 
+                                            fontFamily: 'var(--font-display)',
+                                            color: 'var(--color-text-primary)' 
+                                        }}
+                                    >
+                                        Stock Screeners
+                                    </h2>
+                                    <p 
+                                        className="text-sm mt-0.5"
+                                        style={{ color: 'var(--color-text-muted)' }}
+                                    >
+                                        Discover opportunities with AI-powered screeners
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div className="grid lg:grid-cols-2 gap-6">
+                                <ProtectedWidget featureName="Alpha Stock Picker">
+                                    <AlphaStockPicker />
+                                </ProtectedWidget>
+                                <ProtectedWidget featureName="Hidden Gems Screener">
+                                    <HiddenGemsScreener />
                                 </ProtectedWidget>
                             </div>
                         </div>

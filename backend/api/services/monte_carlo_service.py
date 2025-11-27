@@ -259,6 +259,35 @@ class MonteCarloService:
             "name": "Distribution",
         }
 
+    def run_visualization_data(self, ticker: str, final_values: list) -> dict:
+        """
+        Prepara los datos EXACTOS para replicar el gráfico de la imagen.
+        Calcula percentiles clave (10, 50, 90) y rango visual.
+        """
+        # Convertir a numpy array para cálculos rápidos
+        values = np.array(final_values)
+
+        # 1. Calcular los percentiles clave de la imagen
+        p10 = float(np.percentile(values, 10))
+        p50 = float(np.percentile(values, 50))  # Mediana
+        p90 = float(np.percentile(values, 90))
+        
+        # 2. Definir rango visual (para que el gráfico no tenga mucho espacio vacío)
+        # Cortamos visualmente al 1% y 99% para centrar la vista
+        x_min = float(np.percentile(values, 1))
+        x_max = float(np.percentile(values, 99))
+
+        return {
+            "ticker": ticker,
+            "raw_values": final_values,  # Para dibujar las barras
+            "metrics": {
+                "p10": round(p10, 2),
+                "p50": round(p50, 2),
+                "p90": round(p90, 2)
+            },
+            "visual_range": [x_min, x_max]
+        }
+
 
 def get_monte_carlo_service() -> MonteCarloService:
     """Get singleton instance."""

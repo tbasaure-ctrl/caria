@@ -110,11 +110,12 @@ async def forecast_stock(
             simulations=request.simulations,
         )
         
-        # Generate histogram data
-        import numpy as np
-        final_values = np.array(result["final_values"])
-        histogram_data = service.generate_histogram_data(final_values)
-        result["histogram"] = histogram_data
+        # Generate visualization data with exact percentiles
+        visualization_data = service.run_visualization_data(
+            ticker=request.ticker.upper(),
+            final_values=result["final_values"]
+        )
+        result["visualization_data"] = visualization_data
         
         return result
     except ValueError as e:
@@ -141,11 +142,12 @@ async def forecast_stock_get(
             simulations=simulations,
         )
         
-        # Generate histogram data
-        import numpy as np
-        final_values = np.array(result["final_values"])
-        histogram_data = service.generate_histogram_data(final_values)
-        result["histogram"] = histogram_data
+        # Generate visualization data with exact percentiles
+        visualization_data = service.run_visualization_data(
+            ticker=ticker.upper(),
+            final_values=result["final_values"]
+        )
+        result["visualization_data"] = visualization_data
         
         return result
     except ValueError as e:

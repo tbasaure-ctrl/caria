@@ -457,86 +457,129 @@ export const IndustryResearch: React.FC = () => {
             
             {industries.length > 0 && (
                 <div>
-                    {/* Hero Section: This Week's Deep Dive */}
+                    {/* Industry of the Month - Large Card */}
                     {featuredIndustry && (
-                        <div 
-                            className="mb-8 p-6 rounded-xl"
-                            style={{
-                                backgroundColor: 'var(--color-bg-secondary)',
-                                border: '1px solid var(--color-border-subtle)',
-                            }}
-                        >
-                            <div className="flex items-start justify-between mb-4">
-                                <div>
-                                    <h2 
-                                        className="text-2xl font-bold mb-3"
-                                        style={{ 
-                                            fontFamily: 'var(--font-display)',
-                                            color: 'var(--color-text-primary)' 
-                                        }}
-                                    >
-                                        This Week's Deep Dive: {featuredIndustry.name}
-                                    </h2>
-                                    <StatusPill status={featuredIndustry.status} />
-                                </div>
+                        <div className="mb-6">
+                            <div className="flex items-center gap-2 mb-3">
+                                <span 
+                                    className="text-xs font-semibold uppercase tracking-wider"
+                                    style={{ color: 'var(--color-text-muted)' }}
+                                >
+                                    Industry of the Month
+                                </span>
                             </div>
-                            
-                            {/* 3-5 bullet summary */}
-                            <ul className="space-y-2 mt-4">
-                                <li className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
-                                    <span style={{ color: 'var(--color-accent-primary)' }}>•</span>
-                                    <span><strong>Drivers:</strong> {featuredIndustry.growth_signal}</span>
-                                </li>
-                                <li className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
-                                    <span style={{ color: 'var(--color-accent-primary)' }}>•</span>
-                                    <span><strong>Risks:</strong> Market volatility and sector-specific challenges</span>
-                                </li>
-                                <li className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
-                                    <span style={{ color: 'var(--color-accent-primary)' }}>•</span>
-                                    <span><strong>Valuation Context:</strong> {featuredIndustry.valuation_context}</span>
-                                </li>
-                                <li className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
-                                    <span style={{ color: 'var(--color-accent-primary)' }}>•</span>
-                                    <span><strong>Activity:</strong> {featuredIndustry.flows_activity}</span>
-                                </li>
-                            </ul>
-                            
-                            <button
-                                onClick={() => handleSelectIndustry(featuredIndustry.name)}
-                                className="mt-4 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            <div 
+                                className="p-6 rounded-xl cursor-pointer transition-all duration-300"
                                 style={{
-                                    backgroundColor: 'var(--color-accent-primary)',
-                                    color: '#FFFFFF',
+                                    backgroundColor: 'var(--color-bg-secondary)',
+                                    border: '2px solid var(--color-accent-primary)',
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.opacity = '0.9';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(46, 124, 246, 0.2)';
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.opacity = '1';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = 'none';
                                 }}
+                                onClick={() => handleSelectIndustry(featuredIndustry.name)}
                             >
-                                Explore {featuredIndustry.name} →
-                            </button>
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="flex-1">
+                                        <h2 
+                                            className="text-2xl font-bold mb-3"
+                                            style={{ 
+                                                fontFamily: 'var(--font-display)',
+                                                color: 'var(--color-text-primary)' 
+                                            }}
+                                        >
+                                            {featuredIndustry.name}
+                                        </h2>
+                                        <StatusPill status={featuredIndustry.status} />
+                                    </div>
+                                </div>
+                                
+                                <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+                                    {featuredIndustry.growth_signal}
+                                </p>
+                                
+                                <div className="flex items-center gap-2 pt-4 border-t" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Examples:</span>
+                                    {featuredIndustry.representative_tickers.slice(0, 4).map(ticker => (
+                                        <span
+                                            key={ticker}
+                                            className="px-2 py-1 rounded text-xs font-mono font-semibold"
+                                            style={{
+                                                backgroundColor: 'var(--color-bg-surface)',
+                                                color: 'var(--color-text-primary)'
+                                            }}
+                                        >
+                                            {ticker}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     )}
                     
-                    {/* Industry Cards Grid */}
+                    {/* Trending Industries - Smaller Cards */}
                     <div className="mb-4">
                         <h3 
                             className="text-lg font-semibold mb-4"
                             style={{ color: 'var(--color-text-primary)' }}
                         >
-                            All Industries
+                            Trending Industries
                         </h3>
                     </div>
                     
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {industries.map(industry => (
-                            <IndustryCardComponent
+                    <div className="grid md:grid-cols-3 gap-4">
+                        {industries.filter(ind => ind.name !== featuredIndustry?.name).slice(0, 3).map(industry => (
+                            <div
                                 key={industry.name}
-                                industry={industry}
-                                onSelect={handleSelectIndustry}
-                            />
+                                className="rounded-xl p-4 cursor-pointer transition-all duration-300"
+                                style={{
+                                    backgroundColor: 'var(--color-bg-tertiary)',
+                                    border: '1px solid var(--color-border-subtle)',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--color-border-emphasis)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                }}
+                                onClick={() => handleSelectIndustry(industry.name)}
+                            >
+                                <div className="flex items-start justify-between mb-3">
+                                    <h3 
+                                        className="text-base font-bold flex-1"
+                                        style={{ color: 'var(--color-text-primary)' }}
+                                    >
+                                        {industry.name}
+                                    </h3>
+                                    <StatusPill status={industry.status} />
+                                </div>
+                                
+                                <p className="text-xs mb-3 line-clamp-2" style={{ color: 'var(--color-text-secondary)' }}>
+                                    {industry.growth_signal}
+                                </p>
+                                
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    {industry.representative_tickers.slice(0, 3).map(ticker => (
+                                        <span
+                                            key={ticker}
+                                            className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold"
+                                            style={{
+                                                backgroundColor: 'var(--color-bg-surface)',
+                                                color: 'var(--color-text-primary)'
+                                            }}
+                                        >
+                                            {ticker}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { CariaLogoIcon, LogoutIcon, DashboardIcon, CommunityIcon, ThesisIcon } from './Icons';
+import { NavLink, useSearchParams, useLocation } from 'react-router-dom';
+import { CariaLogoIcon, LogoutIcon, PortfolioIcon, ChartIcon, ThesisIcon } from './Icons';
 import { API_BASE_URL, getToken, saveToken, fetchWithAuth } from '../services/apiService';
 
 interface SidebarProps {
@@ -276,11 +276,13 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onClose }) => {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     const [showProfile, setShowProfile] = useState(false);
+    const [searchParams] = useSearchParams();
+    const location = useLocation();
 
     const navItems = [
-        { to: '/dashboard', icon: DashboardIcon, label: 'Terminal', description: 'Main dashboard' },
-        { to: '/community', icon: CommunityIcon, label: 'Community', description: 'Discussions & ideas' },
-        { to: '/resources', icon: ThesisIcon, label: 'Research', description: 'Learning resources' },
+        { to: '/dashboard?tab=portfolio', icon: PortfolioIcon, label: 'Portfolio', description: 'Portfolio management' },
+        { to: '/dashboard?tab=analysis', icon: ChartIcon, label: 'Analysis', description: 'Stock analysis & valuation' },
+        { to: '/dashboard?tab=research', icon: ThesisIcon, label: 'Research', description: 'Research & resources' },
     ];
 
     const getLinkClass = ({ isActive }: { isActive: boolean }) => `
@@ -290,6 +292,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
             : 'text-text-muted hover:bg-bg-surface hover:text-text-primary'
         }
     `;
+
+    // Check if a nav item is active based on the tab parameter
+    const isNavItemActive = (to: string) => {
+        const currentPath = location.pathname;
+        const currentTab = searchParams.get('tab');
+        const itemTab = new URLSearchParams(to.split('?')[1] || '').get('tab');
+        
+        if (currentPath === '/dashboard' && itemTab) {
+            return currentTab === itemTab || (!currentTab && itemTab === 'portfolio');
+        }
+        return false;
+    };
 
     return (
         <>
@@ -304,7 +318,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
                 {/* Logo Section */}
                 <div className="flex flex-col items-center py-5 border-b" style={{ borderColor: 'var(--color-border-subtle)' }}>
                     <NavLink 
-                        to="/dashboard" 
+                        to="/dashboard?tab=portfolio" 
                         aria-label="Caria Home"
                         className="group relative"
                     >
@@ -326,14 +340,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
                 {/* Main Navigation */}
                 <nav className="flex-1 py-4">
                     <ul className="flex flex-col items-center gap-2 px-3">
-                        {navItems.map((item) => (
-                            <li key={item.to} className="w-full">
-                                <NavLink
-                                    to={item.to}
-                                    className={getLinkClass}
-                                    title={item.label}
-                                >
-                                    {({ isActive }) => (
+                        {navItems.map((item) => {
+                            const isActive = isNavItemActive(item.to);
+                            return (
+                                <li key={item.to} className="w-full">
+                                    <NavLink
+                                        to={item.to}
+                                        className={getLinkClass({ isActive })}
+                                        title={item.label}
+                                    >
                                         <>
                                             {/* Active Indicator */}
                                             {isActive && (
@@ -344,10 +359,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
                                             )}
                                             <item.icon className="w-5 h-5" />
                                         </>
-                                    )}
-                                </NavLink>
-                            </li>
-                        ))}
+                                    </NavLink>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </nav>
 
@@ -406,19 +421,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
                 }}
             >
                 <div className="flex justify-around items-center h-16 px-4">
-                    {navItems.map((item) => (
-                        <NavLink
-                            key={item.to}
-                            to={item.to}
-                            className={({ isActive }) => `
-                                flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition-colors
-                                ${isActive ? 'text-accent-primary' : 'text-text-muted'}
-                            `}
-                        >
-                            <item.icon className="w-5 h-5" />
-                            <span className="text-[10px] font-medium">{item.label}</span>
-                        </NavLink>
-                    ))}
+                    {navItems.map((item) => {
+                        const isActive = isNavItemActive(item.to);
+                        return (
+                            <NavLink
+                                key={item.to}
+                                to={item.to}
+                                className={`
+                                    flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition-colors
+                                    ${isActive ? 'text-accent-primary' : 'text-text-muted'}
+                                `}
+                            >
+                                <item.icon className="w-5 h-5" />
+                                <span className="text-[10px] font-medium">{item.label}</span>
+                            </NavLink>
+                        );
+                    })}
                     <button
                         onClick={onLogout}
                         className="flex flex-col items-center justify-center gap-1 px-4 py-2 text-text-muted"

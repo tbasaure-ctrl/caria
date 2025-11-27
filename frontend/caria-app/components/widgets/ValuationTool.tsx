@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Plot from "react-plotly.js";
 import { WidgetCard } from "./WidgetCard";
 import { fetchWithAuth, API_BASE_URL } from "../../services/apiService";
+import { ProjectionValuation } from "./ProjectionValuation";
 
 // Types
 interface DcfAssumptions {
@@ -82,6 +83,16 @@ interface MonteCarloResult {
     };
     plotly_data: any;
     histogram: any;
+    visualization_data?: {
+        ticker: string;
+        raw_values: number[];
+        metrics: {
+            p10: number;
+            p50: number;
+            p90: number;
+        };
+        visual_range: [number, number];
+    };
     simulation_params: {
         initial_value: number;
         mu: number;
@@ -396,47 +407,13 @@ export const ValuationTool: React.FC = () => {
                 {/* Valuation Results */}
                 {valuation && (
                     <div className="space-y-6">
+                        {/* Projection Valuation */}
+                        <div className="mb-6">
+                            <ProjectionValuation />
+                        </div>
+
                         {/* Valuation Methods Grid */}
                         <div className="grid md:grid-cols-2 gap-4">
-                            {/* Reverse DCF */}
-                            {valuation.reverse_dcf && (
-                                <div 
-                                    className="rounded-xl p-5"
-                                    style={{
-                                        backgroundColor: 'rgba(139, 92, 246, 0.08)',
-                                        border: '1px solid rgba(139, 92, 246, 0.25)',
-                                    }}
-                                >
-                                    <div className="flex items-center justify-between mb-3">
-                                        <span 
-                                            className="text-[10px] font-semibold tracking-widest uppercase"
-                                            style={{ color: '#8B5CF6' }}
-                                        >
-                                            Reverse DCF
-                                        </span>
-                                        <span 
-                                            className="text-[10px]"
-                                            style={{ color: 'rgba(139, 92, 246, 0.7)' }}
-                                        >
-                                            Implied Growth
-                                        </span>
-                                    </div>
-                                    <div 
-                                        className="text-3xl font-bold font-mono mb-2"
-                                        style={{ color: '#8B5CF6' }}
-                                    >
-                                        {valuation.reverse_dcf.implied_growth_rate != null 
-                                            ? `${(valuation.reverse_dcf.implied_growth_rate * 100).toFixed(1)}%`
-                                            : '—'}
-                                    </div>
-                                    <p 
-                                        className="text-xs leading-relaxed"
-                                        style={{ color: 'rgba(139, 92, 246, 0.8)' }}
-                                    >
-                                        {valuation.reverse_dcf.explanation || 'No explanation available'}
-                                    </p>
-                                </div>
-                            )}
 
                             {/* Multiples Valuation */}
                             {valuation.multiples_valuation && (
@@ -669,6 +646,122 @@ export const ValuationTool: React.FC = () => {
                                         const adjustedMin = xAxisMin;
                                         const adjustedMax = xAxisMax;
                                         
+                                        // Use visualization_data if available, otherwise fallback to old format
+                                        const vizData = mcResult.visualization_data;
+                                        const values = vizData?.raw_values || mcResult.final_values;
+                                        const metrics = vizData?.metrics || {
+                                            p10: mcResult.percentiles.p10,
+                                            p50: mcResult.percentiles.p50,
+                                            p90: mcResult.percentiles.p90
+                                        };
+                                        const visualRange = vizData?.visual_range || [adjustedMin, adjustedMax];
+                                        const tickerName = vizData?.ticker || ticker;
+
+                                        // 1. EL HISTOGRAMA (Amarillo con bordes negros)
+                                        const traceHistogram = {
+                                            x: values,
+                                            type: 'histogram',
+                                            histnorm: 'count',
+                                            marker: {
+                                                color: '#F4D03F',      // El amarillo de la imagen
+                                                line: {
+                                                    color: '#333333',  // Borde negro fino
+                                                    width: 1
+                                                }
+                                            },
+                                            opacity: 0.9,
+                                            showlegend: false,
+                                            nbinsx: 40 // Ajusta el ancho de las barras
+                                        };
+
+                                        // 2. TRUCO PARA LA LEYENDA (Dummy Traces)
+                                        const legendP10 = {
+                                            x: [null], 
+                                            y: [null],
+                                            mode: 'lines',
+                                            name: `10th %ile: $${metrics.p10.toFixed(2)}`,
+                                            line: { color: '#E74C3C', width: 3, dash: 'dash' } // Rojo discontinuo
+                                        };
+
+                                        const legendP50 = {
+                                            x: [null], 
+                                            y: [null],
+                                            mode: 'lines',
+                                            name: `Median: $${metrics.p50.toFixed(2)}`,
+                                            line: { color: '#27AE60', width: 3, dash: 'dash' } // Verde discontinuo
+                                        };
+
+                                        const legendP90 = {
+                                            x: [null], 
+                                            y: [null],
+                                            mode: 'lines',
+                                            name: `90th %ile: $${metrics.p90.toFixed(2)}`,
+                                            line: { color: '#2980B9', width: 3, dash: 'dash' } // Azul discontinuo
+                                        };
+
+                                        // 3. EL LAYOUT (Líneas verticales reales y estilos)
+                                        const horizonYears = mcResult.simulation_params?.years || 1;
+                                        const horizonText = horizonYears === 1 ? '12-month horizon' : `${horizonYears}-year horizon`;
+                                        const layout = {
+                                            title: {
+                                                text: `${tickerName} Macro Monte Carlo Simulation (${horizonText})`,
+                                                font: { size: 18, color: '#333' }
+                                            },
+                                            xaxis: {
+                                                title: 'Valuation ($/share)',
+                                                range: visualRange,
+                                                gridcolor: '#eee'
+                                            },
+                                            yaxis: {
+                                                title: '',
+                                                gridcolor: '#eee',
+                                                zeroline: false
+                                            },
+                                            plot_bgcolor: 'white',
+                                            paper_bgcolor: 'white',
+                                            
+                                            // Aquí dibujamos las líneas verticales reales
+                                            shapes: [
+                                                { // Línea P10 (Roja)
+                                                    type: 'line',
+                                                    x0: metrics.p10, 
+                                                    x1: metrics.p10,
+                                                    y0: 0, 
+                                                    y1: 1, 
+                                                    yref: 'paper',
+                                                    line: { color: '#E74C3C', width: 3, dash: 'dash' }
+                                                },
+                                                { // Línea Mediana (Verde)
+                                                    type: 'line',
+                                                    x0: metrics.p50, 
+                                                    x1: metrics.p50,
+                                                    y0: 0, 
+                                                    y1: 1, 
+                                                    yref: 'paper',
+                                                    line: { color: '#27AE60', width: 3, dash: 'dash' }
+                                                },
+                                                { // Línea P90 (Azul)
+                                                    type: 'line',
+                                                    x0: metrics.p90, 
+                                                    x1: metrics.p90,
+                                                    y0: 0, 
+                                                    y1: 1, 
+                                                    yref: 'paper',
+                                                    line: { color: '#2980B9', width: 3, dash: 'dash' }
+                                                }
+                                            ],
+                                            legend: {
+                                                x: 1,
+                                                xanchor: 'right',
+                                                y: 1,
+                                                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                                                bordercolor: '#ccc',
+                                                borderwidth: 1
+                                            },
+                                            bargap: 0.05,
+                                            height: 400
+                                        };
+
                                         return (
                                             <div 
                                                 className="rounded-lg overflow-hidden"
@@ -678,142 +771,10 @@ export const ValuationTool: React.FC = () => {
                                                 }}
                                             >
                                                 <Plot
-                                                    data={[
-                                                        {
-                                                            x: mcResult.final_values,
-                                                            type: 'histogram',
-                                                            nbinsx: 50,
-                                                            marker: {
-                                                                color: 'rgba(100, 150, 200, 0.7)',
-                                                                line: { color: 'rgba(0, 0, 0, 0.3)', width: 1 }
-                                                            },
-                                                            name: 'Price Distribution',
-                                                        },
-                                                        // P10 line
-                                                        {
-                                                            x: [mcResult.percentiles.p10, mcResult.percentiles.p10],
-                                                            y: [0, 1],
-                                                            type: 'scatter',
-                                                            mode: 'lines',
-                                                            line: { color: 'var(--color-negative)', width: 2, dash: 'dash' },
-                                                            name: 'P10 (Bear)',
-                                                            yaxis: 'y2',
-                                                            showlegend: false,
-                                                        },
-                                                        // P50 line
-                                                        {
-                                                            x: [mcResult.percentiles.p50, mcResult.percentiles.p50],
-                                                            y: [0, 1],
-                                                            type: 'scatter',
-                                                            mode: 'lines',
-                                                            line: { color: 'var(--color-text-primary)', width: 3 },
-                                                            name: 'P50 (Median)',
-                                                            yaxis: 'y2',
-                                                            showlegend: false,
-                                                        },
-                                                        // P90 line
-                                                        {
-                                                            x: [mcResult.percentiles.p90, mcResult.percentiles.p90],
-                                                            y: [0, 1],
-                                                            type: 'scatter',
-                                                            mode: 'lines',
-                                                            line: { color: 'var(--color-positive)', width: 2, dash: 'dash' },
-                                                            name: 'P90 (Bull)',
-                                                            yaxis: 'y2',
-                                                            showlegend: false,
-                                                        },
-                                                    ] as any}
-                                                    layout={{
-                                                        ...mcLayout,
-                                                        title: { text: "Price Distribution (Histogram)", font: { color: "#F2F4F7", size: 14 } },
-                                                        xaxis: { 
-                                                            ...mcLayout.xaxis,
-                                                            title: "Final Price ($)",
-                                                            range: [adjustedMin, adjustedMax],
-                                                        },
-                                                        yaxis: {
-                                                            title: "Frequency",
-                                                            gridcolor: "#1E2733",
-                                                            color: "#6B7A8F",
-                                                            tickfont: { size: 11 }
-                                                        },
-                                                        yaxis2: {
-                                                            overlaying: 'y',
-                                                            range: [0, 1],
-                                                            showgrid: false,
-                                                            showticklabels: false,
-                                                        },
-                                                        shapes: [
-                                                            {
-                                                                type: 'line',
-                                                                xref: 'x',
-                                                                yref: 'paper',
-                                                                x0: mcResult.percentiles.p10,
-                                                                y0: 0,
-                                                                x1: mcResult.percentiles.p10,
-                                                                y1: 1,
-                                                                line: { color: 'var(--color-negative)', width: 2, dash: 'dash' }
-                                                            },
-                                                            {
-                                                                type: 'line',
-                                                                xref: 'x',
-                                                                yref: 'paper',
-                                                                x0: mcResult.percentiles.p50,
-                                                                y0: 0,
-                                                                x1: mcResult.percentiles.p50,
-                                                                y1: 1,
-                                                                line: { color: 'var(--color-text-primary)', width: 3 }
-                                                            },
-                                                            {
-                                                                type: 'line',
-                                                                xref: 'x',
-                                                                yref: 'paper',
-                                                                x0: mcResult.percentiles.p90,
-                                                                y0: 0,
-                                                                x1: mcResult.percentiles.p90,
-                                                                y1: 1,
-                                                                line: { color: 'var(--color-positive)', width: 2, dash: 'dash' }
-                                                            },
-                                                        ],
-                                                        annotations: [
-                                                            {
-                                                                x: mcResult.percentiles.p10,
-                                                                y: 0.95,
-                                                                yref: 'paper',
-                                                                text: 'P10',
-                                                                showarrow: false,
-                                                                font: { color: 'var(--color-negative)', size: 12 },
-                                                                bgcolor: 'rgba(0,0,0,0.5)',
-                                                                bordercolor: 'var(--color-negative)',
-                                                                borderwidth: 1,
-                                                            },
-                                                            {
-                                                                x: mcResult.percentiles.p50,
-                                                                y: 0.95,
-                                                                yref: 'paper',
-                                                                text: 'P50',
-                                                                showarrow: false,
-                                                                font: { color: 'var(--color-text-primary)', size: 12, bold: true },
-                                                                bgcolor: 'rgba(0,0,0,0.5)',
-                                                                bordercolor: 'var(--color-text-primary)',
-                                                                borderwidth: 1,
-                                                            },
-                                                            {
-                                                                x: mcResult.percentiles.p90,
-                                                                y: 0.95,
-                                                                yref: 'paper',
-                                                                text: 'P90',
-                                                                showarrow: false,
-                                                                font: { color: 'var(--color-positive)', size: 12 },
-                                                                bgcolor: 'rgba(0,0,0,0.5)',
-                                                                bordercolor: 'var(--color-positive)',
-                                                                borderwidth: 1,
-                                                            },
-                                                        ],
-                                                        height: 320,
-                                                    }}
+                                                    data={[traceHistogram, legendP10, legendP50, legendP90] as any}
+                                                    layout={layout}
                                                     config={{ displayModeBar: false, responsive: true }}
-                                                    style={{ width: "100%", height: "320px" }}
+                                                    style={{ width: "100%", height: "400px" }}
                                                     useResizeHandler
                                                 />
                                             </div>

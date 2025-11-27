@@ -8,6 +8,7 @@ from ..services.comprehensive_valuation_service import get_comprehensive_valuati
 from ..services.fundamentals_cache_service import get_fundamentals_cache_service
 from ..services.enhanced_valuation_service import EnhancedValuationService
 from ..services.enhanced_monte_carlo_service import EnhancedMonteCarloService
+from ..services.projection_valuation_service import ProjectionValuationService
 from ..dependencies import get_current_user
 
 router = APIRouter(prefix="/api/valuation", tags=["valuation"])
@@ -415,4 +416,45 @@ def _generate_enhanced_summary(intrinsic_result: dict, monte_carlo_result: dict,
             )
     
     return " ".join(summary_parts)
+
+
+@router.get("/projection/{ticker}")
+async def get_projection_valuation(
+    ticker: str,
+    macro_risk: float = 0.0,
+    industry_risk: float = 0.0
+):
+    """
+    Get projection-based valuation analysis.
+    
+    This endpoint runs a 5-year projection model (2024-2029) that:
+    - Projects revenue, margins, FCF based on assumptions
+    - Applies risk adjustments for macro and industry factors
+    - Calculates price targets based on exit multiples
+    
+    Args:
+        ticker: Stock ticker symbol
+        macro_risk: Macro risk factor (0-1), defaults to 0
+        industry_risk: Industry risk factor (0-1), defaults to 0
+    
+    Returns:
+        JSON with current price, 2029 target price, upside, and full projection data
+    """
+    try:
+        ticker = ticker.upper()
+        service = ProjectionValuationService()
+        result = await asyncio.to_thread(
+            service.get_valuation,
+            ticker,
+            macro_risk,
+            industry_risk
+        )
+        LOGGER.info(f"✅ Projection valuation completed for {ticker}")
+        return result
+    except ValueError as e:
+        LOGGER.warning(f"Projection valuation request error for {ticker}: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        LOGGER.error(f"Projection valuation error for {ticker}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to generate projection valuation: {str(e)}")
 

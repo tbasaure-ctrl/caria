@@ -20,164 +20,103 @@ export const Header: React.FC<HeaderProps> = ({ onLogin, onRegister }) => {
                     borderColor: 'var(--color-border-subtle)',
                 }}
             >
-                {/* Top Ticker Bar - Bloomberg Style */}
-                <div 
-                    className="hidden md:block overflow-hidden py-1.5"
-                    style={{ 
-                        backgroundColor: 'var(--color-bg-secondary)',
-                        borderBottom: '1px solid var(--color-border-subtle)'
-                    }}
-                >
-                    <div className="flex items-center gap-6 text-xs font-mono animate-ticker whitespace-nowrap">
-                        <span className="flex items-center gap-2">
-                            <span className="text-text-muted">S&P 500</span>
-                            <span className="text-text-primary font-medium">5,234.18</span>
-                            <span className="text-positive">+0.82%</span>
-                        </span>
-                        <span className="text-border">|</span>
-                        <span className="flex items-center gap-2">
-                            <span className="text-text-muted">NASDAQ</span>
-                            <span className="text-text-primary font-medium">16,742.39</span>
-                            <span className="text-positive">+1.14%</span>
-                        </span>
-                        <span className="text-border">|</span>
-                        <span className="flex items-center gap-2">
-                            <span className="text-text-muted">DOW</span>
-                            <span className="text-text-primary font-medium">39,512.84</span>
-                            <span className="text-negative">-0.21%</span>
-                        </span>
-                        <span className="text-border">|</span>
-                        <span className="flex items-center gap-2">
-                            <span className="text-text-muted">GOLD</span>
-                            <span className="text-text-primary font-medium">2,341.20</span>
-                            <span className="text-positive">+0.45%</span>
-                        </span>
-                        <span className="text-border">|</span>
-                        <span className="flex items-center gap-2">
-                            <span className="text-text-muted">BTC</span>
-                            <span className="text-text-primary font-medium">67,824.50</span>
-                            <span className="text-positive">+2.31%</span>
-                        </span>
-                        <span className="text-border">|</span>
-                        <span className="flex items-center gap-2">
-                            <span className="text-text-muted">IPSA</span>
-                            <span className="text-text-primary font-medium">6,842.15</span>
-                            <span className="text-positive">+0.67%</span>
-                        </span>
-                        {/* Repeat for seamless loop */}
-                        <span className="text-border">|</span>
-                        <span className="flex items-center gap-2">
-                            <span className="text-text-muted">S&P 500</span>
-                            <span className="text-text-primary font-medium">5,234.18</span>
-                            <span className="text-positive">+0.82%</span>
-                        </span>
-                        <span className="text-border">|</span>
-                        <span className="flex items-center gap-2">
-                            <span className="text-text-muted">NASDAQ</span>
-                            <span className="text-text-primary font-medium">16,742.39</span>
-                            <span className="text-positive">+1.14%</span>
-                        </span>
-                    </div>
-                </div>
-
                 {/* Main Header */}
                 <div className="container mx-auto px-6 lg:px-10">
-                    <div className="flex justify-between items-center h-16">
-                        {/* Logo */}
+                    <div className="flex items-center justify-between h-20 relative">
+                        {/* Auth Buttons - Left Aligned */}
                         <div className="flex items-center gap-3">
-                            <CariaLogoIcon 
-                                className="w-8 h-8" 
-                                style={{ color: 'var(--color-accent-primary)' }}
-                            />
-                            <div className="flex flex-col">
+                            <button
+                                onClick={onLogin}
+                                className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                                style={{
+                                    color: 'var(--color-text-secondary)',
+                                    backgroundColor: 'transparent',
+                                    border: '1px solid var(--color-border-subtle)'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.color = 'var(--color-text-primary)';
+                                    e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.color = 'var(--color-text-secondary)';
+                                    e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
+                                }}
+                            >
+                                Sign In
+                            </button>
+                            <button
+                                onClick={onRegister}
+                                className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
+                                style={{
+                                    backgroundColor: 'var(--color-accent-primary)',
+                                    color: '#FFFFFF',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.opacity = '0.9';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.opacity = '1';
+                                }}
+                            >
+                                Get Started
+                            </button>
+                        </div>
+
+                        {/* Centered Content */}
+                        <div className="flex-1 flex flex-col items-center justify-center absolute left-0 right-0">
+                            {/* Logo and Title */}
+                            <div className="flex items-center gap-3 mb-4">
+                                <CariaLogoIcon 
+                                    className="w-8 h-8" 
+                                    style={{ color: 'var(--color-accent-primary)' }}
+                                />
                                 <h1 
-                                    className="text-xl font-bold tracking-tight leading-none"
+                                    className="text-lg font-bold tracking-tight leading-tight text-center max-w-4xl"
                                     style={{
                                         fontFamily: 'var(--font-display)',
                                         color: 'var(--color-text-primary)',
                                         letterSpacing: '-0.02em'
                                     }}
                                 >
-                                    CARIA
+                                    CARIA: We do not intend to make financial advisement, we want to join your journey to financial freedom.
                                 </h1>
-                                <span 
-                                    className="text-[9px] font-medium tracking-[0.2em] uppercase"
-                                    style={{ color: 'var(--color-text-muted)' }}
-                                >
-                                    Financial Intelligence
-                                </span>
                             </div>
+
+                            {/* Navigation - Centered and Spaced */}
+                            <nav 
+                                className="flex items-center justify-center gap-12"
+                                style={{
+                                    fontFamily: 'var(--font-body)',
+                                    fontSize: '14px',
+                                    fontWeight: 500
+                                }}
+                            >
+                                <a 
+                                    href="#portfolio"
+                                    className="transition-colors duration-200 hover:text-text-primary px-4 py-2"
+                                    style={{ color: 'var(--color-text-secondary)' }}
+                                >
+                                    Portfolio
+                                </a>
+                                <a 
+                                    href="#analysis"
+                                    className="transition-colors duration-200 hover:text-text-primary px-4 py-2"
+                                    style={{ color: 'var(--color-text-secondary)' }}
+                                >
+                                    Analysis
+                                </a>
+                                <a 
+                                    href="#research"
+                                    className="transition-colors duration-200 hover:text-text-primary px-4 py-2"
+                                    style={{ color: 'var(--color-text-secondary)' }}
+                                >
+                                    Research
+                                </a>
+                            </nav>
                         </div>
 
-                        {/* Navigation */}
-                        <nav 
-                            className="hidden md:flex items-center gap-8"
-                            style={{
-                                fontFamily: 'var(--font-body)',
-                                fontSize: '14px',
-                                fontWeight: 500
-                            }}
-                        >
-                            <button
-                                onClick={() => setShowFeaturesModal(true)}
-                                className="transition-colors duration-200 hover:text-text-primary"
-                                style={{ color: 'var(--color-text-secondary)' }}
-                            >
-                                Platform
-                            </button>
-                            <a 
-                                href="#research"
-                                className="transition-colors duration-200 hover:text-text-primary"
-                                style={{ color: 'var(--color-text-secondary)' }}
-                            >
-                                Research
-                            </a>
-                            <a 
-                                href="#pricing"
-                                className="transition-colors duration-200 hover:text-text-primary"
-                                style={{ color: 'var(--color-text-secondary)' }}
-                            >
-                                Pricing
-                            </a>
-                            <div className="flex items-center gap-3 ml-4 pl-4 border-l" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                                <button
-                                    onClick={onLogin}
-                                    className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-                                    style={{
-                                        color: 'var(--color-text-secondary)',
-                                        backgroundColor: 'transparent',
-                                        border: '1px solid var(--color-border-subtle)'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.color = 'var(--color-text-primary)';
-                                        e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.color = 'var(--color-text-secondary)';
-                                        e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
-                                    }}
-                                >
-                                    Sign In
-                                </button>
-                                <button
-                                    onClick={onRegister}
-                                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
-                                    style={{
-                                        backgroundColor: 'var(--color-accent-primary)',
-                                        color: '#FFFFFF',
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.opacity = '0.9';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.opacity = '1';
-                                    }}
-                                >
-                                    Get Started
-                                </button>
-                            </div>
-                        </nav>
-
+                        {/* Spacer for right alignment */}
+                        <div className="w-40"></div>
                     </div>
                 </div>
             </header>

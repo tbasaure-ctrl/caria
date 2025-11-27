@@ -343,7 +343,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* ANALYSIS TAB - Clean Uniform Layout */}
                 {activeTab === 'analysis' && (
-<<<<<<< HEAD
                     <div className="space-y-6 animate-fade-in">
                         {/* Two Column Layout for Main Tools */}
                         <div className="grid lg:grid-cols-2 gap-6">
@@ -371,70 +370,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                     >
                                         5-year projection model with risk adjustments
                                     </p>
-=======
-                    <div className="space-y-8 animate-fade-in">
-                        {/* Valuation Analysis & Monte Carlo Section - Side by Side */}
-                        <div>
-                            <div className="grid lg:grid-cols-2 gap-6">
-                                {/* Valuation Analysis */}
-                                <div>
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div 
-                                            className="w-1 h-6 rounded-full"
-                                            style={{ backgroundColor: 'var(--color-accent-primary)' }}
-                                        />
-                                        <div>
-                                            <h2 
-                                                className="text-xl font-semibold"
-                                                style={{ 
-                                                    fontFamily: 'var(--font-display)',
-                                                    color: 'var(--color-text-primary)' 
-                                                }}
-                                            >
-                                                Valuation Analysis
-                                            </h2>
-                                            <p 
-                                                className="text-sm mt-0.5"
-                                                style={{ color: 'var(--color-text-muted)' }}
-                                            >
-                                                5-year projection model with risk adjustments
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <ProjectionValuation />
-                                </div>
-
-                                {/* Monte Carlo Forecast Simulation */}
-                                <div>
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div 
-                                            className="w-1 h-6 rounded-full"
-                                            style={{ backgroundColor: 'var(--color-positive)' }}
-                                        />
-                                        <div>
-                                            <h2 
-                                                className="text-xl font-semibold"
-                                                style={{ 
-                                                    fontFamily: 'var(--font-display)',
-                                                    color: 'var(--color-text-primary)' 
-                                                }}
-                                            >
-                                                Monte Carlo Forecast Simulation
-                                            </h2>
-                                            <p 
-                                                className="text-sm mt-0.5"
-                                                style={{ color: 'var(--color-text-muted)' }}
-                                            >
-                                                Quick multiples valuation and 2-year Monte Carlo simulations
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <ValuationTool />
->>>>>>> f3ceca1c75e663723be8bbc281d5858a05d81c49
                                 </div>
                                 <ProjectionValuation />
                             </div>
-<<<<<<< HEAD
 
                             {/* Right Column - Monte Carlo */}
                             <div 
@@ -474,50 +412,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                 <AnalysisCTA
                                     onStartAnalysis={onStartAnalysis}
                                     onEnterArena={() => setShowArena(true)}
-=======
-                        </div>
-
-                        {/* Chat and Arena Section */}
-                        <div className="pt-4">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div 
-                                    className="w-1 h-6 rounded-full"
-                                    style={{ backgroundColor: 'var(--color-accent-primary)' }}
-                                />
-                                <h2 
-                                    className="text-xl font-semibold"
-                                    style={{ 
-                                        fontFamily: 'var(--font-display)',
-                                        color: 'var(--color-text-primary)' 
-                                    }}
-                                >
-                                    Investment Thesis
-                                </h2>
-                            </div>
-                            
-                            <div className="grid lg:grid-cols-2 gap-6">
-                                <ProtectedWidget 
-                                    featureName="Investment Thesis Analysis"
-                                    description="Challenge your investment ideas against Caria's AI analysis. Uncover biases and strengthen your conviction."
-                                >
-                                    <AnalysisCTA
-                                        onStartAnalysis={onStartAnalysis}
-                                        onEnterArena={() => setShowArena(true)}
-                                    />
-                                </ProtectedWidget>
-                                <ProtectedWidget featureName="Valuation Workshop">
-                                    <ValuationWorkshop />
-                                </ProtectedWidget>
-                            </div>
-                        </div>
-
-                        {/* Stock Screeners - Bottom Section */}
-                        <div className="pt-4">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div 
-                                    className="w-1 h-6 rounded-full"
-                                    style={{ backgroundColor: 'var(--color-warning)' }}
->>>>>>> f3ceca1c75e663723be8bbc281d5858a05d81c49
                                 />
                             </ProtectedWidget>
                             <ProtectedWidget featureName="Valuation Workshop">

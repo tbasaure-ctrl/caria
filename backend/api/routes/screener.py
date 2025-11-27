@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from api.dependencies import get_current_user
+from api.services.market_scanner import MarketScannerService
 from api.services.scoring_service import ScoringService
 from api.services.under_the_radar_screener_service import UnderTheRadarScreenerService
 from caria.models.auth import UserInDB
@@ -16,6 +17,7 @@ LOGGER = logging.getLogger("caria.api.screener")
 router = APIRouter(prefix="/api/screener", tags=["analysis"])
 _screener_scoring = ScoringService()
 _under_the_radar_service = UnderTheRadarScreenerService()
+_market_scanner_service = MarketScannerService()
 
 
 class CScoreScreenRequest(BaseModel):
@@ -228,5 +230,65 @@ def get_under_the_radar_screener(
         raise HTTPException(
             status_code=500,
             detail=f"Error running screener: {str(e)}"
+        )
+
+
+# ---------------------------------------------------------------------
+# Professional Market Scanner (Event-Driven Social Screener)
+# ---------------------------------------------------------------------
+
+class MarketSignal(BaseModel):
+    ticker: str
+    price: float
+    change: float
+    rvol: float
+    market_cap: float | None = None
+    signal_strength: str
+    tag: str
+    desc: str
+    social_spike: dict | None = None
+
+
+class MarketScannerResponse(BaseModel):
+    momentum_signals: List[MarketSignal]
+    accumulation_signals: List[MarketSignal]
+
+
+@router.get("/market-opportunities", response_model=MarketScannerResponse)
+def get_market_opportunities(
+    current_user: UserInDB = Depends(get_current_user),
+) -> MarketScannerResponse:
+    """
+    Professional Market Scanner: Event-Driven Social Screener
+    
+    Invierte el flujo tradicional:
+    1. Busca anomalías de precio primero (gainers, most active)
+    2. Filtra mega-caps (>50B-100B)
+    3. Valida con ruido social después (spike ratio)
+    
+    Devuelve dos tipos de señales:
+    - momentum_signals: Precio subiendo fuerte (>5%) con volumen alto (>1.2x RVol)
+    - accumulation_signals: Volumen muy alto (>1.8x RVol) pero precio comprimido (-1.5% a +2.5%)
+    """
+    try:
+        results = _market_scanner_service.get_professional_opportunities()
+        
+        # Convertir a modelos Pydantic
+        momentum_signals = [
+            MarketSignal(**signal) for signal in results.get("momentum_signals", [])
+        ]
+        accumulation_signals = [
+            MarketSignal(**signal) for signal in results.get("accumulation_signals", [])
+        ]
+        
+        return MarketScannerResponse(
+            momentum_signals=momentum_signals,
+            accumulation_signals=accumulation_signals
+        )
+    except Exception as e:
+        LOGGER.exception(f"Error running market scanner: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error running market scanner: {str(e)}"
         )
 

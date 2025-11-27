@@ -282,7 +282,7 @@ export const AlphaStockPicker: React.FC = () => {
 
     return (
         <WidgetCard 
-            title="ALPHA STOCK PICKER" 
+            title="Companies worth a look" 
             tooltip="Weekly 3-stock selection using Composite Alpha Score (CAS): Momentum, Quality, Valuation & Catalyst factors. Updated every Monday."
         >
             {/* Meta Info */}

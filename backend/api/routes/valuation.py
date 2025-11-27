@@ -9,6 +9,7 @@ from ..services.fundamentals_cache_service import get_fundamentals_cache_service
 from ..services.enhanced_valuation_service import EnhancedValuationService
 from ..services.enhanced_monte_carlo_service import EnhancedMonteCarloService
 from ..services.projection_valuation_service import ProjectionValuationService
+from ..services.growth_based_valuation_service import GrowthBasedValuationService
 from ..dependencies import get_current_user
 
 router = APIRouter(prefix="/api/valuation", tags=["valuation"])
@@ -416,6 +417,94 @@ def _generate_enhanced_summary(intrinsic_result: dict, monte_carlo_result: dict,
             )
     
     return " ".join(summary_parts)
+
+
+@router.get("")
+async def calculate_valuation(
+    ticker: str,
+    macro_risk: float = 0.0,
+    industry_risk: float = 0.0
+):
+    """
+    Calculate valuation analysis based on growth classification.
+    
+    This endpoint uses a sophisticated growth-based classification system:
+    - HYPER_GROWTH: >30% revenue growth (e.g., NVDA, PLTR)
+    - STEADY_GROWTH: 10-30% revenue growth (e.g., AAPL, GOOGL)
+    - MATURE_VALUE: <10% revenue growth (e.g., KO, F)
+    
+    The model:
+    - Automatically classifies companies based on current revenue growth
+    - Projects 5-year forward financials with decay assumptions
+    - Applies risk adjustments for macro and industry factors
+    - Calculates fair value using terminal FCF multiples
+    
+    Args:
+        ticker: Stock ticker symbol (required)
+        macro_risk: Macro risk factor (0-1), defaults to 0.0
+        industry_risk: Industry risk factor (0-1), defaults to 0.0
+    
+    Returns:
+        JSON with:
+        - ticker: Stock symbol
+        - current_price: Current market price
+        - fair_value: Calculated fair value
+        - upside_percentage: Expected upside/downside
+        - profile: Growth profile classification
+        - projections: 5-year forward projections
+        - risk_adjustments: Applied risk penalties
+    
+    Example:
+        GET /api/valuation?ticker=NVDA&macro_risk=0.1&industry_risk=0.0
+    """
+    try:
+        ticker = ticker.upper().strip()
+        if not ticker:
+            raise HTTPException(status_code=400, detail="Ticker is required")
+        
+        # Validate risk parameters
+        try:
+            macro_risk = float(macro_risk)
+            industry_risk = float(industry_risk)
+        except (ValueError, TypeError):
+            raise HTTPException(
+                status_code=400,
+                detail="macro_risk and industry_risk must be numeric values between 0 and 1"
+            )
+        
+        if not (0 <= macro_risk <= 1) or not (0 <= industry_risk <= 1):
+            raise HTTPException(
+                status_code=400,
+                detail="macro_risk and industry_risk must be between 0 and 1"
+            )
+        
+        service = GrowthBasedValuationService()
+        result = await asyncio.to_thread(
+            service.calculate_valuation,
+            ticker,
+            macro_risk,
+            industry_risk
+        )
+        
+        LOGGER.info(
+            f"✅ Growth-based valuation completed for {ticker}: "
+            f"${result['current_price']} → ${result['fair_value']} "
+            f"({result['upside_percentage']:+.1f}%)"
+        )
+        
+        return result
+        
+    except ValueError as e:
+        LOGGER.warning(f"Valuation request error for {ticker}: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        LOGGER.error(f"Valuation error for {ticker}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate valuation: {str(e)}"
+        )
 
 
 @router.get("/projection/{ticker}")

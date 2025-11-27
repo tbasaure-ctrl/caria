@@ -324,32 +324,65 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {/* ANALYSIS TAB - Bloomberg Terminal Pane Style */}
                 {activeTab === 'analysis' && (
                     <div className="space-y-8 animate-fade-in">
-                        {/* Projection Valuation - Top Section */}
+                        {/* Valuation Analysis & Monte Carlo Section - Side by Side */}
                         <div>
-                            <div className="flex items-center gap-3 mb-6">
-                                <div 
-                                    className="w-1 h-6 rounded-full"
-                                    style={{ backgroundColor: 'var(--color-accent-primary)' }}
-                                />
+                            <div className="grid lg:grid-cols-2 gap-6">
+                                {/* Valuation Analysis */}
                                 <div>
-                                    <h2 
-                                        className="text-xl font-semibold"
-                                        style={{ 
-                                            fontFamily: 'var(--font-display)',
-                                            color: 'var(--color-text-primary)' 
-                                        }}
-                                    >
-                                        Valuation Analysis
-                                    </h2>
-                                    <p 
-                                        className="text-sm mt-0.5"
-                                        style={{ color: 'var(--color-text-muted)' }}
-                                    >
-                                        5-year projection model with risk adjustments
-                                    </p>
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div 
+                                            className="w-1 h-6 rounded-full"
+                                            style={{ backgroundColor: 'var(--color-accent-primary)' }}
+                                        />
+                                        <div>
+                                            <h2 
+                                                className="text-xl font-semibold"
+                                                style={{ 
+                                                    fontFamily: 'var(--font-display)',
+                                                    color: 'var(--color-text-primary)' 
+                                                }}
+                                            >
+                                                Valuation Analysis
+                                            </h2>
+                                            <p 
+                                                className="text-sm mt-0.5"
+                                                style={{ color: 'var(--color-text-muted)' }}
+                                            >
+                                                5-year projection model with risk adjustments
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <ProjectionValuation />
+                                </div>
+
+                                {/* Monte Carlo Forecast Simulation */}
+                                <div>
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div 
+                                            className="w-1 h-6 rounded-full"
+                                            style={{ backgroundColor: 'var(--color-positive)' }}
+                                        />
+                                        <div>
+                                            <h2 
+                                                className="text-xl font-semibold"
+                                                style={{ 
+                                                    fontFamily: 'var(--font-display)',
+                                                    color: 'var(--color-text-primary)' 
+                                                }}
+                                            >
+                                                Monte Carlo Forecast Simulation
+                                            </h2>
+                                            <p 
+                                                className="text-sm mt-0.5"
+                                                style={{ color: 'var(--color-text-muted)' }}
+                                            >
+                                                Quick multiples valuation and 2-year Monte Carlo simulations
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <ValuationTool />
                                 </div>
                             </div>
-                            <ProjectionValuation />
                         </div>
 
                         {/* Chat and Arena Section */}
@@ -384,35 +417,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                     <ValuationWorkshop />
                                 </ProtectedWidget>
                             </div>
-                        </div>
-
-                        {/* Valuation Terminal Section */}
-                        <div className="pt-4">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div 
-                                    className="w-1 h-6 rounded-full"
-                                    style={{ backgroundColor: 'var(--color-positive)' }}
-                                />
-                                <div>
-                                    <h2 
-                                        className="text-xl font-semibold"
-                                        style={{ 
-                                            fontFamily: 'var(--font-display)',
-                                            color: 'var(--color-text-primary)' 
-                                        }}
-                                    >
-                                        Valuation Terminal
-                                    </h2>
-                                    <p 
-                                        className="text-sm mt-0.5"
-                                        style={{ color: 'var(--color-text-muted)' }}
-                                    >
-                                        DCF, Monte Carlo, and multi-factor analysis
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <ValuationTool />
                         </div>
 
                         {/* Stock Screeners - Bottom Section */}

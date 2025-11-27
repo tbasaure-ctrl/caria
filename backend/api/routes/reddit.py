@@ -1,6 +1,6 @@
 """Reddit social sentiment endpoints."""
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Depends
 from typing import List, Literal
 import os
 import logging
@@ -339,3 +339,61 @@ async def get_reddit_sentiment(
             "mock_data": True,
             "error": f"Reddit API unavailable: {str(e)}"
         }
+
+
+@router.get("/radar")
+async def get_social_radar(
+    timeframe: Literal["hour", "day", "week"] = Query("day", description="Timeframe for analysis")
+):
+    """
+    Social Radar: Detecta anomalías en social sentiment usando Velocity Spike,
+    Rumble Score y Tiny Titan Ratio.
+    
+    Retorna stocks con:
+    - 🚀 Under the Radar Spike: Aceleración de menciones en empresas medianas/pequeñas
+    - ⚔️ Bull/Bear War: Alto volumen con sentimiento neutral (polémica)
+    - 💎 Viral Micro-Cap: Hype desproporcionado al tamaño
+    """
+    try:
+        from api.services.social_engine import SocialRadarEngine
+        from caria.ingestion.clients.fmp_client import FMPClient
+        
+        # Inicializar servicios
+        fmp_client = FMPClient()
+        radar_engine = SocialRadarEngine(fmp_client)
+        
+        # Obtener datos actuales de Reddit y StockTwits
+        # Llamar directamente a las funciones internas para evitar problemas de routing
+        reddit_response = await get_reddit_sentiment(timeframe)
+        
+        # Importar y llamar a StockTwits
+        from api.routes.stocktwits import get_stocktwits_trending
+        stocktwits_response = await get_stocktwits_trending(timeframe)
+        
+        reddit_data = reddit_response.get("stocks", [])
+        stocktwits_data = stocktwits_response.get("stocks", [])
+        
+        # Por ahora, no tenemos datos históricos almacenados
+        # En producción, esto vendría de una base de datos o cache
+        historical_data = None
+        
+        # Analizar anomalías
+        radar_results = radar_engine.analyze_under_radar(
+            reddit_data=reddit_data,
+            stocktwits_data=stocktwits_data,
+            historical_data=historical_data
+        )
+        
+        return {
+            "results": radar_results,
+            "timeframe": timeframe,
+            "total_detected": len(radar_results),
+            "message": f"Detectadas {len(radar_results)} anomalías sociales"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in social radar: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error analyzing social radar: {str(e)}"
+        )

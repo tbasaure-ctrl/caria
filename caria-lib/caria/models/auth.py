@@ -67,6 +67,11 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserUpdate(BaseModel):
+    """User profile update request."""
+    full_name: Optional[str] = None
+
+
 class TokenRefresh(BaseModel):
     """Token refresh request."""
     refresh_token: str

@@ -1,45 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import type { Feature } from '../types';
 
-/**
- * Custom hook to detect when an element is visible on the screen.
- * @param ref - A React ref attached to the element to observe.
- * @param threshold - The percentage of the element that must be visible to trigger the hook.
- * @returns {boolean} - True if the element is on screen, false otherwise.
- */
 const useOnScreen = (ref: React.RefObject<HTMLElement>, threshold: number = 0.1): boolean => {
-  const [isIntersecting, setIntersecting] = useState(false);
+  const [isIntersecting, setIntersecting] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // Update state when the element's intersection status changes.
         if (entry.isIntersecting) {
           setIntersecting(true);
-          // Stop observing the element once it has become visible.
           observer.unobserve(entry.target);
         }
       },
-      {
-        threshold,
-      }
+      { threshold }
     );
-
     const currentRef = ref.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
+    if (currentRef) observer.observe(currentRef);
+    return () => { if (currentRef) observer.unobserve(currentRef); };
   }, [ref, threshold]);
 
   return isIntersecting;
 };
-
 
 const featuresData: Feature[] = [
   {
@@ -64,76 +45,35 @@ const FeatureCard: React.FC<{ feature: Feature, index: number }> = ({ feature, i
         <div
             ref={cardRef}
             className={`
-                rounded-xl p-6 sm:p-8 flex flex-col relative overflow-hidden group
-                transition-all ease-out duration-500
-                ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}
+                flex flex-col items-start p-6 md:p-8
+                transition-all duration-700 ease-out
+                ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}
             `}
-            style={{
-                backgroundColor: 'rgba(25, 30, 38, 0.8)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                transitionDelay: `${index * 100}ms`,
-            }}
-            onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-                e.currentTarget.style.transform = 'translateY(-4px)';
-            }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                e.currentTarget.style.transform = 'translateY(0)';
-            }}
+            style={{ transitionDelay: `${index * 150}ms` }}
         >
-            <h3
-                className="text-xl sm:text-2xl font-semibold mb-3"
-                style={{
-                    fontFamily: "'Instrument Serif', Georgia, serif",
-                    color: 'var(--color-cream)',
-                    letterSpacing: '-0.01em',
-                }}>
+            {/* Icon Placeholder - Minimalist Circle */}
+            <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center mb-6 text-accent-cyan">
+                {index === 0 && <span className="text-xl">⚡</span>}
+                {index === 1 && <span className="text-xl">⚖️</span>}
+                {index === 2 && <span className="text-xl">∞</span>}
+            </div>
+
+            <h3 className="text-2xl font-display text-white mb-4 tracking-wide">
                 {feature.title}
             </h3>
-            <p
-                className="flex-grow leading-relaxed text-sm sm:text-base"
-                style={{
-                    fontFamily: "'Crimson Pro', Georgia, serif",
-                    color: 'rgba(232, 230, 227, 0.7)',
-                    lineHeight: '1.7',
-                }}>
+            
+            <p className="text-text-secondary leading-relaxed font-light text-base max-w-sm">
                 {feature.description}
             </p>
         </div>
     );
 };
 
-
 export const Features: React.FC = () => {
   return (
-    <section id="features" className="py-20 md:py-32 relative overflow-hidden" style={{backgroundColor: 'var(--color-bg-primary)'}}>
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section Header */}
-        <div className="text-center mb-16 md:mb-20">
-            <h2
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 mx-auto"
-              style={{
-                fontFamily: "'Instrument Serif', Georgia, serif",
-                color: 'var(--color-cream)',
-                letterSpacing: '-0.02em',
-                maxWidth: '900px',
-              }}>
-              Everything you need to navigate the markets
-            </h2>
-            <p
-              className="max-w-xl mx-auto text-base md:text-lg"
-              style={{
-                fontFamily: "'Crimson Pro', Georgia, serif",
-                color: 'rgba(232, 230, 227, 0.6)',
-                lineHeight: '1.7',
-              }}>
-                Powerful tools and a vibrant community to elevate your investing journey.
-            </p>
-        </div>
-
-        {/* Feature Cards Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto">
+    <section id="features" className="py-32 bg-bg-primary border-t border-white/5">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid md:grid-cols-3 gap-12 lg:gap-16">
           {featuresData.map((feature, index) => (
             <FeatureCard key={feature.title} feature={feature} index={index} />
           ))}

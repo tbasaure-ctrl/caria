@@ -27,31 +27,21 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({
     return (
         <div
             id={id}
-            className={`rounded-xl transition-all duration-300 ${className}`}
+            className={`rounded-lg transition-all duration-300 ${className}`}
             style={{
-                backgroundColor: 'var(--color-bg-secondary)',
-                border: '1px solid var(--color-border-subtle)',
+                backgroundColor: 'var(--color-bg-secondary)', // Darker background
+                border: '1px solid rgba(148, 163, 184, 0.1)', // Very subtle border
             }}
         >
-            {/* Widget Header - Bloomberg Editorial Style */}
+            {/* Widget Header - Clean & Minimal */}
             <div 
-                className={`flex items-center justify-between ${compact ? 'px-5 py-4' : 'px-6 py-5'} border-b`}
-                style={{ borderColor: 'var(--color-border-subtle)' }}
+                className={`flex items-center justify-between ${compact ? 'px-5 py-4' : 'px-6 py-5'} border-b border-white/5`}
             >
                 <div className="flex items-center gap-3">
-                    {/* Accent Bar */}
-                    <div 
-                        className="w-1 h-5 rounded-full"
-                        style={{ backgroundColor: 'var(--color-accent-primary)' }}
-                    />
-                    
-                    {/* Title */}
+                    {/* Minimalist Title */}
                     <h3
-                        className="text-xs font-semibold tracking-[0.08em] uppercase"
-                        style={{
-                            fontFamily: 'var(--font-body)',
-                            color: 'var(--color-text-secondary)',
-                        }}
+                        className="text-sm font-medium tracking-wide text-text-primary"
+                        style={{ fontFamily: 'var(--font-display)' }}
                     >
                         {title}
                     </h3>
@@ -60,70 +50,24 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({
                     {tooltip && (
                         <div className="relative">
                             <button
-                                className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-200"
-                                style={{
-                                    backgroundColor: 'var(--color-bg-surface)',
-                                    color: 'var(--color-text-muted)',
-                                    border: '1px solid var(--color-border-subtle)',
-                                }}
+                                className="opacity-40 hover:opacity-100 transition-opacity text-text-muted"
                                 onMouseEnter={() => setShowTooltip(true)}
                                 onMouseLeave={() => setShowTooltip(false)}
                                 onClick={() => setShowTooltip(!showTooltip)}
                                 aria-label="Information"
                             >
-                                ?
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                             </button>
                             
                             {/* Tooltip Popup */}
                             {showTooltip && (
                                 <div
-                                    className="absolute z-50 w-80 p-4 rounded-lg shadow-xl animate-fade-in"
-                                    style={{
-                                        left: '50%',
-                                        top: 'calc(100% + 8px)',
-                                        transform: 'translateX(-50%)',
-                                        backgroundColor: 'var(--color-bg-elevated)',
-                                        border: '1px solid var(--color-border-default)',
-                                    }}
+                                    className="absolute z-50 w-72 p-3 rounded-lg shadow-xl animate-fade-in left-1/2 -translate-x-1/2 top-full mt-2 bg-bg-elevated border border-white/10"
                                 >
-                                    {/* Tooltip Arrow */}
-                                    <div 
-                                        className="absolute w-3 h-3 rotate-45"
-                                        style={{
-                                            top: '-6px',
-                                            left: '50%',
-                                            transform: 'translateX(-50%)',
-                                            backgroundColor: 'var(--color-bg-elevated)',
-                                            borderLeft: '1px solid var(--color-border-default)',
-                                            borderTop: '1px solid var(--color-border-default)',
-                                        }}
-                                    />
-                                    
-                                    <div className="relative">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <span
-                                                className="text-[10px] font-semibold tracking-wide uppercase"
-                                                style={{ color: 'var(--color-accent-primary)' }}
-                                            >
-                                                Info
-                                            </span>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setShowTooltip(false);
-                                                }}
-                                                className="text-sm leading-none"
-                                                style={{ color: 'var(--color-text-muted)' }}
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                        <div 
-                                            className="text-sm leading-relaxed"
-                                            style={{ color: 'var(--color-text-secondary)' }}
-                                        >
-                                            {tooltip}
-                                        </div>
+                                    <div className="text-xs text-text-secondary leading-relaxed">
+                                        {tooltip}
                                     </div>
                                 </div>
                             )}
@@ -135,20 +79,7 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({
                 {action && (
                     <button
                         onClick={action.onClick}
-                        className="text-xs font-medium px-3 py-1.5 rounded transition-colors"
-                        style={{
-                            backgroundColor: 'var(--color-bg-surface)',
-                            color: 'var(--color-text-secondary)',
-                            border: '1px solid var(--color-border-subtle)',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
-                            e.currentTarget.style.color = 'var(--color-accent-primary)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
-                            e.currentTarget.style.color = 'var(--color-text-secondary)';
-                        }}
+                        className="text-xs font-medium px-3 py-1 rounded hover:bg-white/5 transition-colors text-accent-cyan"
                     >
                         {action.label}
                     </button>
@@ -163,7 +94,11 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({
     );
 };
 
-// Specialized Widget variants for different use cases
+// Exporting other components as they were, but updated styles if needed...
+// For brevity, I'm keeping the WidgetCard core update here. 
+// If DataCard/MetricRow are used, they should be in separate files or updated here. 
+// I will assume for now the user mainly cares about the container.
+// I'll re-add DataCard and MetricRow to ensure no breaks.
 
 interface DataCardProps {
     label: string;
@@ -176,39 +111,25 @@ interface DataCardProps {
 export const DataCard: React.FC<DataCardProps> = ({ label, value, change, isPositive, sublabel }) => {
     return (
         <div 
-            className="p-4 rounded-lg"
-            style={{ 
-                backgroundColor: 'var(--color-bg-tertiary)',
-                border: '1px solid var(--color-border-subtle)'
-            }}
+            className="p-4 rounded-lg bg-bg-tertiary border border-white/5"
         >
-            <div 
-                className="text-xs font-medium tracking-wide uppercase mb-2"
-                style={{ color: 'var(--color-text-muted)' }}
-            >
+            <div className="text-xs font-medium tracking-wide uppercase mb-2 text-text-muted">
                 {label}
             </div>
             <div className="flex items-baseline gap-2">
-                <span 
-                    className="text-2xl font-semibold font-mono"
-                    style={{ color: 'var(--color-text-primary)' }}
-                >
+                <span className="text-xl font-mono text-text-primary">
                     {value}
                 </span>
                 {change && (
                     <span 
-                        className="text-sm font-mono font-medium"
-                        style={{ color: isPositive ? 'var(--color-positive)' : 'var(--color-negative)' }}
+                        className={`text-sm font-mono font-medium ${isPositive ? 'text-positive' : 'text-negative'}`}
                     >
                         {change}
                     </span>
                 )}
             </div>
             {sublabel && (
-                <div 
-                    className="text-xs mt-1"
-                    style={{ color: 'var(--color-text-subtle)' }}
-                >
+                <div className="text-xs mt-1 text-text-subtle">
                     {sublabel}
                 </div>
             )}
@@ -222,23 +143,14 @@ interface MetricRowProps {
 
 export const MetricRow: React.FC<MetricRowProps> = ({ items }) => {
     return (
-        <div 
-            className="flex divide-x rounded-lg overflow-hidden"
-            style={{ 
-                backgroundColor: 'var(--color-bg-tertiary)',
-                borderColor: 'var(--color-border-subtle)'
-            }}
-        >
+        <div className="flex divide-x divide-white/5 rounded-lg overflow-hidden bg-bg-tertiary border border-white/5">
             {items.map((item, idx) => (
                 <div key={idx} className="flex-1 px-4 py-3 text-center">
-                    <div 
-                        className="text-[10px] font-medium tracking-wider uppercase mb-1"
-                        style={{ color: 'var(--color-text-muted)' }}
-                    >
+                    <div className="text-[10px] font-medium tracking-wider uppercase mb-1 text-text-muted">
                         {item.label}
                     </div>
                     <div 
-                        className="text-lg font-semibold font-mono"
+                        className="text-lg font-mono"
                         style={{ color: item.color || 'var(--color-text-primary)' }}
                     >
                         {item.value}
@@ -256,24 +168,12 @@ interface SectionDividerProps {
 export const SectionDivider: React.FC<SectionDividerProps> = ({ label }) => {
     return (
         <div className="relative my-6">
-            <div 
-                className="absolute inset-0 flex items-center"
-                aria-hidden="true"
-            >
-                <div 
-                    className="w-full h-px"
-                    style={{ backgroundColor: 'var(--color-border-subtle)' }}
-                />
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="w-full h-px bg-white/5" />
             </div>
             {label && (
                 <div className="relative flex justify-center">
-                    <span 
-                        className="px-3 text-xs font-medium tracking-wide uppercase"
-                        style={{ 
-                            backgroundColor: 'var(--color-bg-secondary)',
-                            color: 'var(--color-text-muted)'
-                        }}
-                    >
+                    <span className="px-3 text-xs font-medium tracking-wide uppercase bg-bg-secondary text-text-muted">
                         {label}
                     </span>
                 </div>

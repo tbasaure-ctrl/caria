@@ -13,82 +13,52 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
   };
 
   return (
-    <section className="relative py-20 md:py-32 lg:py-40 overflow-hidden min-h-[70vh] md:min-h-[80vh] flex items-center justify-center">
-      {/* Subtle gradient background */}
-      <div
-        className="absolute inset-0 opacity-20 transition-all duration-1000"
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-bg-primary">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-b from-transparent via-accent-cyan/30 to-transparent" />
+
+      {/* Subtle Waves/Gradients from image */}
+      <div 
+        className="absolute inset-0 opacity-20 pointer-events-none"
         style={{
-          background: `radial-gradient(ellipse at 50% 50%,
-            rgba(74, 144, 226, 0.3) 0%,
-            rgba(58, 122, 194, 0.1) 40%,
-            transparent 70%)`,
+            background: 'radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.05) 0%, transparent 50%)'
         }}
       />
 
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Eyebrow */}
-          <div className="mb-6 md:mb-8">
-            <span
-              className="inline-block px-5 py-2 rounded-full text-xs font-semibold tracking-[0.2em] uppercase"
-              style={{
-                backgroundColor: 'rgba(74, 144, 226, 0.1)',
-                color: 'var(--color-blue-light)',
-                border: '1px solid rgba(74, 144, 226, 0.2)',
-              }}>
-              Cognitive Analysis & Risk Investment Assistant
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center">
+        
+        {/* Main Title */}
+        <h1 className="text-6xl sm:text-7xl md:text-8xl font-display font-normal tracking-tight mb-8 animate-fade-in">
+          <span className="text-gradient-hero block">
+            Reason First,
+          </span>
+          <span className="text-gradient-hero block italic mt-2">
+            returns will follow
+          </span>
+        </h1>
+
+        {/* Subtitle (Existing Text) */}
+        <p 
+          className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-12 font-light leading-relaxed animate-slide-up delay-100"
+        >
+          Precision without distraction. Navigating the complexities of modern markets
+          with absolute clarity and electric resolve.
+        </p>
+
+        {/* CTA Button */}
+        <button
+            onClick={handleDiscoverCaria}
+            className="group relative px-10 py-4 bg-transparent border border-white/10 rounded-full overflow-hidden transition-all duration-300 hover:border-accent-cyan/50 animate-slide-up delay-200"
+        >
+            <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <span className="relative text-sm font-medium tracking-[0.2em] uppercase text-white group-hover:text-accent-cyan transition-colors">
+                Access Caria
             </span>
-          </div>
+        </button>
 
-          {/* Main headline */}
-          <h1
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] mb-8 md:mb-10"
-            style={{
-              fontFamily: "'Instrument Serif', Georgia, serif",
-              color: 'var(--color-cream)',
-              letterSpacing: '-0.02em',
-            }}>
-            Own Your Investments
-          </h1>
-
-          {/* Subtitle */}
-          <p
-            className="text-base sm:text-lg md:text-xl leading-relaxed max-w-3xl mx-auto mb-10 md:mb-14 px-2"
-            style={{
-              fontFamily: "'Crimson Pro', Georgia, serif",
-              color: 'rgba(232, 230, 227, 0.8)',
-              fontWeight: 400,
-              lineHeight: '1.8',
-            }}>
-            We merge timeless investment wisdom with the analytical power of deep learning,
-            creating an invaluable partner for your financial journey.
-          </p>
-
-          {/* CTA Button */}
-          <div className="flex justify-center">
-            <button
-              onClick={handleDiscoverCaria}
-              className="group relative px-8 py-3.5 text-base font-medium rounded-lg transition-all duration-300"
-              style={{
-                fontFamily: 'var(--font-display)',
-                backgroundColor: 'rgba(30, 35, 45, 0.9)',
-                color: 'var(--color-cream)',
-                border: '1px solid rgba(232, 230, 227, 0.15)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(232, 230, 227, 0.3)';
-                e.currentTarget.style.backgroundColor = 'rgba(40, 45, 55, 0.95)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(232, 230, 227, 0.15)';
-                e.currentTarget.style.backgroundColor = 'rgba(30, 35, 45, 0.9)';
-              }}
-            >
-              Discover Caria
-            </button>
-          </div>
-
-        </div>
+        {/* Bottom Vertical Line */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-24 bg-gradient-to-t from-transparent via-accent-cyan/20 to-transparent delay-300 animate-fade-in" />
       </div>
     </section>
   );

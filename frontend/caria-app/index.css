@@ -1,591 +1,90 @@
-/* Caria Design System - Bloomberg-Inspired Professional Financial Terminal */
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-/* ================================================
-   DESIGN TOKENS - Bloomberg-Inspired Professional
-   ================================================ */
+/* Import Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
 
 :root {
-  /* Core Background Palette - Deep, Professional, High Contrast */
-  --color-bg-primary: #0A0E14;
-  --color-bg-secondary: #0F1419;
-  --color-bg-tertiary: #151C24;
-  --color-bg-elevated: #1A222D;
-  --color-bg-surface: #1E2733;
+  /* Maps to tailwind config */
+  --color-bg-primary: #020408;
+  --color-bg-secondary: #0B101B;
+  --color-bg-tertiary: #151E32;
   
-  /* Text Hierarchy - Strong Contrast for Readability */
-  --color-text-primary: #F2F4F7;
-  --color-text-secondary: #B4BCC8;
-  --color-text-muted: #6B7A8F;
-  --color-text-subtle: #4A5568;
-  
-  /* Accent Colors - Professional & Restrained */
-  --color-accent-primary: #2E7CF6;
-  --color-accent-secondary: #1E88E5;
-  --color-accent-tertiary: #0D47A1;
-  
-  /* Semantic Colors */
-  --color-positive: #00C853;
-  --color-positive-muted: #1B4332;
-  --color-negative: #F44336;
-  --color-negative-muted: #4A1C1C;
-  --color-warning: #FF9800;
-  --color-warning-muted: #4A3200;
-  --color-info: #2196F3;
-  
-  /* Border System */
-  --color-border-subtle: rgba(107, 122, 143, 0.15);
-  --color-border-default: rgba(107, 122, 143, 0.25);
-  --color-border-emphasis: rgba(46, 124, 246, 0.4);
-  
-  /* Typography - Professional Financial */
-  --font-display: 'Suisse Intl', 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
-  --font-editorial: 'Spectral', 'Georgia', 'Times New Roman', serif;
-  
-  /* Spacing Scale - Generous Whitespace */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-  --space-20: 80px;
-  --space-24: 96px;
-  
-  /* Shadow System */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7);
-  --shadow-glow-accent: 0 0 24px rgba(46, 124, 246, 0.15);
-  
-  /* Animation */
-  --transition-fast: 150ms ease-out;
-  --transition-base: 250ms ease-out;
-  --transition-slow: 400ms ease-out;
-  
-  /* Border Radius */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
-}
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #64748B;
 
-/* ================================================
-   BASE STYLES
-   ================================================ */
+  --color-accent-primary: #38BDF8;
+  --color-accent-gold: #D4AF37;
+  --color-accent-cyan: #22D3EE;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 html {
   scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
 body {
-  font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.6;
-  font-weight: 400;
-  letter-spacing: -0.01em;
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
-  overflow-x: hidden;
-}
-
-/* ================================================
-   TYPOGRAPHY SCALE - Bloomberg Authority
-   ================================================ */
-
-/* Display - Major Headlines */
-.text-display-xl {
-  font-family: var(--font-display);
-  font-size: 56px;
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-}
-
-.text-display-lg {
-  font-family: var(--font-display);
-  font-size: 48px;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-}
-
-.text-display-md {
-  font-family: var(--font-display);
-  font-size: 36px;
-  font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-}
-
-/* Headlines */
-.text-headline-lg {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.015em;
-}
-
-.text-headline-md {
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-}
-
-.text-headline-sm {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.005em;
-}
-
-/* Body Text */
-.text-body-lg {
   font-family: var(--font-body);
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
 }
 
-.text-body-md {
-  font-family: var(--font-body);
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 1.6;
-}
-
-.text-body-sm {
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.5;
-}
-
-/* Labels & Captions */
-.text-label-lg {
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.text-label-md {
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.4;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.text-label-sm {
-  font-family: var(--font-body);
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-/* Mono/Data */
-.text-data-lg {
-  font-family: var(--font-mono);
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-
-.text-data-md {
-  font-family: var(--font-mono);
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-}
-
-.text-data-sm {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-/* Editorial Text */
-.text-editorial-lg {
-  font-family: var(--font-editorial);
-  font-size: 22px;
-  font-weight: 400;
-  line-height: 1.7;
-  letter-spacing: 0;
-}
-
-.text-editorial-md {
-  font-family: var(--font-editorial);
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 1.8;
-}
-
-/* ================================================
-   COMPONENT CLASSES
-   ================================================ */
-
-/* Card Surfaces */
-.card-surface {
-  background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-base);
-}
-
-.card-surface:hover {
-  border-color: var(--color-border-default);
-  box-shadow: var(--shadow-md);
-}
-
-.card-elevated {
-  background-color: var(--color-bg-elevated);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-}
-
-/* Ticker/Data Badges */
-.badge-ticker {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  border-radius: var(--radius-sm);
-  background-color: var(--color-bg-surface);
-  color: var(--color-text-primary);
-}
-
-.badge-positive {
-  background-color: var(--color-positive-muted);
-  color: var(--color-positive);
-}
-
-.badge-negative {
-  background-color: var(--color-negative-muted);
-  color: var(--color-negative);
-}
-
-/* Bloomberg-style Section Dividers */
-.section-divider {
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    var(--color-border-default) 20%,
-    var(--color-border-default) 80%,
-    transparent
-  );
-  margin: var(--space-8) 0;
-}
-
-.section-divider-accent {
-  height: 2px;
-  background: linear-gradient(
-    to right,
-    var(--color-accent-primary),
-    transparent
-  );
-  width: 64px;
-  margin: var(--space-4) 0;
-}
-
-/* Terminal-style Data Grid */
-.data-grid {
-  display: grid;
-  gap: 1px;
-  background-color: var(--color-border-subtle);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.data-grid-cell {
-  background-color: var(--color-bg-secondary);
-  padding: var(--space-3) var(--space-4);
-}
-
-/* Sparkline Container */
-.sparkline-container {
-  height: 32px;
-  width: 80px;
-  opacity: 0.8;
-}
-
-/* ================================================
-   ANIMATIONS - Subtle & Professional
-   ================================================ */
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes pulse-subtle {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-@keyframes ticker-scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
-
-.animate-fade-in-scale {
-  animation: fadeInScale 0.4s ease-out forwards;
-}
-
-.animate-slide-in-left {
-  animation: slideInLeft 0.5s ease-out forwards;
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s ease-in-out infinite;
-}
-
-.animate-ticker {
-  animation: ticker-scroll 30s linear infinite;
-}
-
-/* Staggered Animation Delays */
-.delay-1 { animation-delay: 100ms; }
-.delay-2 { animation-delay: 200ms; }
-.delay-3 { animation-delay: 300ms; }
-.delay-4 { animation-delay: 400ms; }
-.delay-5 { animation-delay: 500ms; }
-
-/* ================================================
-   SCROLLBAR - Terminal Style
-   ================================================ */
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-bg-surface);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
-}
-
-/* ================================================
-   FOCUS STATES - Accessibility
-   ================================================ */
-
-:focus-visible {
-  outline: 2px solid var(--color-accent-primary);
-  outline-offset: 2px;
-}
-
-button:focus-visible,
-a:focus-visible {
-  outline: 2px solid var(--color-accent-primary);
-  outline-offset: 2px;
-}
-
-/* ================================================
-   SELECTION
-   ================================================ */
-
-::selection {
-  background-color: var(--color-accent-primary);
-  color: white;
-}
-
-/* ================================================
-   UTILITY CLASSES
-   ================================================ */
-
-.bg-gradient-subtle {
-  background: linear-gradient(
-    180deg,
-    var(--color-bg-primary) 0%,
-    var(--color-bg-secondary) 100%
-  );
-}
-
-.bg-gradient-accent {
-  background: linear-gradient(
-    135deg,
-    var(--color-accent-tertiary) 0%,
-    var(--color-accent-primary) 50%,
-    var(--color-accent-secondary) 100%
-  );
-}
-
-.text-gradient-accent {
-  background: linear-gradient(
-    135deg,
-    var(--color-accent-primary) 0%,
-    #60A5FA 100%
-  );
+/* Utilities */
+.text-gradient-hero {
+  background: linear-gradient(to right, #FFFFFF 20%, #22D3EE 80%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.border-gradient {
-  border: 1px solid;
-  border-image: linear-gradient(
-    to right,
-    var(--color-accent-primary),
-    transparent
-  ) 1;
+.text-gradient-gold {
+  background: linear-gradient(to right, #FDE68A, #D4AF37);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* Glass Morphism - Subtle */
-.glass-surface {
-  background: rgba(15, 20, 25, 0.85);
+.card-glass {
+  background: rgba(11, 16, 27, 0.6);
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-/* Loading States */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--color-bg-tertiary) 25%,
-    var(--color-bg-surface) 50%,
-    var(--color-bg-tertiary) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+.shimmer-border {
+    position: relative;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+.shimmer-border::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
 }
 
-/* ================================================
-   RESPONSIVE UTILITIES
-   ================================================ */
-
-@media (max-width: 768px) {
-  .text-display-xl {
-    font-size: 36px;
-  }
-  
-  .text-display-lg {
-    font-size: 32px;
-  }
-  
-  .text-display-md {
-    font-size: 28px;
-  }
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
-
-/* ================================================
-   PRINT STYLES
-   ================================================ */
-
-@media print {
-  body {
-    background: white;
-    color: black;
-  }
-  
-  .no-print {
-    display: none !important;
-  }
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }

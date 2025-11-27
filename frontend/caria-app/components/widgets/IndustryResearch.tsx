@@ -1,588 +1,409 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { WidgetCard } from './WidgetCard';
-import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
-import { BASE_INDUSTRIES } from '../../data/industries';
 
-interface IndustryCard {
+// Interfaces para estructurar el reporte
+interface StockPick {
+    ticker: string;
     name: string;
-    status: string;
-    growth_signal: string;
-    valuation_context: string;
-    flows_activity: string;
-    representative_tickers: string[];
+    thesis: string;
+    type: 'Value' | 'Growth' | 'Turnaround' | 'Defensive' | 'Speculative';
 }
 
-interface IndustryDetail {
-    name: string;
-    thesis_summary: string[];
-    aggregate_kpis: {
-        revenue_growth: number;
-        margins: number;
-        ev_ebitda_median: number;
-        market_cap_total: number;
-    };
-    stage: string;
-    leaders_challengers: Array<{
-        ticker: string;
-        name: string;
-        market_share: string;
-    }>;
-    key_risks: string[];
-    caria_signals: {
-        alpha_picker_appearances: number;
-        screener_appearances: number;
-        crisis_sensitivity: string;
-    };
-    recent_headlines: string[];
-    learning_resources: {
-        lectures: string[];
-        videos: string[];
+interface IndustryReport {
+    id: string;
+    title: string;
+    subtitle: string;
+    icon: string; // Emoji o path
+    readTime: string;
+    tags: string[];
+    content: {
+        overview: string;
+        trends: { title: string; description: string }[];
+        picks: StockPick[];
+        conclusion?: string;
     };
 }
 
-const StatusPill: React.FC<{ status: string }> = ({ status }) => {
-    const colorMap: Record<string, { bg: string; text: string }> = {
-        'Emerging': { bg: 'rgba(46, 124, 246, 0.15)', text: 'var(--color-accent-primary)' },
-        'Mature': { bg: 'rgba(139, 92, 246, 0.15)', text: '#8B5CF6' },
-        'Overheated': { bg: 'rgba(255, 152, 0, 0.15)', text: 'var(--color-warning)' },
-        'Under Pressure': { bg: 'rgba(239, 68, 68, 0.15)', text: 'var(--color-negative)' },
-    };
-    const colors = colorMap[status] || { bg: 'var(--color-bg-surface)', text: 'var(--color-text-muted)' };
-    
-    return (
-        <span
-            className="px-3 py-1 rounded-full text-xs font-semibold"
-            style={{ backgroundColor: colors.bg, color: colors.text }}
-        >
-            {status}
-        </span>
-    );
-};
+// DATA: Contenido extraído y estructurado del informe proporcionado
+const REPORT_DATA: IndustryReport[] = [
+    {
+        id: 'macro-nov-2025',
+        title: 'Estrategia Global: Noviembre 2025',
+        subtitle: 'Panorama Macroeconómico y Asignación de Activos',
+        icon: '🌍',
+        readTime: '3 min read',
+        tags: ['Macro', 'Strategy', 'Rates'],
+        content: {
+            overview: `El penúltimo mes de 2025 se despliega en un contexto económico que desafía las categorizaciones simplistas. Tras un año de euforia tecnológica, los mercados han entrado en una fase de rotación táctica distintiva. Con la Fed ajustando tasas al rango 3.75%-4.00%, los inversores reevalúan la prima de riesgo.
+            
+            La narrativa ha girado desde el "crecimiento a cualquier precio" hacia una apreciación por la calidad del balance y flujos de caja predecibles. Noviembre emerge como un punto de inflexión crítico: los sectores cíclicos enfrentan vientos en contra por la desaceleración prevista para 2026, mientras que los sectores defensivos y de innovación sanitaria capturan el capital institucional.`,
+            trends: [
+                {
+                    title: "Rotación hacia Calidad",
+                    description: "Los costos de endeudamiento penalizan el apalancamiento excesivo. El mercado premia ahora la resiliencia operativa sobre el crecimiento especulativo."
+                },
+                {
+                    title: "Bifurcación Sectorial",
+                    description: "Sectores defensivos (Consumo Básico) y Salud toman el relevo mientras la tecnología busca consolidar valoraciones."
+                }
+            ],
+            picks: [], // Es macro, no tiene picks específicos
+            conclusion: "Recomendación Final: Construir una cartera 'barbell' (pesa): un núcleo defensivo robusto en consumo básico y seguros, equilibrado con apuestas satélite de alto crecimiento en robótica médica y biotecnología."
+        }
+    },
+    {
+        id: 'staples-nov-2025',
+        title: 'Consumo Básico (Consumer Staples)',
+        subtitle: 'INDUSTRIA DEL MES: Refugio Táctico y Valor',
+        icon: '🛒',
+        readTime: '5 min read',
+        tags: ['Defensive', 'High Conviction', 'Dividends'],
+        content: {
+            overview: `Designado como la industria focal para Noviembre 2025. Históricamente, este sector actúa como un "proxy de bonos" con la ventaja del crecimiento del dividendo. Ante la incertidumbre económica, los inversores buscan la seguridad de la demanda inelástica.
+            
+            Existe una "Bifurcación de Valoraciones": Los minoristas masivos (Costco, Walmart) están sobrevalorados (P/E >40x), mientras que los fabricantes de alimentos envasados cotizan con descuentos atractivos (~11% bajo valor razonable) debido a temores exagerados sobre los fármacos GLP-1.`,
+            trends: [
+                {
+                    title: "El Efecto Noviembre",
+                    description: "Estadísticamente, noviembre es excepcionalmente fuerte para el sector (75% de frecuencia de ganancias en los últimos 25 años)."
+                },
+                {
+                    title: "Adaptación a GLP-1",
+                    description: "Empresas como Nestlé y General Mills están lanzando productos altos en proteína para acompañar a usuarios de Ozempic/Wegovy, mitigando el impacto en volumen."
+                }
+            ],
+            picks: [
+                {
+                    ticker: 'KHC',
+                    name: 'Kraft Heinz',
+                    type: 'Value',
+                    thesis: 'Calificada con 5 estrellas por Morningstar. Infravaloración extrema que ignora su reestructuración de deuda y mejora de márgenes.'
+                },
+                {
+                    ticker: 'GIS',
+                    name: 'General Mills',
+                    type: 'Defensive',
+                    thesis: 'Jugador defensivo clásico que ha demostrado capacidad superior para adaptarse a tendencias de salud (Blue Buffalo).'
+                },
+                {
+                    ticker: 'SFM',
+                    name: 'Sprouts Farmers Market',
+                    type: 'Growth',
+                    thesis: 'Se beneficia del auge de alimentación saludable y "limpia" impulsado por la tendencia GLP-1. Expansión de márgenes con productos frescos.'
+                },
+                {
+                    ticker: 'OLLI',
+                    name: "Ollie's Bargain Outlet",
+                    type: 'Growth',
+                    thesis: 'Modelo de "caza del tesoro" ideal para un consumidor sensible al precio. Adquiere exceso de inventario a precios de ganga.'
+                },
+                {
+                    ticker: 'EL',
+                    name: 'Estée Lauder',
+                    type: 'Turnaround',
+                    thesis: 'Valoración deprimida por debilidad en Asia. Posee marcas de prestigio valiosas; potencial rebote violento si estabiliza inventarios.'
+                }
+            ]
+        }
+    },
+    {
+        id: 'medtech-nov-2025',
+        title: 'Dispositivos Médicos',
+        subtitle: 'La Revolución Silenciosa: Robótica e IA',
+        icon: '🦾',
+        readTime: '4 min read',
+        tags: ['Growth', 'Tech', 'Innovation'],
+        content: {
+            overview: `A diferencia de la biotecnología binaria, MedTech ofrece crecimiento predecible impulsado por el envejecimiento global y la eficiencia hospitalaria. Mercado proyectado a $678.8B en 2025.
+            
+            La IA ha pasado a ser una realidad operativa en diagnósticos, y la robótica permite procedimientos mínimamente invasivos que reducen la estancia hospitalaria.`,
+            trends: [
+                {
+                    title: "Robótica Quirúrgica",
+                    description: "Permite procedimientos ultra-precisos, reduciendo costos hospitalarios a largo plazo."
+                },
+                {
+                    title: "Dispositivos Desechables",
+                    description: "Tendencia masiva hacia instrumentos de un solo uso para eliminar contaminación y costos de esterilización."
+                }
+            ],
+            picks: [
+                {
+                    ticker: 'TMDX',
+                    name: 'TransMedics Group',
+                    type: 'Growth',
+                    thesis: 'La "Logística de la Vida". Su sistema OCS mantiene órganos donados vivos fuera del cuerpo. Está creando su propio mercado (20.9% share).'
+                },
+                {
+                    ticker: 'PRCT',
+                    name: 'PROCEPT BioRobotics',
+                    type: 'Growth',
+                    thesis: 'Robótica en Urología (Aquablation). Crecimiento de ingresos del 43% YoY. Adopción exponencial por cirujanos.'
+                },
+                {
+                    ticker: 'DCTH',
+                    name: 'Delcath Systems',
+                    type: 'Speculative',
+                    thesis: 'Oncología intervencionista (hígado). Small-cap validada con subida del 202% interanual.'
+                }
+            ]
+        }
+    },
+    {
+        id: 'pharma-nov-2025',
+        title: 'Salud y Farmacéutica',
+        subtitle: 'Innovación bajo Presión y Boom de M&A',
+        icon: '🧬',
+        readTime: '4 min read',
+        tags: ['Biotech', 'M&A', 'High Risk'],
+        content: {
+            overview: `Un ecosistema en tensión por el "patent cliff" y presión regulatoria de precios. Esto actúa como catalizador para una innovación desenfrenada y consolidación agresiva.
+            
+            Las "Big Pharma" (Merck, Sanofi, Lilly) están desplegando balances masivos para comprar crecimiento externo, validando que la innovación real ocurre en las mid-caps.`,
+            trends: [
+                {
+                    title: "Renacimiento de M&A",
+                    description: "Oleada de adquisiciones multimillonarias en oncología de precisión y enfermedades raras."
+                },
+                {
+                    title: "Áreas Hot",
+                    description: "Oncología (ADCs, T-cell engagers), Neurociencia (Alzheimer) y Metabolismo (Next-gen Obesity)."
+                }
+            ],
+            picks: [
+                {
+                    ticker: 'KALA',
+                    name: 'Kala Bio',
+                    type: 'Speculative',
+                    thesis: 'Catalizador binario a fin de 2025 (Fase 2b CHASE) para enfermedad ocular rara sin cura. Potencial de revalorización múltiple.'
+                },
+                {
+                    ticker: 'KAPA',
+                    name: 'Kairos Pharma',
+                    type: 'Speculative',
+                    thesis: 'Datos interinos de Fase 2 en cáncer de próstata. Aborda una de las áreas oncológicas más lucrativas.'
+                }
+            ]
+        }
+    },
+    {
+        id: 'insurance-nov-2025',
+        title: 'Seguros & Insurtech',
+        subtitle: 'Eficiencia, IA y Nichos Rentables',
+        icon: '🛡️',
+        readTime: '3 min read',
+        tags: ['Financials', 'AI', 'Niche'],
+        content: {
+            overview: `El sector atraviesa una modernización forzada por costos climáticos e inflación social. La clave en 2025 es evitar aseguradoras generalistas expuestas a catástrofes y buscar especialistas de nicho (E&S) e Insurtech 2.0.
+            
+            La IA Generativa está reduciendo tiempos de reclamos en un 80% y detectando fraudes que antes pasaban desapercibidos.`,
+            trends: [
+                {
+                    title: "Auge del Mercado E&S",
+                    description: "Las aseguradoras de 'Exceso y Superávit' tienen libertad de precios para asumir riesgos complejos que las estándar no tocan."
+                }
+            ],
+            picks: [
+                {
+                    ticker: 'SKWD',
+                    name: 'Skyward Specialty',
+                    type: 'Growth',
+                    thesis: 'El Rey del Nicho E&S. Crecimiento de primas del 26% anual. Poder de fijación de precios superior.'
+                },
+                {
+                    ticker: 'PRI',
+                    name: 'Primerica',
+                    type: 'Defensive',
+                    thesis: 'Modelo de distribución masiva extremadamente eficiente. ROE del 27.2% (líder). Máquina de flujo de caja.'
+                },
+                {
+                    ticker: 'CB',
+                    name: 'Chubb',
+                    type: 'Value',
+                    thesis: 'El Estándar de Oro. Disciplina de suscripción legendaria y balance global para navegar volatilidad.'
+                }
+            ]
+        }
+    }
+];
 
-const IndustryCardComponent: React.FC<{ 
-    industry: IndustryCard; 
-    onSelect: (name: string) => void;
-}> = ({ industry, onSelect }) => {
+// Componente de Detalle (Modal de Lectura)
+const ReportModal: React.FC<{ report: IndustryReport; onClose: () => void }> = ({ report, onClose }) => {
     return (
-        <div
-            className="rounded-xl p-6 cursor-pointer transition-all duration-300"
-            style={{
-                backgroundColor: 'var(--color-bg-tertiary)',
-                border: '1px solid var(--color-border-subtle)',
-            }}
-            onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-border-emphasis)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
-                e.currentTarget.style.transform = 'translateY(0)';
-            }}
-            onClick={() => onSelect(industry.name)}
-        >
-            <div className="flex items-start justify-between mb-4">
-                <h3 
-                    className="text-lg font-bold"
-                    style={{ color: 'var(--color-text-primary)' }}
-                >
-                    {industry.name}
-                </h3>
-                <StatusPill status={industry.status} />
-            </div>
-            
-            <div className="space-y-3 mb-4">
-                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                    {industry.growth_signal}
-                </p>
-                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                    {industry.valuation_context}
-                </p>
-                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                    {industry.flows_activity}
-                </p>
-            </div>
-            
-            <div className="flex items-center gap-2 pt-4 border-t" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Examples:</span>
-                {industry.representative_tickers.map(ticker => (
-                    <span
-                        key={ticker}
-                        className="px-2 py-1 rounded text-xs font-mono font-semibold"
-                        style={{
-                            backgroundColor: 'var(--color-bg-surface)',
-                            color: 'var(--color-text-primary)'
-                        }}
-                    >
-                        {ticker}
-                    </span>
-                ))}
-            </div>
-            
-            <button
-                className="w-full mt-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                style={{
-                    backgroundColor: 'var(--color-bg-surface)',
-                    color: 'var(--color-text-secondary)',
-                    border: '1px solid var(--color-border-subtle)',
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
-                    e.currentTarget.style.color = 'var(--color-accent-primary)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
-                    e.currentTarget.style.color = 'var(--color-text-secondary)';
-                }}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fade-in">
+            <div 
+                className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-[#050A14] border border-accent-gold/30 rounded-xl shadow-2xl custom-scrollbar"
+                onClick={(e) => e.stopPropagation()}
             >
-                Open Industry Page →
-            </button>
+                {/* Header del Informe */}
+                <div className="sticky top-0 z-10 bg-[#050A14]/95 backdrop-blur border-b border-white/10 px-8 py-6 flex justify-between items-start">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="text-2xl">{report.icon}</span>
+                            <h2 className="text-2xl md:text-3xl font-display text-white tracking-wide">
+                                {report.title}
+                            </h2>
+                        </div>
+                        <p className="text-accent-gold font-medium text-sm uppercase tracking-widest">
+                            {report.subtitle}
+                        </p>
+                    </div>
+                    <button 
+                        onClick={onClose}
+                        className="p-2 rounded-full hover:bg-white/10 text-text-muted hover:text-white transition-colors"
+                    >
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Contenido del Informe */}
+                <div className="p-8 space-y-8">
+                    {/* Overview */}
+                    <div className="prose prose-invert max-w-none">
+                        <p className="text-text-secondary text-lg leading-relaxed whitespace-pre-line">
+                            {report.content.overview}
+                        </p>
+                    </div>
+
+                    {/* Tendencias Clave */}
+                    {report.content.trends.length > 0 && (
+                        <div className="grid md:grid-cols-2 gap-4">
+                            {report.content.trends.map((trend, idx) => (
+                                <div key={idx} className="bg-bg-tertiary p-5 rounded-lg border border-white/5">
+                                    <h4 className="text-accent-cyan font-bold text-xs uppercase tracking-wider mb-2">
+                                        Tendencia {idx + 1}
+                                    </h4>
+                                    <h3 className="text-white font-display text-lg mb-2">{trend.title}</h3>
+                                    <p className="text-sm text-text-muted leading-relaxed">{trend.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Selección de Acciones (Picks) */}
+                    {report.content.picks.length > 0 && (
+                        <div>
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="h-px flex-1 bg-white/10"></div>
+                                <span className="text-accent-gold font-display text-xl">Top Picks & Thesis</span>
+                                <div className="h-px flex-1 bg-white/10"></div>
+                            </div>
+
+                            <div className="space-y-4">
+                                {report.content.picks.map((pick) => (
+                                    <div 
+                                        key={pick.ticker} 
+                                        className="group relative overflow-hidden rounded-lg bg-white/5 border border-white/10 hover:border-accent-gold/50 transition-all duration-300"
+                                    >
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-accent-gold opacity-50 group-hover:opacity-100 transition-opacity" />
+                                        <div className="p-5 pl-7">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-2xl font-display font-bold text-white group-hover:text-accent-gold transition-colors">
+                                                        {pick.ticker}
+                                                    </span>
+                                                    <span className="text-sm text-text-muted">{pick.name}</span>
+                                                </div>
+                                                <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider ${
+                                                    pick.type === 'Value' ? 'bg-blue-500/20 text-blue-400' :
+                                                    pick.type === 'Growth' ? 'bg-green-500/20 text-green-400' :
+                                                    pick.type === 'Turnaround' ? 'bg-orange-500/20 text-orange-400' :
+                                                    pick.type === 'Speculative' ? 'bg-purple-500/20 text-purple-400' :
+                                                    'bg-gray-500/20 text-gray-400'
+                                                }`}>
+                                                    {pick.type}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-text-secondary leading-relaxed">
+                                                {pick.thesis}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Conclusión */}
+                    {report.content.conclusion && (
+                        <div className="bg-accent-gold/10 border border-accent-gold/20 rounded-lg p-6 text-center">
+                            <p className="text-accent-gold font-medium italic font-display text-lg">
+                                "{report.content.conclusion}"
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };
 
 export const IndustryResearch: React.FC = () => {
-    const [industries, setIndustries] = useState<IndustryCard[]>([]);
-    const [selectedIndustry, setSelectedIndustry] = useState<IndustryDetail | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [featuredIndustry, setFeaturedIndustry] = useState<IndustryCard | null>(null);
-
-    useEffect(() => {
-        const loadIndustries = async () => {
-            setLoading(true);
-            try {
-                const response = await fetchWithAuth(`${API_BASE_URL}/api/industry-research/industries`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setIndustries(data);
-                    // Set featured industry (first one or random)
-                    if (data.length > 0) {
-                        setFeaturedIndustry(data[0]);
-                    }
-                } else {
-                    // Fallback to using base industries config if API fails
-                    const fallbackIndustries: IndustryCard[] = BASE_INDUSTRIES.map(industry => ({
-                        name: industry.name,
-                        status: industry.status,
-                        growth_signal: `Growth drivers and market dynamics for ${industry.name}`,
-                        valuation_context: `Valuation metrics vs historical averages`,
-                        flows_activity: `ETF flows and M&A activity trends`,
-                        representative_tickers: industry.representative_tickers
-                    }));
-                    setIndustries(fallbackIndustries);
-                    if (fallbackIndustries.length > 0) {
-                        setFeaturedIndustry(fallbackIndustries[0]);
-                    }
-                }
-            } catch (e) {
-                console.error('Failed to load industries', e);
-                // Fallback to using base industries config
-                const fallbackIndustries: IndustryCard[] = BASE_INDUSTRIES.map(industry => ({
-                    name: industry.name,
-                    status: industry.status,
-                    growth_signal: `Growth drivers and market dynamics for ${industry.name}`,
-                    valuation_context: `Valuation metrics vs historical averages`,
-                    flows_activity: `ETF flows and M&A activity trends`,
-                    representative_tickers: industry.representative_tickers
-                }));
-                setIndustries(fallbackIndustries);
-                if (fallbackIndustries.length > 0) {
-                    setFeaturedIndustry(fallbackIndustries[0]);
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadIndustries();
-    }, []);
-
-    const handleSelectIndustry = async (name: string) => {
-        setLoading(true);
-        try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/industry-research/industries/${encodeURIComponent(name)}`);
-            if (response.ok) {
-                const data = await response.json();
-                setSelectedIndustry(data);
-            }
-        } catch (e) {
-            console.error('Failed to load industry detail', e);
-            setError('Failed to load industry details');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (selectedIndustry) {
-        return (
-            <WidgetCard 
-                title="INDUSTRY RESEARCH"
-                tooltip="Deep dive into sector analysis, trends, and investment opportunities"
-            >
-                <div className="space-y-6">
-                    <button
-                        onClick={() => setSelectedIndustry(null)}
-                        className="text-sm font-medium mb-4"
-                        style={{ color: 'var(--color-accent-primary)' }}
-                    >
-                        ← Back to Industries
-                    </button>
-                    
-                    {/* Sector Sheet - Top Section */}
-                    <div 
-                        className="mb-6 p-6 rounded-xl"
-                        style={{
-                            backgroundColor: 'var(--color-bg-secondary)',
-                            border: '1px solid var(--color-border-subtle)',
-                        }}
-                    >
-                        <div className="flex items-start justify-between mb-4">
-                            <div>
-                                <h2 
-                                    className="text-2xl font-bold mb-2"
-                                    style={{ 
-                                        fontFamily: 'var(--font-display)',
-                                        color: 'var(--color-text-primary)' 
-                                    }}
-                                >
-                                    {selectedIndustry.name}
-                                </h2>
-                                <div className="flex items-center gap-2">
-                                    <StatusPill status={selectedIndustry.stage} />
-                                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                                        Stage: {selectedIndustry.stage}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {/* Thesis Summary - Bullets */}
-                        <div className="mb-4">
-                            <h3 className="text-xs font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                                Thesis Summary
-                            </h3>
-                            <ul className="space-y-1.5">
-                                {selectedIndustry.thesis_summary.map((point, idx) => (
-                                    <li key={idx} className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
-                                        <span style={{ color: 'var(--color-accent-primary)' }}>•</span>
-                                        <span>{point}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                        
-                        {/* Aggregate KPIs */}
-                        <div>
-                            <h3 className="text-xs font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                                Aggregate KPIs
-                            </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {Object.entries(selectedIndustry.aggregate_kpis).map(([key, value]) => (
-                                    <div key={key} className="p-3 rounded-lg" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                                        <div className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>
-                                            {key.replace(/_/g, ' ')}
-                                        </div>
-                                        <div className="text-lg font-bold font-mono" style={{ color: 'var(--color-text-primary)' }}>
-                                            {typeof value === 'number' && value > 1000000000 
-                                                ? `$${(value / 1000000000).toFixed(1)}B`
-                                                : typeof value === 'number' && value > 1000000
-                                                ? `$${(value / 1000000).toFixed(1)}M`
-                                                : typeof value === 'number'
-                                                ? value.toFixed(1) + (key.includes('growth') || key.includes('margin') ? '%' : 'x')
-                                                : value}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                            Leaders & Challengers
-                        </h3>
-                        <div className="space-y-2">
-                            {selectedIndustry.leaders_challengers.map((company, idx) => (
-                                <div key={idx} className="p-3 rounded-lg flex items-center justify-between" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                                    <div>
-                                        <span className="font-mono font-semibold mr-2" style={{ color: 'var(--color-text-primary)' }}>
-                                            {company.ticker}
-                                        </span>
-                                        <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                                            {company.name}
-                                        </span>
-                                    </div>
-                                    <span className="text-sm font-mono" style={{ color: 'var(--color-text-muted)' }}>
-                                        {company.market_share}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                            Key Risks
-                        </h3>
-                        <ul className="space-y-2">
-                            {selectedIndustry.key_risks.map((risk, idx) => (
-                                <li key={idx} className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
-                                    <span style={{ color: 'var(--color-negative)' }}>⚠</span>
-                                    <span>{risk}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    
-                    <div>
-                        <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                            Caria Signals
-                        </h3>
-                        <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
-                            % of tickers in this industry that appear in:
-                        </p>
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                                <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Alpha Stock Picker</div>
-                                <div className="text-lg font-bold font-mono" style={{ color: 'var(--color-text-primary)' }}>
-                                    {typeof selectedIndustry.caria_signals.alpha_picker_appearances === 'number' 
-                                        ? `${selectedIndustry.caria_signals.alpha_picker_appearances}%`
-                                        : selectedIndustry.caria_signals.alpha_picker_appearances}
-                                </div>
-                            </div>
-                            <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                                <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Under-the-Radar Screener</div>
-                                <div className="text-lg font-bold font-mono" style={{ color: 'var(--color-text-primary)' }}>
-                                    {typeof selectedIndustry.caria_signals.screener_appearances === 'number' 
-                                        ? `${selectedIndustry.caria_signals.screener_appearances}%`
-                                        : selectedIndustry.caria_signals.screener_appearances}
-                                </div>
-                            </div>
-                            <div className="p-3 rounded-lg text-center" style={{ backgroundColor: 'var(--color-bg-tertiary)' }}>
-                                <div className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>Crisis / Macro Sensitivity</div>
-                                <div className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                                    {selectedIndustry.caria_signals.crisis_sensitivity}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Recent Headlines */}
-                    {selectedIndustry.recent_headlines && selectedIndustry.recent_headlines.length > 0 && (
-                        <div>
-                            <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                                Recent Headlines
-                            </h3>
-                            <div className="space-y-2">
-                                {selectedIndustry.recent_headlines.map((headline, idx) => (
-                                    <div 
-                                        key={idx} 
-                                        className="p-3 rounded-lg text-sm flex items-start gap-2" 
-                                        style={{ backgroundColor: 'var(--color-bg-tertiary)' }}
-                                    >
-                                        <span style={{ color: 'var(--color-accent-primary)' }}>📰</span>
-                                        <span style={{ color: 'var(--color-text-secondary)' }}>{headline}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Learning Resources */}
-                    {selectedIndustry.learning_resources && (
-                        <div>
-                            <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                                Learning
-                            </h3>
-                            <div className="space-y-4">
-                                {/* Lectures */}
-                                {selectedIndustry.learning_resources.lectures && selectedIndustry.learning_resources.lectures.length > 0 && (
-                                    <div>
-                                        <div className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                                            Recommended Lectures
-                                        </div>
-                                        <ul className="space-y-2">
-                                            {selectedIndustry.learning_resources.lectures.slice(0, 2).map((lecture, idx) => (
-                                                <li key={idx} className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
-                                                    <span style={{ color: 'var(--color-accent-primary)' }}>📚</span>
-                                                    <span>{lecture}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                                
-                                {/* Videos/Podcasts */}
-                                {selectedIndustry.learning_resources.videos && selectedIndustry.learning_resources.videos.length > 0 && (
-                                    <div>
-                                        <div className="text-xs font-medium mb-2 uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
-                                            Video / Podcast
-                                        </div>
-                                        <ul className="space-y-2">
-                                            {selectedIndustry.learning_resources.videos.slice(0, 1).map((video, idx) => (
-                                                <li key={idx} className="text-sm flex items-start gap-2" style={{ color: 'var(--color-text-secondary)' }}>
-                                                    <span style={{ color: 'var(--color-accent-primary)' }}>🎥</span>
-                                                    <span>{video}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </WidgetCard>
-        );
-    }
+    const [selectedReport, setSelectedReport] = useState<IndustryReport | null>(null);
 
     return (
         <WidgetCard 
-            title="INDUSTRY RESEARCH"
-            tooltip="Deep dive into sector analysis, trends, and investment opportunities"
+            title="Industry Research" 
+            tooltip="Deep dive analysis into sectors with high alpha potential. Updated monthly."
         >
-            {loading && !industries.length && (
-                <div className="text-center py-12">
-                    <div className="w-10 h-10 mx-auto mb-4 border-3 border-t-transparent rounded-full animate-spin"
-                        style={{ borderColor: 'var(--color-accent-primary)', borderTopColor: 'transparent' }}
-                    />
-                    <p style={{ color: 'var(--color-text-muted)' }}>Loading industries...</p>
+            <div className="space-y-4">
+                <div className="flex justify-between items-end mb-2">
+                    <h4 className="text-xs text-text-muted uppercase tracking-widest">November 2025 Edition</h4>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-accent-primary/10 text-accent-primary font-medium">
+                        New Report
+                    </span>
                 </div>
-            )}
-            
-            {error && (
-                <div className="p-4 rounded-lg mb-4" style={{ backgroundColor: 'var(--color-negative-muted)', color: 'var(--color-negative)' }}>
-                    {error}
-                </div>
-            )}
-            
-            {industries.length > 0 && (
-                <div>
-                    {/* Industry of the Month - Large Card */}
-                    {featuredIndustry && (
-                        <div className="mb-6">
-                            <div className="flex items-center gap-2 mb-3">
-                                <span 
-                                    className="text-xs font-semibold uppercase tracking-wider"
-                                    style={{ color: 'var(--color-text-muted)' }}
-                                >
-                                    Industry of the Month
-                                </span>
-                            </div>
-                            <div 
-                                className="p-6 rounded-xl cursor-pointer transition-all duration-300"
-                                style={{
-                                    backgroundColor: 'var(--color-bg-secondary)',
-                                    border: '2px solid var(--color-accent-primary)',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(-2px)';
-                                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(46, 124, 246, 0.2)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                    e.currentTarget.style.boxShadow = 'none';
-                                }}
-                                onClick={() => handleSelectIndustry(featuredIndustry.name)}
-                            >
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex-1">
-                                        <h2 
-                                            className="text-2xl font-bold mb-3"
-                                            style={{ 
-                                                fontFamily: 'var(--font-display)',
-                                                color: 'var(--color-text-primary)' 
-                                            }}
-                                        >
-                                            {featuredIndustry.name}
-                                        </h2>
-                                        <StatusPill status={featuredIndustry.status} />
+
+                <div className="space-y-3">
+                    {REPORT_DATA.map((report) => (
+                        <div 
+                            key={report.id}
+                            onClick={() => setSelectedReport(report)}
+                            className="group cursor-pointer rounded-lg p-4 bg-bg-tertiary border border-white/5 hover:border-accent-cyan/30 hover:bg-white/5 transition-all duration-300"
+                        >
+                            <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 rounded-full bg-bg-primary flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300 border border-white/10 group-hover:border-accent-cyan/50">
+                                    {report.icon}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-sm font-bold text-white group-hover:text-accent-cyan transition-colors truncate font-display tracking-wide">
+                                        {report.title}
+                                    </h3>
+                                    <p className="text-xs text-text-muted mt-1 truncate group-hover:text-text-secondary transition-colors">
+                                        {report.subtitle}
+                                    </p>
+                                    <div className="flex items-center gap-3 mt-2.5">
+                                        <span className="text-[10px] text-text-subtle flex items-center gap-1">
+                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                            {report.readTime}
+                                        </span>
+                                        <div className="flex gap-1">
+                                            {report.tags.slice(0, 2).map(tag => (
+                                                <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-text-muted border border-white/5">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                                
-                                <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
-                                    {featuredIndustry.growth_signal}
-                                </p>
-                                
-                                <div className="flex items-center gap-2 pt-4 border-t" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Examples:</span>
-                                    {featuredIndustry.representative_tickers.slice(0, 4).map(ticker => (
-                                        <span
-                                            key={ticker}
-                                            className="px-2 py-1 rounded text-xs font-mono font-semibold"
-                                            style={{
-                                                backgroundColor: 'var(--color-bg-surface)',
-                                                color: 'var(--color-text-primary)'
-                                            }}
-                                        >
-                                            {ticker}
-                                        </span>
-                                    ))}
+                                <div className="self-center opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                                    <svg className="w-5 h-5 text-accent-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
                                 </div>
                             </div>
                         </div>
-                    )}
-                    
-                    {/* Trending Industries - Smaller Cards */}
-                    <div className="mb-4">
-                        <h3 
-                            className="text-lg font-semibold mb-4"
-                            style={{ color: 'var(--color-text-primary)' }}
-                        >
-                            Trending Industries
-                        </h3>
-                    </div>
-                    
-                    <div className="grid md:grid-cols-3 gap-4">
-                        {industries.filter(ind => ind.name !== featuredIndustry?.name).slice(0, 3).map(industry => (
-                            <div
-                                key={industry.name}
-                                className="rounded-xl p-4 cursor-pointer transition-all duration-300"
-                                style={{
-                                    backgroundColor: 'var(--color-bg-tertiary)',
-                                    border: '1px solid var(--color-border-subtle)',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.borderColor = 'var(--color-border-emphasis)';
-                                    e.currentTarget.style.transform = 'translateY(-2px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.borderColor = 'var(--color-border-subtle)';
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                }}
-                                onClick={() => handleSelectIndustry(industry.name)}
-                            >
-                                <div className="flex items-start justify-between mb-3">
-                                    <h3 
-                                        className="text-base font-bold flex-1"
-                                        style={{ color: 'var(--color-text-primary)' }}
-                                    >
-                                        {industry.name}
-                                    </h3>
-                                    <StatusPill status={industry.status} />
-                                </div>
-                                
-                                <p className="text-xs mb-3 line-clamp-2" style={{ color: 'var(--color-text-secondary)' }}>
-                                    {industry.growth_signal}
-                                </p>
-                                
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                    {industry.representative_tickers.slice(0, 3).map(ticker => (
-                                        <span
-                                            key={ticker}
-                                            className="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold"
-                                            style={{
-                                                backgroundColor: 'var(--color-bg-surface)',
-                                                color: 'var(--color-text-primary)'
-                                            }}
-                                        >
-                                            {ticker}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    ))}
                 </div>
+            </div>
+
+            {selectedReport && (
+                <ReportModal 
+                    report={selectedReport} 
+                    onClose={() => setSelectedReport(null)} 
+                />
             )}
         </WidgetCard>
     );

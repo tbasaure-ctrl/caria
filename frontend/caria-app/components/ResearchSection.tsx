@@ -5,6 +5,7 @@ import { Resources } from './widgets/Resources';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 import { UnderTheRadarScreener } from './widgets/UnderTheRadarScreener';
+import { MarketScanner } from './widgets/MarketScanner';
 import { IndustryResearch } from './widgets/IndustryResearch';
 
 /**
@@ -31,6 +32,9 @@ export const ResearchSection: React.FC = () => {
                 
                 {/* Under-the-Radar Screener - New Stock Screener */}
                 <UnderTheRadarScreener />
+                
+                {/* Market Scanner - Event-Driven Social Screener */}
+                <MarketScanner />
                 
                 {/* Monte Carlo Forecast Simulation - Quick multiples valuation and 2-year Monte Carlo simulations */}
                 <ValuationTool />

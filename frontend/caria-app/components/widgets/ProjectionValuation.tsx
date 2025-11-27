@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, TrendingUp, TrendingDown } from 'lucide-react';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
 
 interface Projection {

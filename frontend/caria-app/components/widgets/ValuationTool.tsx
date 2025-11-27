@@ -205,7 +205,6 @@ export const ValuationTool: React.FC = () => {
     };
 
     return (
-<<<<<<< HEAD
         <div className="space-y-4">
             {/* Ticker Input */}
             <div className="flex gap-3 items-end">
@@ -235,442 +234,429 @@ export const ValuationTool: React.FC = () => {
                     style={{
                         backgroundColor: 'var(--color-accent-primary)',
                         color: '#FFFFFF',
-=======
-        <WidgetCard
-            title="MONTE CARLO FORECAST SIMULATION"
-            tooltip="Quick multiples valuation and Monte Carlo price simulations (2-year horizon)."
-        >
-            <div className="space-y-6">
-                {/* Ticker Input */}
-                <div 
-                    className="flex gap-3 p-4 rounded-lg"
-                    style={{ 
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border-subtle)'
->>>>>>> f3ceca1c75e663723be8bbc281d5858a05d81c49
                     }}
                 >
                     {isLoadingValuation ? "Analyzing..." : "Analyze"}
                 </button>
             </div>
 
-                {valError && (
-                    <div 
-                        className="px-4 py-3 rounded-lg text-sm"
-                        style={{
-                            backgroundColor: 'var(--color-negative-muted)',
-                            color: 'var(--color-negative)',
-                            border: '1px solid var(--color-negative)',
-                        }}
-                    >
-                        {valError}
-                    </div>
-                )}
+            {valError && (
+                <div 
+                    className="px-4 py-3 rounded-lg text-sm"
+                    style={{
+                        backgroundColor: 'var(--color-negative-muted)',
+                        color: 'var(--color-negative)',
+                        border: '1px solid var(--color-negative)',
+                    }}
+                >
+                    {valError}
+                </div>
+            )}
 
-                {/* Valuation Results */}
-                {valuation && (
-                    <div className="space-y-6">
-                        {/* Quick Multiples Valuation */}
-                        <div className="grid md:grid-cols-2 gap-4">
+            {/* Valuation Results */}
+            {valuation && (
+                <div className="space-y-6">
+                    {/* Quick Multiples Valuation */}
+                    <div className="grid md:grid-cols-2 gap-4">
 
-                            {/* Multiples Valuation */}
-                            {valuation.multiples_valuation && (
-                                <div 
-                                    className="rounded-xl p-5"
-                                    style={{
-                                        backgroundColor: 'var(--color-positive-muted)',
-                                        border: '1px solid rgba(0, 200, 83, 0.25)',
-                                    }}
-                                >
-                                    <div className="flex items-center justify-between mb-3">
-                                        <span 
-                                            className="text-[10px] font-semibold tracking-widest uppercase"
+                        {/* Multiples Valuation */}
+                        {valuation.multiples_valuation && (
+                            <div 
+                                className="rounded-xl p-5"
+                                style={{
+                                    backgroundColor: 'var(--color-positive-muted)',
+                                    border: '1px solid rgba(0, 200, 83, 0.25)',
+                                }}
+                            >
+                                <div className="flex items-center justify-between mb-3">
+                                    <span 
+                                        className="text-[10px] font-semibold tracking-widest uppercase"
+                                        style={{ color: 'var(--color-positive)' }}
+                                    >
+                                        Historical Multiples
+                                    </span>
+                                    <span 
+                                        className="text-[10px]"
+                                        style={{ color: 'rgba(0, 200, 83, 0.7)' }}
+                                    >
+                                        Fair Value
+                                    </span>
+                                </div>
+                                {valuation.multiples_valuation.fair_value != null && valuation.multiples_valuation.fair_value > 0 ? (
+                                    <>
+                                        <div 
+                                            className="text-3xl font-bold font-mono mb-2"
                                             style={{ color: 'var(--color-positive)' }}
                                         >
-                                            Historical Multiples
-                                        </span>
-                                        <span 
-                                            className="text-[10px]"
-                                            style={{ color: 'rgba(0, 200, 83, 0.7)' }}
-                                        >
-                                            Fair Value
-                                        </span>
-                                    </div>
-                                    {valuation.multiples_valuation.fair_value != null && valuation.multiples_valuation.fair_value > 0 ? (
-                                        <>
-                                            <div 
-                                                className="text-3xl font-bold font-mono mb-2"
-                                                style={{ color: 'var(--color-positive)' }}
-                                            >
-                                                {formatMoney(valuation.multiples_valuation.fair_value)}
-                                            </div>
-                                            <p 
-                                                className="text-xs"
-                                                style={{ color: 'rgba(0, 200, 83, 0.8)' }}
-                                            >
-                                                EV/Sales: {valuation.multiples_valuation.ev_sales_median?.toFixed(1) ?? '—'}x • 
-                                                EV/EBITDA: {valuation.multiples_valuation.ev_ebitda_median?.toFixed(1) ?? '—'}x
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <div 
-                                            className="text-lg font-medium"
-                                            style={{ color: 'rgba(0, 200, 83, 0.5)' }}
-                                        >
-                                            Insufficient data
+                                            {formatMoney(valuation.multiples_valuation.fair_value)}
                                         </div>
-                                    )}
-                                </div>
-                            )}
+                                        <p 
+                                            className="text-xs"
+                                            style={{ color: 'rgba(0, 200, 83, 0.8)' }}
+                                        >
+                                            EV/Sales: {valuation.multiples_valuation.ev_sales_median?.toFixed(1) ?? '—'}x • 
+                                            EV/EBITDA: {valuation.multiples_valuation.ev_ebitda_median?.toFixed(1) ?? '—'}x
+                                        </p>
+                                    </>
+                                ) : (
+                                    <div 
+                                        className="text-lg font-medium"
+                                        style={{ color: 'rgba(0, 200, 83, 0.5)' }}
+                                    >
+                                        Insufficient data
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Current Multiples Grid */}
+                    {valuation.multiples?.multiples && Object.keys(valuation.multiples.multiples).length > 0 && (
+                        <div>
+                            <div 
+                                className="text-[10px] font-semibold tracking-widest uppercase mb-3"
+                                style={{ color: 'var(--color-text-muted)' }}
+                            >
+                                Current Market Multiples
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                {Object.entries(valuation.multiples.multiples).map(([key, value]) => {
+                                    const num = Number(value);
+                                    return (
+                                        <div
+                                            key={key}
+                                            className="px-3 py-2 rounded-lg"
+                                            style={{
+                                                backgroundColor: 'var(--color-bg-tertiary)',
+                                                border: '1px solid var(--color-border-subtle)',
+                                            }}
+                                        >
+                                            <div 
+                                                className="text-[10px] mb-1"
+                                                style={{ color: 'var(--color-text-muted)' }}
+                                            >
+                                                {key}
+                                            </div>
+                                            <div 
+                                                className="text-sm font-mono font-medium"
+                                                style={{ color: 'var(--color-text-primary)' }}
+                                            >
+                                                {key.includes("yield") || key.includes("rate")
+                                                    ? `${(num * 100).toFixed(1)}%`
+                                                    : num.toFixed(2)}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Monte Carlo Section */}
+                    <div 
+                        className="pt-6 border-t"
+                        style={{ borderColor: 'var(--color-border-subtle)' }}
+                    >
+                        <div className="mb-4">
+                            <div 
+                                className="text-sm font-semibold"
+                                style={{ color: 'var(--color-text-primary)' }}
+                            >
+                                Monte Carlo Price Forecast (2-Year Horizon)
+                            </div>
+                            <div 
+                                className="text-xs"
+                                style={{ color: 'var(--color-text-muted)' }}
+                            >
+                                {simulations.toLocaleString()} simulations based on historical volatility
+                            </div>
                         </div>
 
-                        {/* Current Multiples Grid */}
-                        {valuation.multiples?.multiples && Object.keys(valuation.multiples.multiples).length > 0 && (
-                            <div>
-                                <div 
-                                    className="text-[10px] font-semibold tracking-widest uppercase mb-3"
-                                    style={{ color: 'var(--color-text-muted)' }}
-                                >
-                                    Current Market Multiples
-                                </div>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                    {Object.entries(valuation.multiples.multiples).map(([key, value]) => {
-                                        const num = Number(value);
-                                        return (
-                                            <div
-                                                key={key}
-                                                className="px-3 py-2 rounded-lg"
-                                                style={{
-                                                    backgroundColor: 'var(--color-bg-tertiary)',
-                                                    border: '1px solid var(--color-border-subtle)',
-                                                }}
-                                            >
-                                                <div 
-                                                    className="text-[10px] mb-1"
-                                                    style={{ color: 'var(--color-text-muted)' }}
-                                                >
-                                                    {key}
-                                                </div>
-                                                <div 
-                                                    className="text-sm font-mono font-medium"
-                                                    style={{ color: 'var(--color-text-primary)' }}
-                                                >
-                                                    {key.includes("yield") || key.includes("rate")
-                                                        ? `${(num * 100).toFixed(1)}%`
-                                                        : num.toFixed(2)}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                        {mcError && (
+                            <div 
+                                className="px-4 py-2 rounded-lg text-xs mb-4"
+                                style={{
+                                    backgroundColor: 'var(--color-negative-muted)',
+                                    color: 'var(--color-negative)',
+                                }}
+                            >
+                                {mcError}
                             </div>
                         )}
 
-                        {/* Monte Carlo Section */}
-                        <div 
-                            className="pt-6 border-t"
-                            style={{ borderColor: 'var(--color-border-subtle)' }}
-                        >
-                            <div className="mb-4">
-                                <div 
-                                    className="text-sm font-semibold"
-                                    style={{ color: 'var(--color-text-primary)' }}
-                                >
-                                    Monte Carlo Price Forecast (2-Year Horizon)
-                                </div>
-                                <div 
-                                    className="text-xs"
-                                    style={{ color: 'var(--color-text-muted)' }}
-                                >
-                                    {simulations.toLocaleString()} simulations based on historical volatility
-                                </div>
-                            </div>
-
-                            {mcError && (
-                                <div 
-                                    className="px-4 py-2 rounded-lg text-xs mb-4"
-                                    style={{
-                                        backgroundColor: 'var(--color-negative-muted)',
-                                        color: 'var(--color-negative)',
-                                    }}
-                                >
-                                    {mcError}
-                                </div>
-                            )}
-
-                            {mcResult && (
-                                <div className="space-y-4">
-                                    {/* Percentiles Summary */}
-                                    <div className="grid grid-cols-3 gap-3">
-                                        {[
-                                            { label: 'Bear (P10)', value: mcResult.percentiles.p10, color: 'var(--color-negative)' },
-                                            { label: 'Base (P50)', value: mcResult.percentiles.p50, color: 'var(--color-text-primary)' },
-                                            { label: 'Bull (P90)', value: mcResult.percentiles.p90, color: 'var(--color-positive)' },
-                                        ].map((p) => (
+                        {mcResult && (
+                            <div className="space-y-4">
+                                {/* Percentiles Summary */}
+                                <div className="grid grid-cols-3 gap-3">
+                                    {[
+                                        { label: 'Bear (P10)', value: mcResult.percentiles.p10, color: 'var(--color-negative)' },
+                                        { label: 'Base (P50)', value: mcResult.percentiles.p50, color: 'var(--color-text-primary)' },
+                                        { label: 'Bull (P90)', value: mcResult.percentiles.p90, color: 'var(--color-positive)' },
+                                    ].map((p) => (
+                                        <div 
+                                            key={p.label}
+                                            className="px-4 py-3 rounded-lg text-center"
+                                            style={{
+                                                backgroundColor: 'var(--color-bg-tertiary)',
+                                                border: '1px solid var(--color-border-subtle)',
+                                            }}
+                                        >
                                             <div 
-                                                key={p.label}
-                                                className="px-4 py-3 rounded-lg text-center"
-                                                style={{
-                                                    backgroundColor: 'var(--color-bg-tertiary)',
-                                                    border: '1px solid var(--color-border-subtle)',
-                                                }}
+                                                className="text-[10px] font-medium tracking-wider uppercase mb-1"
+                                                style={{ color: 'var(--color-text-muted)' }}
                                             >
-                                                <div 
-                                                    className="text-[10px] font-medium tracking-wider uppercase mb-1"
-                                                    style={{ color: 'var(--color-text-muted)' }}
-                                                >
-                                                    {p.label}
-                                                </div>
-                                                <div 
-                                                    className="text-xl font-bold font-mono"
-                                                    style={{ color: p.color }}
-                                                >
-                                                    {formatMoney(p.value)}
-                                                </div>
+                                                {p.label}
                                             </div>
-                                        ))}
-                                    </div>
+                                            <div 
+                                                className="text-xl font-bold font-mono"
+                                                style={{ color: p.color }}
+                                            >
+                                                {formatMoney(p.value)}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
 
-                                    {/* Histogram - Main Chart */}
-                                    {(() => {
-                                        // Calculate dynamic X-axis range based on price distribution
-                                        const finalValues = mcResult.final_values;
-                                        const minPrice = Math.min(...finalValues);
-                                        const maxPrice = Math.max(...finalValues);
-                                        
-                                        // Use percentiles for a focused view (P5 to P95 covers 90% of outcomes)
-                                        const p5 = mcResult.percentiles.p5 || minPrice;
-                                        const p95 = mcResult.percentiles.p95 || maxPrice;
-                                        
-                                        // Calculate range and add 15% padding on each side for readability
-                                        const percentileRange = p95 - p5;
-                                        const padding = percentileRange * 0.15;
-                                        
-                                        // Set axis bounds with padding, ensuring we don't go below 0
-                                        let xAxisMin = Math.max(0, p5 - padding);
-                                        let xAxisMax = p95 + padding;
-                                        
-                                        // If current price is available, ensure it's visible in context
-                                        const currentPrice = valuation?.current_price;
-                                        if (currentPrice) {
-                                            // Expand range if current price is outside the percentile range
-                                            if (currentPrice < p5) {
-                                                xAxisMin = Math.max(0, currentPrice * 0.8);
-                                            }
-                                            if (currentPrice > p95) {
-                                                xAxisMax = currentPrice * 1.2;
-                                            }
+                                {/* Histogram - Main Chart */}
+                                {(() => {
+                                    // Calculate dynamic X-axis range based on price distribution
+                                    const finalValues = mcResult.final_values;
+                                    const minPrice = Math.min(...finalValues);
+                                    const maxPrice = Math.max(...finalValues);
+                                    
+                                    // Use percentiles for a focused view (P5 to P95 covers 90% of outcomes)
+                                    const p5 = mcResult.percentiles.p5 || minPrice;
+                                    const p95 = mcResult.percentiles.p95 || maxPrice;
+                                    
+                                    // Calculate range and add 15% padding on each side for readability
+                                    const percentileRange = p95 - p5;
+                                    const padding = percentileRange * 0.15;
+                                    
+                                    // Set axis bounds with padding, ensuring we don't go below 0
+                                    let xAxisMin = Math.max(0, p5 - padding);
+                                    let xAxisMax = p95 + padding;
+                                    
+                                    // If current price is available, ensure it's visible in context
+                                    const currentPrice = valuation?.current_price;
+                                    if (currentPrice) {
+                                        // Expand range if current price is outside the percentile range
+                                        if (currentPrice < p5) {
+                                            xAxisMin = Math.max(0, currentPrice * 0.8);
                                         }
+                                        if (currentPrice > p95) {
+                                            xAxisMax = currentPrice * 1.2;
+                                        }
+                                    }
+                                    
+                                    const adjustedMin = xAxisMin;
+                                    const adjustedMax = xAxisMax;
+                                    
+                                    // Use visualization_data if available, otherwise fallback to old format
+                                    const vizData = mcResult.visualization_data;
+                                    const values = vizData?.raw_values || mcResult.final_values;
+                                    const metrics = vizData?.metrics || {
+                                        p10: mcResult.percentiles.p10,
+                                        p50: mcResult.percentiles.p50,
+                                        p90: mcResult.percentiles.p90
+                                    };
+                                    const visualRange = vizData?.visual_range || [adjustedMin, adjustedMax];
+                                    const tickerName = vizData?.ticker || ticker;
+
+                                    // 1. EL HISTOGRAMA (Amarillo con bordes negros)
+                                    const traceHistogram = {
+                                        x: values,
+                                        type: 'histogram',
+                                        histnorm: 'count',
+                                        marker: {
+                                            color: '#F4D03F',      // El amarillo de la imagen
+                                            line: {
+                                                color: '#333333',  // Borde negro fino
+                                                width: 1
+                                            }
+                                        },
+                                        opacity: 0.9,
+                                        showlegend: false,
+                                        nbinsx: 40 // Ajusta el ancho de las barras
+                                    };
+
+                                    // 2. TRUCO PARA LA LEYENDA (Dummy Traces)
+                                    const legendP10 = {
+                                        x: [null], 
+                                        y: [null],
+                                        mode: 'lines',
+                                        name: `10th %ile: $${metrics.p10.toFixed(2)}`,
+                                        line: { color: '#E74C3C', width: 3, dash: 'dash' } // Rojo discontinuo
+                                    };
+
+                                    const legendP50 = {
+                                        x: [null], 
+                                        y: [null],
+                                        mode: 'lines',
+                                        name: `Median: $${metrics.p50.toFixed(2)}`,
+                                        line: { color: '#27AE60', width: 3, dash: 'dash' } // Verde discontinuo
+                                    };
+
+                                    const legendP90 = {
+                                        x: [null], 
+                                        y: [null],
+                                        mode: 'lines',
+                                        name: `90th %ile: $${metrics.p90.toFixed(2)}`,
+                                        line: { color: '#2980B9', width: 3, dash: 'dash' } // Azul discontinuo
+                                    };
+
+                                    // 3. EL LAYOUT (Líneas verticales reales y estilos)
+                                    const horizonYears = mcResult.simulation_params?.years || 1;
+                                    const horizonText = horizonYears === 1 ? '12-month horizon' : `${horizonYears}-year horizon`;
+                                    const layout = {
+                                        title: {
+                                            text: `${tickerName} Macro Monte Carlo Simulation (${horizonText})`,
+                                            font: { size: 18, color: '#333' }
+                                        },
+                                        xaxis: {
+                                            title: 'Valuation ($/share)',
+                                            range: visualRange,
+                                            gridcolor: '#eee'
+                                        },
+                                        yaxis: {
+                                            title: '',
+                                            gridcolor: '#eee',
+                                            zeroline: false
+                                        },
+                                        plot_bgcolor: 'white',
+                                        paper_bgcolor: 'white',
                                         
-                                        const adjustedMin = xAxisMin;
-                                        const adjustedMax = xAxisMax;
-                                        
-                                        // Use visualization_data if available, otherwise fallback to old format
-                                        const vizData = mcResult.visualization_data;
-                                        const values = vizData?.raw_values || mcResult.final_values;
-                                        const metrics = vizData?.metrics || {
-                                            p10: mcResult.percentiles.p10,
-                                            p50: mcResult.percentiles.p50,
-                                            p90: mcResult.percentiles.p90
-                                        };
-                                        const visualRange = vizData?.visual_range || [adjustedMin, adjustedMax];
-                                        const tickerName = vizData?.ticker || ticker;
-
-                                        // 1. EL HISTOGRAMA (Amarillo con bordes negros)
-                                        const traceHistogram = {
-                                            x: values,
-                                            type: 'histogram',
-                                            histnorm: 'count',
-                                            marker: {
-                                                color: '#F4D03F',      // El amarillo de la imagen
-                                                line: {
-                                                    color: '#333333',  // Borde negro fino
-                                                    width: 1
-                                                }
+                                        // Aquí dibujamos las líneas verticales reales
+                                        shapes: [
+                                            { // Línea P10 (Roja)
+                                                type: 'line',
+                                                x0: metrics.p10, 
+                                                x1: metrics.p10,
+                                                y0: 0, 
+                                                y1: 1, 
+                                                yref: 'paper',
+                                                line: { color: '#E74C3C', width: 3, dash: 'dash' }
                                             },
-                                            opacity: 0.9,
-                                            showlegend: false,
-                                            nbinsx: 40 // Ajusta el ancho de las barras
-                                        };
-
-                                        // 2. TRUCO PARA LA LEYENDA (Dummy Traces)
-                                        const legendP10 = {
-                                            x: [null], 
-                                            y: [null],
-                                            mode: 'lines',
-                                            name: `10th %ile: $${metrics.p10.toFixed(2)}`,
-                                            line: { color: '#E74C3C', width: 3, dash: 'dash' } // Rojo discontinuo
-                                        };
-
-                                        const legendP50 = {
-                                            x: [null], 
-                                            y: [null],
-                                            mode: 'lines',
-                                            name: `Median: $${metrics.p50.toFixed(2)}`,
-                                            line: { color: '#27AE60', width: 3, dash: 'dash' } // Verde discontinuo
-                                        };
-
-                                        const legendP90 = {
-                                            x: [null], 
-                                            y: [null],
-                                            mode: 'lines',
-                                            name: `90th %ile: $${metrics.p90.toFixed(2)}`,
-                                            line: { color: '#2980B9', width: 3, dash: 'dash' } // Azul discontinuo
-                                        };
-
-                                        // 3. EL LAYOUT (Líneas verticales reales y estilos)
-                                        const horizonYears = mcResult.simulation_params?.years || 1;
-                                        const horizonText = horizonYears === 1 ? '12-month horizon' : `${horizonYears}-year horizon`;
-                                        const layout = {
-                                            title: {
-                                                text: `${tickerName} Macro Monte Carlo Simulation (${horizonText})`,
-                                                font: { size: 18, color: '#333' }
+                                            { // Línea Mediana (Verde)
+                                                type: 'line',
+                                                x0: metrics.p50, 
+                                                x1: metrics.p50,
+                                                y0: 0, 
+                                                y1: 1, 
+                                                yref: 'paper',
+                                                line: { color: '#27AE60', width: 3, dash: 'dash' }
                                             },
-                                            xaxis: {
-                                                title: 'Valuation ($/share)',
-                                                range: visualRange,
-                                                gridcolor: '#eee'
-                                            },
-                                            yaxis: {
-                                                title: '',
-                                                gridcolor: '#eee',
-                                                zeroline: false
-                                            },
-                                            plot_bgcolor: 'white',
-                                            paper_bgcolor: 'white',
-                                            
-                                            // Aquí dibujamos las líneas verticales reales
-                                            shapes: [
-                                                { // Línea P10 (Roja)
-                                                    type: 'line',
-                                                    x0: metrics.p10, 
-                                                    x1: metrics.p10,
-                                                    y0: 0, 
-                                                    y1: 1, 
-                                                    yref: 'paper',
-                                                    line: { color: '#E74C3C', width: 3, dash: 'dash' }
-                                                },
-                                                { // Línea Mediana (Verde)
-                                                    type: 'line',
-                                                    x0: metrics.p50, 
-                                                    x1: metrics.p50,
-                                                    y0: 0, 
-                                                    y1: 1, 
-                                                    yref: 'paper',
-                                                    line: { color: '#27AE60', width: 3, dash: 'dash' }
-                                                },
-                                                { // Línea P90 (Azul)
-                                                    type: 'line',
-                                                    x0: metrics.p90, 
-                                                    x1: metrics.p90,
-                                                    y0: 0, 
-                                                    y1: 1, 
-                                                    yref: 'paper',
-                                                    line: { color: '#2980B9', width: 3, dash: 'dash' }
-                                                }
-                                            ],
-                                            legend: {
-                                                x: 1,
-                                                xanchor: 'right',
-                                                y: 1,
-                                                bgcolor: 'rgba(255, 255, 255, 0.8)',
-                                                bordercolor: '#ccc',
-                                                borderwidth: 1
-                                            },
-                                            bargap: 0.05,
-                                            height: 400
-                                        };
+                                            { // Línea P90 (Azul)
+                                                type: 'line',
+                                                x0: metrics.p90, 
+                                                x1: metrics.p90,
+                                                y0: 0, 
+                                                y1: 1, 
+                                                yref: 'paper',
+                                                line: { color: '#2980B9', width: 3, dash: 'dash' }
+                                            }
+                                        ],
+                                        legend: {
+                                            x: 1,
+                                            xanchor: 'right',
+                                            y: 1,
+                                            bgcolor: 'rgba(255, 255, 255, 0.8)',
+                                            bordercolor: '#ccc',
+                                            borderwidth: 1
+                                        },
+                                        bargap: 0.05,
+                                        height: 400
+                                    };
 
-                                        return (
-                                            <div 
-                                                className="rounded-lg overflow-hidden"
-                                                style={{
-                                                    backgroundColor: 'var(--color-bg-tertiary)',
-                                                    border: '1px solid var(--color-border-subtle)',
-                                                }}
-                                            >
-                                                <Plot
-                                                    data={[traceHistogram, legendP10, legendP50, legendP90] as any}
-                                                    layout={layout}
-                                                    config={{ displayModeBar: false, responsive: true }}
-                                                    style={{ width: "100%", height: "400px" }}
-                                                    useResizeHandler
-                                                />
-                                            </div>
-                                        );
-                                    })()}
-
-                                    {/* Probability Explanation */}
-                                    <div 
-                                        className="rounded-lg p-4"
-                                        style={{
-                                            backgroundColor: 'var(--color-bg-tertiary)',
-                                            border: '1px solid var(--color-border-subtle)',
-                                        }}
-                                    >
+                                    return (
                                         <div 
-                                            className="text-xs font-semibold mb-2"
-                                            style={{ color: 'var(--color-text-primary)' }}
+                                            className="rounded-lg overflow-hidden"
+                                            style={{
+                                                backgroundColor: 'var(--color-bg-tertiary)',
+                                                border: '1px solid var(--color-border-subtle)',
+                                            }}
                                         >
-                                            Probabilistic Interpretation
-                                        </div>
-                                        <div 
-                                            className="text-xs leading-relaxed space-y-1"
-                                            style={{ color: 'var(--color-text-secondary)' }}
-                                        >
-                                            <p>
-                                                • <strong>10% probability</strong> the price falls below <strong>{formatMoney(mcResult.percentiles.p10)}</strong> (bear case)
-                                            </p>
-                                            <p>
-                                                • <strong>50% probability</strong> the price is below <strong>{formatMoney(mcResult.percentiles.p50)}</strong> (median outcome)
-                                            </p>
-                                            <p>
-                                                • <strong>90% probability</strong> the price is below <strong>{formatMoney(mcResult.percentiles.p90)}</strong> (bull case)
-                                            </p>
-                                            {mcResult.metrics && (
-                                                <p className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                                                    Expected value: <strong>{formatMoney(mcResult.metrics.mean)}</strong> • 
-                                                    Std deviation: <strong>{formatMoney(mcResult.metrics.std)}</strong>
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Paths Chart - Secondary */}
-                                    <details className="rounded-lg overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border-subtle)' }}>
-                                        <summary 
-                                            className="px-4 py-2 cursor-pointer text-xs font-medium"
-                                            style={{ color: 'var(--color-text-muted)' }}
-                                        >
-                                            View Simulation Paths (Secondary)
-                                        </summary>
-                                        <div className="p-4 pt-2">
                                             <Plot
-                                                data={[mcResult.plotly_data] as any}
-                                                layout={mcLayout}
+                                                data={[traceHistogram, legendP10, legendP50, legendP90] as any}
+                                                layout={layout}
                                                 config={{ displayModeBar: false, responsive: true }}
-                                                style={{ width: "100%", height: "240px" }}
+                                                style={{ width: "100%", height: "400px" }}
                                                 useResizeHandler
                                             />
                                         </div>
-                                    </details>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
+                                    );
+                                })()}
 
-                {/* Empty State */}
-                {!valuation && !isLoadingValuation && !valError && (
-                    <div 
-                        className="text-center py-12"
-                        style={{ color: 'var(--color-text-muted)' }}
-                    >
-                        <p className="text-sm">
-                            Enter a ticker symbol to run valuation analysis
-                        </p>
+                                {/* Probability Explanation */}
+                                <div 
+                                    className="rounded-lg p-4"
+                                    style={{
+                                        backgroundColor: 'var(--color-bg-tertiary)',
+                                        border: '1px solid var(--color-border-subtle)',
+                                    }}
+                                >
+                                    <div 
+                                        className="text-xs font-semibold mb-2"
+                                        style={{ color: 'var(--color-text-primary)' }}
+                                    >
+                                        Probabilistic Interpretation
+                                    </div>
+                                    <div 
+                                        className="text-xs leading-relaxed space-y-1"
+                                        style={{ color: 'var(--color-text-secondary)' }}
+                                    >
+                                        <p>
+                                            • <strong>10% probability</strong> the price falls below <strong>{formatMoney(mcResult.percentiles.p10)}</strong> (bear case)
+                                        </p>
+                                        <p>
+                                            • <strong>50% probability</strong> the price is below <strong>{formatMoney(mcResult.percentiles.p50)}</strong> (median outcome)
+                                        </p>
+                                        <p>
+                                            • <strong>90% probability</strong> the price is below <strong>{formatMoney(mcResult.percentiles.p90)}</strong> (bull case)
+                                        </p>
+                                        {mcResult.metrics && (
+                                            <p className="mt-2 pt-2 border-t" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                                                Expected value: <strong>{formatMoney(mcResult.metrics.mean)}</strong> • 
+                                                Std deviation: <strong>{formatMoney(mcResult.metrics.std)}</strong>
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Paths Chart - Secondary */}
+                                <details className="rounded-lg overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border-subtle)' }}>
+                                    <summary 
+                                        className="px-4 py-2 cursor-pointer text-xs font-medium"
+                                        style={{ color: 'var(--color-text-muted)' }}
+                                    >
+                                        View Simulation Paths (Secondary)
+                                    </summary>
+                                    <div className="p-4 pt-2">
+                                        <Plot
+                                            data={[mcResult.plotly_data] as any}
+                                            layout={mcLayout}
+                                            config={{ displayModeBar: false, responsive: true }}
+                                            style={{ width: "100%", height: "240px" }}
+                                            useResizeHandler
+                                        />
+                                    </div>
+                                </details>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
+            )}
+
+            {/* Empty State */}
+            {!valuation && !isLoadingValuation && !valError && (
+                <div 
+                    className="text-center py-12"
+                    style={{ color: 'var(--color-text-muted)' }}
+                >
+                    <p className="text-sm">
+                        Enter a ticker symbol to run valuation analysis
+                    </p>
+                </div>
+            )}
         </div>
     );
 };

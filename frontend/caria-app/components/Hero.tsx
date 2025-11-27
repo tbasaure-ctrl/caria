@@ -28,22 +28,19 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
 
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center">
         
-        {/* Main Title */}
-        <h1 className="text-6xl sm:text-7xl md:text-8xl font-display font-normal tracking-tight mb-8 animate-fade-in">
-          <span className="text-gradient-hero block">
-            Reason First,
-          </span>
-          <span className="text-gradient-hero block italic mt-2">
-            returns will follow
+        {/* Main Title - Single Line */}
+        <h1 className="text-5xl sm:text-6xl md:text-8xl font-display font-normal tracking-tight mb-8 animate-fade-in whitespace-nowrap">
+          <span className="text-gradient-hero">
+            Reason First, <span className="italic text-gradient-hero">returns will follow</span>
           </span>
         </h1>
 
-        {/* Subtitle (Existing Text) */}
+        {/* Subtitle (Updated Text) */}
         <p 
-          className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-12 font-light leading-relaxed animate-slide-up delay-100"
+          className="text-lg md:text-xl text-text-secondary max-w-3xl mx-auto mb-12 font-light leading-relaxed animate-slide-up delay-100"
         >
-          Precision without distraction. Navigating the complexities of modern markets
-          with absolute clarity and electric resolve.
+          Merge timeless investment wisdom with the analytical power of deep learning. 
+          An invaluable partner for your financial journey in the digital age.
         </p>
 
         {/* CTA Button */}

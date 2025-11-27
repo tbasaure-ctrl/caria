@@ -288,6 +288,38 @@ class AuthService:
         """Register a new user (wrapper for create_user)."""
         return self.create_user(email, username, password, full_name)
 
+    def update_user(
+        self,
+        user_id: UUID,
+        full_name: Optional[str] = None
+    ) -> UserInDB:
+        """Update user profile information."""
+        if full_name is None:
+            # No updates to make, return current user
+            return self.get_user_by_id(user_id)
+        
+        with self.db.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(
+                """
+                UPDATE users
+                SET full_name = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                RETURNING id, email, username, full_name, hashed_password,
+                          is_active, is_verified, is_superuser,
+                          created_at, updated_at, last_login
+                """,
+                (full_name, str(user_id))
+            )
+            row = cursor.fetchone()
+            self.db.commit()
+            
+            if not row:
+                raise ValueError(f"User with id {user_id} not found")
+            
+            user = UserInDB(**dict(row))
+            LOGGER.info("User updated: %s", user.username)
+            return user
+
     # ========================================================================
     # REFRESH TOKEN MANAGEMENT
     # ========================================================================

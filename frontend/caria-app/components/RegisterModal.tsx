@@ -9,10 +9,24 @@ interface RegisterModalProps {
 
 export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess, onSwitchToLogin }) => {
     const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Auto-generate username from email when email changes
+    React.useEffect(() => {
+        if (email && !username) {
+            // Extract username from email (part before @)
+            const emailUsername = email.split('@')[0];
+            // Clean it to match username requirements: alphanumeric, underscore, hyphen only
+            const cleanUsername = emailUsername.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
+            if (cleanUsername.length >= 3) {
+                setUsername(cleanUsername);
+            }
+        }
+    }, [email, username]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,6 +57,17 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
             return;
         }
 
+        // Validate username
+        const trimmedUsername = username.trim();
+        if (!trimmedUsername || trimmedUsername.length < 3) {
+            setError('Username must be at least 3 characters');
+            return;
+        }
+        if (!/^[a-zA-Z0-9_-]+$/.test(trimmedUsername)) {
+            setError('Username can only contain letters, numbers, underscores, and hyphens');
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -52,7 +77,8 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
-                    email: email.trim(), 
+                    email: email.trim(),
+                    username: trimmedUsername,
                     password
                 }),
             });
@@ -63,16 +89,15 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
             }
 
             // Auto-login after registration
-            const formData = new URLSearchParams();
-            formData.append('username', email);
-            formData.append('password', password);
-
             const loginResponse = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
                 },
-                body: formData.toString(),
+                body: JSON.stringify({
+                    username: trimmedUsername,
+                    password: password,
+                }),
             });
 
             if (!loginResponse.ok) {
@@ -80,7 +105,15 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
             }
 
             const loginData = await loginResponse.json();
-            onSuccess(loginData.access_token);
+            // Backend returns { user: {...}, token: { access_token: "...", ... } }
+            if (loginData.token && loginData.token.access_token) {
+                onSuccess(loginData.token.access_token);
+            } else if (loginData.access_token) {
+                // Fallback for different response format
+                onSuccess(loginData.access_token);
+            } else {
+                throw new Error('Invalid response format from server');
+            }
         } catch (err: any) {
             setError(err.message || 'An error occurred during registration');
         } finally {
@@ -170,6 +203,33 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ onClose, onSuccess
                             }}
                             placeholder="you@example.com"
                         />
+                    </div>
+
+                    <div>
+                        <label 
+                            className="block text-xs font-medium tracking-wider uppercase mb-2"
+                            style={{ color: 'var(--color-text-muted)' }}
+                        >
+                            Username
+                        </label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="w-full px-4 py-3 rounded-lg text-sm"
+                            style={{
+                                backgroundColor: 'var(--color-bg-tertiary)',
+                                border: '1px solid var(--color-border-subtle)',
+                                color: 'var(--color-text-primary)',
+                            }}
+                            placeholder="username"
+                            pattern="[a-zA-Z0-9_-]+"
+                            minLength={3}
+                            maxLength={50}
+                        />
+                        <p className="text-xs mt-1" style={{ color: 'var(--color-text-subtle)' }}>
+                            Letters, numbers, underscores, and hyphens only (3-50 characters)
+                        </p>
                     </div>
 
                     <div>

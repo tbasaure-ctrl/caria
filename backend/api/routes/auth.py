@@ -14,6 +14,7 @@ from caria.models.auth import (
     UserLogin,
     UserPublic,
     UserRegister,
+    UserUpdate,
     UserWithToken,
 )
 from caria.services.auth_service import AuthService
@@ -344,6 +345,46 @@ async def get_current_user_info(
         created_at=current_user.created_at,
         last_login=current_user.last_login
     )
+
+
+@router.put("/me", response_model=UserPublic)
+async def update_current_user_info(
+    user_update: UserUpdate,
+    current_user: UserInDB = Depends(get_current_user),
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    """
+    Update current authenticated user profile information.
+
+    Requires authentication.
+    """
+    try:
+        updated_user = auth_service.update_user(
+            user_id=current_user.id,
+            full_name=user_update.full_name
+        )
+        
+        return UserPublic(
+            id=updated_user.id,
+            email=updated_user.email,
+            username=updated_user.username,
+            full_name=updated_user.full_name,
+            is_active=updated_user.is_active,
+            is_verified=updated_user.is_verified,
+            created_at=updated_user.created_at,
+            last_login=updated_user.last_login
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        LOGGER.exception("Error updating user profile: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update user profile"
+        )
 
 
 # ============================================================================

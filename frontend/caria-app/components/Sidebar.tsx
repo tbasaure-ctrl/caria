@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { CariaLogoIcon, LogoutIcon, DashboardIcon, CommunityIcon, ThesisIcon } from './Icons';
-import { API_BASE_URL, getToken, saveToken } from '../services/apiService';
+import { API_BASE_URL, getToken, saveToken, fetchWithAuth } from '../services/apiService';
 
 interface SidebarProps {
     onLogout: () => void;
@@ -11,83 +11,93 @@ interface UserProfileFormProps {
     onClose: () => void;
 }
 
+interface UserProfile {
+    id: string;
+    email: string;
+    username: string;
+    full_name: string | null;
+    is_active: boolean;
+    is_verified: boolean;
+    created_at: string;
+    last_login: string | null;
+}
+
 const UserProfileForm: React.FC<UserProfileFormProps> = ({ onClose }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [occupation, setOccupation] = useState('');
-    const [selfDescription, setSelfDescription] = useState('');
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [fullName, setFullName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingProfile, setIsLoadingProfile] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+
+    // Fetch user profile on mount
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const token = getToken();
+            if (!token) {
+                setIsLoadingProfile(false);
+                return;
+            }
+
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/api/auth/me`);
+                if (response.ok) {
+                    const profile = await response.json();
+                    setUserProfile(profile);
+                    setFullName(profile.full_name || '');
+                }
+            } catch (err: any) {
+                console.error('Error fetching user profile:', err);
+                setError('Failed to load profile');
+            } finally {
+                setIsLoadingProfile(false);
+            }
+        };
+
+        fetchProfile();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+        setSuccess(false);
 
-        if (password !== confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
-
-        if (password.length < 8) {
-            setError('Password must be at least 8 characters');
+        const token = getToken();
+        if (!token) {
+            setError('You must be logged in to update your profile');
             return;
         }
 
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    email, 
-                    password,
-                    occupation,
-                    self_description: selfDescription
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/auth/me`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    full_name: fullName.trim() || null
                 }),
             });
 
             if (!response.ok) {
                 const data = await response.json();
-                throw new Error(data.detail || 'Registration failed');
+                throw new Error(data.detail || 'Failed to update profile');
             }
 
-            // Auto-login after registration
-            const formData = new URLSearchParams();
-            formData.append('username', email);
-            formData.append('password', password);
-
-            const loginResponse = await fetch(`${API_BASE_URL}/api/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: formData.toString(),
-            });
-
-            if (!loginResponse.ok) {
-                throw new Error('Registration successful, but auto-login failed. Please sign in manually.');
-            }
-
-            const loginData = await loginResponse.json();
-            saveToken(loginData.access_token);
+            const updatedProfile = await response.json();
+            setUserProfile(updatedProfile);
             setSuccess(true);
             setTimeout(() => {
-                window.location.reload();
-            }, 1500);
+                setSuccess(false);
+            }, 2000);
         } catch (err: any) {
-            setError(err.message || 'An error occurred during registration');
+            setError(err.message || 'An error occurred while updating your profile');
         } finally {
             setIsLoading(false);
         }
     };
 
     const token = getToken();
-    if (token) {
+    if (!token) {
         return (
             <div className="text-center">
                 <div 
@@ -105,7 +115,17 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onClose }) => {
                     </svg>
                 </div>
                 <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                    You are logged in
+                    Please log in to view your profile
+                </p>
+            </div>
+        );
+    }
+
+    if (isLoadingProfile) {
+        return (
+            <div className="text-center py-8">
+                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                    Loading profile...
                 </p>
             </div>
         );
@@ -129,10 +149,17 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onClose }) => {
                     </svg>
                 </div>
                 <p className="text-sm font-semibold" style={{ color: 'var(--color-positive)' }}>
-                    Account created successfully!
+                    Profile updated successfully!
                 </p>
-                <p className="text-xs mt-2" style={{ color: 'var(--color-text-secondary)' }}>
-                    Redirecting...
+            </div>
+        );
+    }
+
+    if (!userProfile) {
+        return (
+            <div className="text-center py-8">
+                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                    Unable to load profile
                 </p>
             </div>
         );
@@ -148,7 +175,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onClose }) => {
                         color: 'var(--color-text-primary)' 
                     }}
                 >
-                    Create Account
+                    Profile & Settings
                 </h3>
             </div>
 
@@ -174,17 +201,18 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onClose }) => {
                 </label>
                 <input
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full px-4 py-2.5 rounded-lg text-sm"
+                    value={userProfile.email}
+                    disabled
+                    className="w-full px-4 py-2.5 rounded-lg text-sm opacity-60 cursor-not-allowed"
                     style={{
                         backgroundColor: 'var(--color-bg-tertiary)',
                         border: '1px solid var(--color-border-subtle)',
                         color: 'var(--color-text-primary)',
                     }}
-                    placeholder="you@example.com"
                 />
+                <p className="text-xs mt-1" style={{ color: 'var(--color-text-subtle)' }}>
+                    Email cannot be changed
+                </p>
             </div>
 
             <div>
@@ -192,64 +220,22 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onClose }) => {
                     className="block text-xs font-medium tracking-wider uppercase mb-2"
                     style={{ color: 'var(--color-text-muted)' }}
                 >
-                    Password
-                </label>
-                <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="w-full px-4 py-2.5 rounded-lg text-sm"
-                    style={{
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border-subtle)',
-                        color: 'var(--color-text-primary)',
-                    }}
-                    placeholder="At least 8 characters"
-                />
-            </div>
-
-            <div>
-                <label 
-                    className="block text-xs font-medium tracking-wider uppercase mb-2"
-                    style={{ color: 'var(--color-text-muted)' }}
-                >
-                    Confirm Password
-                </label>
-                <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    className="w-full px-4 py-2.5 rounded-lg text-sm"
-                    style={{
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        border: '1px solid var(--color-border-subtle)',
-                        color: 'var(--color-text-primary)',
-                    }}
-                    placeholder="••••••••"
-                />
-            </div>
-
-            <div>
-                <label 
-                    className="block text-xs font-medium tracking-wider uppercase mb-2"
-                    style={{ color: 'var(--color-text-muted)' }}
-                >
-                    Occupation <span className="text-xs normal-case" style={{ color: 'var(--color-text-subtle)' }}>(optional)</span>
+                    Username
                 </label>
                 <input
                     type="text"
-                    value={occupation}
-                    onChange={(e) => setOccupation(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg text-sm"
+                    value={userProfile.username}
+                    disabled
+                    className="w-full px-4 py-2.5 rounded-lg text-sm opacity-60 cursor-not-allowed"
                     style={{
                         backgroundColor: 'var(--color-bg-tertiary)',
                         border: '1px solid var(--color-border-subtle)',
                         color: 'var(--color-text-primary)',
                     }}
-                    placeholder="What do you do for a living?"
                 />
+                <p className="text-xs mt-1" style={{ color: 'var(--color-text-subtle)' }}>
+                    Username cannot be changed
+                </p>
             </div>
 
             <div>
@@ -257,19 +243,19 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onClose }) => {
                     className="block text-xs font-medium tracking-wider uppercase mb-2"
                     style={{ color: 'var(--color-text-muted)' }}
                 >
-                    Tell us about yourself <span className="text-xs normal-case" style={{ color: 'var(--color-text-subtle)' }}>(optional)</span>
+                    Full Name <span className="text-xs normal-case" style={{ color: 'var(--color-text-subtle)' }}>(optional)</span>
                 </label>
-                <textarea
-                    value={selfDescription}
-                    onChange={(e) => setSelfDescription(e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-2.5 rounded-lg text-sm resize-none"
+                <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-lg text-sm"
                     style={{
                         backgroundColor: 'var(--color-bg-tertiary)',
                         border: '1px solid var(--color-border-subtle)',
                         color: 'var(--color-text-primary)',
                     }}
-                    placeholder="Tell us a bit about yourself..."
+                    placeholder="Your full name"
                 />
             </div>
 
@@ -282,7 +268,7 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onClose }) => {
                     color: '#FFFFFF',
                 }}
             >
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? 'Updating Profile...' : 'Update Profile'}
             </button>
         </form>
     );

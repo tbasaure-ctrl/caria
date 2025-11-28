@@ -24,56 +24,33 @@ import { FearGreedIndex } from './widgets/FearGreedIndex';
 import { ProtectedWidget } from './ProtectedWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
-// Analysis CTA Component
-const AnalysisCTA: React.FC<{ onStartAnalysis: () => void; onEnterArena: () => void }> = ({ 
-    onStartAnalysis, 
-    onEnterArena 
-}) => (
+// Ask Caria Widget (Satellite for Portfolio)
+const AskCariaWidget: React.FC<{ onClick: () => void }> = ({ onClick }) => (
     <div
-        className="rounded-lg p-8 transition-all duration-300 cursor-pointer group h-full flex flex-col justify-center items-center relative overflow-hidden"
+        className="rounded-lg p-6 cursor-pointer group h-full flex flex-col justify-between relative overflow-hidden bg-[#0B1221] border border-white/5 hover:border-accent-cyan/30 transition-all duration-300"
+        onClick={onClick}
     >
-        {/* Background Glow */}
-        <div className="absolute inset-0 bg-accent-cyan/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <div className="absolute inset-0 border border-white/5 group-hover:border-accent-cyan/30 transition-colors duration-500 rounded-lg" />
-
-        <div 
-            className="w-16 h-16 rounded-full flex items-center justify-center mb-6 bg-accent-cyan/10 group-hover:bg-accent-cyan/20 transition-colors relative z-10"
-        >
-            <ThesisIcon className="w-8 h-8 text-accent-cyan" />
+        <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
+            <ThesisIcon className="w-12 h-12 text-accent-cyan" />
         </div>
         
-        <h3 className="text-2xl font-display font-medium mb-3 text-white text-center relative z-10">
-            Challenge Your Thesis
-        </h3>
+        <div>
+            <h3 className="text-lg font-display font-bold text-white mb-1">Ask Caria</h3>
+            <p className="text-xs text-text-muted">Senior Partner AI</p>
+        </div>
         
-        <p className="text-sm text-text-secondary leading-relaxed mb-8 max-w-md text-center font-light relative z-10">
-            Test your investment ideas against Caria's AI analysis. Uncover biases and strengthen your conviction.
-        </p>
-        
-        <div className="flex flex-col gap-4 w-full max-w-xs relative z-10">
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onStartAnalysis();
-                }}
-                className="py-3 px-6 rounded font-bold text-xs uppercase tracking-widest transition-all duration-300 bg-accent-primary text-white shadow-[0_0_15px_rgba(56,189,248,0.3)] hover:shadow-[0_0_25px_rgba(56,189,248,0.5)] transform hover:-translate-y-0.5"
-            >
-                Start Analysis
-            </button>
-            
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onEnterArena();
-                }}
-                className="py-3 px-6 rounded text-xs font-bold uppercase tracking-widest transition-all duration-300 text-text-muted border border-white/10 hover:border-accent-primary/50 hover:text-white"
-            >
-                Enter Thesis Arena
+        <div className="mt-4">
+            <p className="text-sm text-text-secondary leading-snug mb-4">
+                "¿Debería vender Apple ahora?"
+                <br/>
+                "Analiza mi exposición a China."
+            </p>
+            <button className="text-xs font-bold uppercase tracking-widest text-accent-cyan flex items-center gap-2 group-hover:gap-3 transition-all">
+                Start Chat <span>→</span>
             </button>
         </div>
     </div>
 );
-
 
 interface DashboardProps {
     onStartAnalysis: () => void;
@@ -90,7 +67,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [regimeData, setRegimeData] = useState<RegimeData | null>(null);
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
-    const [showArena, setShowArena] = useState(false);
     
     const tabFromUrl = searchParams.get('tab') as DashboardTab;
     const [activeTab, setActiveTab] = useState<DashboardTab>(
@@ -112,6 +88,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
         setActiveTab(tab);
         setSearchParams({ tab });
     };
+
+    const switchToAnalysis = () => handleTabChange('analysis');
 
     useEffect(() => {
         const fetchRegimeData = async () => {
@@ -139,11 +117,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
     return (
         <main className="flex-1 overflow-y-auto relative min-h-screen bg-transparent custom-scrollbar">
-            {/* Dashboard Header - Floating Glass Bar */}
+            {/* Dashboard Header */}
             <div className="sticky top-0 z-40 border-b border-white/5 bg-[#020408]/80 backdrop-blur-xl">
-                <div className="w-full px-6 lg:px-12 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-                    
-                    {/* Breadcrumb / Title */}
+                <div className="w-full px-6 lg:px-12 py-6 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="flex items-center gap-4 shrink-0">
                         <h1 className="text-xl font-display text-white tracking-wide hidden md:block">
                             Terminal
@@ -154,14 +130,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         </span>
                     </div>
 
-                    {/* Tab Navigation - Capsules */}
-                    <div className="flex bg-white/5 rounded-full p-1.5 border border-white/5 gap-3 overflow-x-auto max-w-full">
+                    <div className="flex bg-white/5 rounded-full p-1.5 border border-white/5 gap-2 overflow-x-auto max-w-full">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id)}
                                 className={`
-                                    px-8 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap
+                                    px-8 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap
                                     ${activeTab === tab.id 
                                         ? 'bg-accent-primary text-white shadow-[0_0_15px_rgba(56,189,248,0.4)]' 
                                         : 'text-text-muted hover:text-white hover:bg-white/5'
@@ -173,7 +148,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         ))}
                     </div>
                     
-                    {/* Right Spacer or Actions */}
                     <div className="w-24 hidden md:flex justify-end items-center gap-3 shrink-0">
                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
                         <span className="text-[10px] text-text-muted font-mono uppercase">Live</span>
@@ -181,24 +155,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 </div>
             </div>
 
-            {/* Tab Content - Ultra Dense Layout */}
+            {/* Tab Content */}
             <div className="w-full px-4 lg:px-8 py-8 relative z-10 max-w-[2400px] mx-auto">
                 
                 {/* PORTFOLIO TAB */}
                 {activeTab === 'portfolio' && (
                     <div className="grid grid-cols-12 gap-8 animate-fade-in">
-                        {/* Row 1: Markets */}
                         <div className="col-span-12">
                             <GlobalMarketBar id="market-bar-widget" />
                         </div>
 
-                        {/* Row 2: Indicators & Portfolio Main */}
+                        {/* Indicators + Ask Caria */}
                         <div className="col-span-12 lg:col-span-3 xl:col-span-2 space-y-8">
                             <div className="h-[220px]">
                                 <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
                             </div>
                             <div className="h-[220px]">
                                 <FearGreedIndex />
+                            </div>
+                            {/* Satellite Widget for Caria */}
+                            <div className="h-[150px]">
+                                <AskCariaWidget onClick={switchToAnalysis} />
                             </div>
                         </div>
                         
@@ -214,7 +191,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             </ProtectedWidget>
                         </div>
 
-                        {/* Row 3: Risk Tools */}
                         <div className="col-span-12 lg:col-span-8 min-h-[450px]">
                             <ProtectedWidget featureName="Crisis Simulator">
                                 <CrisisSimulator />
@@ -236,28 +212,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {/* ANALYSIS TAB */}
                 {activeTab === 'analysis' && (
                     <div className="grid grid-cols-12 gap-8 animate-fade-in">
-                        <div className="col-span-12 lg:col-span-6 xl:col-span-4 min-h-[650px]">
+                        {/* CARIA ARENA - HERO POSITION */}
+                        <div className="col-span-12 h-[650px]">
+                            <ProtectedWidget featureName="Investment Thesis Analysis">
+                                <ThesisArena />
+                            </ProtectedWidget>
+                        </div>
+
+                        {/* Valuation Tools */}
+                        <div className="col-span-12 lg:col-span-6 min-h-[600px]">
                             <ProjectionValuation />
                         </div>
-                        <div className="col-span-12 lg:col-span-6 xl:col-span-4 min-h-[650px]">
+                        <div className="col-span-12 lg:col-span-6 min-h-[600px]">
                             <ValuationTool />
                         </div>
                         
-                        {/* Central Thesis Column */}
-                        <div className="col-span-12 lg:col-span-12 xl:col-span-4 space-y-8">
-                            <div className="h-[310px]">
-                                <ProtectedWidget featureName="Investment Thesis Analysis">
-                                    <AnalysisCTA onStartAnalysis={onStartAnalysis} onEnterArena={() => setShowArena(true)} />
-                                </ProtectedWidget>
-                            </div>
-                            <div className="h-[310px]">
-                                <ProtectedWidget featureName="Valuation Workshop">
-                                    <ValuationWorkshop />
-                                </ProtectedWidget>
-                            </div>
-                        </div>
-
-                        {/* Bottom Screeners */}
+                        {/* Screeners */}
                         <div className="col-span-12 lg:col-span-6 h-full min-h-[500px]">
                             <ProtectedWidget featureName="Alpha Stock Picker">
                                 <AlphaStockPicker />
@@ -274,20 +244,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {/* RESEARCH TAB */}
                 {activeTab === 'research' && (
                     <div className="grid grid-cols-12 gap-8 animate-fade-in">
-                        {/* Featured Research */}
                         <div className="col-span-12 xl:col-span-8 min-h-[500px]">
                             <ProtectedWidget featureName="Industry Research">
                                 <IndustryResearch />
                             </ProtectedWidget>
                         </div>
                         
-                        {/* Right Column: Signals */}
                         <div className="col-span-12 xl:col-span-4 space-y-8">
                             <OpportunityRadar />
                             <WeeklyMedia compact={false} />
                         </div>
 
-                        {/* Bottom Row */}
                         <div className="col-span-12 lg:col-span-6 min-h-[400px]">
                             <ProtectedWidget featureName="Community">
                                 <CommunityFeed />
@@ -302,27 +269,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     </div>
                 )}
             </div>
-
-            {/* Thesis Arena Modal */}
-            {showArena && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md" onClick={() => setShowArena(false)}>
-                    <div className="rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto bg-[#050A14] border border-accent-cyan/30 shadow-[0_0_50px_rgba(34,211,238,0.1)] custom-scrollbar relative" onClick={(e) => e.stopPropagation()}>
-                        {/* Decorative corner lines */}
-                        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-accent-cyan"></div>
-                        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-accent-cyan"></div>
-                        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-accent-cyan"></div>
-                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-accent-cyan"></div>
-
-                        <div className="sticky top-0 flex justify-between items-center px-8 py-6 border-b border-white/10 bg-[#050A14]/95 backdrop-blur z-10">
-                            <h2 className="text-2xl font-display text-white tracking-wide">Thesis Arena</h2>
-                            <button onClick={() => setShowArena(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-xl text-text-muted hover:text-white hover:bg-white/5 transition-colors">×</button>
-                        </div>
-                        <div className="p-8">
-                            <ThesisArena onClose={() => setShowArena(false)} />
-                        </div>
-                    </div>
-                </div>
-            )}
         </main>
     );
 };

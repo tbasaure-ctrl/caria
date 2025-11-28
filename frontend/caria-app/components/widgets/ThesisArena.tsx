@@ -1,365 +1,179 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { WidgetCard } from './WidgetCard';
-import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
-import { CommunityCard } from './CommunityCard';
-import { CommunityTooltip } from './CommunityTooltip';
-import { ArenaThreadModal } from './ArenaThreadModal';
-import { getErrorMessage } from '../../src/utils/errorHandling';
-import { ThesisEditorModal } from './ThesisEditorModal';
+import { SendIcon, ThesisIcon, CariaLogoIcon } from '../Icons'; // Usando tus iconos nativos
+import { getToken, API_BASE_URL } from '../../services/apiService';
 
-interface CommunityResponse {
-    community: string;
-    response: string;
-    impact_score: number;
+interface Message {
+    role: 'user' | 'assistant';
+    content: string;
+    id?: string;
 }
-
-interface ThesisArenaResponse {
-    thesis: string;
-    ticker: string | null;
-    initial_conviction: number;
-    community_responses: CommunityResponse[];
-    conviction_impact: {
-        conviction_change: number;
-        new_conviction: number;
-        initial_conviction: number;
-        community_impacts: Record<string, any>;
-    };
-    arena_id?: string | null;
-    round_number?: number;
-}
-
-const COMMUNITY_INFO = {
-    value_investor: {
-        name: 'Value Investor',
-        icon: '💰',
-        description: 'Enfocado en comprar acciones infravaloradas con fundamentos sólidos y margen de seguridad.',
-        color: '#10b981',
-    },
-    crypto_bro: {
-        name: 'Crypto Bro',
-        icon: '🚀',
-        description: 'Busca inversiones de alto riesgo y alto retorno, tecnologías disruptivas y potencial exponencial.',
-        color: '#f59e0b',
-    },
-    growth_investor: {
-        name: 'Growth Investor',
-        icon: '📈',
-        description: 'Invierte en empresas con altas tasas de crecimiento, enfocado en potencial futuro.',
-        color: '#3b82f6',
-    },
-    contrarian: {
-        name: 'Contrarian',
-        icon: '🔄',
-        description: 'Va contra la multitud, busca oportunidades cuando otros venden, enfocado en ciclos de mercado.',
-        color: '#8b5cf6',
-    },
-};
 
 export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
-    const [thesis, setThesis] = useState('');
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [input, setInput] = useState('');
     const [ticker, setTicker] = useState('');
-    const [conviction, setConviction] = useState(50);
-    const [isLoading, setIsLoading] = useState(false);
-    const [results, setResults] = useState<ThesisArenaResponse | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [successMessage, setSuccessMessage] = useState<string | null>(null);
-    const [hoveredCommunity, setHoveredCommunity] = useState<string | null>(null);
-    const [showThreadModal, setShowThreadModal] = useState(false);
-    const [showEditorModal, setShowEditorModal] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [threadId, setThreadId] = useState<string | null>(null);
 
-    const handleChallenge = async () => {
-        if (!thesis.trim() || thesis.length < 10) {
-            setError('Please enter a thesis with at least 10 characters');
-            return;
-        }
+    // Auto-scroll al último mensaje
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
-        setIsLoading(true);
-        setError(null);
-        setSuccessMessage(null);
-        setResults(null);
+    const sendMessage = async () => {
+        if (!input.trim() || loading) return;
+
+        const userMsg: Message = { role: 'user', content: input };
+        const newMessages = [...messages, userMsg];
+        setMessages(newMessages);
+        setInput('');
+        setLoading(true);
 
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/thesis/arena/challenge`, {
+            const token = getToken();
+            const response = await fetch(`${API_BASE_URL}/api/thesis/chat/stream`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    thesis: thesis.trim(),
-                    ticker: ticker.trim() || null,
-                    initial_conviction: conviction,
-                }),
+                    message: userMsg.content,
+                    ticker: ticker || undefined,
+                    thread_id: threadId
+                })
             });
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ detail: 'Error desconocido' }));
-                throw new Error(errorData.detail || `Error ${response.status}`);
+            if (!response.ok) throw new Error('Failed to connect');
+            if (!response.body) throw new Error('No stream body');
+
+            // Preparar mensaje del asistente
+            const assistantMsg: Message = { role: 'assistant', content: '' };
+            setMessages([...newMessages, assistantMsg]);
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let currentContent = '';
+
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                const chunkValue = decoder.decode(value, { stream: !done });
+                currentContent += chunkValue;
+                
+                // Actualizar estado en tiempo real
+                setMessages(prev => {
+                    const updated = [...prev];
+                    updated[updated.length - 1] = { ...assistantMsg, content: currentContent };
+                    return updated;
+                });
             }
 
-            const data = await response.json();
-            setResults(data);
-            setSuccessMessage('Las comunidades han respondido. Revisa el impacto en tu convicción.');
-        } catch (err: unknown) {
-            setError(getErrorMessage(err) || 'Could not challenge the thesis. Please try again.');
-        } finally{
-            setIsLoading(false);
+        } catch (error) {
+            console.error('Chat error:', error);
+            setMessages(prev => [...prev, { role: 'assistant', content: '⚠️ Connection error. Please try again.' }]);
+        } finally {
+            setLoading(false);
         }
     };
 
-    // If thread modal is shown, render it instead
-    if (showThreadModal && results?.arena_id) {
-        return (
-            <ArenaThreadModal
-                threadId={results.arena_id}
-                initialThesis={results.thesis}
-                initialTicker={results.ticker}
-                initialConviction={results.initial_conviction}
-                onClose={() => setShowThreadModal(false)}
-            />
-        );
-    }
-
     return (
-        <div className="space-y-6">
-            {successMessage && (
-                <div
-                    className="p-3 rounded-md text-sm"
-                    style={{
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        border: '1px solid rgba(16, 185, 129, 0.3)',
-                        color: '#10b981',
-                    }}
-                >
-                    {successMessage}
-                </div>
-            )}
-            <WidgetCard
-                title="Thesis Arena"
-                className="fade-in"
-                tooltip="Challenge your investment thesis with 4 different communities. Receive critical feedback to refine your conviction and analysis."
-            >
-                <div className="space-y-4">
-                    {/* Ticker Input */}
-                    <div>
-                        <label 
-                            htmlFor="ticker-input"
-                            className="block text-sm font-medium mb-2"
-                            style={{ color: 'var(--color-text-secondary)' }}
-                        >
-                            Ticker (Opcional)
-                        </label>
+        <WidgetCard
+            title="Thesis Arena"
+            tooltip="Debate your investment thesis with Caria Senior Partner (Socratic AI)."
+            className="h-[600px] flex flex-col" // Altura fija para el chat
+        >
+            <div className="flex flex-col h-full">
+                {/* Header Controls */}
+                <div className="flex gap-2 mb-4 border-b border-white/5 pb-4">
+                    <div className="relative flex-1">
                         <input
-                            id="ticker-input"
-                            type="text"
                             value={ticker}
                             onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                            placeholder="AAPL"
-                            maxLength={10}
-                            className="w-full px-4 py-2 rounded-lg border"
-                            style={{
-                                backgroundColor: 'var(--color-bg-secondary)',
-                                borderColor: 'var(--color-bg-tertiary)',
-                                color: 'var(--color-text-primary)',
-                                fontFamily: 'var(--font-body)',
-                            }}
+                            placeholder="TICKER (Optional)"
+                            className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-xs text-white focus:border-accent-primary outline-none font-mono tracking-wider"
                         />
                     </div>
-
-                    {/* Thesis Textarea */}
-                    <div>
-                        <label 
-                            htmlFor="thesis-textarea"
-                            className="block text-sm font-medium mb-2"
-                            style={{ color: 'var(--color-text-secondary)' }}
-                        >
-                            Investment Thesis
-                        </label>
-                        <textarea
-                            id="thesis-textarea"
-                            value={thesis}
-                            onChange={(e) => setThesis(e.target.value)}
-                            placeholder="Describe your investment thesis here..."
-                            rows={6}
-                            maxLength={2000}
-                            className="w-full px-4 py-2 rounded-lg border resize-none"
-                            style={{
-                                backgroundColor: 'var(--color-bg-secondary)',
-                                borderColor: 'var(--color-bg-tertiary)',
-                                color: 'var(--color-text-primary)',
-                                fontFamily: 'var(--font-body)',
-                            }}
-                        />
-                        <div 
-                            className="text-xs mt-1 text-right"
-                            style={{ color: 'var(--color-text-secondary)' }}
-                        >
-                            {thesis.length} / 2000
-                        </div>
+                    <div className="text-[10px] text-text-muted flex items-center px-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                        Senior Partner Active
                     </div>
+                </div>
 
-                    {/* Conviction Slider */}
-                    <div>
-                        <label 
-                            htmlFor="conviction-slider"
-                            className="block text-sm font-medium mb-2"
-                            style={{ color: 'var(--color-text-secondary)' }}
-                        >
-                            Nivel de Conviction Inicial: {conviction}%
-                        </label>
-                        <input
-                            id="conviction-slider"
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={conviction}
-                            onChange={(e) => setConviction(parseInt(e.target.value))}
-                            className="w-full"
-                            style={{
-                                accentColor: 'var(--color-primary)',
-                            }}
-                        />
-                        <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-                            <span>Baja</span>
-                            <span>Media</span>
-                            <span>Alta</span>
-                        </div>
-                    </div>
-
-                    {/* Challenge Button */}
-                    <button
-                        onClick={handleChallenge}
-                        disabled={isLoading || !thesis.trim() || thesis.length < 10}
-                        className="w-full px-6 py-3 rounded-lg font-medium transition-all"
-                        style={{
-                            backgroundColor: (isLoading || !thesis.trim() || thesis.length < 10)
-                                ? 'var(--color-bg-tertiary)' 
-                                : 'var(--color-primary)',
-                            color: 'var(--color-cream)',
-                            fontFamily: 'var(--font-display)',
-                            cursor: (isLoading || !thesis.trim() || thesis.length < 10) ? 'not-allowed' : 'pointer',
-                            opacity: (isLoading || !thesis.trim() || thesis.length < 10) ? 0.6 : 1,
-                        }}
-                    >
-                        {isLoading ? 'Desafiando...' : 'Desafiar con Comunidades'}
-                    </button>
-
-                    {/* Error Display */}
-                    {error && (
-                        <div 
-                            className="p-4 rounded-lg"
-                            style={{
-                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                border: '1px solid rgba(239, 68, 68, 0.3)',
-                                color: '#ef4444',
-                            }}
-                        >
-                            <strong>Error:</strong> {error}
+                {/* Chat Area */}
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar mb-4 min-h-0">
+                    {messages.length === 0 && (
+                        <div className="flex flex-col items-center justify-center h-full text-center text-text-muted opacity-50">
+                            <CariaLogoIcon className="w-12 h-12 mb-4 text-accent-cyan" />
+                            <p className="text-sm">Present your thesis.</p>
+                            <p className="text-xs">I will challenge it.</p>
                         </div>
                     )}
-                </div>
-            </WidgetCard>
-
-            {/* Results */}
-            {results && (
-                <div className="space-y-4">
-                    {/* Conviction Impact */}
-                    <WidgetCard
-                        title="Impacto en Conviction"
-                        className="fade-in"
-                        tooltip="Muestra cómo cambió tu nivel de convicción después del análisis de las comunidades."
-                    >
-                        <div className="text-center">
-                            <div className="text-4xl font-bold mb-2" style={{ color: 'var(--color-primary)' }}>
-                                {results.conviction_impact.new_conviction.toFixed(1)}%
-                            </div>
-                            <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                                {results.conviction_impact.conviction_change >= 0 ? '+' : ''}
-                                {results.conviction_impact.conviction_change.toFixed(1)}% desde {results.conviction_impact.initial_conviction}%
+                    
+                    {messages.map((msg, idx) => (
+                        <div 
+                            key={idx} 
+                            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                            <div 
+                                className={`
+                                    max-w-[85%] rounded-2xl px-5 py-3 text-sm leading-relaxed
+                                    ${msg.role === 'user' 
+                                        ? 'bg-accent-primary text-white rounded-br-none shadow-glow-sm' 
+                                        : 'bg-bg-tertiary text-text-secondary rounded-bl-none border border-white/5'
+                                    }
+                                `}
+                            >
+                                {msg.role === 'assistant' && (
+                                    <div className="flex items-center gap-2 mb-2 border-b border-white/5 pb-1">
+                                        <span className="text-xs font-bold text-accent-cyan uppercase tracking-wider">Caria</span>
+                                    </div>
+                                )}
+                                <p className="whitespace-pre-wrap">{msg.content}</p>
                             </div>
                         </div>
-                    </WidgetCard>
-
-                    {/* Community Responses Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {results.community_responses.map((response) => {
-                            const info = COMMUNITY_INFO[response.community as keyof typeof COMMUNITY_INFO];
-                            if (!info) return null;
-
-                            return (
-                                <div
-                                    key={response.community}
-                                    onMouseEnter={() => setHoveredCommunity(response.community)}
-                                    onMouseLeave={() => setHoveredCommunity(null)}
-                                    className="relative"
-                                >
-                                    <CommunityCard
-                                        community={info}
-                                        response={response.response}
-                                        impactScore={response.impact_score}
-                                    />
-                                    {hoveredCommunity === response.community && (
-                                        <CommunityTooltip
-                                            description={info.description}
-                                            community={response.community}
-                                        />
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-3 mt-4">
-                        {results.arena_id && (
-                            <button
-                                onClick={() => setShowThreadModal(true)}
-                                className="flex-1 px-6 py-3 rounded-lg font-medium transition-all"
-                                style={{
-                                    backgroundColor: 'var(--color-bg-secondary)',
-                                    color: 'var(--color-text-primary)',
-                                    border: '1px solid var(--color-bg-tertiary)',
-                                    fontFamily: 'var(--font-display)',
-                                }}
-                            >
-                                Continuar Conversación →
-                            </button>
-                        )}
-                        <button
-                            onClick={() => setShowEditorModal(true)}
-                            className="flex-1 px-6 py-3 rounded-lg font-medium transition-all"
-                            style={{
-                                backgroundColor: 'var(--color-primary)',
-                                color: 'var(--color-cream)',
-                                fontFamily: 'var(--font-display)',
-                            }}
-                        >
-                            Publicar en Feed →
-                        </button>
-                    </div>
+                    ))}
+                    
+                    {loading && (
+                        <div className="flex justify-start">
+                            <div className="bg-bg-tertiary rounded-2xl rounded-bl-none px-4 py-3 border border-white/5 flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                <div className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                <div className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                            </div>
+                        </div>
+                    )}
+                    <div ref={messagesEndRef} />
                 </div>
-            )}
 
-            {/* Thesis Editor Modal */}
-            {showEditorModal && results && (
-                <ThesisEditorModal
-                    isOpen={showEditorModal}
-                    onClose={() => setShowEditorModal(false)}
-                    onSuccess={() => {
-                        setShowEditorModal(false);
-                        setSuccessMessage('Your thesis is now visible in the community feed.');
-                    }}
-                    prefillData={{
-                        title: `${results.ticker ? `${results.ticker}: ` : ''}Investment Thesis`,
-                        thesis_preview: results.thesis.substring(0, 500),
-                        full_thesis: results.thesis,
-                        ticker: results.ticker,
-                        arena_thread_id: results.arena_id || null,
-                        arena_round_id: results.round_number ? String(results.round_number) : null,
-                        arena_community: results.community_responses[0]?.community || null,
-                    }}
-                />
-            )}
-        </div>
+                {/* Input Area */}
+                <div className="flex gap-3 pt-2">
+                    <input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+                        placeholder="Type your thesis or argument..."
+                        className="flex-1 bg-bg-primary border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-accent-primary outline-none transition-colors placeholder:text-text-subtle"
+                        disabled={loading}
+                    />
+                    <button
+                        onClick={sendMessage}
+                        disabled={!input.trim() || loading}
+                        className={`
+                            px-4 rounded-lg flex items-center justify-center transition-all
+                            ${!input.trim() || loading 
+                                ? 'bg-bg-tertiary text-text-muted cursor-not-allowed' 
+                                : 'bg-accent-primary text-white hover:bg-accent-primary/90 shadow-glow-sm'
+                            }
+                        `}
+                    >
+                        <SendIcon className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+        </WidgetCard>
     );
 };
-

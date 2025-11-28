@@ -141,10 +141,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
         <main className="flex-1 overflow-y-auto relative min-h-screen bg-transparent custom-scrollbar">
             {/* Dashboard Header - Floating Glass Bar */}
             <div className="sticky top-0 z-40 border-b border-white/5 bg-[#020408]/80 backdrop-blur-xl">
-                <div className="w-full px-6 lg:px-8 py-3 flex items-center justify-between">
+                <div className="w-full px-6 lg:px-12 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
                     
                     {/* Breadcrumb / Title */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 shrink-0">
                         <h1 className="text-xl font-display text-white tracking-wide hidden md:block">
                             Terminal
                         </h1>
@@ -155,15 +155,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     </div>
 
                     {/* Tab Navigation - Capsules */}
-                    <div className="flex bg-white/5 rounded-full p-1 border border-white/5">
+                    <div className="flex bg-white/5 rounded-full p-1.5 border border-white/5 gap-3 overflow-x-auto max-w-full">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id)}
                                 className={`
-                                    px-6 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all duration-300
+                                    px-8 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap
                                     ${activeTab === tab.id 
-                                        ? 'bg-accent-primary text-white shadow-[0_0_10px_rgba(56,189,248,0.4)]' 
+                                        ? 'bg-accent-primary text-white shadow-[0_0_15px_rgba(56,189,248,0.4)]' 
                                         : 'text-text-muted hover:text-white hover:bg-white/5'
                                     }
                                 `}
@@ -174,7 +174,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     </div>
                     
                     {/* Right Spacer or Actions */}
-                    <div className="w-24 hidden md:flex justify-end items-center gap-3">
+                    <div className="w-24 hidden md:flex justify-end items-center gap-3 shrink-0">
                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
                         <span className="text-[10px] text-text-muted font-mono uppercase">Live</span>
                     </div>
@@ -182,49 +182,49 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             </div>
 
             {/* Tab Content - Ultra Dense Layout */}
-            <div className="w-full px-4 lg:px-6 py-6 relative z-10 max-w-[2400px] mx-auto">
+            <div className="w-full px-4 lg:px-8 py-8 relative z-10 max-w-[2400px] mx-auto">
                 
                 {/* PORTFOLIO TAB */}
                 {activeTab === 'portfolio' && (
-                    <div className="grid grid-cols-12 gap-4 animate-fade-in">
+                    <div className="grid grid-cols-12 gap-8 animate-fade-in">
                         {/* Row 1: Markets */}
                         <div className="col-span-12">
                             <GlobalMarketBar id="market-bar-widget" />
                         </div>
 
                         {/* Row 2: Indicators & Portfolio Main */}
-                        <div className="col-span-12 lg:col-span-3 xl:col-span-2 space-y-4">
-                            <div className="h-[200px]">
+                        <div className="col-span-12 lg:col-span-3 xl:col-span-2 space-y-8">
+                            <div className="h-[220px]">
                                 <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
                             </div>
-                            <div className="h-[200px]">
+                            <div className="h-[220px]">
                                 <FearGreedIndex />
                             </div>
                         </div>
                         
-                        <div className="col-span-12 lg:col-span-9 xl:col-span-7 min-h-[600px]">
+                        <div className="col-span-12 lg:col-span-9 xl:col-span-7 min-h-[650px]">
                             <ProtectedWidget featureName="Portfolio Management">
                                 <Portfolio id="portfolio-widget" />
                             </ProtectedWidget>
                         </div>
 
-                        <div className="col-span-12 lg:col-span-12 xl:col-span-3 min-h-[600px]">
+                        <div className="col-span-12 lg:col-span-12 xl:col-span-3 min-h-[650px]">
                             <ProtectedWidget featureName="Portfolio Analytics">
                                 <PortfolioAnalytics />
                             </ProtectedWidget>
                         </div>
 
                         {/* Row 3: Risk Tools */}
-                        <div className="col-span-12 lg:col-span-8 min-h-[400px]">
+                        <div className="col-span-12 lg:col-span-8 min-h-[450px]">
                             <ProtectedWidget featureName="Crisis Simulator">
                                 <CrisisSimulator />
                             </ProtectedWidget>
                         </div>
-                        <div className="col-span-12 lg:col-span-4 space-y-4">
-                            <div className="h-[190px]">
+                        <div className="col-span-12 lg:col-span-4 space-y-8">
+                            <div className="min-h-[220px]">
                                 <MacroSimulator />
                             </div>
-                            <div className="h-[190px]">
+                            <div className="min-h-[220px]">
                                 <ProtectedWidget featureName="Regime Test">
                                     <RegimeTestWidget />
                                 </ProtectedWidget>
@@ -235,22 +235,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* ANALYSIS TAB */}
                 {activeTab === 'analysis' && (
-                    <div className="grid grid-cols-12 gap-4 animate-fade-in">
-                        <div className="col-span-12 lg:col-span-6 xl:col-span-4 min-h-[600px]">
+                    <div className="grid grid-cols-12 gap-8 animate-fade-in">
+                        <div className="col-span-12 lg:col-span-6 xl:col-span-4 min-h-[650px]">
                             <ProjectionValuation />
                         </div>
-                        <div className="col-span-12 lg:col-span-6 xl:col-span-4 min-h-[600px]">
+                        <div className="col-span-12 lg:col-span-6 xl:col-span-4 min-h-[650px]">
                             <ValuationTool />
                         </div>
                         
                         {/* Central Thesis Column */}
-                        <div className="col-span-12 lg:col-span-12 xl:col-span-4 space-y-4">
-                            <div className="h-[290px]">
+                        <div className="col-span-12 lg:col-span-12 xl:col-span-4 space-y-8">
+                            <div className="h-[310px]">
                                 <ProtectedWidget featureName="Investment Thesis Analysis">
                                     <AnalysisCTA onStartAnalysis={onStartAnalysis} onEnterArena={() => setShowArena(true)} />
                                 </ProtectedWidget>
                             </div>
-                            <div className="h-[290px]">
+                            <div className="h-[310px]">
                                 <ProtectedWidget featureName="Valuation Workshop">
                                     <ValuationWorkshop />
                                 </ProtectedWidget>
@@ -258,12 +258,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         </div>
 
                         {/* Bottom Screeners */}
-                        <div className="col-span-12 lg:col-span-6 h-full">
+                        <div className="col-span-12 lg:col-span-6 h-full min-h-[500px]">
                             <ProtectedWidget featureName="Alpha Stock Picker">
                                 <AlphaStockPicker />
                             </ProtectedWidget>
                         </div>
-                        <div className="col-span-12 lg:col-span-6 h-full">
+                        <div className="col-span-12 lg:col-span-6 h-full min-h-[500px]">
                             <ProtectedWidget featureName="Hidden Gems Screener">
                                 <HiddenGemsScreener />
                             </ProtectedWidget>
@@ -273,30 +273,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* RESEARCH TAB */}
                 {activeTab === 'research' && (
-                    <div className="grid grid-cols-12 gap-4 animate-fade-in">
+                    <div className="grid grid-cols-12 gap-8 animate-fade-in">
                         {/* Featured Research */}
-                        <div className="col-span-12 xl:col-span-8">
+                        <div className="col-span-12 xl:col-span-8 min-h-[500px]">
                             <ProtectedWidget featureName="Industry Research">
                                 <IndustryResearch />
                             </ProtectedWidget>
                         </div>
                         
                         {/* Right Column: Signals */}
-                        <div className="col-span-12 xl:col-span-4 space-y-4">
+                        <div className="col-span-12 xl:col-span-4 space-y-8">
                             <OpportunityRadar />
                             <WeeklyMedia compact={false} />
                         </div>
 
                         {/* Bottom Row */}
-                        <div className="col-span-12 lg:col-span-4">
+                        <div className="col-span-12 lg:col-span-6 min-h-[400px]">
                             <ProtectedWidget featureName="Community">
                                 <CommunityFeed />
                             </ProtectedWidget>
                         </div>
-                        <div className="col-span-12 lg:col-span-4">
+                        <div className="col-span-12 lg:col-span-6 min-h-[400px]">
                             <Resources />
                         </div>
-                        <div className="col-span-12 lg:col-span-4">
+                        <div className="col-span-12">
                             <RankingsWidget />
                         </div>
                     </div>

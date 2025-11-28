@@ -685,15 +685,46 @@ export const ValuationTool: React.FC = () => {
                 </div>
             )}
 
-            {/* Empty State */}
+            {/* Empty State - Enhanced */}
             {!valuation && !isLoadingValuation && !valError && (
-                <div
-                    className="text-center py-12"
-                    style={{ color: 'var(--color-text-muted)' }}
-                >
-                    <p className="text-sm">
-                        Enter a ticker symbol to run valuation analysis
-                    </p>
+                <div className="py-6 sm:py-8 lg:py-12">
+                    <div className="text-center mb-4 sm:mb-6">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-3 rounded-full bg-accent-primary/10 flex items-center justify-center">
+                            <svg className="w-6 h-6 sm:w-7 sm:h-7 text-accent-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <p className="text-xs sm:text-sm text-text-muted mb-2">
+                            Ingresa un ticker para proyectar su precio futuro
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 max-w-md mx-auto">
+                        <div className="p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 text-center">
+                            <div className="text-accent-primary text-base sm:text-lg font-bold mb-0.5">10,000</div>
+                            <p className="text-[9px] sm:text-[10px] text-text-muted">Simulaciones</p>
+                        </div>
+                        <div className="p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 text-center">
+                            <div className="text-accent-cyan text-base sm:text-lg font-bold mb-0.5">2 años</div>
+                            <p className="text-[9px] sm:text-[10px] text-text-muted">Horizonte</p>
+                        </div>
+                        <div className="p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10 text-center">
+                            <div className="text-accent-gold text-base sm:text-lg font-bold mb-0.5">3 casos</div>
+                            <p className="text-[9px] sm:text-[10px] text-text-muted">Bear/Base/Bull</p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mt-4">
+                        {['AAPL', 'MSFT', 'NVDA', 'TSLA'].map(t => (
+                            <button
+                                key={t}
+                                onClick={() => setTicker(t)}
+                                className="px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs bg-white/5 text-text-secondary hover:bg-white/10 hover:text-white transition-colors"
+                            >
+                                {t}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             )}
             </div>

@@ -106,10 +106,67 @@ export const ThesisArena: React.FC<{ onClose?: () => void }> = ({ onClose }) => 
                 {/* Chat Area - Responsive */}
                 <div className="flex-1 overflow-y-auto space-y-3 sm:space-y-4 pr-1 sm:pr-2 custom-scrollbar mb-3 sm:mb-4 min-h-0">
                     {messages.length === 0 && (
-                        <div className="flex flex-col items-center justify-center h-full text-center text-text-muted opacity-50 px-4">
-                            <CariaLogoIcon className="w-10 h-10 sm:w-12 sm:h-12 mb-3 sm:mb-4 text-accent-cyan" />
-                            <p className="text-xs sm:text-sm">Present your thesis.</p>
-                            <p className="text-[10px] sm:text-xs">I will challenge it.</p>
+                        <div className="flex flex-col h-full px-2 sm:px-4 py-4">
+                            {/* Hero Section */}
+                            <div className="text-center mb-4 sm:mb-6">
+                                <CariaLogoIcon className="w-10 h-10 sm:w-14 sm:h-14 mx-auto mb-3 text-accent-cyan" />
+                                <h3 className="text-sm sm:text-base font-display font-bold text-white mb-1">
+                                    Caria Senior Partner
+                                </h3>
+                                <p className="text-[10px] sm:text-xs text-text-muted max-w-[280px] mx-auto">
+                                    Tu socio de inversiones con 20+ años de experiencia en hedge funds. Te desafío para que pienses mejor.
+                                </p>
+                            </div>
+
+                            {/* What I Can Do */}
+                            <div className="mb-4 sm:mb-6">
+                                <p className="text-[10px] sm:text-xs text-text-muted uppercase tracking-wider mb-2 sm:mb-3 text-center">
+                                    ¿Qué puedo hacer por ti?
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div className="p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10">
+                                        <div className="text-accent-cyan text-[10px] sm:text-xs font-bold mb-1">Analizar Tesis</div>
+                                        <p className="text-[9px] sm:text-[10px] text-text-muted">Presento tu idea de inversión y te digo los riesgos que no ves</p>
+                                    </div>
+                                    <div className="p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10">
+                                        <div className="text-accent-cyan text-[10px] sm:text-xs font-bold mb-1">Valoración</div>
+                                        <p className="text-[9px] sm:text-[10px] text-text-muted">Te ayudo a calcular si una acción está cara o barata</p>
+                                    </div>
+                                    <div className="p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10">
+                                        <div className="text-accent-cyan text-[10px] sm:text-xs font-bold mb-1">Due Diligence</div>
+                                        <p className="text-[9px] sm:text-[10px] text-text-muted">Reviso los números y te digo qué buscar en los reportes</p>
+                                    </div>
+                                    <div className="p-2 sm:p-3 rounded-lg bg-white/5 border border-white/10">
+                                        <div className="text-accent-cyan text-[10px] sm:text-xs font-bold mb-1">Estrategia</div>
+                                        <p className="text-[9px] sm:text-[10px] text-text-muted">Discutimos timing, sizing y gestión de riesgo</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Quick Start Suggestions */}
+                            <div>
+                                <p className="text-[10px] sm:text-xs text-text-muted uppercase tracking-wider mb-2 text-center">
+                                    Prueba preguntarme:
+                                </p>
+                                <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center">
+                                    {[
+                                        "¿NVDA está sobrevalorada?",
+                                        "Analiza mi tesis de AAPL",
+                                        "¿Qué métricas ver en un banco?",
+                                        "¿Compro o espero una caída?"
+                                    ].map((suggestion, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => {
+                                                setInput(suggestion);
+                                            }}
+                                            className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/30 hover:bg-accent-cyan/20 hover:border-accent-cyan/50 transition-all"
+                                        >
+                                            {suggestion}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     )}
 

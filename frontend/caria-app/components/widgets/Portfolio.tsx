@@ -469,8 +469,23 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                         </div>
                     </div>
                 ) : (
-                    <div className="rounded-lg border border-dashed border-white/10 p-4 sm:p-6 lg:p-8 text-center text-xs sm:text-sm text-text-muted">
-                        Your portfolio is empty. Add your first position to start tracking.
+                    <div className="rounded-lg border border-dashed border-white/10 p-4 sm:p-6 lg:p-8 text-center">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-accent-cyan/10 flex items-center justify-center">
+                            <svg className="w-6 h-6 sm:w-8 sm:h-8 text-accent-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                        </div>
+                        <h4 className="text-sm sm:text-base font-display font-bold text-white mb-2">
+                            Comienza tu Portfolio
+                        </h4>
+                        <p className="text-[10px] sm:text-xs text-text-muted max-w-[280px] mx-auto mb-4">
+                            Agrega tus posiciones para ver análisis de rendimiento, asignación de activos y simulaciones de crisis.
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-2 text-[9px] sm:text-[10px] text-text-muted">
+                            <span className="px-2 py-1 rounded bg-white/5">Rendimiento histórico</span>
+                            <span className="px-2 py-1 rounded bg-white/5">Diversificación</span>
+                            <span className="px-2 py-1 rounded bg-white/5">Análisis de riesgo</span>
+                        </div>
                     </div>
                 )}
 

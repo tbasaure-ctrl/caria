@@ -24,29 +24,35 @@ import { FearGreedIndex } from './widgets/FearGreedIndex';
 import { ProtectedWidget } from './ProtectedWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
-// Ask Caria Widget (Satellite for Portfolio)
+// Ask Caria Widget (Satellite for Portfolio) - Enhanced UX
 const AskCariaWidget: React.FC<{ onClick: () => void }> = ({ onClick }) => (
     <div
-        className="rounded-lg p-6 cursor-pointer group h-full flex flex-col justify-between relative overflow-hidden bg-[#0B1221] border border-white/5 hover:border-accent-cyan/30 transition-all duration-300"
+        className="rounded-lg p-4 sm:p-6 cursor-pointer group h-full flex flex-col justify-between relative overflow-hidden bg-[#0B1221] border border-white/5 hover:border-accent-cyan/30 transition-all duration-300"
         onClick={onClick}
     >
-        <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
-            <ThesisIcon className="w-12 h-12 text-accent-cyan" />
+        <div className="absolute top-0 right-0 p-3 sm:p-4 opacity-20 group-hover:opacity-40 transition-opacity">
+            <ThesisIcon className="w-8 h-8 sm:w-12 sm:h-12 text-accent-cyan" />
         </div>
-        
+
         <div>
-            <h3 className="text-lg font-display font-bold text-white mb-1">Ask Caria</h3>
-            <p className="text-xs text-text-muted">Senior Partner AI</p>
+            <h3 className="text-base sm:text-lg font-display font-bold text-white mb-0.5 sm:mb-1">Ask Caria</h3>
+            <p className="text-[10px] sm:text-xs text-text-muted">Tu Socio de Inversiones con IA</p>
         </div>
-        
-        <div className="mt-4">
-            <p className="text-sm text-text-secondary leading-snug mb-4">
-                "¿Debería vender Apple ahora?"
-                <br/>
-                "Analiza mi exposición a China."
-            </p>
-            <button className="text-xs font-bold uppercase tracking-widest text-accent-cyan flex items-center gap-2 group-hover:gap-3 transition-all">
-                Start Chat <span>→</span>
+
+        <div className="mt-3 sm:mt-4">
+            <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
+                <p className="text-[10px] sm:text-xs text-text-secondary leading-snug flex items-start gap-1.5">
+                    <span className="text-accent-cyan">→</span> Analiza tesis de inversión
+                </p>
+                <p className="text-[10px] sm:text-xs text-text-secondary leading-snug flex items-start gap-1.5">
+                    <span className="text-accent-cyan">→</span> Calcula valoraciones
+                </p>
+                <p className="text-[10px] sm:text-xs text-text-secondary leading-snug flex items-start gap-1.5">
+                    <span className="text-accent-cyan">→</span> Desafía tus ideas
+                </p>
+            </div>
+            <button className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-accent-cyan flex items-center gap-1.5 sm:gap-2 group-hover:gap-2 sm:group-hover:gap-3 transition-all">
+                Iniciar Chat <span>→</span>
             </button>
         </div>
     </div>

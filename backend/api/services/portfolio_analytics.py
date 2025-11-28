@@ -237,27 +237,21 @@ class PortfolioAnalyticsService:
     def _compute_beta(self, pr: pd.Series, br: pd.Series) -> float:
         """Beta CAPM calculada a mano (por si no existe qs.stats.beta)."""
         try:
+            # Ensure series are 1D
+            if isinstance(pr, pd.DataFrame): pr = pr.squeeze()
+            if isinstance(br, pd.DataFrame): br = br.squeeze()
+
             # Align series by index to ensure same length
             aligned = pd.DataFrame({'portfolio': pr, 'benchmark': br}).dropna()
             if len(aligned) < 2:
                 LOGGER.warning("Insufficient aligned data for beta calculation")
                 return 0.0
             
-            pr_aligned = aligned['portfolio'].values
-            br_aligned = aligned['benchmark'].values
-            
-            # Ensure both arrays have same length and are 1D
-            if len(pr_aligned) != len(br_aligned):
-                min_len = min(len(pr_aligned), len(br_aligned))
-                pr_aligned = pr_aligned[:min_len]
-                br_aligned = br_aligned[:min_len]
+            pr_aligned = aligned['portfolio'].values.flatten()
+            br_aligned = aligned['benchmark'].values.flatten()
             
             if len(pr_aligned) < 2:
                 return 0.0
-            
-            # Ensure arrays are 1D
-            pr_aligned = pr_aligned.flatten()
-            br_aligned = br_aligned.flatten()
             
             cov = np.cov(pr_aligned, br_aligned)[0, 1]
             var_b = np.var(br_aligned)
@@ -271,9 +265,13 @@ class PortfolioAnalyticsService:
     def _compute_alpha(self, pr: pd.Series, br: pd.Series, beta: float) -> float:
         """Alpha CAPM diaria (no anualizada) como fallback."""
         try:
+            # Ensure series are 1D
+            if isinstance(pr, pd.DataFrame): pr = pr.squeeze()
+            if isinstance(br, pd.DataFrame): br = br.squeeze()
+
             daily_rf = self.risk_free_rate / self.trading_days_per_year
             
-            # Align series and ensure they're Series, not single values
+            # Align series
             aligned = pd.DataFrame({'portfolio': pr, 'benchmark': br}).dropna()
             if len(aligned) < 1:
                 return 0.0
@@ -281,31 +279,14 @@ class PortfolioAnalyticsService:
             pr_aligned = aligned['portfolio']
             br_aligned = aligned['benchmark']
             
-            # Calculate means - handle both Series and scalar cases
-            if isinstance(pr_aligned, pd.Series):
-                mean_p = pr_aligned.mean()
-                # Handle case where mean() returns a Series (shouldn't happen, but be safe)
-                if isinstance(mean_p, pd.Series):
-                    excess_p = float(mean_p.iloc[0]) - daily_rf
-                else:
-                    excess_p = float(mean_p) - daily_rf
-            else:
-                excess_p = float(pr_aligned) - daily_rf
-                
-            if isinstance(br_aligned, pd.Series):
-                mean_b = br_aligned.mean()
-                # Handle case where mean() returns a Series (shouldn't happen, but be safe)
-                if isinstance(mean_b, pd.Series):
-                    excess_b = float(mean_b.iloc[0]) - daily_rf
-                else:
-                    excess_b = float(mean_b) - daily_rf
-            else:
-                excess_b = float(br_aligned) - daily_rf
+            # Calculate means
+            mean_p = pr_aligned.mean()
+            mean_b = br_aligned.mean()
             
-            # Calculate result - ensure we're working with scalars
+            excess_p = float(mean_p) - daily_rf
+            excess_b = float(mean_b) - daily_rf
+            
             result = excess_p - beta * excess_b
-            if isinstance(result, pd.Series):
-                return float(result.iloc[0])
             return float(result)
         except Exception as e:
             LOGGER.warning(f"Manual alpha computation failed: {e}")

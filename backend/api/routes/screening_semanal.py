@@ -17,7 +17,7 @@ load_dotenv()
 router = APIRouter(prefix="/api/screening", tags=["screening-semanal"])
 
 # Leer variables de entorno (Railway o .env)
-API_KEY = os.getenv("FMP_API_KEY")
+API_KEY = os.getenv("FMP_API_KEY", "").strip()
 EMPRESAS_DEFAULT = ["AAPL", "TSLA", "UNH", "NVDA", "AMD", "MSFT"]
 
 # Inicializar base de datos al importar el módulo

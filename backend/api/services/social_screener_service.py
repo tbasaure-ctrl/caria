@@ -38,10 +38,10 @@ except ImportError:
 
 class SocialScreenerService:
     def __init__(self):
-        self.reddit_id = os.getenv('REDDIT_CLIENT_ID')
-        self.reddit_secret = os.getenv('REDDIT_CLIENT_SECRET')
-        self.reddit_agent = os.getenv('REDDIT_USER_AGENT', 'StockScreenerBot/1.0')
-        self.fmp_key = os.getenv('FMP_API_KEY')
+        self.reddit_id = os.getenv('REDDIT_CLIENT_ID', '').strip()
+        self.reddit_secret = os.getenv('REDDIT_CLIENT_SECRET', '').strip()
+        self.reddit_agent = os.getenv('REDDIT_USER_AGENT', 'StockScreenerBot/1.0').strip()
+        self.fmp_key = os.getenv('FMP_API_KEY', '').strip()
         self.db_url = os.getenv('DATABASE_URL') or os.getenv('NEON_DB_URL')
         self.base_url = 'https://financialmodelingprep.com/api/v3'
         self.st_base_url = 'https://api.stocktwits.com/api/2'

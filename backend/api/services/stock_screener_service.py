@@ -12,7 +12,7 @@ LOGGER = logging.getLogger("caria.api.services.stock_screener")
 
 class StockScreenerService:
     def __init__(self):
-        self.api_key = os.getenv('FMP_API_KEY')
+        self.api_key = os.getenv('FMP_API_KEY', '').strip()
         self.base_url = 'https://financialmodelingprep.com/api/v3'
         self.db_url = os.getenv('DATABASE_URL') or os.getenv('NEON_DB_URL')
 

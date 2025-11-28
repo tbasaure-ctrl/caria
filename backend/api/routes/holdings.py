@@ -193,9 +193,10 @@ def get_holdings_with_prices(
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT ticker, quantity, average_cost
+                SELECT id, ticker, quantity, average_cost, notes
                 FROM holdings
                 WHERE user_id = %s
+                ORDER BY ticker
                 """,
                 (str(current_user.id),),
             )
@@ -211,7 +212,7 @@ def get_holdings_with_prices(
             )
         
         # Get unique tickers
-        tickers = [row[0] for row in rows]
+        tickers = [row[1] for row in rows]
         logger.info(f"Fetching prices for tickers: {tickers}")
         
         # Try to get real-time prices from FMP
@@ -230,7 +231,7 @@ def get_holdings_with_prices(
         total_cost = 0.0
         
         for row in rows:
-            ticker, quantity, avg_cost = row[0], float(row[1]), float(row[2])
+            holding_id, ticker, quantity, avg_cost, notes = row[0], row[1], float(row[2]), float(row[3]), row[4]
             cost_basis = quantity * avg_cost
             total_cost += cost_basis
             
@@ -257,9 +258,11 @@ def get_holdings_with_prices(
             gain_loss_pct = (gain_loss / cost_basis * 100) if cost_basis > 0 else 0.0
             
             holdings_data.append({
+                "id": str(holding_id),  # FIX: Include ID for delete/edit
                 "ticker": ticker,
                 "quantity": quantity,
                 "average_cost": avg_cost,
+                "notes": notes,
                 "current_price": current_price,
                 "cost_basis": cost_basis,
                 "current_value": current_value,
@@ -287,4 +290,3 @@ def get_holdings_with_prices(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching holdings with prices: {str(exc)}",
         ) from exc
-

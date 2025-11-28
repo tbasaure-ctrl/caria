@@ -220,14 +220,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             </ProtectedWidget>
                         </div>
 
-                        {/* Valuation Tools */}
-                        <div className="col-span-12 lg:col-span-6 min-h-[600px]">
-                            <ProjectionValuation />
+                        {/* Valuation Tools - Stacked Layout */}
+                        <div className="col-span-12 lg:col-span-6 space-y-6">
+                            {/* DCF Valuation Tool */}
+                            <div className="min-h-[500px]">
+                                <div className="rounded-xl p-6 h-full" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                                    <h3 className="text-lg font-display font-bold text-white mb-4">DCF Valuation: 5-Year Target Price</h3>
+                                    <ProjectionValuation />
+                                </div>
+                            </div>
+                            {/* Monte Carlo Simulation Tool */}
+                            <div className="min-h-[700px]">
+                                <ValuationTool />
+                            </div>
                         </div>
+
+                        {/* Business Valuation Workshop */}
                         <div className="col-span-12 lg:col-span-6 min-h-[600px]">
-                            <ValuationTool />
+                            <ValuationWorkshop />
                         </div>
-                        
+
                         {/* Screeners */}
                         <div className="col-span-12 lg:col-span-6 h-full min-h-[500px]">
                             <ProtectedWidget featureName="Alpha Stock Picker">

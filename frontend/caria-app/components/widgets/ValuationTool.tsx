@@ -204,12 +204,51 @@ export const ValuationTool: React.FC = () => {
         margin: { l: 50, r: 20, t: 20, b: 40 },
     };
 
+    const [showMonteCarloInfo, setShowMonteCarloInfo] = useState(false);
+
     return (
-        <div className="space-y-4">
+        <div className="rounded-xl p-6 h-full" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+            {/* Widget Header with Title */}
+            <div className="mb-6">
+                <h3 className="text-lg font-display font-bold text-white mb-2">
+                    Monte Carlo Simulation: Project Where the Price of the Stock Will Be in 2 Years
+                </h3>
+                <button
+                    onClick={() => setShowMonteCarloInfo(!showMonteCarloInfo)}
+                    className="text-xs font-medium transition-all duration-200 flex items-center gap-2"
+                    style={{ color: 'var(--color-accent-cyan)' }}
+                >
+                    <span>{showMonteCarloInfo ? 'Hide explanation' : 'Learn more about Monte Carlo Simulation'}</span>
+                    <span className="text-[10px]">{showMonteCarloInfo ? '\u25B2' : '\u25BC'}</span>
+                </button>
+
+                {showMonteCarloInfo && (
+                    <div
+                        className="mt-3 p-4 rounded-lg text-xs leading-relaxed animate-fade-in"
+                        style={{
+                            backgroundColor: 'var(--color-bg-tertiary)',
+                            border: '1px solid var(--color-border-subtle)',
+                            color: 'var(--color-text-secondary)'
+                        }}
+                    >
+                        <p className="mb-2">
+                            <strong style={{ color: 'var(--color-accent-cyan)' }}>Monte Carlo Simulation</strong> is a powerful statistical technique used to model the probability of different outcomes in a process that cannot easily be predicted due to random variables.
+                        </p>
+                        <p className="mb-2">
+                            For stock valuation, it runs <strong>10,000 simulations</strong> of possible price paths based on historical volatility and returns, giving you a range of potential future prices rather than a single estimate.
+                        </p>
+                        <p>
+                            The results show you the <strong>Bear case (10th percentile)</strong>, <strong>Base case (50th percentile/median)</strong>, and <strong>Bull case (90th percentile)</strong> - helping you understand both the upside potential and downside risk of an investment.
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            <div className="space-y-4">
             {/* Ticker Input */}
             <div className="flex gap-3 items-end">
                 <div className="flex-1">
-                    <label 
+                    <label
                         className="block text-xs font-medium tracking-wider uppercase mb-1.5"
                         style={{ color: 'var(--color-text-muted)' }}
                     >
@@ -648,7 +687,7 @@ export const ValuationTool: React.FC = () => {
 
             {/* Empty State */}
             {!valuation && !isLoadingValuation && !valError && (
-                <div 
+                <div
                     className="text-center py-12"
                     style={{ color: 'var(--color-text-muted)' }}
                 >
@@ -657,6 +696,7 @@ export const ValuationTool: React.FC = () => {
                     </p>
                 </div>
             )}
+            </div>
         </div>
     );
 };

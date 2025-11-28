@@ -3,9 +3,23 @@ import React from 'react';
 interface IconProps extends React.SVGProps<SVGSVGElement> { }
 
 export const CariaLogoIcon: React.FC<IconProps> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M17.5 15.5C17.5 18.5376 14.9376 21 11.9 21C8.86243 21 6.3 18.5376 6.3 15.5C6.3 12.4624 8.86243 10 11.9 10" />
-        <path d="M12 10V3L17.5 8.5" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" {...props}>
+        {/* Outer C Arc */}
+        <path d="M 75 25 A 35 35 0 1 0 75 75" strokeWidth="6" strokeLinecap="round" className="text-accent-cyan" />
+        
+        {/* Constellation Nodes */}
+        <circle cx="75" cy="25" r="4" fill="currentColor" className="text-white" />
+        <circle cx="50" cy="15" r="3" fill="currentColor" className="text-accent-cyan" />
+        <circle cx="25" cy="50" r="3" fill="currentColor" className="text-white" />
+        <circle cx="50" cy="85" r="3" fill="currentColor" className="text-accent-cyan" />
+        <circle cx="75" cy="75" r="4" fill="currentColor" className="text-white" />
+        
+        {/* Connection Lines */}
+        <path d="M 75 25 L 50 15 L 25 50 L 50 85 L 75 75" strokeWidth="1" opacity="0.5" className="text-accent-cyan" />
+        <path d="M 50 15 L 50 50 L 25 50" strokeWidth="1" opacity="0.3" className="text-white" />
+        
+        {/* Inner Core */}
+        <circle cx="50" cy="50" r="2" fill="currentColor" className="text-accent-gold" />
     </svg>
 );
 

@@ -165,17 +165,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             <GlobalMarketBar id="market-bar-widget" />
                         </div>
 
-                        {/* Indicators + Ask Caria */}
-                        <div className="col-span-12 lg:col-span-3 xl:col-span-2 space-y-8">
+                        {/* Indicators */}
+                        <div className="col-span-12 lg:col-span-3 xl:col-span-2 space-y-6">
                             <div className="h-[220px]">
                                 <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
                             </div>
                             <div className="h-[220px]">
                                 <FearGreedIndex />
-                            </div>
-                            {/* Satellite Widget for Caria */}
-                            <div className="h-[150px]">
-                                <AskCariaWidget onClick={switchToAnalysis} />
                             </div>
                         </div>
                         
@@ -185,10 +181,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             </ProtectedWidget>
                         </div>
 
-                        <div className="col-span-12 lg:col-span-12 xl:col-span-3 min-h-[650px]">
-                            <ProtectedWidget featureName="Portfolio Analytics">
-                                <PortfolioAnalytics />
-                            </ProtectedWidget>
+                        <div className="col-span-12 lg:col-span-12 xl:col-span-3 flex flex-col gap-6">
+                            <div className="flex-1">
+                                <ProtectedWidget featureName="Portfolio Analytics">
+                                    <PortfolioAnalytics />
+                                </ProtectedWidget>
+                            </div>
+                            <div className="h-[180px]">
+                                <AskCariaWidget onClick={switchToAnalysis} />
+                            </div>
                         </div>
 
                         <div className="col-span-12 lg:col-span-8 min-h-[450px]">
@@ -211,7 +212,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* ANALYSIS TAB */}
                 {activeTab === 'analysis' && (
-                    <div className="grid grid-cols-12 gap-8 animate-fade-in">
+                    <div className="grid grid-cols-12 gap-6 animate-fade-in">
                         {/* CARIA ARENA - HERO POSITION */}
                         <div className="col-span-12 h-[650px]">
                             <ProtectedWidget featureName="Investment Thesis Analysis">

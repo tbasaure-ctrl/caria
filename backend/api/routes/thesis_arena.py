@@ -229,7 +229,7 @@ HISTORIAL DE MEMORIA:
     ]
 
     # 5. Stream
-    api_key = os.getenv("LLAMA_API_KEY")
+    api_key = os.getenv("LLAMA_API_KEY", "").strip()
     api_url = os.getenv("LLM_API_URL", "https://api.groq.com/openai/v1/chat/completions")
     model = os.getenv("LLM_MODEL", "llama-3.1-8b-instant")
     

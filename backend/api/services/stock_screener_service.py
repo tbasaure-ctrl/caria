@@ -171,7 +171,7 @@ class StockScreenerService:
         return 0.0
 
     def run_screen(self):
-        candidates = self.get_initial_screeners()[:30]
+        candidates = self.get_initial_screeners()[:5]
         results = []
         
         for ticker in candidates:

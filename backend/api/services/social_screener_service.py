@@ -129,7 +129,7 @@ class SocialScreenerService:
         all_tickers = list(set(list(reddit_data.keys()) + list(st_data.keys())))
         
         results = []
-        for ticker in all_tickers:
+        for ticker in all_tickers[:5]:
             # 2. Validate if it's a real stock and under radar
             if not self.is_valid_ticker(ticker):
                 continue

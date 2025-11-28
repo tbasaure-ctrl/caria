@@ -89,10 +89,10 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
         {/* CTA Button */}
         <button
             onClick={handleDiscoverCaria}
-            className="group relative px-12 py-4 bg-transparent border border-white/10 rounded-full overflow-hidden transition-all duration-500 hover:border-accent-cyan/40 animate-slide-up delay-200 backdrop-blur-sm"
+            className="group relative px-12 py-4 bg-accent-cyan/10 border border-accent-cyan/50 rounded-full overflow-hidden transition-all duration-500 hover:bg-accent-cyan hover:border-accent-cyan hover:shadow-[0_0_30px_rgba(34,211,238,0.6)] animate-slide-up delay-200 backdrop-blur-sm"
         >
-            <div className="absolute inset-0 bg-accent-cyan/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <span className="relative text-xs font-bold tracking-[0.25em] uppercase text-white group-hover:text-accent-cyan transition-colors">
+            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <span className="relative text-sm font-bold tracking-[0.25em] uppercase text-accent-cyan group-hover:text-bg-primary transition-colors">
                 Access Caria
             </span>
         </button>

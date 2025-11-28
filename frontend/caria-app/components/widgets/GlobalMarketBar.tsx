@@ -17,12 +17,12 @@ const POLLING_INTERVAL = 30000;
 
 // Mock data for initial display (before API loads or if API fails)
 const MOCK_PRICES: Record<string, RealtimePrice> = {
-    'SPY': { symbol: 'SPY', price: 5487.03, change: 42.15, changesPercentage: 0.77, previousClose: 5444.88 },
-    'QQQ': { symbol: 'QQQ', price: 17857.02, change: 168.45, changesPercentage: 0.95, previousClose: 17688.57 },
-    'VGK': { symbol: 'VGK', price: 514.94, change: -3.78, changesPercentage: -0.73, previousClose: 518.72 },
-    'EEM': { symbol: 'EEM', price: 42.35, change: 0.15, changesPercentage: 0.36, previousClose: 42.20 },
-    'GLD': { symbol: 'GLD', price: 265.48, change: 1.25, changesPercentage: 0.47, previousClose: 264.23 },
-    'OIL': { symbol: 'OIL', price: 78.92, change: -0.45, changesPercentage: -0.57, previousClose: 79.37 },
+    'SPY': { symbol: 'SPY', price: 6032.45, change: 15.20, changesPercentage: 0.25, previousClose: 6017.25 },
+    'QQQ': { symbol: 'QQQ', price: 21150.80, change: 120.50, changesPercentage: 0.57, previousClose: 21030.30 },
+    'VGK': { symbol: 'VGK', price: 525.10, change: -2.15, changesPercentage: -0.41, previousClose: 527.25 },
+    'EEM': { symbol: 'EEM', price: 44.20, change: 0.12, changesPercentage: 0.27, previousClose: 44.08 },
+    'GLD': { symbol: 'GLD', price: 272.50, change: 1.80, changesPercentage: 0.66, previousClose: 270.70 },
+    'OIL': { symbol: 'OIL', price: 68.50, change: -0.75, changesPercentage: -1.08, previousClose: 69.25 },
 };
 
 interface MarketTileProps {

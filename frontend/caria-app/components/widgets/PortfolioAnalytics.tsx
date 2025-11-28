@@ -3,7 +3,7 @@ import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
 import { 
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-    AreaChart, Area, ScatterChart, Scatter, ZAxis
+    AreaChart, Area, ScatterChart, Scatter, ZAxis, Cell
 } from 'recharts';
 
 interface PortfolioMetrics {

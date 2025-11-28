@@ -456,37 +456,37 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                 </div>
 
                 {portfolioData && hasHoldings ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                         {/* Left: Performance Graph (Span 2) */}
-                        <div className="lg:col-span-2">
+                        <div className="lg:col-span-2 order-1">
                             <PerformanceGraph data={performanceData} timeRange={timeRange} />
                         </div>
 
                         {/* Right: Allocation Pie */}
-                        <div className="lg:col-span-1 flex flex-col justify-center">
-                            <h4 className="text-xs text-text-muted uppercase tracking-widest mb-4 text-center">Asset Allocation</h4>
+                        <div className="lg:col-span-1 flex flex-col justify-center order-2">
+                            <h4 className="text-[10px] sm:text-xs text-text-muted uppercase tracking-widest mb-3 sm:mb-4 text-center">Asset Allocation</h4>
                             <CustomPieChart data={allocationData} />
                         </div>
                     </div>
                 ) : (
-                    <div className="rounded-lg border border-dashed border-white/10 p-8 text-center text-sm text-text-muted">
+                    <div className="rounded-lg border border-dashed border-white/10 p-4 sm:p-6 lg:p-8 text-center text-xs sm:text-sm text-text-muted">
                         Your portfolio is empty. Add your first position to start tracking.
                     </div>
                 )}
 
                 {/* Position Management Table */}
-                <div className="border-t border-white/5 pt-6">
-                    <div className="flex flex-wrap items-center gap-4 justify-between mb-4">
-                        <h4 className="text-sm font-medium text-white uppercase tracking-widest">
+                <div className="border-t border-white/5 pt-4 sm:pt-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 justify-between mb-4">
+                        <h4 className="text-xs sm:text-sm font-medium text-white uppercase tracking-widest">
                             Positions
                         </h4>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 w-full sm:w-auto justify-between sm:justify-end">
                             <div className="flex bg-bg-tertiary border border-white/5 rounded p-0.5">
                                 {['value', 'return', 'ticker'].map(opt => (
                                     <button
                                         key={opt}
                                         onClick={() => setSortOption(opt as any)}
-                                        className={`px-3 py-1 text-xs uppercase font-medium rounded transition-colors ${sortOption === opt ? 'bg-white/10 text-white' : 'text-text-muted hover:text-text-secondary'}`}
+                                        className={`px-2 sm:px-3 py-1 text-[10px] sm:text-xs uppercase font-medium rounded transition-colors ${sortOption === opt ? 'bg-white/10 text-white' : 'text-text-muted hover:text-text-secondary'}`}
                                     >
                                         {opt === 'ticker' ? 'AZ' : opt === 'value' ? '$' : '%'}
                                     </button>
@@ -494,115 +494,115 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                             </div>
                             <button
                                 onClick={() => setShowForm((prev) => !prev)}
-                                className="text-xs font-medium px-4 py-1.5 rounded bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors border border-accent-primary/20"
+                                className="text-[10px] sm:text-xs font-medium px-3 sm:px-4 py-1.5 rounded bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors border border-accent-primary/20"
                             >
                                 {showForm ? 'Close' : 'Add +'}
                             </button>
                         </div>
                     </div>
 
-                    {/* Professional Add Form */}
+                    {/* Professional Add Form - Mobile Responsive */}
                     {showForm && (
-                        <div className="bg-bg-tertiary/50 p-6 rounded-lg border border-accent-primary/20 mb-6 animate-fade-in-up">
-                            <h5 className="text-sm text-accent-primary mb-4 font-medium">New Position Entry</h5>
-                            <form onSubmit={handleAddHolding} className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                                <div className="md:col-span-3">
-                                    <label className="block text-[10px] text-text-muted uppercase tracking-wider mb-1">Ticker</label>
+                        <div className="bg-bg-tertiary/50 p-3 sm:p-4 lg:p-6 rounded-lg border border-accent-primary/20 mb-4 sm:mb-6 animate-fade-in-up">
+                            <h5 className="text-xs sm:text-sm text-accent-primary mb-3 sm:mb-4 font-medium">New Position Entry</h5>
+                            <form onSubmit={handleAddHolding} className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                                <div className="col-span-1">
+                                    <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Ticker</label>
                                     <input
                                         type="text"
                                         value={formData.ticker}
                                         onChange={(e) => setFormData({ ...formData, ticker: e.target.value.toUpperCase() })}
-                                        className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none font-mono"
+                                        className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none font-mono"
                                         placeholder="AAPL"
                                         required
                                     />
                                 </div>
-                                <div className="md:col-span-3">
-                                    <label className="block text-[10px] text-text-muted uppercase tracking-wider mb-1">Quantity</label>
+                                <div className="col-span-1">
+                                    <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Quantity</label>
                                     <input
                                         type="number"
                                         step="any"
                                         value={formData.quantity}
                                         onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                                        className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none font-mono"
+                                        className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none font-mono"
                                         placeholder="0.00"
                                         required
                                     />
                                 </div>
-                                <div className="md:col-span-3">
-                                    <label className="block text-[10px] text-text-muted uppercase tracking-wider mb-1">Avg Cost ($)</label>
+                                <div className="col-span-1">
+                                    <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Avg Cost ($)</label>
                                     <input
                                         type="number"
                                         step="any"
                                         value={formData.average_cost}
                                         onChange={(e) => setFormData({ ...formData, average_cost: e.target.value })}
-                                        className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none font-mono"
+                                        className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none font-mono"
                                         placeholder="0.00"
                                         required
                                     />
                                 </div>
-                                <div className="md:col-span-3">
-                                    <label className="block text-[10px] text-text-muted uppercase tracking-wider mb-1">Date</label>
+                                <div className="col-span-1">
+                                    <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Date</label>
                                     <input
                                         type="date"
                                         value={formData.purchase_date}
                                         onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
-                                        className="w-full bg-bg-primary border border-white/10 rounded px-3 py-2 text-sm text-white focus:border-accent-primary outline-none"
+                                        className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none"
                                         required
                                     />
                                 </div>
-                                <div className="md:col-span-12 flex gap-3 mt-2 justify-end">
+                                <div className="col-span-2 lg:col-span-4 flex gap-2 sm:gap-3 mt-2 justify-end">
                                     <button
                                         type="button"
                                         onClick={() => setShowForm(false)}
-                                        className="px-4 py-2 text-xs font-medium text-text-muted hover:text-white transition-colors"
+                                        className="px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-medium text-text-muted hover:text-white transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={actionLoading}
-                                        className="bg-accent-primary hover:bg-accent-primary/90 text-white text-xs font-bold uppercase tracking-wider py-2 px-6 rounded transition-colors shadow-glow-sm"
+                                        className="bg-accent-primary hover:bg-accent-primary/90 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider py-1.5 sm:py-2 px-4 sm:px-6 rounded transition-colors shadow-glow-sm"
                                     >
-                                        {actionLoading ? 'Saving...' : 'Save Position'}
+                                        {actionLoading ? 'Saving...' : 'Save'}
                                     </button>
                                 </div>
                             </form>
                         </div>
                     )}
 
-                    <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar space-y-1">
+                    <div className="max-h-[250px] sm:max-h-[300px] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar space-y-1">
                         {sortedHoldings.map((holding: HoldingWithPrice) => (
                             <div
                                 key={holding.id}
-                                className="flex justify-between items-center p-3 bg-white/5 rounded hover:bg-white/10 transition-colors group border border-transparent hover:border-white/5"
+                                className="flex justify-between items-center p-2 sm:p-3 bg-white/5 rounded hover:bg-white/10 transition-colors group border border-transparent hover:border-white/5"
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-xs font-bold text-accent-cyan">
+                                <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+                                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded bg-white/5 flex items-center justify-center text-[10px] sm:text-xs font-bold text-accent-cyan flex-shrink-0">
                                         {holding.ticker.substring(0, 2)}
                                     </div>
-                                    <div>
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-white font-medium font-mono">{holding.ticker}</span>
-                                            <span className="text-xs text-text-muted">{holding.quantity} shares</span>
+                                    <div className="min-w-0">
+                                        <div className="flex items-baseline gap-1 sm:gap-2 flex-wrap">
+                                            <span className="text-white font-medium font-mono text-xs sm:text-sm">{holding.ticker}</span>
+                                            <span className="text-[10px] sm:text-xs text-text-muted truncate">{holding.quantity} sh</span>
                                         </div>
-                                        <div className="text-xs text-text-secondary">
+                                        <div className="text-[10px] sm:text-xs text-text-secondary">
                                             Avg: ${holding.average_cost.toFixed(2)}
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0">
                                     <div className="text-right">
-                                        <div className="font-mono text-white">
-                                            ${(holding.current_value ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        <div className="font-mono text-white text-xs sm:text-sm">
+                                            ${(holding.current_value ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                         </div>
-                                        <div className={`text-xs font-mono ${holding.gain_loss_pct! >= 0 ? 'text-positive' : 'text-negative'}`}>
-                                            {holding.gain_loss_pct! >= 0 ? '+' : ''}{holding.gain_loss_pct!.toFixed(2)}%
+                                        <div className={`text-[10px] sm:text-xs font-mono ${holding.gain_loss_pct! >= 0 ? 'text-positive' : 'text-negative'}`}>
+                                            {holding.gain_loss_pct! >= 0 ? '+' : ''}{holding.gain_loss_pct!.toFixed(1)}%
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => holding.id && handleDeleteHolding(holding.id)}
-                                        className="w-6 h-6 rounded flex items-center justify-center text-text-muted hover:text-negative hover:bg-negative/10 transition-all opacity-0 group-hover:opacity-100"
+                                        className="w-5 h-5 sm:w-6 sm:h-6 rounded flex items-center justify-center text-text-muted hover:text-negative hover:bg-negative/10 transition-all sm:opacity-0 sm:group-hover:opacity-100"
                                         title="Delete position"
                                     >
                                         ×

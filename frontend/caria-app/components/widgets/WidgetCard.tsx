@@ -27,32 +27,32 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({
     return (
         <div
             id={id}
-            className={`rounded-lg transition-all duration-300 group border border-white/5 hover:border-accent-cyan/50 hover:shadow-[0_0_20px_rgba(34,211,238,0.15)] ${className}`}
+            className={`rounded-lg transition-all duration-300 group border border-white/5 hover:border-accent-cyan/50 hover:shadow-[0_0_20px_rgba(34,211,238,0.15)] h-full ${className}`}
             style={{
-                backgroundColor: 'transparent', 
+                backgroundColor: 'transparent',
             }}
         >
-            {/* Widget Header - "Blue Line - Box - Blue Line" Style */}
-            <div className="flex items-center justify-center mb-4 relative">
+            {/* Widget Header - "Blue Line - Box - Blue Line" Style - Responsive */}
+            <div className="flex items-center justify-center mb-2 sm:mb-3 lg:mb-4 relative">
                 {/* Left Line */}
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-accent-cyan/30 to-accent-cyan/60" />
-                
-                {/* Title Box */}
-                <div className="mx-4 relative">
-                    <div 
-                        className="px-6 py-1.5 rounded border border-accent-cyan/30 bg-accent-cyan/5 backdrop-blur-sm shadow-[0_0_15px_rgba(34,211,238,0.1)] flex items-center gap-2 group-hover:border-accent-cyan/50 group-hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-all duration-300"
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-accent-cyan/30 to-accent-cyan/60 hidden sm:block" />
+
+                {/* Title Box - Responsive */}
+                <div className="mx-2 sm:mx-4 relative flex-shrink-0 max-w-full">
+                    <div
+                        className="px-3 sm:px-4 lg:px-6 py-1 sm:py-1.5 rounded border border-accent-cyan/30 bg-accent-cyan/5 backdrop-blur-sm shadow-[0_0_15px_rgba(34,211,238,0.1)] flex items-center gap-1 sm:gap-2 group-hover:border-accent-cyan/50 group-hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-all duration-300"
                     >
                         <h3
-                            className="text-xs font-bold tracking-[0.15em] uppercase text-accent-cyan whitespace-nowrap group-hover:text-white transition-colors duration-300"
+                            className="text-[10px] sm:text-xs font-bold tracking-[0.1em] sm:tracking-[0.15em] uppercase text-accent-cyan group-hover:text-white transition-colors duration-300 truncate max-w-[200px] sm:max-w-none"
                             style={{ fontFamily: 'var(--font-mono)', textShadow: '0 0 10px rgba(34,211,238,0.4)' }}
                         >
                             {title}
                         </h3>
-                        
+
                         {/* Tooltip Icon */}
                         {tooltip && (
                             <button
-                                className="text-accent-cyan/50 hover:text-accent-cyan transition-colors ml-1"
+                                className="text-accent-cyan/50 hover:text-accent-cyan transition-colors ml-0.5 sm:ml-1 flex-shrink-0"
                                 onMouseEnter={() => setShowTooltip(true)}
                                 onMouseLeave={() => setShowTooltip(false)}
                                 onClick={() => setShowTooltip(!showTooltip)}
@@ -64,10 +64,10 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({
                         )}
                     </div>
 
-                    {/* Tooltip Popup */}
+                    {/* Tooltip Popup - Responsive positioning */}
                     {showTooltip && (
-                        <div className="absolute z-50 w-64 p-3 rounded-lg shadow-xl animate-fade-in left-1/2 -translate-x-1/2 top-full mt-3 bg-[#0B1221] border border-accent-cyan/20">
-                            <div className="text-xs text-text-secondary leading-relaxed text-center">
+                        <div className="absolute z-50 w-56 sm:w-64 p-2 sm:p-3 rounded-lg shadow-xl animate-fade-in left-1/2 -translate-x-1/2 top-full mt-2 sm:mt-3 bg-[#0B1221] border border-accent-cyan/20">
+                            <div className="text-[10px] sm:text-xs text-text-secondary leading-relaxed text-center">
                                 {tooltip}
                             </div>
                         </div>
@@ -75,21 +75,21 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({
                 </div>
 
                 {/* Right Line */}
-                <div className="h-px flex-1 bg-gradient-to-l from-transparent via-accent-cyan/30 to-accent-cyan/60" />
+                <div className="h-px flex-1 bg-gradient-to-l from-transparent via-accent-cyan/30 to-accent-cyan/60 hidden sm:block" />
 
-                {/* Action Button */}
+                {/* Action Button - Hidden on very small screens */}
                 {action && (
                     <button
                         onClick={action.onClick}
-                        className="absolute right-0 text-[10px] font-medium px-2 py-1 rounded text-accent-cyan/70 hover:text-accent-cyan hover:bg-accent-cyan/10 transition-colors uppercase tracking-wider"
+                        className="absolute right-0 text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-accent-cyan/70 hover:text-accent-cyan hover:bg-accent-cyan/10 transition-colors uppercase tracking-wider hidden xs:block"
                     >
                         {action.label}
                     </button>
                 )}
             </div>
 
-            {/* Widget Content */}
-            <div className={`bg-[#0B1221]/60 border border-white/5 rounded-xl backdrop-blur-sm group-hover:border-accent-cyan/20 transition-colors duration-300 ${compact ? 'p-4' : 'p-5'}`}>
+            {/* Widget Content - Responsive padding */}
+            <div className={`bg-[#0B1221]/60 border border-white/5 rounded-lg sm:rounded-xl backdrop-blur-sm group-hover:border-accent-cyan/20 transition-colors duration-300 h-full ${compact ? 'p-2 sm:p-3 lg:p-4' : 'p-3 sm:p-4 lg:p-5'}`}>
                 {children}
             </div>
         </div>

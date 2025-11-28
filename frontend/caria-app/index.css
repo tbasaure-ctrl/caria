@@ -78,3 +78,91 @@ body {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ============================================
+   RESPONSIVE UTILITIES - Mobile First
+   ============================================ */
+
+/* Hide scrollbar for horizontal scroll areas on mobile */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Responsive text utilities */
+@media (max-width: 640px) {
+  /* Ensure text doesn't overflow on small screens */
+  .break-words {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Reduce large font sizes on mobile */
+  .text-4xl { font-size: 1.75rem !important; }
+  .text-3xl { font-size: 1.5rem !important; }
+  .text-2xl { font-size: 1.25rem !important; }
+  .text-xl { font-size: 1.1rem !important; }
+
+  /* Ensure buttons are tappable on mobile (min 44px touch target) */
+  button,
+  [role="button"],
+  input[type="submit"] {
+    min-height: 40px;
+  }
+
+  /* Prevent horizontal scroll on body */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Reduce padding on widgets for mobile */
+  .rounded-xl {
+    padding: 0.75rem;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .text-4xl { font-size: 2rem !important; }
+  .text-3xl { font-size: 1.75rem !important; }
+}
+
+/* Ensure charts and graphs scale properly */
+.recharts-wrapper,
+.js-plotly-plot {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Fix Plotly chart overflow on mobile */
+@media (max-width: 640px) {
+  .js-plotly-plot .plotly .main-svg {
+    overflow: visible;
+  }
+
+  /* Make Plotly chart margins smaller on mobile */
+  .js-plotly-plot {
+    margin-left: -10px;
+    margin-right: -10px;
+  }
+}
+
+/* Responsive grid gap adjustments */
+@media (max-width: 640px) {
+  .gap-8 { gap: 1rem !important; }
+  .gap-6 { gap: 0.75rem !important; }
+  .gap-4 { gap: 0.5rem !important; }
+}
+
+/* Touch-friendly spacing for interactive elements */
+@media (pointer: coarse) {
+  /* Larger touch targets for touch devices */
+  button:not(.icon-button),
+  [role="button"]:not(.icon-button) {
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+  }
+}

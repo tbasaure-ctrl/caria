@@ -117,28 +117,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
     return (
         <main className="flex-1 overflow-y-auto relative min-h-screen bg-transparent custom-scrollbar">
-            {/* Dashboard Header */}
+            {/* Dashboard Header - Mobile First */}
             <div className="sticky top-0 z-40 border-b border-white/5 bg-[#020408]/80 backdrop-blur-xl">
-                <div className="w-full px-6 lg:px-12 py-6 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-4 shrink-0">
-                        <h1 className="text-xl font-display text-white tracking-wide hidden md:block">
+                <div className="w-full px-3 sm:px-6 lg:px-12 py-3 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6">
+                    <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                        <h1 className="text-lg sm:text-xl font-display text-white tracking-wide hidden sm:block">
                             Terminal
                         </h1>
-                        <span className="text-white/20 text-xl font-light hidden md:block">/</span>
-                        <span className="text-accent-cyan font-mono text-xs uppercase tracking-widest">
+                        <span className="text-white/20 text-xl font-light hidden sm:block">/</span>
+                        <span className="text-accent-cyan font-mono text-[10px] sm:text-xs uppercase tracking-widest">
                             {activeTab}
                         </span>
                     </div>
 
-                    <div className="flex bg-white/5 rounded-full p-1.5 border border-white/5 gap-2 overflow-x-auto max-w-full">
+                    {/* Tabs - Responsive sizing */}
+                    <div className="flex bg-white/5 rounded-full p-1 sm:p-1.5 border border-white/5 gap-1 sm:gap-2 overflow-x-auto max-w-full scrollbar-hide">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id)}
                                 className={`
-                                    px-8 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap
-                                    ${activeTab === tab.id 
-                                        ? 'bg-accent-primary text-white shadow-[0_0_15px_rgba(56,189,248,0.4)]' 
+                                    px-4 sm:px-6 lg:px-8 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest transition-all duration-300 whitespace-nowrap
+                                    ${activeTab === tab.id
+                                        ? 'bg-accent-primary text-white shadow-[0_0_15px_rgba(56,189,248,0.4)]'
                                         : 'text-text-muted hover:text-white hover:bg-white/5'
                                     }
                                 `}
@@ -147,64 +148,73 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             </button>
                         ))}
                     </div>
-                    
-                    <div className="w-24 hidden md:flex justify-end items-center gap-3 shrink-0">
+
+                    <div className="w-auto sm:w-24 hidden sm:flex justify-end items-center gap-2 sm:gap-3 shrink-0">
                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
                         <span className="text-[10px] text-text-muted font-mono uppercase">Live</span>
                     </div>
                 </div>
             </div>
 
-            {/* Tab Content */}
-            <div className="w-full px-4 lg:px-8 py-8 relative z-10 max-w-[2400px] mx-auto">
-                
+            {/* Tab Content - Mobile First with responsive padding */}
+            <div className="w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8 relative z-10 max-w-[2400px] mx-auto">
+
                 {/* PORTFOLIO TAB */}
                 {activeTab === 'portfolio' && (
-                    <div className="grid grid-cols-12 gap-8 animate-fade-in">
-                        <div className="col-span-12">
+                    <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 animate-fade-in">
+                        {/* Global Market Bar - Full Width */}
+                        <div className="w-full">
                             <GlobalMarketBar id="market-bar-widget" />
                         </div>
 
-                        {/* Indicators */}
-                        <div className="col-span-12 lg:col-span-3 xl:col-span-2 space-y-6">
-                            <div className="h-[220px]">
-                                <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                        {/* Main Content Grid - Mobile: Stack, Tablet: 2 cols, Desktop: 12 cols */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
+                            {/* Indicators - Mobile: horizontal scroll or stack */}
+                            <div className="col-span-1 md:col-span-2 xl:col-span-2 flex flex-row md:flex-col gap-4 sm:gap-6 overflow-x-auto xl:overflow-visible pb-2 xl:pb-0">
+                                <div className="min-w-[160px] sm:min-w-[200px] xl:min-w-0 h-auto min-h-[180px] sm:min-h-[200px] xl:h-[220px] flex-shrink-0 xl:flex-shrink">
+                                    <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
+                                </div>
+                                <div className="min-w-[160px] sm:min-w-[200px] xl:min-w-0 h-auto min-h-[180px] sm:min-h-[200px] xl:h-[220px] flex-shrink-0 xl:flex-shrink">
+                                    <FearGreedIndex />
+                                </div>
                             </div>
-                            <div className="h-[220px]">
-                                <FearGreedIndex />
-                            </div>
-                        </div>
-                        
-                        <div className="col-span-12 lg:col-span-9 xl:col-span-7 min-h-[650px]">
-                            <ProtectedWidget featureName="Portfolio Management">
-                                <Portfolio id="portfolio-widget" />
-                            </ProtectedWidget>
-                        </div>
 
-                        <div className="col-span-12 lg:col-span-12 xl:col-span-3 flex flex-col gap-6">
-                            <div className="flex-1">
-                                <ProtectedWidget featureName="Portfolio Analytics">
-                                    <PortfolioAnalytics />
+                            {/* Portfolio - Main widget */}
+                            <div className="col-span-1 md:col-span-2 xl:col-span-7 min-h-[400px] sm:min-h-[500px] lg:min-h-[650px]">
+                                <ProtectedWidget featureName="Portfolio Management">
+                                    <Portfolio id="portfolio-widget" />
                                 </ProtectedWidget>
                             </div>
-                            <div className="h-[180px]">
-                                <AskCariaWidget onClick={switchToAnalysis} />
+
+                            {/* Portfolio Analytics & Ask Caria */}
+                            <div className="col-span-1 md:col-span-2 xl:col-span-3 flex flex-col gap-4 sm:gap-6">
+                                <div className="flex-1 min-h-[250px] sm:min-h-[300px]">
+                                    <ProtectedWidget featureName="Portfolio Analytics">
+                                        <PortfolioAnalytics />
+                                    </ProtectedWidget>
+                                </div>
+                                <div className="h-auto min-h-[150px] sm:min-h-[180px]">
+                                    <AskCariaWidget onClick={switchToAnalysis} />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="col-span-12 lg:col-span-8 min-h-[450px]">
-                            <ProtectedWidget featureName="Crisis Simulator">
-                                <CrisisSimulator />
-                            </ProtectedWidget>
-                        </div>
-                        <div className="col-span-12 lg:col-span-4 space-y-8">
-                            <div className="min-h-[220px]">
-                                <MacroSimulator />
-                            </div>
-                            <div className="min-h-[220px]">
-                                <ProtectedWidget featureName="Regime Test">
-                                    <RegimeTestWidget />
+                        {/* Crisis & Macro Simulators */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
+                            <div className="col-span-1 lg:col-span-8 min-h-[350px] sm:min-h-[400px] lg:min-h-[450px]">
+                                <ProtectedWidget featureName="Crisis Simulator">
+                                    <CrisisSimulator />
                                 </ProtectedWidget>
+                            </div>
+                            <div className="col-span-1 lg:col-span-4 flex flex-col gap-4 sm:gap-6 lg:gap-8">
+                                <div className="min-h-[180px] sm:min-h-[200px] lg:min-h-[220px]">
+                                    <MacroSimulator />
+                                </div>
+                                <div className="min-h-[180px] sm:min-h-[200px] lg:min-h-[220px]">
+                                    <ProtectedWidget featureName="Regime Test">
+                                        <RegimeTestWidget />
+                                    </ProtectedWidget>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -212,71 +222,84 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* ANALYSIS TAB */}
                 {activeTab === 'analysis' && (
-                    <div className="grid grid-cols-12 gap-6 animate-fade-in">
-                        {/* CARIA ARENA - HERO POSITION */}
-                        <div className="col-span-12 h-[650px]">
+                    <div className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
+                        {/* CARIA ARENA - HERO POSITION - Responsive height */}
+                        <div className="w-full min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] xl:h-[650px]">
                             <ProtectedWidget featureName="Investment Thesis Analysis">
                                 <ThesisArena />
                             </ProtectedWidget>
                         </div>
 
-                        {/* Valuation Tools - Stacked Layout */}
-                        <div className="col-span-12 lg:col-span-6 space-y-6">
-                            {/* DCF Valuation Tool */}
-                            <div className="min-h-[500px]">
-                                <div className="rounded-xl p-6 h-full" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
-                                    <h3 className="text-lg font-display font-bold text-white mb-4">DCF Valuation: 5-Year Target Price</h3>
-                                    <ProjectionValuation />
+                        {/* Valuation Tools Grid - Mobile: Stack, Desktop: Side by Side */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                            {/* Left Column: DCF + Monte Carlo stacked */}
+                            <div className="flex flex-col gap-4 sm:gap-6">
+                                {/* DCF Valuation Tool */}
+                                <div className="min-h-[350px] sm:min-h-[400px] lg:min-h-[500px]">
+                                    <div className="rounded-xl p-4 sm:p-6 h-full" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                                        <h3 className="text-base sm:text-lg font-display font-bold text-white mb-3 sm:mb-4">DCF Valuation: 5-Year Target Price</h3>
+                                        <ProjectionValuation />
+                                    </div>
+                                </div>
+                                {/* Monte Carlo Simulation Tool */}
+                                <div className="min-h-[500px] sm:min-h-[600px] lg:min-h-[700px]">
+                                    <ValuationTool />
                                 </div>
                             </div>
-                            {/* Monte Carlo Simulation Tool */}
-                            <div className="min-h-[700px]">
-                                <ValuationTool />
+
+                            {/* Right Column: Business Valuation Workshop */}
+                            <div className="min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
+                                <ValuationWorkshop />
                             </div>
                         </div>
 
-                        {/* Business Valuation Workshop */}
-                        <div className="col-span-12 lg:col-span-6 min-h-[600px]">
-                            <ValuationWorkshop />
-                        </div>
-
-                        {/* Screeners */}
-                        <div className="col-span-12 lg:col-span-6 h-full min-h-[500px]">
-                            <ProtectedWidget featureName="Alpha Stock Picker">
-                                <AlphaStockPicker />
-                            </ProtectedWidget>
-                        </div>
-                        <div className="col-span-12 lg:col-span-6 h-full min-h-[500px]">
-                            <ProtectedWidget featureName="Hidden Gems Screener">
-                                <HiddenGemsScreener />
-                            </ProtectedWidget>
+                        {/* Screeners - Mobile: Stack, Desktop: Side by Side */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                            <div className="min-h-[350px] sm:min-h-[400px] lg:min-h-[500px]">
+                                <ProtectedWidget featureName="Alpha Stock Picker">
+                                    <AlphaStockPicker />
+                                </ProtectedWidget>
+                            </div>
+                            <div className="min-h-[350px] sm:min-h-[400px] lg:min-h-[500px]">
+                                <ProtectedWidget featureName="Hidden Gems Screener">
+                                    <HiddenGemsScreener />
+                                </ProtectedWidget>
+                            </div>
                         </div>
                     </div>
                 )}
 
                 {/* RESEARCH TAB */}
                 {activeTab === 'research' && (
-                    <div className="grid grid-cols-12 gap-8 animate-fade-in">
-                        <div className="col-span-12 xl:col-span-8 min-h-[500px]">
-                            <ProtectedWidget featureName="Industry Research">
-                                <IndustryResearch />
-                            </ProtectedWidget>
-                        </div>
-                        
-                        <div className="col-span-12 xl:col-span-4 space-y-8">
-                            <OpportunityRadar />
-                            <WeeklyMedia compact={false} />
+                    <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 animate-fade-in">
+                        {/* Industry Research + Sidebar */}
+                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
+                            <div className="col-span-1 xl:col-span-8 min-h-[350px] sm:min-h-[400px] lg:min-h-[500px]">
+                                <ProtectedWidget featureName="Industry Research">
+                                    <IndustryResearch />
+                                </ProtectedWidget>
+                            </div>
+
+                            <div className="col-span-1 xl:col-span-4 flex flex-col gap-4 sm:gap-6 lg:gap-8">
+                                <OpportunityRadar />
+                                <WeeklyMedia compact={false} />
+                            </div>
                         </div>
 
-                        <div className="col-span-12 lg:col-span-6 min-h-[400px]">
-                            <ProtectedWidget featureName="Community">
-                                <CommunityFeed />
-                            </ProtectedWidget>
+                        {/* Community & Resources */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+                            <div className="min-h-[300px] sm:min-h-[350px] lg:min-h-[400px]">
+                                <ProtectedWidget featureName="Community">
+                                    <CommunityFeed />
+                                </ProtectedWidget>
+                            </div>
+                            <div className="min-h-[300px] sm:min-h-[350px] lg:min-h-[400px]">
+                                <Resources />
+                            </div>
                         </div>
-                        <div className="col-span-12 lg:col-span-6 min-h-[400px]">
-                            <Resources />
-                        </div>
-                        <div className="col-span-12">
+
+                        {/* Rankings - Full Width */}
+                        <div className="w-full">
                             <RankingsWidget />
                         </div>
                     </div>

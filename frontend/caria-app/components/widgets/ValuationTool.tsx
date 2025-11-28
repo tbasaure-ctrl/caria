@@ -207,24 +207,24 @@ export const ValuationTool: React.FC = () => {
     const [showMonteCarloInfo, setShowMonteCarloInfo] = useState(false);
 
     return (
-        <div className="rounded-xl p-6 h-full" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
-            {/* Widget Header with Title */}
-            <div className="mb-6">
-                <h3 className="text-lg font-display font-bold text-white mb-2">
-                    Monte Carlo Simulation: Project Where the Price of the Stock Will Be in 2 Years
+        <div className="rounded-xl p-3 sm:p-4 lg:p-6 h-full" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+            {/* Widget Header with Title - Responsive */}
+            <div className="mb-4 sm:mb-6">
+                <h3 className="text-sm sm:text-base lg:text-lg font-display font-bold text-white mb-2 leading-tight">
+                    Monte Carlo Simulation: Project Stock Price in 2 Years
                 </h3>
                 <button
                     onClick={() => setShowMonteCarloInfo(!showMonteCarloInfo)}
-                    className="text-xs font-medium transition-all duration-200 flex items-center gap-2"
+                    className="text-[10px] sm:text-xs font-medium transition-all duration-200 flex items-center gap-1 sm:gap-2"
                     style={{ color: 'var(--color-accent-cyan)' }}
                 >
-                    <span>{showMonteCarloInfo ? 'Hide explanation' : 'Learn more about Monte Carlo Simulation'}</span>
+                    <span>{showMonteCarloInfo ? 'Hide' : 'Learn more'}</span>
                     <span className="text-[10px]">{showMonteCarloInfo ? '\u25B2' : '\u25BC'}</span>
                 </button>
 
                 {showMonteCarloInfo && (
                     <div
-                        className="mt-3 p-4 rounded-lg text-xs leading-relaxed animate-fade-in"
+                        className="mt-2 sm:mt-3 p-3 sm:p-4 rounded-lg text-[10px] sm:text-xs leading-relaxed animate-fade-in"
                         style={{
                             backgroundColor: 'var(--color-bg-tertiary)',
                             border: '1px solid var(--color-border-subtle)',
@@ -232,24 +232,24 @@ export const ValuationTool: React.FC = () => {
                         }}
                     >
                         <p className="mb-2">
-                            <strong style={{ color: 'var(--color-accent-cyan)' }}>Monte Carlo Simulation</strong> is a powerful statistical technique used to model the probability of different outcomes in a process that cannot easily be predicted due to random variables.
+                            <strong style={{ color: 'var(--color-accent-cyan)' }}>Monte Carlo Simulation</strong> models probability of different outcomes using random variables.
                         </p>
                         <p className="mb-2">
-                            For stock valuation, it runs <strong>10,000 simulations</strong> of possible price paths based on historical volatility and returns, giving you a range of potential future prices rather than a single estimate.
+                            Runs <strong>10,000 simulations</strong> of possible price paths based on historical volatility.
                         </p>
                         <p>
-                            The results show you the <strong>Bear case (10th percentile)</strong>, <strong>Base case (50th percentile/median)</strong>, and <strong>Bull case (90th percentile)</strong> - helping you understand both the upside potential and downside risk of an investment.
+                            Shows <strong>Bear (10th)</strong>, <strong>Base (50th)</strong>, and <strong>Bull (90th)</strong> percentile outcomes.
                         </p>
                     </div>
                 )}
             </div>
 
-            <div className="space-y-4">
-            {/* Ticker Input */}
-            <div className="flex gap-3 items-end">
+            <div className="space-y-3 sm:space-y-4">
+            {/* Ticker Input - Responsive */}
+            <div className="flex gap-2 sm:gap-3 items-end">
                 <div className="flex-1">
                     <label
-                        className="block text-xs font-medium tracking-wider uppercase mb-1.5"
+                        className="block text-[10px] sm:text-xs font-medium tracking-wider uppercase mb-1 sm:mb-1.5"
                         style={{ color: 'var(--color-text-muted)' }}
                     >
                         Ticker Symbol
@@ -257,7 +257,7 @@ export const ValuationTool: React.FC = () => {
                     <input
                         value={ticker}
                         onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                        className="w-full px-3 py-2 rounded-lg text-sm font-mono"
+                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-mono"
                         style={{
                             backgroundColor: 'var(--color-bg-tertiary)',
                             border: '1px solid var(--color-border-subtle)',
@@ -269,13 +269,13 @@ export const ValuationTool: React.FC = () => {
                 <button
                     onClick={handleAnalyze}
                     disabled={isLoadingValuation || !ticker.trim()}
-                    className="px-5 py-2 rounded-lg font-semibold text-sm transition-all duration-200 disabled:opacity-50"
+                    className="px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 disabled:opacity-50 whitespace-nowrap"
                     style={{
                         backgroundColor: 'var(--color-accent-primary)',
                         color: '#FFFFFF',
                     }}
                 >
-                    {isLoadingValuation ? "Analyzing..." : "Analyze"}
+                    {isLoadingValuation ? "..." : "Analyze"}
                 </button>
             </div>
 

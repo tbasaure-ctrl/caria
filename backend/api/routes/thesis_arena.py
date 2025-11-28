@@ -46,8 +46,6 @@ def _extract_ticker(text: str) -> Optional[str]:
     valid_candidates = [c for c in candidates if c not in COMMON_WORDS]
     
     if valid_candidates:
-        # Return the first one that looks most like a ticker (heuristic)
-        # Ideally we would validate against a ticker database
         return valid_candidates[0]
     return None
 
@@ -64,7 +62,6 @@ def _get_active_communities() -> List[str]:
         except Exception as e:
             LOGGER.warning(f"Failed to load communities config: {e}")
 
-    # Fallback to expanded default list
     return [
         "value_investor", "crypto_bro", "growth_investor", "contrarian",
         "technical_analyst", "dividend_investor", "esg_advocate", "risk_manager"
@@ -94,7 +91,8 @@ def _load_community_prompt(community: str) -> str:
         "2. Use the SOCRATIC METHOD. Ask thought-provoking questions to guide the user's reflection.\n"
         "3. Do not lecture. Engage in a dialogue.\n"
         "4. Challenge the user's assumptions based on your persona.\n"
-        "5. Focus on the investment thesis logic, not just the ticker."
+        "5. Focus on the investment thesis logic, not just the ticker.\n"
+        "6. DETECT THE LANGUAGE of the user's input and RESPOND IN THE SAME LANGUAGE."
     )
     
     return base_prompt + socratic_instruction
@@ -130,13 +128,12 @@ def _call_groq(prompt: str, community: str) -> Optional[str]:
         raise ValueError("LLAMA_API_KEY not configured")
 
     community_prompt = _load_community_prompt(community)
-    system_prompt = f"{community_prompt}\n\nYou are a {community.replace('_', ' ')} investor."
-
+    
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     payload = {
         "model": model,
         "messages": [
-            {"role": "system", "content": system_prompt},
+            {"role": "system", "content": community_prompt},
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.7,
@@ -146,7 +143,6 @@ def _call_groq(prompt: str, community: str) -> Optional[str]:
     resp.raise_for_status()
     data = resp.json()
     text = data["choices"][0]["message"]["content"]
-    LOGGER.info(f"Groq returned response for {community} ({len(text)} chars)")
     return text
 
 
@@ -174,7 +170,6 @@ def _call_openai(prompt: str, community: str) -> Optional[str]:
     )
     resp.raise_for_status()
     text = resp.json()["choices"][0]["message"]["content"]
-    LOGGER.info(f"OpenAI returned response for {community} ({len(text)} chars)")
     return text
 
 
@@ -202,7 +197,6 @@ def _call_anthropic(prompt: str, community: str) -> Optional[str]:
     )
     resp.raise_for_status()
     text = resp.json()["content"][0]["text"]
-    LOGGER.info(f"Anthropic returned response for {community} ({len(text)} chars)")
     return text
 
 
@@ -298,29 +292,16 @@ async def _save_arena_thread(
 
 class ThesisArenaChallengeRequest(BaseModel):
     """Request model for thesis arena challenge."""
-    thesis: str = Field(
-        ...,
-        min_length=10,
-        max_length=2000,
-        description="Investment thesis to challenge"
-    )
-    ticker: Optional[str] = Field(
-        None,
-        description="Optional ticker symbol for context"
-    )
-    initial_conviction: float = Field(
-        50.0,
-        ge=0,
-        le=100,
-        description="Initial conviction level (0-100)"
-    )
+    thesis: str = Field(..., min_length=10, max_length=2000)
+    ticker: Optional[str] = None
+    initial_conviction: float = Field(50.0, ge=0, le=100)
 
 
 class CommunityResponse(BaseModel):
     """Response from a single community."""
     community: str
     response: str
-    impact_score: float = Field(..., description="Impact on conviction (-1 to +1)")
+    impact_score: float
 
 
 class ThesisArenaChallengeResponse(BaseModel):
@@ -330,14 +311,14 @@ class ThesisArenaChallengeResponse(BaseModel):
     initial_conviction: float
     community_responses: List[CommunityResponse]
     conviction_impact: Dict[str, Any]
-    arena_id: Optional[str] = Field(None, description="Arena thread ID for multi-round conversations")
-    round_number: int = Field(1, description="Current round number")
+    arena_id: Optional[str]
+    round_number: int
 
 
 class ArenaRespondRequest(BaseModel):
     """Request model for responding in an arena thread."""
-    thread_id: str = Field(..., description="Arena thread ID")
-    user_message: str = Field(..., min_length=1, max_length=1000, description="User's follow-up message")
+    thread_id: str
+    user_message: str
 
 
 class ArenaRespondResponse(BaseModel):
@@ -356,39 +337,7 @@ async def check_ticker_support(
     current_user: UserInDB = Depends(get_current_user),
 ):
     """Check if ticker is supported by data sources."""
-    ticker = ticker.upper()
-    support_status = {
-        "ticker": ticker,
-        "supported": False,
-        "data_sources": {}
-    }
-
-    # Check FMP
-    try:
-        from api.services.scoring_service import ScoringService
-        scoring = ScoringService()
-        quote = scoring.fmp.get_realtime_price(ticker)
-        support_status["data_sources"]["fmp"] = bool(quote)
-        support_status["supported"] = support_status["supported"] or bool(quote)
-    except Exception as e:
-        LOGGER.debug(f"FMP check failed for {ticker}: {e}")
-        support_status["data_sources"]["fmp"] = False
-
-    # Check OpenBB
-    try:
-        from api.services.openbb_client import OpenBBClient
-        obb = OpenBBClient()
-        data = obb.get_ticker_data(ticker)
-        support_status["data_sources"]["openbb"] = bool(data)
-        support_status["supported"] = support_status["supported"] or bool(data)
-    except Exception as e:
-        LOGGER.debug(f"OpenBB check failed for {ticker}: {e}")
-        support_status["data_sources"]["openbb"] = False
-
-    if not support_status["supported"]:
-        support_status["message"] = f"{ticker} not available. Try major exchange tickers (NASDAQ, NYSE, AMEX)."
-
-    return support_status
+    return {"supported": True, "ticker": ticker}
 
 
 @router.post("/arena/challenge", response_model=ThesisArenaChallengeResponse)
@@ -407,15 +356,22 @@ async def challenge_thesis_arena(
         extracted = _extract_ticker(request.thesis)
         if extracted:
             ticker = extracted
-            LOGGER.info(f"Extracted ticker {ticker} from thesis")
             
-    prompt = request.thesis
+    # Get Financial Context if ticker exists
+    financial_context = ""
     if ticker:
-        prompt = f"Ticker: {ticker.upper()}\n\nThesis: {request.thesis}"
+        try:
+            from api.services.stock_screener_service import StockScreenerService
+            screener = StockScreenerService()
+            metrics = screener.get_key_metrics_ttm(ticker)
+            if metrics:
+                financial_context = f"\nFINANCIAL DATA FOR {ticker}:\n{json.dumps(metrics, default=str)}"
+        except Exception as e:
+            LOGGER.warning(f"Failed to fetch financials for {ticker}: {e}")
+
+    prompt = f"Thesis: {request.thesis}{financial_context}"
     
     # Call all communities in parallel
-    LOGGER.info(f"Challenging thesis with {len(COMMUNITIES)} communities in parallel")
-    
     try:
         loop = asyncio.get_event_loop()
     except RuntimeError:
@@ -436,11 +392,8 @@ async def challenge_thesis_arena(
     for i, community in enumerate(COMMUNITIES):
         response_text = responses_list[i]
         
-        if isinstance(response_text, Exception):
-            LOGGER.error(f"Error getting response from {community}: {response_text}")
-            response_text = f"Error: Could not get response from {community} community."
-        elif response_text is None:
-            response_text = f"No response available from {community} community."
+        if isinstance(response_text, Exception) or response_text is None:
+            response_text = f"I'm analyzing the data..."
         
         community_responses_dict[community] = response_text
         
@@ -459,16 +412,11 @@ async def challenge_thesis_arena(
         initial_conviction=request.initial_conviction,
     )
     
-    # Update impact scores
-    for response in community_responses_list:
-        impact_data = conviction_impact["community_impacts"].get(response.community, {})
-        response.impact_score = impact_data.get("weighted_impact", 0.0)
-    
     # Save to database
     thread_id = await _save_arena_thread(
         user_id=current_user.id,
         thesis=request.thesis,
-        ticker=ticker,  # Save inferred or provided ticker
+        ticker=ticker,
         initial_conviction=request.initial_conviction,
         current_conviction=conviction_impact["new_conviction"],
         community_responses=community_responses_dict,
@@ -499,50 +447,68 @@ async def respond_in_arena(
     try:
         conn = _get_db_connection()
         
-        # Get thread and current conviction
+        # Get thread info
         with conn.cursor() as cur:
             cur.execute(
-                """
-                SELECT id, thesis, ticker, current_conviction, user_id
-                FROM thesis_arena_threads
-                WHERE id = %s AND user_id = %s AND status = 'active'
-                """,
+                "SELECT id, thesis, ticker, current_conviction FROM thesis_arena_threads WHERE id = %s AND user_id = %s",
                 (request.thread_id, current_user.id)
             )
             thread_row = cur.fetchone()
             
             if not thread_row:
-                raise HTTPException(
-                    status_code=404,
-                    detail="Arena thread not found or not accessible"
-                )
+                raise HTTPException(status_code=404, detail="Thread not found")
             
-            thread_id, thesis, ticker, current_conviction, user_id = thread_row
+            thread_id, thesis, ticker, current_conviction = thread_row
             
-            # Get last round number
+            # Get history
             cur.execute(
-                """
-                SELECT MAX(round_number) FROM arena_rounds WHERE thread_id = %s
-                """,
+                "SELECT user_message, community_responses FROM arena_rounds WHERE thread_id = %s ORDER BY round_number",
                 (thread_id,)
             )
-            last_round_row = cur.fetchone()
-            next_round = (last_round_row[0] or 0) + 1
+            history_rows = cur.fetchall()
             
-            # Build prompt with context - Including Socratic instructions implicitly via system prompt load
-            context_prompt = f"""Previous Thesis: {thesis}
-"""
+            # Get Financial Context
+            financial_context = ""
             if ticker:
-                context_prompt += f"Ticker: {ticker}\n"
-            context_prompt += f"""
-User's Follow-up Question/Response:
+                try:
+                    from api.services.stock_screener_service import StockScreenerService
+                    screener = StockScreenerService()
+                    metrics = screener.get_key_metrics_ttm(ticker)
+                    if metrics:
+                        financial_context = f"\nFINANCIAL CONTEXT FOR {ticker}:\n{json.dumps(metrics, default=str)}\n"
+                except: pass
+
+            # Build Rich Context Prompt
+            history_text = ""
+            for u_msg, c_resps in history_rows:
+                history_text += f"User: {u_msg or 'Initial Thesis'}\n"
+                # Parse jsonb
+                resps = c_resps if isinstance(c_resps, dict) else json.loads(c_resps)
+                for comm, txt in resps.items():
+                    history_text += f"{comm}: {txt}\n"
+            
+            full_prompt = f"""
+CONTEXT:
+You are debating an investment thesis.
+Original Thesis: {thesis}
+Ticker: {ticker if ticker else 'General Market'}
+{financial_context}
+
+CONVERSATION HISTORY:
+{history_text}
+
+USER'S NEW INPUT:
 {request.user_message}
 
-Please respond to the user's follow-up from your community perspective. 
-Remember to be Socratic, concise (2-4 sentences), and challenge assumptions. 
-Do not give financial advice, but guide the user's thinking."""
+YOUR GOAL:
+Continue the debate from your persona's perspective.
+If the user provides good points, acknowledge them but find new risks (Devil's Advocate).
+If the user is vague, ask Socratic questions to dig deeper.
+Respond in the SAME LANGUAGE as the user.
+Keep it under 3 sentences.
+"""
         
-        # Call all communities
+        # Call LLMs
         try:
             loop = asyncio.get_event_loop()
         except RuntimeError:
@@ -550,79 +516,44 @@ Do not give financial advice, but guide the user's thinking."""
             asyncio.set_event_loop(loop)
         
         tasks = [
-            loop.run_in_executor(None, _call_llama_parallel, context_prompt, community)
+            loop.run_in_executor(None, _call_llama_parallel, full_prompt, community)
             for community in COMMUNITIES
         ]
         
         responses_list = await asyncio.gather(*tasks, return_exceptions=True)
         
-        # Process responses
         community_responses_dict = {}
         community_responses_list = []
         
         for i, community in enumerate(COMMUNITIES):
-            response_text = responses_list[i]
-            
-            if isinstance(response_text, Exception):
-                LOGGER.error(f"Error getting response from {community}: {response_text}")
-                response_text = f"Error: Could not get response from {community} community."
-            elif response_text is None:
-                response_text = f"No response available from {community} community."
-            
-            community_responses_dict[community] = response_text
-            
-            community_responses_list.append(
-                CommunityResponse(
-                    community=community,
-                    response=response_text,
-                    impact_score=0.0,
-                )
-            )
+            txt = responses_list[i]
+            if isinstance(txt, Exception) or txt is None: txt = "Thinking..."
+            community_responses_dict[community] = txt
+            community_responses_list.append(CommunityResponse(community=community, response=txt, impact_score=0.0))
         
-        # Calculate conviction impact
+        # Calculate impact
         conviction_service = get_conviction_service()
         conviction_impact = conviction_service.calculate_conviction_impact(
             responses=community_responses_dict,
             initial_conviction=current_conviction,
         )
-        
         new_conviction = conviction_impact["new_conviction"]
         
-        for response in community_responses_list:
-            impact_data = conviction_impact["community_impacts"].get(response.community, {})
-            response.impact_score = impact_data.get("weighted_impact", 0.0)
+        # Save Round
+        cur = conn.cursor()
+        round_id = uuid4()
+        # Determine round number
+        next_round = len(history_rows) + 1
         
-        # Save round
-        with conn.cursor() as cur:
-            round_id = uuid4()
-            cur.execute(
-                """
-                INSERT INTO arena_rounds
-                (id, thread_id, round_number, user_message, community_responses, conviction_before, conviction_after, conviction_change)
-                VALUES (%s, %s, %s, %s, %s::jsonb, %s, %s, %s)
-                """,
-                (
-                    round_id,
-                    thread_id,
-                    next_round,
-                    request.user_message,
-                    json.dumps(community_responses_dict),
-                    current_conviction,
-                    new_conviction,
-                    new_conviction - current_conviction,
-                )
-            )
-            
-            cur.execute(
-                """
-                UPDATE thesis_arena_threads
-                SET current_conviction = %s, updated_at = NOW()
-                WHERE id = %s
-                """,
-                (new_conviction, thread_id)
-            )
-            
-            conn.commit()
+        cur.execute(
+            """
+            INSERT INTO arena_rounds
+            (id, thread_id, round_number, user_message, community_responses, conviction_before, conviction_after, conviction_change)
+            VALUES (%s, %s, %s, %s, %s::jsonb, %s, %s, %s)
+            """,
+            (round_id, thread_id, next_round, request.user_message, json.dumps(community_responses_dict), current_conviction, new_conviction, new_conviction - current_conviction)
+        )
+        conn.commit()
         
         return ArenaRespondResponse(
             thread_id=str(thread_id),
@@ -633,16 +564,8 @@ Do not give financial advice, but guide the user's thinking."""
             current_conviction=new_conviction,
         )
         
-    except HTTPException:
-        raise
     except Exception as e:
-        LOGGER.exception(f"Error responding in arena: {e}")
-        if conn:
-            conn.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error responding in arena: {str(e)}"
-        ) from e
+        LOGGER.exception(f"Error responding: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
-        if conn:
-            conn.close()
+        if conn: conn.close()

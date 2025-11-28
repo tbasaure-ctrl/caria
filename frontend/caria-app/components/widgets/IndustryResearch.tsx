@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { WidgetCard } from './WidgetCard';
 
-// Interfaces
+// Interfaces for structured report
 interface StockPick {
     ticker: string;
     name: string;
@@ -18,202 +18,201 @@ interface IndustryReport {
     tags: string[];
     isFeatured?: boolean;
     content: {
-        overview: string; // Short summary for card
-        fullText: string; // Full text for modal
+        overview: string;
+        fullText: string;
         trends: { title: string; description: string }[];
         picks: StockPick[];
         conclusion?: string;
     };
 }
 
-// DATA: Contenido COMPLETO del informe proporcionado
+// DATA: Content Translated to Professional English
 const REPORT_DATA: IndustryReport[] = [
     {
         id: 'staples-nov-2025',
-        title: 'Consumo Básico (Consumer Staples)',
-        subtitle: 'INDUSTRIA DEL MES: Refugio Táctico y Valor',
+        title: 'Consumer Staples',
+        subtitle: 'INDUSTRY OF THE MONTH: Tactical Value & Safety',
         icon: '🛒',
         readTime: '8 min read',
         tags: ['Industry of the Month', 'Defensive', 'High Conviction'],
         isFeatured: true,
         content: {
-            overview: `Designado como la industria focal para Noviembre 2025. Históricamente, este sector actúa como un "proxy de bonos" con la ventaja del crecimiento del dividendo. Ante la incertidumbre económica, los inversores buscan la seguridad de la demanda inelástica.`,
-            fullText: `1. Industria del Mes: Consumo Básico (Consumer Staples)
+            overview: `Designated as the focal industry for November 2025. Historically, this sector acts as a "bond proxy" with dividend growth upside. Amid economic uncertainty, investors are rotating into the safety of inelastic demand.`,
+            fullText: `1. Industry of the Month: Consumer Staples
 
-1.1 Tesis de Inversión y Racionalidad de la Selección
-La designación del sector de Consumo Básico como la industria focal para noviembre de 2025 responde a una confluencia de factores técnicos, fundamentales y estacionales que rara vez se alinean con tanta precisión. A menudo malinterpretado como un refugio aburrido para inversores conservadores, el sector está experimentando una transformación interna y una dispersión de valoraciones que ofrece oportunidades de generación de alfa significativas para el inversor activo.
+1.1 Investment Thesis & Selection Rationale
+The designation of Consumer Staples as the focal industry for November 2025 responds to a confluence of technical, fundamental, and seasonal factors. Often misunderstood as a boring haven, the sector is undergoing an internal transformation and valuation dispersion that offers significant alpha opportunities.
 
-1.1.1 La Rotación Defensiva en un Entorno de Volatilidad
-Durante gran parte de 2024 y el inicio de 2025, el capital fluyó desproporcionadamente hacia la tecnología y los servicios de comunicación, impulsado por la promesa de la inteligencia artificial. Sin embargo, a medida que las valoraciones en esos sectores se estiraron y los rendimientos de los bonos comenzaron a estabilizarse, se ha observado una rotación clásica hacia la defensa.
-El mecanismo detrás de este movimiento es doble. Primero, la compresión de los rendimientos de los bonos del Tesoro hace que los dividendos de las empresas de consumo básico sean comparativamente más atractivos. Históricamente, este sector actúa como un "proxy de bonos" con la ventaja añadida del crecimiento del dividendo. Segundo, ante la incertidumbre de si la economía estadounidense puede mantener su ritmo de crecimiento sin reavivar la inflación, los inversores buscan la seguridad de la demanda inelástica: la gente sigue comprando pasta de dientes, alimentos y productos de limpieza independientemente del PIB.
+1.1.1 The Defensive Rotation
+Through 2024, capital flowed disproportionately into technology. However, as valuations stretched, a classic rotation towards defense has been observed.
+The mechanism is twofold: First, compressing Treasury yields make staples' dividends comparatively more attractive. Second, amidst economic uncertainty, investors seek the safety of inelastic demand—people buy toothpaste and food regardless of GDP.
 
-1.1.2 Estacionalidad Histórica: El "Efecto Noviembre"
-El análisis cuantitativo de los patrones de mercado revela que noviembre es, estadísticamente, un mes excepcionalmente fuerte para el sector de consumo básico. Al examinar el comportamiento del ETF Consumer Staples Select Sector SPDR Fund (XLP) durante los últimos 25 años, se identifican tendencias claras de estacionalidad positiva.
-Noviembre muestra una continuación robusta del impulso iniciado en octubre y ofrece la mayor probabilidad histórica de retornos positivos en el Q4 (75%). Este patrón se atribuye a menudo al posicionamiento de los gestores de fondos antes del cierre del año fiscal y al aumento tangible en el consumo de productos básicos durante la temporada festiva.
+1.1.2 Historical Seasonality: The "November Effect"
+Quantitative analysis reveals November is statistically an exceptionally strong month for Consumer Staples (XLP).
+November shows a robust continuation of Q4 momentum with a 75% historical win rate over the last 25 years, often attributed to fund manager positioning before fiscal year-end.
 
-1.2 Análisis Fundamental Profundo: Tendencias y Divergencias
-El sector de consumo básico en noviembre de 2025 no es un bloque monolítico. Existe una divergencia crítica en las valoraciones y el desempeño operativo entre los grandes minoristas y los fabricantes de productos empaquetados.
+1.2 Deep Fundamental Analysis
+The sector is not monolithic. A critical divergence exists between retailers and packaged goods manufacturers.
 
-1.2.1 La Bifurcación de Valoraciones: Minoristas vs. Fabricantes
-Una de las anomalías más notables del mercado actual es la extrema dispersión en los múltiplos de valoración dentro del mismo sector GICS.
-El segmento sobrevalorado (Retailers): Empresas como Costco (COST) y Walmart (WMT) cotizan a múltiplos de precio/ganancias (P/E) que rivalizan con las acciones de crecimiento tecnológico de alto vuelo (>40x-50x). Estas valoraciones descuentan un escenario de ejecución perfecta y crecimiento perpetuo difícil de justificar.
-El segmento infravalorado (Packaged Food): En contraste agudo, si excluimos a estos gigantes minoristas, el resto del sector cotiza con un descuento atractivo (~11% bajo valor razonable). Empresas sólidas como Kraft Heinz (KHC) y General Mills (GIS) han sido penalizadas excesivamente por temores exagerados.
+1.2.1 Valuation Bifurcation: Retailers vs. Manufacturers
+Overvalued (Retailers): Costco (COST) and Walmart (WMT) trade at tech-like multiples (>40x P/E), discounting a perfect execution scenario that is hard to justify.
+Undervalued (Packaged Food): Conversely, excluding retailers, the sector trades at an attractive discount (~11% below fair value). Solid firms like Kraft Heinz (KHC) and General Mills (GIS) have been excessively penalized.
 
-1.2.2 El Impacto de los Agonistas GLP-1: Realidad vs. Histeria
-Durante 2023 y 2024, una sombra se cernió sobre el sector debido a los medicamentos GLP-1. Hacia finales de 2025, esta visión se ha matizado. Las grandes empresas están pivotando (Nestlé, General Mills) lanzando productos altos en proteína diseñados para usuarios de GLP-1, y los volúmenes de ventas en categorías clave se han mantenido estables.
+1.2.2 The GLP-1 Impact: Reality vs. Hysteria
+The fear that weight-loss drugs would decimate snack volumes has nuanced. Majors like Nestlé and General Mills are pivoting, launching high-protein products designed for GLP-1 users, stabilizing volumes.
 
-1.2.3 Compresión de Márgenes y la Batalla de la Marca Privada
-La inflación acumulada ha llevado a una "bajada de categoría" (trade-down). Las empresas con fuerte "pricing power" han logrado mantener márgenes brutos mediante eficiencias operativas, superando estimaciones de EPS a pesar de un crecimiento de ingresos modesto.`,
+1.2.3 Margin Compression & Private Label War
+Inflation has led to trade-downs. Companies with strong pricing power have maintained gross margins through operational efficiencies, beating EPS estimates despite modest top-line growth.`,
             trends: [
                 {
-                    title: "El Efecto Noviembre",
-                    description: "Estadísticamente, noviembre es excepcionalmente fuerte para el sector (75% de frecuencia de ganancias)."
+                    title: "The November Effect",
+                    description: "Statistically, November is exceptionally strong for the sector (75% historical win rate)."
                 },
                 {
-                    title: "Adaptación a GLP-1",
-                    description: "Lanzamiento de productos altos en proteína para acompañar a usuarios de Ozempic/Wegovy."
+                    title: "GLP-1 Adaptation",
+                    description: "Launch of high-protein products to accompany Ozempic/Wegovy users."
                 }
             ],
             picks: [
-                { ticker: 'KHC', name: 'Kraft Heinz', type: 'Value', thesis: 'Infravaloración extrema. Reestructuración de deuda exitosa y mejora de márgenes ignorada por el mercado.' },
-                { ticker: 'GIS', name: 'General Mills', type: 'Defensive', thesis: 'Jugador defensivo clásico. Adaptación superior a tendencias de salud (Blue Buffalo).' },
-                { ticker: 'SFM', name: 'Sprouts Farmers Market', type: 'Growth', thesis: 'Beneficiario del auge de alimentación saludable/GLP-1. Expansión de márgenes con productos frescos.' },
-                { ticker: 'OLLI', name: "Ollie's Bargain Outlet", type: 'Growth', thesis: 'Modelo "caza del tesoro" ideal para consumidor sensible al precio. Adquisición de exceso de inventario.' },
-                { ticker: 'EL', name: 'Estée Lauder', type: 'Turnaround', thesis: 'Valoración deprimida por Asia. Potencial rebote violento si estabiliza inventarios dada su marca.' }
+                { ticker: 'KHC', name: 'Kraft Heinz', type: 'Value', thesis: 'Extreme undervaluation. Market ignoring successful debt restructuring and margin improvement.' },
+                { ticker: 'GIS', name: 'General Mills', type: 'Defensive', thesis: 'Classic defensive player. Superior adaptation to health trends (Blue Buffalo).' },
+                { ticker: 'SFM', name: 'Sprouts Farmers Market', type: 'Growth', thesis: 'Beneficiary of healthy eating/GLP-1 boom. Margin expansion with fresh produce.' },
+                { ticker: 'OLLI', name: "Ollie's Bargain Outlet", type: 'Growth', thesis: '"Treasure hunt" model ideal for price-sensitive consumers. Inventory acquisition upside.' },
+                { ticker: 'EL', name: 'Estée Lauder', type: 'Turnaround', thesis: 'Depressed valuation due to Asia weakness. Potential violent rebound if inventory stabilizes.' }
             ]
         }
     },
     {
         id: 'macro-nov-2025',
-        title: 'Estrategia Macro Global',
-        subtitle: 'Panorama Económico & Asset Allocation',
+        title: 'Global Macro Strategy',
+        subtitle: 'Economic Outlook & Asset Allocation',
         icon: '🌍',
         readTime: '5 min read',
         tags: ['Macro', 'Strategy'],
         content: {
-            overview: `El mercado entra en una fase de rotación táctica. La Fed ajusta tasas al rango 3.75%-4.00%. Rotación desde "growth at any price" hacia calidad y balance.`,
-            fullText: `Panorama Macroeconómico y Estrategia de Asignación de Activos - Noviembre 2025
+            overview: `Markets are entering a tactical rotation phase. With the Fed adjusting rates to 3.75%-4.00%, capital is moving from "growth at any price" toward quality, balance sheet strength, and cash flow predictability.`,
+            fullText: `Global Investment Strategy Report - November 2025
 
-El penúltimo mes de 2025 se despliega en un contexto económico global que desafía las categorizaciones simplistas de "aterrizaje suave" o "recesión inminente". Los mercados financieros, tras un año marcado por la euforia tecnológica y la recalibración de las expectativas de política monetaria, han entrado en una fase de rotación táctica distintiva. A medida que la Reserva Federal y otros bancos centrales importantes ajustan sus tasas de interés—recortando recientemente al rango de 3.75%-4.00%—los inversores se encuentran reevaluando la prima de riesgo en sus carteras.
+The penultimate month of 2025 unfolds in an economic context defying simple "soft landing" or "recession" labels. Financial markets, after a year marked by tech euphoria, have entered a distinctive tactical rotation phase. As the Federal Reserve adjusts rates to the 3.75%-4.00% range, investors are re-evaluating risk premiums.
 
-La narrativa predominante ha girado desde la búsqueda desenfrenada de crecimiento ("growth at any price") hacia una apreciación renovada por la calidad del balance, la previsibilidad de los flujos de caja y la resiliencia operativa. Este cambio de sentimiento no es un accidente, sino una respuesta racional a un entorno donde, si bien la inflación se ha enfriado considerablemente desde los picos de años anteriores, los costos de endeudamiento permanecen en niveles que penalizan a las empresas con apalancamiento excesivo o modelos de negocio no probados.
+The prevailing narrative has shifted from "growth at any price" to a renewed appreciation for balance sheet quality and cash flow predictability. This sentiment shift is a rational response to an environment where, while inflation has cooled, borrowing costs remain high, penalizing leverage.
 
-En este escenario, noviembre de 2025 emerge como un punto de inflexión crítico. Históricamente, este mes ha servido como un barómetro para el posicionamiento de fin de año, y los datos actuales sugieren una bifurcación clara: mientras los sectores cíclicos enfrentan vientos en contra por la desaceleración económica secuencial prevista para 2026, los sectores defensivos y de innovación sanitaria están capturando la atención del capital institucional.`,
+November 2025 emerges as a critical inflection point. Historically a barometer for year-end positioning, current data suggests a clear bifurcation: while cyclical sectors face headwinds from projected 2026 slowing, defensive sectors and healthcare innovation are capturing institutional capital.`,
             trends: [
-                { title: "Rotación a Calidad", description: "Preferencia por flujos de caja predecibles y balances sólidos." },
-                { title: "Bifurcación", description: "Sectores defensivos y salud capturan capital institucional vs cíclicos." }
+                { title: "Flight to Quality", description: "Preference for predictable cash flows and solid balance sheets over speculative growth." },
+                { title: "Sector Bifurcation", description: "Defensive and Healthcare sectors capturing institutional flows vs. Cyclicals." }
             ],
             picks: [],
-            conclusion: "Recomendación Final: Construir una cartera 'barbell' (pesa): un núcleo defensivo robusto en consumo básico y seguros de nicho, equilibrado con apuestas satélite de alto crecimiento en robótica médica y biotecnología con catalizadores cercanos."
+            conclusion: "Final Recommendation: Build a 'barbell' portfolio: a robust defensive core in staples and niche insurance, balanced with high-growth satellite bets in medical robotics and biotech with near-term catalysts."
         }
     },
     {
         id: 'pharma-nov-2025',
-        title: 'Salud y Farmacéutica',
-        subtitle: 'Innovación y Boom de M&A',
+        title: 'Healthcare & Pharma',
+        subtitle: 'Innovation & M&A Boom',
         icon: '🧬',
         readTime: '4 min read',
         tags: ['Biotech', 'M&A'],
         content: {
-            overview: `Ecosistema en tensión por "patent cliff" y regulación, catalizando innovación y M&A. Big Pharma compra crecimiento (Oncología, Neurociencia, Obesidad).`,
-            fullText: `2. Sector Salud y Farmacéutica: Innovación bajo Presión Regulatoria
+            overview: `Ecosystem under pressure from patent cliffs and regulation, catalyzing rampant innovation and M&A. Big Pharma is deploying balance sheets to buy growth (Oncology, Neuro, Obesity).`,
+            fullText: `2. Healthcare & Pharma: Innovation Under Pressure
 
-2.1 Estado de la Industria: Un Ecosistema en Tensión
-El sector de Salud y Farmacéutica presenta una dicotomía fascinante en noviembre de 2025. Por un lado, se enfrenta a vientos en contra regulatorios y de mercado significativos: la expiración de patentes clave (el "patent cliff"), la presión sobre los precios de los medicamentos en EE.UU. debido a las negociaciones de Medicare, y un entorno de financiación difícil para las pequeñas biotecnológicas. Por otro lado, esta presión está actuando como un catalizador para una innovación desenfrenada y una consolidación agresiva.
+2.1 Industry Status: An Ecosystem in Tension
+The sector presents a fascinating dichotomy. It faces significant regulatory headwinds and patent cliffs, yet this pressure is acting as a catalyst for rampant innovation and aggressive consolidation.
 
-2.2 Tendencias Dominantes
-2.2.1 El Renacimiento de las Fusiones y Adquisiciones (M&A)
-Ante la inminente pérdida de exclusividad de sus medicamentos más vendidos, las grandes farmacéuticas ("Big Pharma") están desplegando sus balances para comprar crecimiento. 2025 ha sido testigo de una oleada de acuerdos estratégicos (Merck, Sanofi, Novartis, Lilly). Esta tendencia valida la tesis de que la innovación más valiosa está ocurriendo fuera de los laboratorios internos de las grandes corporaciones, en el ecosistema biotecnológico de mediana y pequeña capitalización.
+2.2 Dominant Trends
+2.2.1 The M&A Renaissance
+Facing loss of exclusivity on blockbusters, Big Pharma is deploying balance sheets to buy growth. 2025 has seen a wave of strategic deals (Merck, Sanofi, Novartis, Lilly), validating that valuable innovation is happening in the mid-cap biotech ecosystem.
 
-2.2.2 Áreas Terapéuticas de Alto Valor
-La inversión se concentra en verticales donde la ciencia está rompiendo barreras históricas:
-- Oncología: ADCs y T-cell engagers.
-- Neurociencia: Renacimiento en tratamientos para Alzheimer y Esquizofrenia.
-- Obesidad y Metabolismo: Próxima generación de tratamientos metabólicos (mejor tolerabilidad/preservación muscular).
+2.2.2 High-Value Therapeutic Areas
+Investment is concentrated where science is breaking barriers:
+- Oncology: ADCs and T-cell engagers.
+- Neuroscience: Renaissance in Alzheimer's and Schizophrenia treatments.
+- Obesity & Metabolism: Next-gen metabolic treatments (better tolerability/muscle preservation).
 
-2.3 Perspectivas y Oportunidades de Inversión
-La perspectiva para finales de 2025 y principios de 2026 es de volatilidad continua pero con oportunidades asimétricas en biotecnología. Investigar "más allá de las clásicas" implica mirar empresas con catalizadores binarios (lecturas de datos clínicos).`,
+2.3 Investment Opportunities
+Outlook for late 2025 is continued volatility but with asymmetric opportunities in biotech. Look for companies with binary catalysts (clinical data readouts).`,
             trends: [
-                { title: "M&A Renacimiento", description: "Big Pharma desplegando capital para comprar innovación externa." },
-                { title: "Áreas Hot", description: "Oncología, Neurociencia y Metabolismo (Next-gen Obesity)." }
+                { title: "M&A Renaissance", description: "Big Pharma deploying capital to acquire external innovation." },
+                { title: "Hot Areas", description: "Oncology, Neuroscience, and Metabolism (Next-gen Obesity)." }
             ],
             picks: [
-                { ticker: 'KALA', name: 'Kala Bio', type: 'Speculative', thesis: 'Catalizador binario a fin de 2025 (Fase 2b CHASE). Enfermedad ocular rara sin cura.' },
-                { ticker: 'KAPA', name: 'Kairos Pharma', type: 'Speculative', thesis: 'Datos interinos Fase 2 cáncer próstata. Área oncológica lucrativa.' }
+                { ticker: 'KALA', name: 'Kala Bio', type: 'Speculative', thesis: 'Binary catalyst end of 2025 (Phase 2b CHASE). Rare ocular disease with no cure.' },
+                { ticker: 'KAPA', name: 'Kairos Pharma', type: 'Speculative', thesis: 'Phase 2 interim data in prostate cancer. Lucrative oncology niche.' }
             ]
         }
     },
     {
         id: 'medtech-nov-2025',
-        title: 'Dispositivos Médicos',
-        subtitle: 'Revolución: Robótica e IA',
+        title: 'Medical Devices',
+        subtitle: 'The Silent Revolution: Robotics & AI',
         icon: '🦾',
         readTime: '4 min read',
         tags: ['Growth', 'Tech'],
         content: {
-            overview: `Crecimiento estructural predecible (CAGR 6%). IA operativa en diagnósticos y auge de robótica quirúrgica y dispositivos desechables.`,
-            fullText: `3. Sector de Dispositivos Médicos: La Revolución Silenciosa de la Tecnología Sanitaria
+            overview: `Predictable structural growth (6% CAGR). AI operational in diagnostics and surge in surgical robotics and single-use devices driving hospital efficiency.`,
+            fullText: `3. Medical Devices: The Silent Health-Tech Revolution
 
-3.1 Caracterización: Crecimiento Estructural y Resiliencia
-A diferencia de la biotecnología, que a menudo depende de resultados binarios de ensayos clínicos, el sector de dispositivos médicos ofrece una trayectoria de crecimiento más predecible, impulsada por la demografía (envejecimiento global) y la necesidad de eficiencia hospitalaria. Se proyecta que el mercado global alcance los $678.8 mil millones en 2025.
+3.1 Characterization: Structural Growth & Resilience
+Unlike binary biotech, MedTech offers predictable growth driven by demographics (aging) and hospital efficiency needs. Global market projected to reach $678.8B in 2025.
 
-3.2 Tendencias Tecnológicas y de Mercado
-3.2.1 Inteligencia Artificial y Robótica Quirúrgica
-La IA ha pasado de ser una promesa a una realidad operativa (ej: patología). En el quirófano, la robótica está permitiendo procedimientos mínimamente invasivos que reducen la estancia hospitalaria, crítico para la eficiencia.
+3.2 Tech Trends
+3.2.1 AI & Surgical Robotics
+AI has moved from promise to reality (e.g., pathology). In the OR, robotics allow minimally invasive procedures reducing hospital stays—critical for efficiency.
 
-3.2.2 El Auge de los Dispositivos Desechables (Single-Use)
-Tendencia masiva hacia el reemplazo de instrumentos reutilizables por dispositivos de un solo uso para eliminar contaminación cruzada y reducir costos de esterilización. Mercado proyectado a crecer significativamente.
+3.2.2 The Rise of Single-Use Devices
+Massive shift towards replacing reusable instruments with single-use devices to eliminate cross-contamination and sterilization costs.
 
-3.3 Oportunidades de Inversión de Alto Crecimiento
-Buscamos empresas que redefinen el estándar de cuidado ("Standard of Care").`,
+3.3 High-Growth Opportunities
+We look for companies redefining the "Standard of Care".`,
             trends: [
-                { title: "Robótica Quirúrgica", description: "Procedimientos mínimamente invasivos, reducen estancia hospitalaria." },
-                { title: "Dispositivos Desechables", description: "Eliminación de contaminación y costos de esterilización." }
+                { title: "Surgical Robotics", description: "Minimally invasive procedures reducing hospital stay duration." },
+                { title: "Single-Use Devices", description: "Eliminating contamination risks and sterilization costs." }
             ],
             picks: [
-                { ticker: 'TMDX', name: 'TransMedics Group', type: 'Growth', thesis: 'Sistema OCS mantiene órganos vivos. Creando su propio mercado (logística de trasplantes).' },
-                { ticker: 'PRCT', name: 'PROCEPT BioRobotics', type: 'Growth', thesis: 'Robótica en Urología (Aquablation). Crecimiento ingresos 43% YoY.' },
-                { ticker: 'DCTH', name: 'Delcath Systems', type: 'Speculative', thesis: 'Oncología intervencionista (hígado). Enfoque tecnológico único.' }
+                { ticker: 'TMDX', name: 'TransMedics Group', type: 'Growth', thesis: 'OCS system keeps organs alive. Creating its own market (transplant logistics).' },
+                { ticker: 'PRCT', name: 'PROCEPT BioRobotics', type: 'Growth', thesis: 'Robotics in Urology (Aquablation). 43% YoY revenue growth.' },
+                { ticker: 'DCTH', name: 'Delcath Systems', type: 'Speculative', thesis: 'Interventional oncology (liver). Unique technological approach.' }
             ]
         }
     },
     {
         id: 'insurance-nov-2025',
-        title: 'Seguros & Insurtech',
-        subtitle: 'Eficiencia, IA y Nichos',
+        title: 'Insurance & Insurtech',
+        subtitle: 'Efficiency, AI & Profitable Niches',
         icon: '🛡️',
         readTime: '3 min read',
         tags: ['Financials', 'AI'],
         content: {
-            overview: `Modernización forzada por costos. Clave: especialistas de nicho (E&S) e Insurtech 2.0. IA reduce tiempos de reclamos un 80%.`,
-            fullText: `4. Sector de Seguros y Managed Care: Eficiencia, IA y Nichos Rentables
+            overview: `Forced modernization due to rising costs. Key: Niche specialists (E&S) and Insurtech 2.0. Generative AI reducing claims processing time by 80%.`,
+            fullText: `4. Insurance & Managed Care: Efficiency, AI & Profitable Niches
 
-4.1 Panorama del Sector: Modernización Forzada
-El sector de seguros está atravesando una revolución silenciosa impulsada por la necesidad. Los costos crecientes de las reclamaciones (inflación social, clima) obligan a modernizarse. 2025 es mixto: generalistas luchan, especialistas en nichos y "Insurtech 2.0" prosperan.
+4.1 Sector Overview: Forced Modernization
+The insurance sector is undergoing a quiet revolution driven by necessity. Rising claims costs (social inflation, climate) force modernization. 2025 is mixed: generalists struggle, while niche specialists and "Insurtech 2.0" thrive.
 
-4.2 Tendencias Transformadoras
-4.2.1 IA Generativa en el Procesamiento de Reclamaciones
-La implementación operativa de la IA es la mayor tendencia. Automatización completa del manejo de reclamaciones (reducción de tiempo 80%, costos 30%) y detección de fraude en tiempo real. Adopción de Modelos de Lenguaje Pequeños (SLMs).
+4.2 Transformative Trends
+4.2.1 Generative AI in Claims Processing
+Operational AI is the biggest trend. Full automation of claims handling (80% time reduction, 30% cost reduction) and real-time fraud detection.
 
-4.2.2 El Auge del Mercado E&S (Excess & Surplus)
-A medida que los riesgos climáticos hacen ciertas regiones "inasegurables" para aseguradoras estándar, el mercado E&S explota. Tienen libertad de precios para asumir riesgos complejos rentablemente.
+4.2.2 The Rise of E&S (Excess & Surplus)
+As climate risks make certain regions "uninsurable" for standard carriers, the E&S market explodes. They have pricing freedom to take on complex risks profitably.
 
-4.3 Oportunidades de Inversión: Nichos y Eficiencia
-Evitar aseguradoras expuestas a catástrofes sin poder de precios. Buscar especialistas.`,
+4.3 Investment Opportunities
+Avoid property insurers exposed to catastrophes without pricing power. Seek specialists.`,
             trends: [
-                { title: "IA Operativa", description: "Reducción drástica de tiempos de reclamo y detección de fraude." },
-                { title: "Mercado E&S", description: "Crecimiento en seguros de líneas excedentes por riesgos complejos." }
+                { title: "Operational AI", description: "Drastic reduction in claims time and fraud detection." },
+                { title: "E&S Market", description: "Growth in surplus lines due to complex risk pricing power." }
             ],
             picks: [
-                { ticker: 'SKWD', name: 'Skyward Specialty', type: 'Growth', thesis: 'Rey del Nicho E&S. Crecimiento primas 26% anual.' },
-                { ticker: 'PRI', name: 'Primerica', type: 'Defensive', thesis: 'Modelo distribución eficiente. ROE 27.2% líder. Máquina de flujo de caja.' },
-                { ticker: 'CB', name: 'Chubb', type: 'Value', thesis: 'Estándar de Oro. Disciplina de suscripción y balance global.' }
+                { ticker: 'SKWD', name: 'Skyward Specialty', type: 'Growth', thesis: 'King of Niche E&S. 26% annual premium growth.' },
+                { ticker: 'PRI', name: 'Primerica', type: 'Defensive', thesis: 'Efficient distribution model. Industry-leading 27.2% ROE. Cash flow machine.' },
+                { ticker: 'CB', name: 'Chubb', type: 'Value', thesis: 'The Gold Standard. Legendary underwriting discipline and global balance sheet.' }
             ]
         }
     }
 ];
 
-// Componente de Detalle (Modal de Lectura)
+// Modal Component (Keeping structure, updating content rendering for English)
 const ReportModal: React.FC<{ report: IndustryReport; onClose: () => void }> = ({ report, onClose }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fade-in">
@@ -221,7 +220,7 @@ const ReportModal: React.FC<{ report: IndustryReport; onClose: () => void }> = (
                 className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-[#050A14] border border-accent-gold/30 rounded-xl shadow-2xl custom-scrollbar"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header del Informe */}
+                {/* Report Header */}
                 <div className="sticky top-0 z-10 bg-[#050A14]/95 backdrop-blur border-b border-white/10 px-8 py-6 flex justify-between items-start">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
@@ -244,23 +243,23 @@ const ReportModal: React.FC<{ report: IndustryReport; onClose: () => void }> = (
                     </button>
                 </div>
 
-                {/* Contenido del Informe */}
+                {/* Report Content */}
                 <div className="p-8 space-y-10">
-                    {/* Texto Completo */}
+                    {/* Full Text */}
                     <div className="prose prose-invert max-w-none">
                         <p className="text-text-secondary text-lg leading-relaxed whitespace-pre-line font-serif">
                             {report.content.fullText}
                         </p>
                     </div>
 
-                    {/* Tendencias Clave */}
+                    {/* Key Trends */}
                     {report.content.trends.length > 0 && (
                         <div className="grid md:grid-cols-2 gap-6">
                             {report.content.trends.map((trend, idx) => (
                                 <div key={idx} className="bg-bg-tertiary/50 p-6 rounded-lg border border-white/5 hover:border-accent-cyan/30 transition-colors">
                                     <h4 className="text-accent-cyan font-bold text-xs uppercase tracking-wider mb-3 flex items-center gap-2">
                                         <span className="w-2 h-2 rounded-full bg-accent-cyan"></span>
-                                        Tendencia {idx + 1}
+                                        Trend {idx + 1}
                                     </h4>
                                     <h3 className="text-white font-display text-xl mb-2">{trend.title}</h3>
                                     <p className="text-sm text-text-muted leading-relaxed">{trend.description}</p>
@@ -269,7 +268,7 @@ const ReportModal: React.FC<{ report: IndustryReport; onClose: () => void }> = (
                         </div>
                     )}
 
-                    {/* Selección de Acciones (Picks) */}
+                    {/* Stock Picks */}
                     {report.content.picks.length > 0 && (
                         <div className="bg-white/5 rounded-xl p-8 border border-white/10">
                             <div className="flex items-center gap-4 mb-8">
@@ -312,7 +311,7 @@ const ReportModal: React.FC<{ report: IndustryReport; onClose: () => void }> = (
                         </div>
                     )}
 
-                    {/* Conclusión */}
+                    {/* Conclusion */}
                     {report.content.conclusion && (
                         <div className="bg-accent-gold/5 border border-accent-gold/20 rounded-lg p-8 text-center">
                             <p className="text-accent-gold font-medium italic font-display text-xl leading-relaxed">

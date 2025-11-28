@@ -27,30 +27,29 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({
     return (
         <div
             id={id}
-            className={`rounded-lg transition-all duration-300 ${className}`}
+            className={`rounded-lg transition-all duration-300 group border border-white/5 hover:border-accent-cyan/50 hover:shadow-[0_0_20px_rgba(34,211,238,0.15)] ${className}`}
             style={{
-                backgroundColor: 'transparent', // Transparent to let global gradient show, or semi-transparent
-                // Removing border here to reduce visual noise, focusing on the header lines
+                backgroundColor: 'transparent', 
             }}
         >
             {/* Widget Header - "Blue Line - Box - Blue Line" Style */}
-            <div className="flex items-center justify-center mb-4 relative group">
+            <div className="flex items-center justify-center mb-4 relative">
                 {/* Left Line */}
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-accent-cyan/30 to-accent-cyan/60" />
                 
                 {/* Title Box */}
                 <div className="mx-4 relative">
                     <div 
-                        className="px-6 py-1.5 rounded border border-accent-cyan/30 bg-accent-cyan/5 backdrop-blur-sm shadow-[0_0_15px_rgba(34,211,238,0.1)] flex items-center gap-2"
+                        className="px-6 py-1.5 rounded border border-accent-cyan/30 bg-accent-cyan/5 backdrop-blur-sm shadow-[0_0_15px_rgba(34,211,238,0.1)] flex items-center gap-2 group-hover:border-accent-cyan/50 group-hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] transition-all duration-300"
                     >
                         <h3
-                            className="text-xs font-bold tracking-[0.15em] uppercase text-accent-cyan whitespace-nowrap"
+                            className="text-xs font-bold tracking-[0.15em] uppercase text-accent-cyan whitespace-nowrap group-hover:text-white transition-colors duration-300"
                             style={{ fontFamily: 'var(--font-mono)', textShadow: '0 0 10px rgba(34,211,238,0.4)' }}
                         >
                             {title}
                         </h3>
                         
-                        {/* Tooltip Icon - Integrated nicely */}
+                        {/* Tooltip Icon */}
                         {tooltip && (
                             <button
                                 className="text-accent-cyan/50 hover:text-accent-cyan transition-colors ml-1"
@@ -78,7 +77,7 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({
                 {/* Right Line */}
                 <div className="h-px flex-1 bg-gradient-to-l from-transparent via-accent-cyan/30 to-accent-cyan/60" />
 
-                {/* Action Button (Absolute positioned to not break symmetry) */}
+                {/* Action Button */}
                 {action && (
                     <button
                         onClick={action.onClick}
@@ -89,8 +88,8 @@ export const WidgetCard: React.FC<WidgetCardProps> = ({
                 )}
             </div>
 
-            {/* Widget Content - Reduced padding for tighter fit */}
-            <div className={`bg-[#0B1221]/60 border border-white/5 rounded-xl ${compact ? 'p-4' : 'p-5'}`}>
+            {/* Widget Content */}
+            <div className={`bg-[#0B1221]/60 border border-white/5 rounded-xl backdrop-blur-sm group-hover:border-accent-cyan/20 transition-colors duration-300 ${compact ? 'p-4' : 'p-5'}`}>
                 {children}
             </div>
         </div>
@@ -108,7 +107,7 @@ interface DataCardProps {
 
 export const DataCard: React.FC<DataCardProps> = ({ label, value, change, isPositive, sublabel }) => {
     return (
-        <div className="p-4 rounded-lg bg-[#0F1623] border border-white/5 hover:border-accent-cyan/20 transition-colors">
+        <div className="p-4 rounded-lg bg-[#0F1623] border border-white/5 hover:border-accent-cyan/20 transition-colors duration-300 hover:shadow-glow-sm">
             <div className="text-[10px] font-bold tracking-widest uppercase mb-2 text-text-muted">
                 {label}
             </div>
@@ -137,7 +136,7 @@ interface MetricRowProps {
 
 export const MetricRow: React.FC<MetricRowProps> = ({ items }) => {
     return (
-        <div className="flex divide-x divide-white/5 rounded-lg overflow-hidden bg-[#0F1623] border border-white/5">
+        <div className="flex divide-x divide-white/5 rounded-lg overflow-hidden bg-[#0F1623] border border-white/5 hover:border-accent-cyan/20 transition-colors duration-300">
             {items.map((item, idx) => (
                 <div key={idx} className="flex-1 px-3 py-2 text-center">
                     <div className="text-[9px] font-bold tracking-widest uppercase mb-1 text-text-muted">
@@ -167,7 +166,7 @@ export const SectionDivider: React.FC<SectionDividerProps> = ({ label }) => {
             </div>
             {label && (
                 <div className="relative flex justify-center">
-                    <span className="px-4 py-1 text-[10px] font-bold tracking-[0.2em] uppercase text-text-muted bg-bg-primary">
+                    <span className="px-4 py-1 text-[10px] font-bold tracking-[0.2em] uppercase text-text-muted bg-bg-primary border border-white/5 rounded-full shadow-sm">
                         {label}
                     </span>
                 </div>

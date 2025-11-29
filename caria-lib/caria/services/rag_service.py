@@ -45,9 +45,9 @@ class RAGService:
         self.settings = settings
 
         # ---------- xAI Grok 4 (OpenAI Compatible) ----------
-        self.base_url = os.getenv("OPENAI_BASE_URL", "https://api.x.ai/v1")
+        self.base_url = os.getenv("OPENAI_BASE_URL", "https://api.x.ai/v1/chat/completions")
         self.api_key = os.getenv("OPENAI_API_KEY")
-        self.model = os.getenv("OPENAI_MODEL", "grok-3-beta")
+        self.model = os.getenv("OPENAI_MODEL", "grok-4-0709")
         
         self.llm_available = bool(self.api_key)
 

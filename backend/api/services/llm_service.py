@@ -25,8 +25,8 @@ class LLMService:
         # Load configuration
         self.api_key = os.getenv("OPENAI_API_KEY")
         # xAI Grok 4 API endpoint (OpenAI-compatible)
-        self.base_url = os.getenv("OPENAI_BASE_URL", "https://api.x.ai/v1") 
-        self.model = os.getenv("OPENAI_MODEL", "grok-3-beta")  # xAI Grok 3
+        self.base_url = os.getenv("OPENAI_BASE_URL", "https://api.x.ai/v1/chat/completions") 
+        self.model = os.getenv("OPENAI_MODEL", "grok-4-0709")  # xAI Grok 4
         
         # Initialize PromptBuilder for liquidity-aware prompts
         if PROMPT_BUILDER_AVAILABLE:

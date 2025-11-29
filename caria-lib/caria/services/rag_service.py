@@ -28,8 +28,8 @@ class ChallengeThesisResult:
 
 class RAGService:
     """
-    Servicio RAG para desafiar tesis de inversión usando Groq Llama
-    (OpenAI-compatible). Si no está disponible, aplica un checklist básico.
+    Servicio RAG para desafiar tesis de inversión usando Grok 4 (xAI)
+    con API OpenAI-compatible. Si no está disponible, aplica un checklist básico.
     """
 
     def __init__(
@@ -44,10 +44,10 @@ class RAGService:
         self.embedder = embedder
         self.settings = settings
 
-        # ---------- OpenAI Compatible (Groq) ----------
-        self.base_url = os.getenv("OPENAI_BASE_URL", "https://api.groq.com/openai/v1/chat/completions")
+        # ---------- xAI Grok 4 (OpenAI Compatible) ----------
+        self.base_url = os.getenv("OPENAI_BASE_URL", "https://api.x.ai/v1")
         self.api_key = os.getenv("OPENAI_API_KEY")
-        self.model = os.getenv("OPENAI_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
+        self.model = os.getenv("OPENAI_MODEL", "grok-2-1212")
         
         self.llm_available = bool(self.api_key)
 

@@ -21,7 +21,7 @@ import { Resources } from './widgets/Resources';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
 import { ModelOutlook } from './widgets/ModelOutlook';
 import { FearGreedIndex } from './widgets/FearGreedIndex';
-import { LiquidityGauge } from './LiquidityGauge';
+import LiquidityGauge from './LiquidityGauge';
 import { ProtectedWidget } from './ProtectedWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 

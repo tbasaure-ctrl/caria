@@ -9,6 +9,12 @@ from typing import Any, List, Optional, Tuple
 
 import requests
 
+try:
+    from caria.services.prompt_builder_service import PromptBuilderService
+    PROMPT_BUILDER_AVAILABLE = True
+except ImportError:
+    PROMPT_BUILDER_AVAILABLE = False
+
 LOGGER = logging.getLogger("caria.api.services.llm")
 
 class LLMService:
@@ -20,7 +26,15 @@ class LLMService:
         self.api_key = os.getenv("OPENAI_API_KEY")
         # Default to Groq if not set, but respect env var
         self.base_url = os.getenv("OPENAI_BASE_URL", "https://api.groq.com/openai/v1/chat/completions") 
-        self.model = os.getenv("OPENAI_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct")
+        self.model = os.getenv("OPENAI_MODEL", "grok-2-1212")  # Updated to Grok 4
+        
+        # Initialize PromptBuilder for liquidity-aware prompts
+        if PROMPT_BUILDER_AVAILABLE:
+            self.prompt_builder = PromptBuilderService()
+            LOGGER.info("PromptBuilderService initialized - Hydraulic Score will be injected into prompts")
+        else:
+            self.prompt_builder = None
+            LOGGER.warning("PromptBuilderService not available - prompts will not be liquidity-aware")
 
         if not self.api_key:
             LOGGER.warning("OPENAI_API_KEY not set. LLM calls will fail.")
@@ -95,7 +109,8 @@ class LLMService:
 
     def call_llm(self, prompt: str, system_prompt: Optional[str] = None, use_fallback: bool = False) -> Optional[str]:
         """
-        Call LLM using OpenAI-compatible endpoint.
+        Call LLM using OpenAI-compatible endpoint (Grok 4).
+        Automatically injects Hydraulic Score context into system prompts.
         """
         if not self.api_key:
             return "Error: API Key no configurada."
@@ -104,6 +119,14 @@ class LLMService:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
+        
+        # HYDRAULIC INJECTION: Enhance system prompt with liquidity context
+        if self.prompt_builder and system_prompt:
+            try:
+                system_prompt = self.prompt_builder.build_context_aware_prompt(system_prompt, prompt)
+                LOGGER.info("Injected Hydraulic Score into system prompt")
+            except Exception as e:
+                LOGGER.error(f"Failed to inject liquidity context: {e}")
         
         messages = []
         if system_prompt:

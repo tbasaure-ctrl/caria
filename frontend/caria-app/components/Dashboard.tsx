@@ -22,6 +22,7 @@ import { GlobalMarketBar } from './widgets/GlobalMarketBar';
 import { ModelOutlook } from './widgets/ModelOutlook';
 import { FearGreedIndex } from './widgets/FearGreedIndex';
 import LiquidityGauge from './LiquidityGauge';
+import HydraulicStackWidget from './HydraulicStackWidget';
 import { ProtectedWidget } from './ProtectedWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
@@ -207,6 +208,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                     <AskCariaWidget onClick={switchToAnalysis} />
                                 </div>
                             </div>
+                        </div>
+
+                        {/* AI-Hydraulic Stack Status - Full Width */}
+                        <div className="w-full">
+                            <HydraulicStackWidget />
                         </div>
 
                         {/* Crisis & Macro Simulators */}

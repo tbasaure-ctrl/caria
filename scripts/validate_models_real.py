@@ -232,11 +232,11 @@ class DataLoader:
         print(f"  Merged signals shape: {merged_signals.shape}")
         
         # Compute combined_score
-        print("  Computing combined_score = 0.5 * Quality + 0.5 * Value...")
+        print("  Computing combined_score = 0.4 * Quality + 0.6 * Value...")
         # Normalize scores to 0-1 range first
         merged_signals['quality_norm'] = (merged_signals['quality_score'] - merged_signals['quality_score'].min()) / (merged_signals['quality_score'].max() - merged_signals['quality_score'].min())
         merged_signals['value_norm'] = (merged_signals['value_score'] - merged_signals['value_score'].min()) / (merged_signals['value_score'].max() - merged_signals['value_score'].min())
-        merged_signals['combined_score'] = 0.5 * merged_signals['quality_norm'] + 0.5 * merged_signals['value_norm']
+        merged_signals['combined_score'] = 0.4 * merged_signals['quality_norm'] + 0.6 * merged_signals['value_norm']
         merged_signals['combined_score'] = merged_signals['combined_score'] * 100  # Scale to 0-100
         print("  Calculated combined_score.")
         
@@ -499,6 +499,121 @@ class Validator:
         )
         value_perf = df.groupby('value_decile')['fwd_3m_ret'].mean()
         print(value_perf)
+        
+        # --- HYDRAULIC STRATEGY VALIDATION ---
+        print("\n--- Hydraulic Strategy Validation ---")
+        liq_path = os.path.join(self.output_dir, 'liquidity_signals.parquet')
+        if os.path.exists(liq_path):
+            print("  Loading Liquidity Signals...")
+            liq_df = pd.read_parquet(liq_path)
+            # Ensure date is datetime and normalize
+            liq_df.index = pd.to_datetime(liq_df.index).normalize()
+            liq_df = liq_df.reset_index().rename(columns={'index': 'date'})
+            liq_df['date'] = pd.to_datetime(liq_df['date'])
+            
+            # Merge with main df
+            df['date'] = pd.to_datetime(df['date'])
+            # Forward fill liquidity signals to daily stock data
+            # Sort both
+            df = df.sort_values('date')
+            liq_df = liq_df.sort_values('date')
+            
+            # Merge asof logic (or simple merge if dates align)
+            # We'll use merge_asof
+            df_hydra = pd.merge_asof(df, liq_df[['date', 'hydraulic_score', 'liquidity_state']], 
+                                     on='date', direction='backward')
+            
+            print(f"  Merged with liquidity. Records with signal: {df_hydra['hydraulic_score'].notna().sum()}")
+            
+            # Define Strategies
+            # 1. Static Quality+Value (Top Decile Combined)
+            df_hydra['strat_static_qv'] = df_hydra['decile'] == 9
+            
+            # 2. Static Quality (Top Decile Quality)
+            df_hydra['strat_static_q'] = df_hydra['quality_decile'] == 9
+            
+            # 3. Hydraulic Strategy
+            # If Expansion (>60) -> Top Decile Combined (Aggressive)
+            # If Contraction (<40) -> Top Decile Quality (Defensive)
+            # Else (Neutral) -> Top Decile Combined
+            
+            conditions = [
+                (df_hydra['hydraulic_score'] >= 60) & (df_hydra['decile'] == 9), # Expansion -> QV
+                (df_hydra['hydraulic_score'] <= 40) & (df_hydra['quality_decile'] == 9), # Contraction -> Q
+                (df_hydra['hydraulic_score'] > 40) & (df_hydra['hydraulic_score'] < 60) & (df_hydra['decile'] == 9) # Neutral -> QV
+            ]
+            df_hydra['strat_hydraulic'] = np.select(conditions, [True, True, True], default=False)
+            
+            # Calculate Performance
+            print("\n  Strategy Performance (Avg 3M Fwd Return):")
+            
+            res_static_qv = df_hydra[df_hydra['strat_static_qv']]['fwd_3m_ret'].mean()
+            res_static_q = df_hydra[df_hydra['strat_static_q']]['fwd_3m_ret'].mean()
+            res_hydraulic = df_hydra[df_hydra['strat_hydraulic']]['fwd_3m_ret'].mean()
+            
+            print(f"  Static Quality+Value: {res_static_qv:.4f}")
+            print(f"  Static Quality Only:  {res_static_q:.4f}")
+            print(f"  Hydraulic Strategy:   {res_hydraulic:.4f}")
+            
+            # --- DRAWDOWN ANALYSIS ---
+            print("\n  Drawdown Analysis:")
+            # We need to construct a daily equity curve to calculate drawdown accurately.
+            # Since we only have 3M forward returns, we will approximate by assuming the return is realized over the period.
+            # For a more accurate daily drawdown, we would need daily portfolio values.
+            # Here we will use the average return of the selected stocks per day as the strategy return.
+            
+            def calc_drawdown(strategy_mask, name):
+                # Filter to strategy days
+                strat_data = df_hydra[strategy_mask].copy()
+                # Group by date to get daily portfolio return (average of selected stocks)
+                # Note: fwd_3m_ret is a forward return. For a backtest curve we need realized returns.
+                # We will use the 'market_ret' column if available, or approximate using the fwd return shifted?
+                # Actually, we have 'fwd_3m_ret'. Let's try to map it back or just use the signal date.
+                # A better approximation for "Strategy Performance" over time is to group by date.
+                
+                daily_perf = strat_data.groupby('date')['fwd_3m_ret'].mean()
+                # This is "Avg 3M Return" signal per day. It's not a daily return.
+                # To get a daily equity curve, we really need daily returns of the selected stocks.
+                # But we don't have easy access to daily returns for all stocks here without reloading prices.
+                # We will use the 'fwd_3m_ret' as a proxy for "Performance Potential" over time.
+                # OR, we can just look at the distribution of returns during "Crash" periods (Drawdown Proxy).
+                
+                # Let's calculate "Avg Return during Market Drawdowns"
+                # Identify Market Drawdowns
+                # We need market index data. We calculated 'market_ret' in validate_macro.
+                # Let's assume we can't do a perfect daily equity curve here without more data work.
+                # We will calculate: "Worst 3M Return" (Max 3M Drawdown)
+                
+                min_ret = daily_perf.min()
+                avg_neg_ret = daily_perf[daily_perf < 0].mean()
+                print(f"  {name} - Worst 3M Period: {min_ret:.2%}")
+                print(f"  {name} - Avg Negative 3M Period: {avg_neg_ret:.2%}")
+                return min_ret
+            
+            calc_drawdown(df_hydra['strat_static_qv'], "Static Q+V")
+            calc_drawdown(df_hydra['strat_static_q'], "Static Quality")
+            calc_drawdown(df_hydra['strat_hydraulic'], "Hydraulic")
+            
+            # Plot Comparison
+            plt.figure(figsize=(8, 6))
+            bars = plt.bar(['Static Q+V', 'Static Quality', 'Hydraulic'], 
+                           [res_static_qv, res_static_q, res_hydraulic],
+                           color=['gray', 'gray', 'gold'])
+            plt.title('Strategy Comparison: The Power of Liquidity')
+            plt.ylabel('Avg 3M Forward Return')
+            plt.grid(True, alpha=0.3, axis='y')
+            
+            # Add labels
+            for bar in bars:
+                height = bar.get_height()
+                plt.text(bar.get_x() + bar.get_width()/2., height,
+                        f'{height:.2%}', ha='center', va='bottom')
+            
+            plt.savefig(os.path.join(self.output_dir, 'hydraulic_strategy_comparison.png'), dpi=150)
+            print("  Saved hydraulic_strategy_comparison.png")
+            
+        else:
+            print("  WARNING: Liquidity signals not found. Skipping Hydraulic validation.")
 
 def main():
     try:

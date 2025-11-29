@@ -11,7 +11,7 @@ import os
 
 # Import valuation module
 from .valuation import ValuationAnalyzer
-from .routes import simulation, watchlist
+from .routes import simulation, watchlist, liquidity
 
 
 # Setup
@@ -28,6 +28,7 @@ app.add_middleware(
 
 app.include_router(simulation.router)
 app.include_router(watchlist.router)
+app.include_router(liquidity.router)
 
 
 # Load models

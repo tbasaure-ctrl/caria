@@ -21,6 +21,7 @@ import { Resources } from './widgets/Resources';
 import { GlobalMarketBar } from './widgets/GlobalMarketBar';
 import { ModelOutlook } from './widgets/ModelOutlook';
 import { FearGreedIndex } from './widgets/FearGreedIndex';
+import { LiquidityGauge } from './LiquidityGauge';
 import { ProtectedWidget } from './ProtectedWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
@@ -73,11 +74,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [regimeData, setRegimeData] = useState<RegimeData | null>(null);
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
-    
+
     const tabFromUrl = searchParams.get('tab') as DashboardTab;
     const [activeTab, setActiveTab] = useState<DashboardTab>(
-        tabFromUrl && ['portfolio', 'analysis', 'research'].includes(tabFromUrl) 
-            ? tabFromUrl 
+        tabFromUrl && ['portfolio', 'analysis', 'research'].includes(tabFromUrl)
+            ? tabFromUrl
             : 'portfolio'
     );
 
@@ -182,6 +183,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                 </div>
                                 <div className="min-w-[160px] sm:min-w-[200px] xl:min-w-0 h-auto min-h-[180px] sm:min-h-[200px] xl:h-[220px] flex-shrink-0 xl:flex-shrink">
                                     <FearGreedIndex />
+                                </div>
+                                <div className="min-w-[160px] sm:min-w-[200px] xl:min-w-0 h-auto min-h-[180px] sm:min-h-[200px] xl:h-[220px] flex-shrink-0 xl:flex-shrink">
+                                    <LiquidityGauge />
                                 </div>
                             </div>
 

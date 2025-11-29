@@ -1,9 +1,8 @@
 Avg Daily Market Return by Regime:
-               mean  ...  count
-regime               ...       
-expansion  0.000818  ...    515
-recession  0.000531  ...   1272
-stress     0.000220  ...    661
-
-[3 rows x 3 columns]
+               mean       std  count
+regime                              
+expansion  0.000475  0.010926    821
+recession  0.000462  0.019252    380
+slowdown   0.000567  0.007467    940
+stress     0.000466  0.008050    307
 

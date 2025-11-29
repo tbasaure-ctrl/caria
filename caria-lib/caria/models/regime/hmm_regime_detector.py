@@ -327,7 +327,62 @@ class HMMRegimeDetector:
         Returns:
             DataFrame con columnas: date, regime, expansion_prob, slowdown_prob, etc.
         """
-        feature_array, _ = self._prepare_features(df)
+        if self.model is None:
+            raise RuntimeError("Modelo no entrenado. Carga un modelo primero.")
+        
+        if self._feature_mean is None or self._feature_std is None:
+            LOGGER.warning(
+                "Estadísticas de normalización no disponibles. "
+                "Usando normalización desde cero (puede dar resultados inconsistentes)."
+            )
+            feature_array, _ = self._prepare_features(df)
+        else:
+            # Preparar features usando las mismas columnas que el modelo espera
+            feature_cols = []
+            
+            # Features principales (mismo orden que en _prepare_features)
+            if "yield_curve_slope" in df.columns:
+                feature_cols.append("yield_curve_slope")
+            elif "DGS10" in df.columns and "DGS2" in df.columns:
+                df["yield_curve_slope"] = df["DGS10"] - df["DGS2"]
+                feature_cols.append("yield_curve_slope")
+            
+            # Sentiment
+            if "sentiment_score" in df.columns:
+                feature_cols.append("sentiment_score")
+            elif "UMCSENT" in df.columns:
+                df["sentiment_score"] = (df["UMCSENT"] - 50) / 50
+                feature_cols.append("sentiment_score")
+            
+            # Credit spread
+            if "credit_spread" in df.columns:
+                feature_cols.append("credit_spread")
+            elif "BAA" in df.columns and "AAA" in df.columns:
+                df["credit_spread"] = df["BAA"] - df["AAA"]
+                feature_cols.append("credit_spread")
+            
+            # Verificar que tenemos las columnas correctas
+            if set(feature_cols) != set(self.feature_names):
+                LOGGER.warning(
+                    "Features disponibles (%s) no coinciden con features del modelo (%s). "
+                    "Usando features del modelo.",
+                    feature_cols, self.feature_names
+                )
+                feature_cols = self.feature_names.copy()
+            
+            # Seleccionar y limpiar datos
+            feature_data = df[feature_cols].copy()
+            feature_data = feature_data.dropna()
+            
+            if len(feature_data) < 100:
+                raise ValueError(
+                    f"Se necesitan al menos 100 observaciones. Disponibles: {len(feature_data)}"
+                )
+            
+            # Normalizar usando estadísticas del ENTRENAMIENTO (no desde cero)
+            feature_array = feature_data.values
+            feature_array = (feature_array - self._feature_mean) / self._feature_std
+            feature_array = np.nan_to_num(feature_array, nan=0.0)
         
         # Predecir estados para toda la secuencia
         states = self.model.predict(feature_array)
@@ -338,8 +393,15 @@ class HMMRegimeDetector:
         state_probs = state_probs / state_probs.sum(axis=1, keepdims=True)
         
         # Crear DataFrame de resultados
+        # Asegurar que tenemos las fechas correctas (puede haber menos filas después de dropna)
+        dates = df["date"].values
+        if len(dates) > len(states):
+            # Si se eliminaron filas por NaN, necesitamos alinear las fechas
+            feature_data_with_dates = df[feature_cols + ["date"]].dropna()
+            dates = feature_data_with_dates["date"].values
+        
         results = pd.DataFrame({
-            "date": df["date"].values[:len(states)],
+            "date": dates[:len(states)],
             "regime": [self.state_labels.get(s, "unknown") for s in states],
             "expansion_prob": state_probs[:, 0],
             "slowdown_prob": state_probs[:, 1],

@@ -73,7 +73,9 @@
       "Bash(git pull:*)",
       "Bash(git stash:*)",
       "Bash(gcloud artifacts repositories list:*)",
-      "Bash(gcloud artifacts docker images describe:*)"
+      "Bash(gcloud artifacts docker images describe:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.x.ai)"
     ],
     "deny": [],
     "ask": []

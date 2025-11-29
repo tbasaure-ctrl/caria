@@ -50,6 +50,7 @@ FRED_SERIES = {
     "FEDFUNDS": "Effective Federal Funds Rate",
     "DGS10": "10-Year Treasury Constant Maturity Rate",
     "DGS2": "2-Year Treasury Constant Maturity Rate",
+    "VIXCLS": "CBOE Volatility Index: VIX",
     "MANPMI": "ISM Manufacturing: PMI Composite Index",
     "UMCSENT": "University of Michigan: Consumer Sentiment",
     # Commodities - Metales

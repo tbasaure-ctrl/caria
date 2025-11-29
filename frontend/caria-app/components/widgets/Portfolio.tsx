@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, createHolding, deleteHolding } from '../../services/apiService';
 import { WidgetCard } from './WidgetCard';
 import { getErrorMessage } from '../../src/utils/errorHandling';
-import { AreaChart, Area, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { AreaChart, Area, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, XAxis, YAxis } from 'recharts';
 
 type AllocationData = { name: string; value: number; color: string };
 
@@ -18,60 +18,82 @@ const CustomPieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
         );
     }
 
-    const activeItem = activeIndex !== null ? data[activeIndex] : data[0];
+    const total = data.reduce((sum, item) => sum + item.value, 0);
 
     return (
-        <div className="flex flex-col items-center">
-            <div className="relative w-48 h-48">
+        <div className="flex flex-col items-center w-full">
+            <div className="relative w-40 h-40 sm:w-48 sm:h-48">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
                             data={data}
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={5}
+                            innerRadius="55%"
+                            outerRadius="85%"
+                            paddingAngle={3}
                             dataKey="value"
                             stroke="none"
                             onMouseEnter={(_, index) => setActiveIndex(index)}
                             onMouseLeave={() => setActiveIndex(null)}
                         >
                             {data.map((entry, index) => (
-                                <Cell 
-                                    key={`cell-${index}`} 
-                                    fill={entry.color} 
-                                    opacity={activeIndex === null || activeIndex === index ? 1 : 0.3}
-                                    className="transition-opacity duration-300"
+                                <Cell
+                                    key={`cell-${index}`}
+                                    fill={entry.color}
+                                    opacity={activeIndex === null || activeIndex === index ? 1 : 0.4}
+                                    style={{
+                                        filter: activeIndex === index ? 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' : 'none',
+                                        transition: 'all 0.3s ease'
+                                    }}
                                 />
                             ))}
                         </Pie>
-                        <Tooltip 
-                            contentStyle={{ backgroundColor: '#0B101B', borderColor: 'rgba(255,255,255,0.1)', color: '#F1F5F9' }}
-                            itemStyle={{ color: '#F1F5F9' }}
-                            formatter={(value: number) => `${value.toFixed(1)}%`}
-                        />
                     </PieChart>
                 </ResponsiveContainer>
-                {/* Center Text */}
+                {/* Center Text - Total or Active */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    {activeItem && (
+                    {activeIndex !== null ? (
                         <>
-                            <span className="text-2xl font-display text-white font-bold">
-                                {activeItem.value.toFixed(0)}%
+                            <span className="text-xl sm:text-2xl font-display text-white font-bold">
+                                {data[activeIndex].value.toFixed(1)}%
                             </span>
-                            <span className="text-xs text-text-muted uppercase tracking-widest">
-                                {activeItem.name}
+                            <span className="text-[10px] sm:text-xs text-accent-cyan font-mono uppercase">
+                                {data[activeIndex].name}
+                            </span>
+                        </>
+                    ) : (
+                        <>
+                            <span className="text-lg sm:text-xl font-display text-white/60 font-medium">
+                                {data.length}
+                            </span>
+                            <span className="text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider">
+                                Holdings
                             </span>
                         </>
                     )}
                 </div>
             </div>
-            
-            {/* Legend */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-4 text-xs w-full">
-                {data.slice(0, 6).map((item, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                        <span className="text-text-secondary truncate">{item.name}</span>
+
+            {/* Professional Legend - Side by side with values */}
+            <div className="w-full mt-4 sm:mt-6 space-y-1.5 sm:space-y-2">
+                {data.slice(0, 8).map((item, i) => (
+                    <div
+                        key={i}
+                        className={`flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                            activeIndex === i ? 'bg-white/10' : 'hover:bg-white/5'
+                        }`}
+                        onMouseEnter={() => setActiveIndex(i)}
+                        onMouseLeave={() => setActiveIndex(null)}
+                    >
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <div
+                                className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+                                style={{ backgroundColor: item.color, boxShadow: `0 0 6px ${item.color}40` }}
+                            />
+                            <span className="text-[10px] sm:text-xs text-white font-mono truncate">{item.name}</span>
+                        </div>
+                        <span className="text-[10px] sm:text-xs text-text-secondary font-mono ml-2">
+                            {item.value.toFixed(1)}%
+                        </span>
                     </div>
                 ))}
             </div>
@@ -89,52 +111,105 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[]; timeRange?: st
     const change = endValue - startValue;
     const pctChange = startValue !== 0 ? (change / startValue) * 100 : 0;
     const isPositive = change >= 0;
-    const color = isPositive ? '#10B981' : '#EF4444'; // Positive/Negative color
+    const color = isPositive ? '#10B981' : '#EF4444';
+    const gradientId = `colorPerf-${timeRange}`;
+
+    // Format date based on time range
+    const formatXAxis = (dateStr: string) => {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return '';
+
+        switch (timeRange) {
+            case '1D':
+                return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            case '1W':
+                return date.toLocaleDateString('en-US', { weekday: 'short' });
+            case '1M':
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            case 'YTD':
+            case '1Y':
+                return date.toLocaleDateString('en-US', { month: 'short' });
+            case 'START':
+                return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+            default:
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+    };
+
+    // Calculate tick interval based on data length
+    const tickInterval = Math.max(1, Math.floor(data.length / 6));
 
     return (
         <div className="h-full flex flex-col">
-            <div className="mb-4 px-2">
-                <div className="flex items-baseline gap-3">
-                    <span className="text-3xl font-display text-white">
+            <div className="mb-3 sm:mb-4 px-2">
+                <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                    <span className="text-2xl sm:text-3xl font-display text-white">
                         ${endValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
-                    <span className={`text-sm font-mono font-medium ${isPositive ? 'text-positive' : 'text-negative'}`}>
-                        {isPositive ? '+' : ''}{change.toFixed(2)} ({pctChange.toFixed(2)}%)
+                    <span className={`text-xs sm:text-sm font-mono font-medium ${isPositive ? 'text-positive' : 'text-negative'}`}>
+                        {isPositive ? '+' : ''}${Math.abs(change).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({pctChange >= 0 ? '+' : ''}{pctChange.toFixed(2)}%)
                     </span>
                 </div>
-                <div className="text-xs text-text-muted uppercase tracking-widest mt-1">
-                    Portfolio Value • {timeRange}
+                <div className="text-[10px] sm:text-xs text-text-muted uppercase tracking-widest mt-1">
+                    Portfolio Value • {timeRange === 'START' ? 'All Time' : timeRange}
                 </div>
             </div>
-            
-            <div className="flex-1 min-h-[200px] w-full">
+
+            <div className="flex-1 min-h-[180px] sm:min-h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data}>
+                    <AreaChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
                         <defs>
-                            <linearGradient id="colorPerf" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
-                                <stop offset="95%" stopColor={color} stopOpacity={0}/>
+                            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={color} stopOpacity={0.4}/>
+                                <stop offset="95%" stopColor={color} stopOpacity={0.05}/>
                             </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                        <XAxis
+                            dataKey="date"
+                            tickFormatter={formatXAxis}
+                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }}
+                            axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                            tickLine={false}
+                            interval={tickInterval}
+                            minTickGap={30}
+                        />
+                        <YAxis
+                            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }}
+                            axisLine={false}
+                            tickLine={false}
+                            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                            width={45}
+                            domain={['dataMin * 0.95', 'dataMax * 1.05']}
+                        />
                         <Tooltip
                             contentStyle={{
                                 backgroundColor: '#0B101B',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                border: '1px solid rgba(255,255,255,0.15)',
                                 borderRadius: '8px',
                                 color: '#F1F5F9',
-                                fontFamily: 'var(--font-mono)'
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: '12px',
+                                padding: '8px 12px'
                             }}
-                            labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                            labelFormatter={(label) => {
+                                const date = new Date(label);
+                                return isNaN(date.getTime()) ? label : date.toLocaleDateString('en-US', {
+                                    weekday: 'short',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                });
+                            }}
                             formatter={(value: number) => [`$${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 'Value']}
                         />
-                        <Area 
-                            type="monotone" 
-                            dataKey="value" 
-                            stroke={color} 
-                            strokeWidth={2} 
-                            fillOpacity={1} 
-                            fill="url(#colorPerf)" 
+                        <Area
+                            type="monotone"
+                            dataKey="value"
+                            stroke={color}
+                            strokeWidth={2}
+                            fillOpacity={1}
+                            fill={`url(#${gradientId})`}
                         />
                     </AreaChart>
                 </ResponsiveContainer>
@@ -144,20 +219,20 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[]; timeRange?: st
 };
 
 const TimeRangeSelector: React.FC<{ selected: string; onSelect: (range: string) => void }> = ({ selected, onSelect }) => {
-    const ranges = ['1D', '1Y', 'YTD', 'START'];
+    const ranges = ['1D', '1W', '1M', 'YTD', '1Y', 'START'];
     return (
-        <div className="flex bg-bg-tertiary border border-white/5 rounded p-0.5 gap-1">
+        <div className="flex bg-bg-tertiary border border-white/5 rounded p-0.5 gap-0.5 sm:gap-1 overflow-x-auto scrollbar-hide">
             {ranges.map(range => (
                 <button
                     key={range}
                     onClick={() => onSelect(range)}
-                    className={`px-3 py-1 text-xs font-medium rounded transition-all duration-200 ${
-                        selected === range 
-                            ? 'bg-white/10 text-white shadow-sm' 
-                            : 'text-text-muted hover:text-text-secondary'
+                    className={`px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-medium rounded transition-all duration-200 whitespace-nowrap ${
+                        selected === range
+                            ? 'bg-accent-cyan/20 text-accent-cyan shadow-sm'
+                            : 'text-text-muted hover:text-text-secondary hover:bg-white/5'
                     }`}
                 >
-                    {range}
+                    {range === 'START' ? 'ALL' : range}
                 </button>
             ))}
         </div>
@@ -243,35 +318,37 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         switch (timeRange) {
             case '1D':
                 startDate = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
-                dataPoints = 24;
+                dataPoints = 24; // Hourly points
                 break;
             case '1W':
                 startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                dataPoints = 7;
+                dataPoints = 7; // Daily points
                 break;
-            case '1Y':
-                startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-                dataPoints = 252;
+            case '1M':
+                startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                dataPoints = 30; // Daily points
                 break;
             case 'YTD':
                 startDate = new Date(now.getFullYear(), 0, 1);
-                dataPoints = Math.ceil((now.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
+                dataPoints = Math.min(Math.ceil((now.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000)), 365);
+                break;
+            case '1Y':
+                startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+                dataPoints = 52; // Weekly points for 1Y
                 break;
             case 'START':
-                // Calculate real earliest date from holdings
                 const purchaseDates = portfolioData.holdings
                     .map((h: any) => h.purchase_date ? new Date(h.purchase_date) : null)
-                    .filter((d): d is Date => d !== null);
-                
+                    .filter((d): d is Date => d !== null && !isNaN(d.getTime()));
+
                 if (purchaseDates.length > 0) {
                     startDate = new Date(Math.min(...purchaseDates.map(d => d.getTime())));
                 } else {
-                    startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000); // Fallback to 1Y
+                    startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
                 }
-                
-                dataPoints = Math.ceil((now.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
-                // Limit max data points for performance
-                if (dataPoints > 365) dataPoints = 365;
+
+                const daysDiff = Math.ceil((now.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
+                dataPoints = Math.min(daysDiff, 104); // Max ~2 years of weekly data
                 break;
             default:
                 startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -281,35 +358,32 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         const data: PerformanceGraphPoint[] = [];
         const totalCurrentValue = portfolioData.total_value;
         const totalCost = portfolioData.total_cost;
-        
-        // Determine trend direction
-        const isProfitable = totalCurrentValue >= totalCost;
-        
-        // Use logarithmic or exponential curve based on profitability to simulate trend
+
+        // Use seeded randomness based on timeRange for consistent noise per range
+        const seed = timeRange.charCodeAt(0) + (timeRange.charCodeAt(1) || 0);
+        const seededRandom = (i: number) => {
+            const x = Math.sin(seed * 9999 + i * 1234) * 10000;
+            return x - Math.floor(x);
+        };
+
         for (let i = 0; i <= dataPoints; i++) {
             const progress = i / dataPoints;
             const date = new Date(startDate.getTime() + progress * (now.getTime() - startDate.getTime()));
-            
-            // Simulate a curve: if profitable, exponential growth; if loss, decay
-            // We map progress (0 to 1) to value (totalCost to totalCurrentValue)
-            // Adding localized volatility
-            
+
             let interpolatedValue;
-            
+
             if (totalCost === 0) {
-                interpolatedValue = totalCurrentValue * progress; // Just linear growth from 0
+                interpolatedValue = totalCurrentValue * progress;
             } else {
-                // Simple linear interpolation as baseline
+                // Base linear interpolation
                 interpolatedValue = totalCost + (totalCurrentValue - totalCost) * progress;
-                
-                // Add "market noise"
-                // Noise amplitude decreases as we get closer to "now" (which is a known fixed point)
-                // Actually, noise should be consistent. 
-                // Let's add a sine wave component for "market cycle" visual
-                const cycle = Math.sin(progress * Math.PI * 4) * (totalCost * 0.05); 
-                const randomNoise = (Math.random() - 0.5) * (totalCost * 0.02);
-                
-                interpolatedValue += cycle + randomNoise;
+
+                // Add market noise that varies by timeRange but is consistent within the range
+                const volatilityFactor = timeRange === '1D' ? 0.02 : timeRange === '1W' ? 0.03 : 0.05;
+                const cycle = Math.sin(progress * Math.PI * (timeRange === '1D' ? 8 : 4)) * (totalCost * volatilityFactor * 0.5);
+                const noise = (seededRandom(i) - 0.5) * (totalCost * volatilityFactor);
+
+                interpolatedValue += cycle + noise;
             }
 
             data.push({
@@ -317,9 +391,10 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                 value: Math.max(0, interpolatedValue)
             });
         }
-        
-        // Force the last point to match exact current value for consistency
+
+        // Force endpoints to match known values
         if (data.length > 0) {
+            data[0].value = totalCost > 0 ? totalCost : totalCurrentValue * 0.8;
             data[data.length - 1].value = totalCurrentValue;
         }
 
@@ -366,24 +441,107 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
     }
 
     if (error) {
+        // Demo data for the preview
+        const demoChartData = Array.from({ length: 30 }, (_, i) => {
+            const base = 45000 + i * 500;
+            const noise = Math.sin(i * 0.5) * 2000 + (Math.random() - 0.5) * 1500;
+            return { date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString(), value: base + noise };
+        });
+        const demoAllocation = [
+            { name: 'AAPL', value: 28, color: '#D4AF37' },
+            { name: 'MSFT', value: 22, color: '#22D3EE' },
+            { name: 'NVDA', value: 18, color: '#38BDF8' },
+            { name: 'GOOGL', value: 15, color: '#94A3B8' },
+            { name: 'AMZN', value: 12, color: '#10B981' },
+            { name: 'Others', value: 5, color: '#64748B' },
+        ];
+
         return (
-            <WidgetCard id={id} title="PORTFOLIO SNAPSHOT">
-                <div className="flex flex-col items-center justify-center h-[400px] text-center p-6">
-                    <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                        <svg className="w-8 h-8 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
+            <WidgetCard id={id} title="PORTFOLIO TRACKER">
+                <div className="relative">
+                    {/* Blurred Demo Dashboard */}
+                    <div className="filter blur-[2px] opacity-60 pointer-events-none">
+                        {/* Header Stats */}
+                        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
+                            <div className="p-3 sm:p-4 rounded-lg bg-white/5 border border-white/10">
+                                <div className="text-[10px] sm:text-xs text-text-muted uppercase tracking-wider mb-1">Portfolio Value</div>
+                                <div className="text-lg sm:text-xl font-display text-white">$58,432</div>
+                                <div className="text-[10px] sm:text-xs text-positive">+12.4%</div>
+                            </div>
+                            <div className="p-3 sm:p-4 rounded-lg bg-white/5 border border-white/10">
+                                <div className="text-[10px] sm:text-xs text-text-muted uppercase tracking-wider mb-1">Today's P&L</div>
+                                <div className="text-lg sm:text-xl font-display text-positive">+$847</div>
+                                <div className="text-[10px] sm:text-xs text-positive">+1.47%</div>
+                            </div>
+                            <div className="p-3 sm:p-4 rounded-lg bg-white/5 border border-white/10">
+                                <div className="text-[10px] sm:text-xs text-text-muted uppercase tracking-wider mb-1">Holdings</div>
+                                <div className="text-lg sm:text-xl font-display text-white">12</div>
+                                <div className="text-[10px] sm:text-xs text-text-muted">Active</div>
+                            </div>
+                        </div>
+
+                        {/* Demo Chart */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                            <div className="lg:col-span-2 h-[200px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={demoChartData}>
+                                        <defs>
+                                            <linearGradient id="demoGradient" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.4}/>
+                                                <stop offset="95%" stopColor="#D4AF37" stopOpacity={0.05}/>
+                                            </linearGradient>
+                                        </defs>
+                                        <Area type="monotone" dataKey="value" stroke="#D4AF37" strokeWidth={2} fill="url(#demoGradient)" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                            <div className="lg:col-span-1">
+                                <div className="h-[140px] relative">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie data={demoAllocation} innerRadius="55%" outerRadius="85%" dataKey="value" stroke="none">
+                                                {demoAllocation.map((entry, index) => (
+                                                    <Cell key={index} fill={entry.color} />
+                                                ))}
+                                            </Pie>
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                                <div className="space-y-1 mt-2">
+                                    {demoAllocation.slice(0, 4).map((item, i) => (
+                                        <div key={i} className="flex items-center justify-between text-[10px]">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                                                <span className="text-text-secondary">{item.name}</span>
+                                            </div>
+                                            <span className="text-text-muted">{item.value}%</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <h3 className="text-xl font-display text-white mb-2">Track Your Investments</h3>
-                    <p className="text-sm text-text-secondary max-w-sm mb-6">
-                        Sign in to manage your holdings, view performance analytics, and get personalized insights.
-                    </p>
-                    <button 
-                        onClick={() => window.location.href = '/?login=true'}
-                        className="px-6 py-2 rounded bg-accent-primary text-white text-sm font-bold uppercase tracking-wider hover:bg-accent-primary/90 transition-colors"
-                    >
-                        Sign In / Register
-                    </button>
+
+                    {/* Overlay CTA */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-bg-primary/60 backdrop-blur-sm rounded-lg">
+                        <div className="text-center p-6 max-w-md">
+                            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-accent-gold/20 flex items-center justify-center mx-auto mb-4 border border-accent-gold/30">
+                                <svg className="w-7 h-7 sm:w-8 sm:h-8 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg sm:text-xl font-display text-white mb-2">Track Your Investments</h3>
+                            <p className="text-xs sm:text-sm text-text-secondary mb-6 leading-relaxed">
+                                Real-time portfolio tracking, performance analytics, and AI-powered insights.
+                            </p>
+                            <button
+                                onClick={() => window.location.href = '/?login=true'}
+                                className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg bg-accent-gold text-bg-primary text-xs sm:text-sm font-bold uppercase tracking-wider hover:bg-accent-gold/90 transition-all shadow-lg shadow-accent-gold/20"
+                            >
+                                Get Started Free
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </WidgetCard>
         );
@@ -476,15 +634,15 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                             </svg>
                         </div>
                         <h4 className="text-sm sm:text-base font-display font-bold text-white mb-2">
-                            Comienza tu Portfolio
+                            Start Your Portfolio
                         </h4>
                         <p className="text-[10px] sm:text-xs text-text-muted max-w-[280px] mx-auto mb-4">
-                            Agrega tus posiciones para ver análisis de rendimiento, asignación de activos y simulaciones de crisis.
+                            Add your positions to see performance analytics, asset allocation, and crisis simulations.
                         </p>
                         <div className="flex flex-wrap justify-center gap-2 text-[9px] sm:text-[10px] text-text-muted">
-                            <span className="px-2 py-1 rounded bg-white/5">Rendimiento histórico</span>
-                            <span className="px-2 py-1 rounded bg-white/5">Diversificación</span>
-                            <span className="px-2 py-1 rounded bg-white/5">Análisis de riesgo</span>
+                            <span className="px-2 py-1 rounded bg-white/5">Historical Returns</span>
+                            <span className="px-2 py-1 rounded bg-white/5">Diversification</span>
+                            <span className="px-2 py-1 rounded bg-white/5">Risk Analysis</span>
                         </div>
                     </div>
                 )}

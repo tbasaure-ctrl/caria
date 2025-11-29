@@ -9,17 +9,18 @@ pyarrow
 sentence-transformers>=3.0.0
 google-generativeai>=0.8.0
 requests>=2.31.0
- openbb>=4.0.0
- torch==2.2.2
- numpy==1.26.4
+openbb>=4.0.0
+torch==2.2.2
+numpy==1.26.4
 
 # Social media APIs
 praw>=7.7.0
 beautifulsoup4>=4.12.0
 
+# NLTK for sentiment analysis
+nltk>=3.8.1
 
-
-# WebSocket support (per audit document - 3-part solution)
+# WebSocket support
 python-socketio>=5.10.0
 python-socketio[asyncio]>=5.10.0
 
@@ -34,78 +35,23 @@ passlib[bcrypt]>=1.7.4
 bcrypt>=4.0.1
 PyJWT>=2.9.0
 
-# Caria dependencies (from caria_data)
-# Note: These should be installed from caria_data/requirements.txt
-# This file is for API-specific dependencies
-
 # Optional: Monitoring
 prometheus-client>=0.19.0
 
 # Optional: Structured logging
 python-json-logger>=2.0.7
 
-# Portfolio Analytics (per audit document 3.2)
-quantstats>=0.0.62
-ipython>=8.0.0
-# FastAPI and server
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
-pydantic>=2.0.0
-pydantic-settings>=2.0.0
-email-validator>=2.0.0
-matplotlib>=3.8.0
-pyarrow
-sentence-transformers>=3.0.0
-google-generativeai>=0.8.0
-requests>=2.31.0
- openbb>=4.0.0
- torch==2.2.2
- numpy==1.26.4
-
-# Social media APIs
-praw>=7.7.0
-beautifulsoup4>=4.12.0
-
-
-
-# WebSocket support (per audit document - 3-part solution)
-python-socketio>=5.10.0
-python-socketio[asyncio]>=5.10.0
-
-# Database
-psycopg2-binary>=2.9.9
-pgvector>=0.4.1
-sqlalchemy>=2.0.0
-
-# Authentication
-python-jose[cryptography]>=3.3.0
-passlib[bcrypt]>=1.7.4
-bcrypt>=4.0.1
-PyJWT>=2.9.0
-
-# Caria dependencies (from caria_data)
-# Note: These should be installed from caria_data/requirements.txt
-# This file is for API-specific dependencies
-
-# Optional: Monitoring
-prometheus-client>=0.19.0
-
-# Optional: Structured logging
-python-json-logger>=2.0.7
-
-# Portfolio Analytics (per audit document 3.2)
+# Portfolio Analytics
 quantstats>=0.0.62
 ipython>=8.0.0
 yfinance>=0.2.0
 
-# Monte Carlo Visualization (per audit document 3.1)
+# Monte Carlo Visualization
 plotly>=5.0.0
 
-# Model Validation (per audit document 2.1)
-scipraw==7.7.1
-pytrends==4.9.2
-scikit-learn==1.3.2
-scipy==1.11.4
-hmmlearn==0.3.2
-joblib==1.3.2
-nltk==3.8.10
+# Model Validation
+scipy>=1.10.0
+scikit-learn>=1.3.0
+pytrends>=4.9.0
+hmmlearn>=0.3.0
+joblib>=1.3.0

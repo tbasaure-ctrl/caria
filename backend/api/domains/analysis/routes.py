@@ -12,6 +12,7 @@ from api.routes.factors import router as factors_router
 from api.routes.valuation import router as valuation_router
 from api.routes.model_validation import router as validation_router
 from api.routes.ux_tracking import router as ux_tracking_router
+from api.routes.risk_reward import router as risk_reward_router
 
 # Combine into analysis domain router
 router = APIRouter()
@@ -21,4 +22,5 @@ router.include_router(factors_router)
 router.include_router(valuation_router)
 router.include_router(validation_router)
 router.include_router(ux_tracking_router)  # UX tracking and analytics
+router.include_router(risk_reward_router)  # Risk-Reward Engine
 

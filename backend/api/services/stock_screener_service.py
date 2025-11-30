@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 import logging
 
+from caria.services.c_score_engine import CScoreEngine
+
 LOGGER = logging.getLogger("caria.api.services.stock_screener")
 
 class StockScreenerService:
@@ -15,6 +17,8 @@ class StockScreenerService:
         self.api_key = os.getenv('FMP_API_KEY', '').strip()
         self.base_url = 'https://financialmodelingprep.com/api/v3'
         self.db_url = os.getenv('DATABASE_URL') or os.getenv('NEON_DB_URL')
+        # Initialize new C-Score engine
+        self.c_score_engine = CScoreEngine(fmp_key=self.api_key)
 
     def _get_db_connection(self):
         if not self.db_url:
@@ -189,24 +193,49 @@ class StockScreenerService:
         
         for ticker in candidates:
             try:
-                q = self.calculate_quality_score(ticker)
-                v = self.calculate_valuation_score(ticker)
-                m = self.calculate_momentum_score(ticker)
-                c = self.calculate_catalyst_score(ticker)
-                r = self.calculate_risk_penalty(ticker)
+                # Use new C-Score engine
+                c_score_result = self.c_score_engine.calculate_c_score(ticker)
                 
+                # Get profile info
                 profile = self.get_profile(ticker)
                 name = profile.get('companyName', ticker)
                 sector = profile.get('sector', 'Unknown')
                 
-                total = (q * 40) + (v * 25) + (m * 20) + (c * 15) + r
+                # Extract component scores
+                final_score = c_score_result.get('final_c_score', 0)
+                c_quality = c_score_result.get('c_quality', 0)
+                c_delta = c_score_result.get('c_delta', 0)
+                mispricing = c_score_result.get('mispricing_adjust', 1.0)
+                
+                # Legacy fields for backward compatibility
+                # Map new components to old structure
+                quality = c_quality
+                valuation = c_delta * 0.4  # Delta heavily influences "value"
+                momentum = c_delta * 0.6   # Delta also represents momentum
+                catalyst = mispricing * 50  # Mispricing as catalyst
+                risk = 0  # Handled internally in C-Score now
+                
                 results.append({
                     "symbol": ticker,
                     "name": name,
                     "sector": sector,
-                    "quality": q, "valuation": v, "momentum": m, "catalyst": c, "risk": r,
-                    "c_score": total
+                    # New C-Score components
+                    "c_score": final_score,
+                    "c_quality": c_quality,
+                    "c_delta": c_delta,
+                    "mispricing_adjust": mispricing,
+                    # Legacy fields for backward compatibility
+                    "quality": quality,
+                    "valuation": valuation, 
+                    "momentum": momentum,
+                    "catalyst": catalyst,
+                    "risk": risk,
+                    # Breakdown details
+                    "breakdown": c_score_result.get('breakdown', {})
                 })
+                
+                LOGGER.info(f"Scored {ticker}: C-Score={final_score:.1f} (Q={c_quality:.1f}, D={c_delta:.1f}, M={mispricing:.2f})")
+                
             except Exception as e:
                 LOGGER.error(f"Error screening {ticker}: {e}")
                 continue

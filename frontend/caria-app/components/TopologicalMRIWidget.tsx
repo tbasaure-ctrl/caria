@@ -153,82 +153,35 @@ export default function TopologicalMRIWidget() {
             // For simple visual effect, we can just mutate the local array or use a ref for positions.
             // Let's use the ref approach for performance if we were doing complex physics, 
             // but for this simple effect, let's just use the visual render.
-            // To avoid React re-renders, we won't setNodes here, just draw. 
-            // But we need to update positions. 
-            // Let's just animate the "Alien" pulse for now to be safe and simple.
+            className = "w-full h-[400px] object-cover relative z-0"
+                />
 
-            animationFrameId = requestAnimationFrame(render);
-        };
+                {/* Alert Box - Bottom Right */ }
+            {
+                topAlien && (
+                    <div className="absolute bottom-8 right-8 z-10 w-64 border border-red-500/50 bg-black/80 backdrop-blur-md p-4 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+                        <div className="text-[10px] text-red-500 mb-1 tracking-widest">/// STRUCTURAL BREACH DETECTED</div>
+                        <div className="text-3xl font-bold text-white mb-2">{topAlien.ticker}</div>
 
-        render();
-        return () => cancelAnimationFrame(animationFrameId);
-    }, [nodes, scan]); // Re-bind when nodes/scan change
-
-    const fetchScan = async () => {
-        try {
-            const response = await fetch('/api/topology/scan');
-            const data = await response.json();
-            setScan(data);
-        } catch (error) {
-            console.error('Error fetching topology scan:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (loading) return <div className="h-64 flex items-center justify-center text-cyan-500 font-mono">INITIALIZING CORTEX...</div>;
-
-    const topAlien = scan?.aliens[0];
-
-    return (
-        <div className="w-full bg-black border border-gray-800 rounded-xl overflow-hidden relative font-mono">
-            {/* Background Grid/Space */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-black to-black opacity-80" />
-
-            {/* HUD Overlay - Top Left */}
-            <div className="absolute top-4 left-4 z-10 border border-white/20 p-2 bg-black/50 backdrop-blur-sm">
-                <div className="text-xs text-gray-400">Caria Cortex_v1</div>
-                <div className="text-xs text-green-500 flex items-center gap-2">
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    LIVE FEED: FMP_PIPE_ACTIVE
-                </div>
-            </div>
-
-            {/* Canvas Layer */}
-            <canvas
-                ref={canvasRef}
-                width={800}
-                height={400}
-                className="w-full h-[400px] object-cover relative z-0"
-            />
-
-            {/* Alert Box - Bottom Right */}
-            {topAlien && (
-                <div className="absolute bottom-8 right-8 z-10 w-64 border border-red-500/50 bg-black/80 backdrop-blur-md p-4 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
-                    <div className="text-[10px] text-red-500 mb-1 tracking-widest">/// STRUCTURAL BREACH DETECTED</div>
-                    <div className="text-3xl font-bold text-white mb-2">{topAlien.ticker}</div>
-
-                    <div className="space-y-1 text-xs">
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">ISOLATION SCORE:</span>
-                            <span className="text-red-400 font-bold">{topAlien.isolation_score.toFixed(4)}</span>
+                        <div className="space-y-1 text-xs">
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">ISOLATION SCORE:</span>
+                                <span className="text-red-400 font-bold">{topAlien.isolation_score.toFixed(4)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">SECTOR TETHER:</span>
+                                <span className="text-white font-bold">CRITICAL</span>
+                            </div>
                         </div>
-                        <div className="flex justify-between">
-                            <span className="text-gray-500">SECTOR TETHER:</span>
-                            <span className="text-white font-bold">CRITICAL</span>
-                        </div>
+
+                        {/* Decorative Corner */}
+                        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-red-500" />
                     </div>
+                )
+            }
 
-                    {/* Decorative Corner */}
-                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-red-500" />
-                </div>
-            )}
-
-            {/* Scanlines */}
+            {/* Scanlines */ }
             <div className="absolute inset-0 pointer-events-none bg-[url('https://media.giphy.com/media/xT9Igk31elskX5qetq/giphy.gif')] opacity-[0.02] mix-blend-overlay" />
-        </div>
+        </div >
     );
 }

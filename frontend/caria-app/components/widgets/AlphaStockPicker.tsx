@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
+import { Info } from 'lucide-react';
 
 interface FundamentalPick {
     symbol: string;
@@ -25,13 +26,13 @@ const ScoreBadge: React.FC<{ label: string; value: number; max?: number }> = ({ 
     // But service returns raw weighted components in some cases? 
     // Wait, service returns "normalized" 0-100 relative scores for Q/V/M/C.
     // Let's display them directly.
-    
+
     const getColor = (v: number) => {
         if (v >= 70) return 'var(--color-positive)';
         if (v >= 40) return 'var(--color-warning)';
         return 'var(--color-text-muted)';
     };
-    
+
     return (
         <div className="px-2 py-1.5 rounded bg-bg-surface/50 border border-white/5 text-center flex-1">
             <div className="text-[9px] font-bold tracking-wider uppercase text-text-muted mb-1">{label}</div>
@@ -62,12 +63,25 @@ const AlphaCard: React.FC<{ pick: FundamentalPick; rank: number }> = ({ pick, ra
                         {pick.sector || 'Unknown Sector'}
                     </div>
                 </div>
-                
+
                 <div className="text-right">
                     <div className="text-2xl font-mono font-bold text-accent-primary">
                         {Math.round(pick.c_score)}
                     </div>
-                    <div className="text-[9px] text-text-muted uppercase tracking-widest">C-Score</div>
+                    <div className="text-[9px] text-text-muted uppercase tracking-widest flex items-center justify-end gap-1 group/info relative">
+                        C-Score
+                        <Info className="w-3 h-3 text-text-muted hover:text-accent-cyan cursor-help" />
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-black/90 border border-white/10 rounded text-[10px] text-text-secondary opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-50 pointer-events-none">
+                            <div className="font-bold text-white mb-1">Caria Score Methodology</div>
+                            <ul className="space-y-1 list-disc list-inside">
+                                <li><span className="text-accent-cyan">Quality:</span> ROIC, Margins, Stability</li>
+                                <li><span className="text-accent-cyan">Valuation:</span> FCF Yield, P/E vs Peers</li>
+                                <li><span className="text-accent-cyan">Momentum:</span> RSI, Rel Strength</li>
+                                <li><span className="text-accent-cyan">Catalyst:</span> Earnings, News Sentiment</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -78,7 +92,7 @@ const AlphaCard: React.FC<{ pick: FundamentalPick; rank: number }> = ({ pick, ra
                 <ScoreBadge label="MOM" value={pick.momentum_score} />
                 <ScoreBadge label="CAT" value={pick.catalyst_score} />
             </div>
-            
+
             {/* Risk Warning if penalty exists */}
             {pick.risk_penalty < 0 && (
                 <div className="mt-3 text-[10px] text-negative flex items-center gap-1">
@@ -104,11 +118,11 @@ export const AlphaStockPicker: React.FC = () => {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/screener/run-fundamental`, {
                 method: 'POST'
             });
-            
+
             if (!response.ok) {
                 throw new Error('Screener run failed');
             }
-            
+
             const result = await response.json();
             setData(result);
         } catch (err: any) {
@@ -120,8 +134,8 @@ export const AlphaStockPicker: React.FC = () => {
     };
 
     return (
-        <WidgetCard 
-            title="Alpha Stock Picker" 
+        <WidgetCard
+            title="Alpha Stock Picker"
             tooltip="Algorithmic screener ranking stocks by Quality, Value, Momentum, and Catalysts (C-Score)."
             action={{ label: 'Run Screen', onClick: runScreener }}
         >
@@ -149,7 +163,7 @@ export const AlphaStockPicker: React.FC = () => {
                 ) : (
                     <div className="py-12 text-center border border-dashed border-white/5 rounded-lg">
                         <p className="text-sm text-text-muted mb-2">Discover high-potential stocks</p>
-                        <button 
+                        <button
                             onClick={runScreener}
                             className="px-4 py-2 rounded bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 text-xs font-bold uppercase tracking-wider transition-colors"
                         >

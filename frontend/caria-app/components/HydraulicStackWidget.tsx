@@ -67,63 +67,63 @@ export default function HydraulicStackWidget() {
 
     if (!status) {
         return (
-            <div className="w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 border border-purple-500/20 rounded-xl p-6">
-                <div className="text-purple-300/50 text-center">Loading Hydraulic Stack...</div>
+            <div className="w-full bg-bg-tertiary border border-white/5 rounded-xl p-6">
+                <div className="text-text-muted text-center text-xs animate-pulse">Initializing Hydraulic Stack...</div>
             </div>
         );
     }
 
     const getTextColor = (score: number) => {
-        if (score >= 60) return 'text-green-400';
-        if (score <= 40) return 'text-red-400';
-        return 'text-yellow-400';
+        if (score >= 60) return 'text-positive';
+        if (score <= 40) return 'text-negative';
+        return 'text-warning';
+    };
+
+    const getBgColor = (score: number) => {
+        if (score >= 60) return 'bg-positive/10 border-positive/20';
+        if (score <= 40) return 'bg-negative/10 border-negative/20';
+        return 'bg-warning/10 border-warning/20';
     };
 
     return (
-        <div className="w-full bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 border border-purple-500/30 shadow-2xl shadow-purple-500/20 relative overflow-hidden rounded-xl">
-            {/* Animated background effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-transparent to-cyan-500/5 animate-pulse" />
-
-            {/* Mystic glow orb */}
-            <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-radial from-purple-500/20 to-transparent blur-3xl transition-opacity duration-1000 ${pulse === 0 ? 'opacity-40' : pulse === 1 ? 'opacity-60' : 'opacity-30'}`} />
-
+        <div className="w-full bg-[#0B1221] border border-white/5 shadow-lg relative overflow-hidden rounded-xl h-full flex flex-col">
             {/* Header */}
-            <div className="relative z-10 p-4 pb-3 border-b border-purple-500/20">
-                <div className="flex items-center gap-2 text-purple-100 font-bold">
-                    <Activity className="h-5 w-5 text-purple-400 animate-pulse" />
-                    <span className="bg-gradient-to-r from-purple-200 via-cyan-200 to-purple-200 bg-clip-text text-transparent">
+            <div className="relative z-10 p-4 pb-3 border-b border-white/5 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-accent-cyan animate-pulse" />
+                    <span className="font-display font-bold text-white tracking-wide text-sm">
                         AI-Hydraulic Stack
                     </span>
                     <div className="group relative ml-1">
-                        <Info className="h-4 w-4 text-purple-400/60 hover:text-purple-300 cursor-help" />
-                        <div className="absolute left-0 top-6 w-72 bg-slate-900 border border-purple-500/50 rounded-lg p-3 text-xs text-gray-300 font-normal opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-50">
-                            <p className="font-semibold text-purple-300 mb-1">AI-Hydraulic Stack</p>
-                            <p>Monitors Fed liquidity (Assets - TGA - RRP) and yield curve to determine market regime. Score &gt;60 = Expansion (growth mode), &lt;40 = Contraction (defensive mode). Guides strategy allocation in real-time.</p>
+                        <Info className="h-3 w-3 text-text-muted hover:text-accent-cyan cursor-help" />
+                        <div className="absolute left-0 top-6 w-64 bg-bg-surface border border-white/10 rounded-lg p-3 text-[10px] text-text-secondary opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-50 shadow-xl">
+                            <p className="font-bold text-white mb-1">Liquidity Engine</p>
+                            <p>Monitors Fed liquidity (Assets - TGA - RRP) to determine market regime. Score &gt;60 = Expansion, &lt;40 = Contraction.</p>
                         </div>
                     </div>
-                    <span className="text-xs text-purple-400/60 font-normal ml-auto">LIVE</span>
                 </div>
+                <span className="text-[10px] font-mono text-accent-cyan/80 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-cyan animate-pulse"></span>
+                    LIVE
+                </span>
             </div>
 
             {/* Content */}
-            <div className="relative z-10 p-4 space-y-3">
+            <div className="relative z-10 p-4 space-y-3 flex-1">
                 {/* Core Score Display */}
-                <div className={`relative p-4 rounded-lg bg-gradient-to-r ${status.liquidity.score >= 60 ? 'from-green-500/20 via-emerald-500/30 to-green-500/20' :
-                    status.liquidity.score <= 40 ? 'from-red-500/20 via-rose-500/30 to-red-500/20' :
-                        'from-yellow-500/20 via-amber-500/30 to-yellow-500/20'
-                    } border border-purple-400/20 backdrop-blur-sm`}>
+                <div className={`relative p-4 rounded-lg border backdrop-blur-sm transition-colors duration-500 ${getBgColor(status.liquidity.score)}`}>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Droplets className={`h-8 w-8 ${getTextColor(status.liquidity.score)}`} />
                             <div>
-                                <div className={`text-2xl font-bold ${getTextColor(status.liquidity.score)}`}>
+                                <div className={`text-3xl font-mono font-bold ${getTextColor(status.liquidity.score)}`}>
                                     {status.liquidity.score}
-                                    <span className="text-sm ml-1 opacity-60">/100</span>
+                                    <span className="text-xs ml-1 opacity-60 text-text-muted">/100</span>
                                 </div>
-                                <div className="text-xs text-purple-300/80">Hydraulic Core</div>
+                                <div className="text-[10px] text-text-muted uppercase tracking-wider">Liquidity Score</div>
                             </div>
                         </div>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold ${getTextColor(status.liquidity.score)} bg-black/30 border border-current`}>
+                        <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${getTextColor(status.liquidity.score)} bg-black/20 border border-white/5`}>
                             {status.liquidity.state}
                         </span>
                     </div>
@@ -132,53 +132,50 @@ export default function HydraulicStackWidget() {
                 {/* 4 Layers Grid */}
                 <div className="grid grid-cols-2 gap-2">
                     {/* Layer 2: Scout (LLM) */}
-                    <div className="p-3 rounded-lg bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20 backdrop-blur-sm hover:border-cyan-400/40 transition-all">
+                    <div className="p-3 rounded-lg bg-bg-tertiary border border-white/5 hover:border-accent-cyan/30 transition-all">
                         <div className="flex items-center gap-2 mb-1">
-                            <Eye className="h-4 w-4 text-cyan-400" />
-                            <span className="text-xs font-semibold text-cyan-300">Scout</span>
+                            <Eye className="h-3 w-3 text-accent-cyan" />
+                            <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Scout</span>
                         </div>
-                        <div className="text-xs text-cyan-100/80">{status.llm.mode}</div>
-                        <div className={`text-[10px] mt-1 ${status.llm.operational ? 'text-green-400' : 'text-red-400'}`}>
+                        <div className="text-xs font-bold text-white">{status.llm.mode}</div>
+                        <div className={`text-[9px] mt-1 ${status.llm.operational ? 'text-positive' : 'text-negative'}`}>
                             ● {status.llm.operational ? 'Active' : 'Offline'}
                         </div>
                     </div>
 
                     {/* Layer 3: Guard (Vol) */}
-                    <div className="p-3 rounded-lg bg-gradient-to-br from-amber-500/10 to-transparent border border-amber-500/20 backdrop-blur-sm hover:border-amber-400/40 transition-all">
+                    <div className="p-3 rounded-lg bg-bg-tertiary border border-white/5 hover:border-warning/30 transition-all">
                         <div className="flex items-center gap-2 mb-1">
-                            <Shield className="h-4 w-4 text-amber-400" />
-                            <span className="text-xs font-semibold text-amber-300">Guard</span>
+                            <Shield className="h-3 w-3 text-warning" />
+                            <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Guard</span>
                         </div>
-                        <div className="text-xs text-amber-100/80">{status.volatility.signal}</div>
-                        <div className="text-[10px] text-amber-300/70 mt-1">
+                        <div className="text-xs font-bold text-white">{status.volatility.signal}</div>
+                        <div className="text-[9px] text-text-muted mt-1 font-mono">
                             {status.volatility.ratio.toFixed(2)}x vol
                         </div>
                     </div>
 
                     {/* Layer 4: Sniper (Execution) */}
-                    <div className="p-3 rounded-lg bg-gradient-to-br from-rose-500/10 to-transparent border border-rose-500/20 backdrop-blur-sm hover:border-rose-400/40 transition-all col-span-2">
+                    <div className="p-3 rounded-lg bg-bg-tertiary border border-white/5 hover:border-accent-primary/30 transition-all col-span-2">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Crosshair className="h-4 w-4 text-rose-400" />
-                                <span className="text-xs font-semibold text-rose-300">Sniper</span>
+                                <Crosshair className="h-3 w-3 text-accent-primary" />
+                                <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Sniper Execution</span>
                             </div>
-                            <div className="text-right">
-                                <div className="text-xs text-rose-100/80">{status.execution.position} Position</div>
-                                <div className={`text-[10px] mt-0.5 ${status.execution.risk === 'LOW' ? 'text-green-400' :
-                                    status.execution.risk === 'HIGH' ? 'text-red-400' : 'text-yellow-400'
-                                    }`}>
-                                    {status.execution.risk} Risk
+                            <div className="text-right flex items-center gap-3">
+                                <div>
+                                    <div className="text-xs font-bold text-white">{status.execution.position}</div>
+                                    <div className="text-[9px] text-text-muted">Position</div>
+                                </div>
+                                <div className={`text-right pl-3 border-l border-white/10`}>
+                                    <div className={`text-xs font-bold ${status.execution.risk === 'LOW' ? 'text-positive' : status.execution.risk === 'HIGH' ? 'text-negative' : 'text-warning'}`}>
+                                        {status.execution.risk}
+                                    </div>
+                                    <div className="text-[9px] text-text-muted">Risk</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                {/* System Philosophy tagline */}
-                <div className="text-center pt-2 border-t border-purple-500/20">
-                    <p className="text-[10px] text-purple-300/50 italic font-light">
-                        "Intelligence Respecting Liquidity"
-                    </p>
                 </div>
             </div>
         </div>

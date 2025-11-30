@@ -29,184 +29,178 @@ interface IndustryReport {
 // DATA: Content Translated to Professional English
 const REPORT_DATA: IndustryReport[] = [
     {
-        id: 'staples-nov-2025',
+        id: 'staples-dec-2025',
         title: 'Consumer Staples',
-        subtitle: 'INDUSTRY OF THE MONTH: Tactical Value & Safety',
+        subtitle: 'INDUSTRY OF THE MONTH: The Strategic Rotation to Resilience',
         icon: '🛒',
         readTime: '8 min read',
         tags: ['Industry of the Month', 'Defensive', 'High Conviction'],
         isFeatured: true,
         content: {
-            overview: `Designated as the focal industry for November 2025. Historically, this sector acts as a "bond proxy" with dividend growth upside. Amid economic uncertainty, investors are rotating into the safety of inelastic demand.`,
-            fullText: `1. Industry of the Month: Consumer Staples
+            overview: `Designated as the focal industry for December 2025. Amidst a "Great Rotation" out of overextended tech momentum, capital is seeking the safety of inelastic demand. Historically the best-performing sector during volatility.`,
+            fullText: `1. Industry of the Month: Consumer Staples - The Strategic Rotation to Resilience
 
-1.1 Investment Thesis & Selection Rationale
-The designation of Consumer Staples as the focal industry for November 2025 responds to a confluence of technical, fundamental, and seasonal factors. Often misunderstood as a boring haven, the sector is undergoing an internal transformation and valuation dispersion that offers significant alpha opportunities.
+1.1 Executive Summary: Navigating the Anti-Momentum Pivot
+As the global financial markets pivot into the final trading month of 2025, a profound regime change is underway. The aggressive "growth-at-any-cost" momentum is yielding to a disciplined, valuation-sensitive environment. Institutional capital is seeking refuge in sectors offering earnings visibility and balance sheet fortitude.
 
-1.1.1 The Defensive Rotation
-Through 2024, capital flowed disproportionately into technology. However, as valuations stretched, a classic rotation towards defense has been observed.
-The mechanism is twofold: First, compressing Treasury yields make staples' dividends comparatively more attractive. Second, amidst economic uncertainty, investors seek the safety of inelastic demand—people buy toothpaste and food regardless of GDP.
+The December 2025 Industry Report identifies a "Great Rotation" out of overextended technology momentum plays and into the bedrock of the economy: Consumer Staples, Healthcare & Pharma, Medical Devices, and Insurance & Managed Care.
 
-1.1.2 Historical Seasonality: The "November Effect"
-Quantitative analysis reveals November is statistically an exceptionally strong month for Consumer Staples (XLP).
-November shows a robust continuation of Q4 momentum with a 75% historical win rate over the last 25 years, often attributed to fund manager positioning before fiscal year-end.
+1.2 The Overarching Theme: "Rational Exuberance"
+While indices remain near highs, internal breadth shows bifurcation. Investors grapple with a divided Fed, geopolitical friction ("Liberation Day" tariffs), and a resilient but value-conscious consumer. In this climate, the allure of speculative growth diminishes in favor of industries providing essential services—sectors where demand is inelastic.
 
-1.2 Deep Fundamental Analysis
-The sector is not monolithic. A critical divergence exists between retailers and packaged goods manufacturers.
+1.3 Why Consumer Staples?
+Selected as the "Industry of the Month" for its unmatched historical resilience.
+- **Recession Performance:** In the last seven recessions, Consumer Staples was the #1 performing sector (+1% avg return vs double-digit declines elsewhere).
+- **Long-Term Compounder:** Over 20 years, staples often outperform high-growth tech due to reinvested dividends and lower volatility.
 
-1.2.1 Valuation Bifurcation: Retailers vs. Manufacturers
-Overvalued (Retailers): Costco (COST) and Walmart (WMT) trade at tech-like multiples (>40x P/E), discounting a perfect execution scenario that is hard to justify.
-Undervalued (Packaged Food): Conversely, excluding retailers, the sector trades at an attractive discount (~11% below fair value). Solid firms like Kraft Heinz (KHC) and General Mills (GIS) have been excessively penalized.
+2. Trends Defining the Sector in December 2025
 
-1.2.2 The GLP-1 Impact: Reality vs. Hysteria
-The fear that weight-loss drugs would decimate snack volumes has nuanced. Majors like Nestlé and General Mills are pivoting, launching high-protein products designed for GLP-1 users, stabilizing volumes.
+2.1 The Rise of the "Value-Seeking" Consumer
+High interest rates and inflation have eroded excess savings. Shoppers are focusing on value and trimming seasonal extras. This favors giants with scale (Costco, Walmart) and private label manufacturers. The "trade-down" effect accelerates market share gains for efficient operators.
 
-1.2.3 Margin Compression & Private Label War
-Inflation has led to trade-downs. Companies with strong pricing power have maintained gross margins through operational efficiencies, beating EPS estimates despite modest top-line growth.`,
+2.2 Cost Input Stabilization vs. Tariff Threats
+Input costs (commodities, energy) have stabilized, allowing margin expansion as 2024 price hikes stick. However, new tariffs could inflate packaging costs. Companies with domestic sourcing networks trade at a premium due to "supply chain security."
+
+2.3 The "Mobile-First" Grocery Shift
+Digital transformation has permeated the sector. Mobile devices will account for >50% of online holiday spending. Retailers optimizing apps for reordering and loyalty are seeing higher retention.
+
+3. Outlook for 2026: Stability in a Volatile World
+- **Earnings Visibility:** Tied to population growth, not ad spending cycles.
+- **Dividend Yield:** Attractive 3-4% yields as Treasury yields cap out.
+- **M&A Potential:** Consolidation in "Better-for-You" food space.`,
             trends: [
                 {
-                    title: "The November Effect",
-                    description: "Statistically, November is exceptionally strong for the sector (75% historical win rate)."
+                    title: "Value-Seeking Consumer",
+                    description: "Accelerated trade-down to private labels and value retailers due to eroded savings."
                 },
                 {
-                    title: "GLP-1 Adaptation",
-                    description: "Launch of high-protein products to accompany Ozempic/Wegovy users."
+                    title: "Domestic Supply Chain",
+                    description: "Premium on companies insulated from 'Liberation Day' tariffs and import costs."
                 }
             ],
             picks: [
-                { ticker: 'KHC', name: 'Kraft Heinz', type: 'Value', thesis: 'Extreme undervaluation. Market ignoring successful debt restructuring and margin improvement.' },
-                { ticker: 'GIS', name: 'General Mills', type: 'Defensive', thesis: 'Classic defensive player. Superior adaptation to health trends (Blue Buffalo).' },
-                { ticker: 'SFM', name: 'Sprouts Farmers Market', type: 'Growth', thesis: 'Beneficiary of healthy eating/GLP-1 boom. Margin expansion with fresh produce.' },
-                { ticker: 'OLLI', name: "Ollie's Bargain Outlet", type: 'Growth', thesis: '"Treasure hunt" model ideal for price-sensitive consumers. Inventory acquisition upside.' },
-                { ticker: 'EL', name: 'Estée Lauder', type: 'Turnaround', thesis: 'Depressed valuation due to Asia weakness. Potential violent rebound if inventory stabilizes.' }
+                { ticker: 'CALM', name: 'Cal-Maine Foods', type: 'Value', thesis: 'Pure play on protein inelasticity. Small-cap value with pristine balance sheet. Holiday baking demand catalyst.' },
+                { ticker: 'COST', name: 'Costco Wholesale', type: 'Defensive', thesis: 'Primary conduit for staples consumption. Wins in a value-seeking environment. Better risk-adjusted return than Nvidia.' },
+                { ticker: 'WMT', name: 'Walmart', type: 'Defensive', thesis: 'Scale winner. Assigning higher quality premium to earnings safety than AI growth.' },
+                { ticker: 'THS', name: 'TreeHouse Foods', type: 'Growth', thesis: 'Private label manufacturer leader. Capitalizing on the trade-down phenomenon without brand marketing overhead.' }
             ]
         }
     },
     {
-        id: 'macro-nov-2025',
+        id: 'macro-dec-2025',
         title: 'Global Macro Strategy',
-        subtitle: 'Economic Outlook & Asset Allocation',
+        subtitle: 'Rational Exuberance & Anti-Momentum',
         icon: '🌍',
-        readTime: '5 min read',
+        readTime: '6 min read',
         tags: ['Macro', 'Strategy'],
         content: {
-            overview: `Markets are entering a tactical rotation phase. With the Fed adjusting rates to 3.75%-4.00%, capital is moving from "growth at any price" toward quality, balance sheet strength, and cash flow predictability.`,
-            fullText: `Global Investment Strategy Report - November 2025
+            overview: `Theme: "Rational Exuberance". Markets are bifurcated. Fed is divided. Strategy: "Anti-Momentum" posture for 2026, favoring value and domestic resilience against tariffs.`,
+            fullText: `Global Investment Strategy Report - December 2025
 
-The penultimate month of 2025 unfolds in an economic context defying simple "soft landing" or "recession" labels. Financial markets, after a year marked by tech euphoria, have entered a distinctive tactical rotation phase. As the Federal Reserve adjusts rates to the 3.75%-4.00% range, investors are re-evaluating risk premiums.
+The overarching theme is "Rational Exuberance". While indices are high, internal breadth tells a story of bifurcation.
 
-The prevailing narrative has shifted from "growth at any price" to a renewed appreciation for balance sheet quality and cash flow predictability. This sentiment shift is a rational response to an environment where, while inflation has cooled, borrowing costs remain high, penalizing leverage.
+The December Catalyst: Federal Reserve & Seasonality
+The immediate catalyst is the FOMC meeting (Dec 9-10). A "hawkish pause" could trigger rapid repricing.
+- **Seasonality:** The "Santa Claus Rally" (last 5 days Dec + first 2 Jan) has a 79% win rate.
+- **Tax-Loss Harvesting:** Early December selling creates artificial price dislocations in small-cap value (Insurance/Biotech), setting the stage for the "January Effect".
 
-November 2025 emerges as a critical inflection point. Historically a barometer for year-end positioning, current data suggests a clear bifurcation: while cyclical sectors face headwinds from projected 2026 slowing, defensive sectors and healthcare innovation are capturing institutional capital.`,
+The "Anti-Momentum" Market Regime
+Strategists advise an "Anti-Momentum" posture. The "Magnificent Seven" trade at elevated multiples (22.5x), while the "S&P 493" and small-caps offer attractive discounts. We favor industries monetizing immediate human needs over future tech promises.
+
+Tariffs and the Real Economy
+"Liberation Day" tariffs suggest a shift to higher import costs. Domestic-focused insurers, healthcare, and staples are relative beneficiaries.`,
             trends: [
-                { title: "Flight to Quality", description: "Preference for predictable cash flows and solid balance sheets over speculative growth." },
-                { title: "Sector Bifurcation", description: "Defensive and Healthcare sectors capturing institutional flows vs. Cyclicals." }
+                { title: "Anti-Momentum", description: "Rotation from crowded AI trade to low P/E, high yield defensive sectors." },
+                { title: "January Effect Setup", description: "Harvesting tax losses in early Dec to buy small-cap value for Jan rebound." }
             ],
             picks: [],
-            conclusion: "Final Recommendation: Build a 'barbell' portfolio: a robust defensive core in staples and niche insurance, balanced with high-growth satellite bets in medical robotics and biotech with near-term catalysts."
+            conclusion: "Strategic Action: Harvest losses in early Dec. Aggressively accumulate small-cap value (Biotech/Insurance) in final weeks. Anchor with Staples to reduce beta."
         }
     },
     {
-        id: 'pharma-nov-2025',
+        id: 'pharma-dec-2025',
         title: 'Healthcare & Pharma',
-        subtitle: 'Innovation & M&A Boom',
+        subtitle: 'M&A Supercycle & Innovation',
         icon: '🧬',
-        readTime: '4 min read',
+        readTime: '5 min read',
         tags: ['Biotech', 'M&A'],
         content: {
-            overview: `Ecosystem under pressure from patent cliffs and regulation, catalyzing rampant innovation and M&A. Big Pharma is deploying balance sheets to buy growth (Oncology, Neuro, Obesity).`,
+            overview: `Sector is "Under Pressure" but poised for reversal. Catalyst: J.P. Morgan Healthcare Conference (Jan 2026). Big Pharma must deploy $1.5T dry powder to address Patent Cliff.`,
             fullText: `2. Healthcare & Pharma: Innovation Under Pressure
 
-2.1 Industry Status: An Ecosystem in Tension
-The sector presents a fascinating dichotomy. It faces significant regulatory headwinds and patent cliffs, yet this pressure is acting as a catalyst for rampant innovation and aggressive consolidation.
+2.1 Industry Status: Contrarian Setup
+Currently "Under Pressure" due to regulatory concerns, but revenue growth is re-accelerating. The primary driver is the lead-up to the J.P. Morgan Healthcare Conference (Jan 12-15, 2026).
 
-2.2 Dominant Trends
-2.2.1 The M&A Renaissance
-Facing loss of exclusivity on blockbusters, Big Pharma is deploying balance sheets to buy growth. 2025 has seen a wave of strategic deals (Merck, Sanofi, Novartis, Lilly), validating that valuable innovation is happening in the mid-cap biotech ecosystem.
-
-2.2.2 High-Value Therapeutic Areas
-Investment is concentrated where science is breaking barriers:
-- Oncology: ADCs and T-cell engagers.
-- Neuroscience: Renaissance in Alzheimer's and Schizophrenia treatments.
-- Obesity & Metabolism: Next-gen metabolic treatments (better tolerability/muscle preservation).
-
-2.3 Investment Opportunities
-Outlook for late 2025 is continued volatility but with asymmetric opportunities in biotech. Look for companies with binary catalysts (clinical data readouts).`,
+2.2 Key Trends
+- **The $200 Billion Patent Cliff:** By 2030, $200B/year revenue is at risk. Big Pharma has $1.5 Trillion in dry powder and MUST acquire growth. M&A is a mathematical necessity.
+- **Obesity & Metabolic:** Focus shifting to "Next-Gen" MASH and muscle-preserving therapies. Halo effect on metabolic pipelines.
+- **Neuroscience Renaissance:** New modalities for Alzheimer's and CNS disorders (e.g., Anavex) are opening up the "undruggable" brain.`,
             trends: [
-                { title: "M&A Renaissance", description: "Big Pharma deploying capital to acquire external innovation." },
-                { title: "Hot Areas", description: "Oncology, Neuroscience, and Metabolism (Next-gen Obesity)." }
+                { title: "Patent Cliff Panic", description: "$200B revenue at risk forcing aggressive M&A before 2030." },
+                { title: "JPM Week Run-up", description: "Speculation and deal announcements peak before the Jan 12 conference." }
             ],
             picks: [
-                { ticker: 'KALA', name: 'Kala Bio', type: 'Speculative', thesis: 'Binary catalyst end of 2025 (Phase 2b CHASE). Rare ocular disease with no cure.' },
-                { ticker: 'KAPA', name: 'Kairos Pharma', type: 'Speculative', thesis: 'Phase 2 interim data in prostate cancer. Lucrative oncology niche.' }
+                { ticker: 'IMVT', name: 'Immunovant', type: 'Speculative', thesis: 'Catalyst-rich 2026. "Pipeline-in-a-product" for autoimmune. Prime takeover target.' },
+                { ticker: 'XBI', name: 'SPDR Biotech ETF', type: 'Growth', thesis: 'Basket play for "January Effect" and M&A lottery tickets. Trading at historical lows.' },
+                { ticker: 'PRAX', name: 'Praxis Precision', type: 'Speculative', thesis: 'Genetic epilepsies. Direct catalysts in next 12 months. Precision medicine approach.' }
             ]
         }
     },
     {
-        id: 'medtech-nov-2025',
+        id: 'medtech-dec-2025',
         title: 'Medical Devices',
-        subtitle: 'The Silent Revolution: Robotics & AI',
+        subtitle: 'AI Integration & Procedure Recovery',
         icon: '🦾',
         readTime: '4 min read',
         tags: ['Growth', 'Tech'],
         content: {
-            overview: `Predictable structural growth (6% CAGR). AI operational in diagnostics and surge in surgical robotics and single-use devices driving hospital efficiency.`,
-            fullText: `3. Medical Devices: The Silent Health-Tech Revolution
+            overview: `Convergence of aging demographics and AI. "Personalized Medicine" market growing to $206B. Elective procedure backlog driving volume acceleration.`,
+            fullText: `3. Medical Devices: The Intersection of Tech and Health
 
-3.1 Characterization: Structural Growth & Resilience
-Unlike binary biotech, MedTech offers predictable growth driven by demographics (aging) and hospital efficiency needs. Global market projected to reach $678.8B in 2025.
+3.1 Characterization: Accelerating Growth
+Revenue growth is accelerating despite stock underperformance. Driven by aging demographics and AI integration into hardware.
 
-3.2 Tech Trends
-3.2.1 AI & Surgical Robotics
-AI has moved from promise to reality (e.g., pathology). In the OR, robotics allow minimally invasive procedures reducing hospital stays—critical for efficiency.
-
-3.2.2 The Rise of Single-Use Devices
-Massive shift towards replacing reusable instruments with single-use devices to eliminate cross-contamination and sterilization costs.
-
-3.3 High-Growth Opportunities
-We look for companies redefining the "Standard of Care".`,
+3.2 Key Trends
+- **Intelligence at the Edge:** Devices becoming connected sensors feeding AI models. Personalized medicine market to reach $206B.
+- **Elective Procedure Supercycle:** Post-pandemic backlog (hips, cataracts, cardiac) driving volume.
+- **"Pick and Shovel":** Life Sciences Tools providing equipment for biologic drug manufacturing.`,
             trends: [
-                { title: "Surgical Robotics", description: "Minimally invasive procedures reducing hospital stay duration." },
-                { title: "Single-Use Devices", description: "Eliminating contamination risks and sterilization costs." }
+                { title: "Personalized Medicine", description: "AI-driven diagnostics and therapy matching. Devices as data platforms." },
+                { title: "Procedure Supercycle", description: "Sustained volume growth from post-pandemic elective surgery backlog." }
             ],
             picks: [
-                { ticker: 'TMDX', name: 'TransMedics Group', type: 'Growth', thesis: 'OCS system keeps organs alive. Creating its own market (transplant logistics).' },
-                { ticker: 'PRCT', name: 'PROCEPT BioRobotics', type: 'Growth', thesis: 'Robotics in Urology (Aquablation). 43% YoY revenue growth.' },
-                { ticker: 'DCTH', name: 'Delcath Systems', type: 'Speculative', thesis: 'Interventional oncology (liver). Unique technological approach.' }
+                { ticker: 'DHR', name: 'Danaher Corp', type: 'Growth', thesis: '"Arms dealer" to biopharma. Wide-moat compounder. Destocking ending in late 2025.' },
+                { ticker: 'AXGN', name: 'Axogen', type: 'Speculative', thesis: 'Nerve repair niche dominance. Acquisition target for Stryker/J&J.' },
+                { ticker: 'TMO', name: 'Thermo Fisher', type: 'Defensive', thesis: 'Scale behemoth. Recurring revenue safety net with aggressive capital deployment.' }
             ]
         }
     },
     {
-        id: 'insurance-nov-2025',
-        title: 'Insurance & Insurtech',
-        subtitle: 'Efficiency, AI & Profitable Niches',
+        id: 'insurance-dec-2025',
+        title: 'Insurance & Managed Care',
+        subtitle: 'The "Hard Market" & Rates Play',
         icon: '🛡️',
-        readTime: '3 min read',
-        tags: ['Financials', 'AI'],
+        readTime: '4 min read',
+        tags: ['Financials', 'Value'],
         content: {
-            overview: `Forced modernization due to rising costs. Key: Niche specialists (E&S) and Insurtech 2.0. Generative AI reducing claims processing time by 80%.`,
-            fullText: `4. Insurance & Managed Care: Efficiency, AI & Profitable Niches
+            overview: `The "Sleeper" hit of late 2025. "Hard Market" pricing power + "Higher-for-Longer" investment income. Unique beneficiaries of the Anti-Momentum rotation.`,
+            fullText: `4. Insurance & Managed Care: The "Hard Market" Cycle
 
-4.1 Sector Overview: Forced Modernization
-The insurance sector is undergoing a quiet revolution driven by necessity. Rising claims costs (social inflation, climate) force modernization. 2025 is mixed: generalists struggle, while niche specialists and "Insurtech 2.0" thrive.
+4.1 Sector Overview: The Sleeper Hit
+Experiencing accelerating revenue due to a "Hard Market" (rising premiums). Insurers are passing inflation costs to consumers.
 
-4.2 Transformative Trends
-4.2.1 Generative AI in Claims Processing
-Operational AI is the biggest trend. Full automation of claims handling (80% time reduction, 30% cost reduction) and real-time fraud detection.
-
-4.2.2 The Rise of E&S (Excess & Surplus)
-As climate risks make certain regions "uninsurable" for standard carriers, the E&S market explodes. They have pricing freedom to take on complex risks profitably.
-
-4.3 Investment Opportunities
-Avoid property insurers exposed to catastrophes without pricing power. Seek specialists.`,
+4.2 Key Trends
+- **Pricing Power:** MCOs repricing for higher utilization. P&C insurers raising rates for climate risks.
+- **Investment Income:** "Higher-for-Longer" rates mean insurers earn massive yield on their float.
+- **Asset Quality:** Financials seeing improved margins; feared credit defaults contained.`,
             trends: [
-                { title: "Operational AI", description: "Drastic reduction in claims time and fraud detection." },
-                { title: "E&S Market", description: "Growth in surplus lines due to complex risk pricing power." }
+                { title: "Hard Market", description: "Aggressive premium hikes passing inflation costs to consumers." },
+                { title: "Float Yield", description: "High interest rates boosting investment income component of earnings." }
             ],
             picks: [
-                { ticker: 'SKWD', name: 'Skyward Specialty', type: 'Growth', thesis: 'King of Niche E&S. 26% annual premium growth.' },
-                { ticker: 'PRI', name: 'Primerica', type: 'Defensive', thesis: 'Efficient distribution model. Industry-leading 27.2% ROE. Cash flow machine.' },
-                { ticker: 'CB', name: 'Chubb', type: 'Value', thesis: 'The Gold Standard. Legendary underwriting discipline and global balance sheet.' }
+                { ticker: 'UNH', name: 'UnitedHealth', type: 'Value', thesis: '"Dog of the Dow" reversal play. Massive valuation gap. Vertical integration advantage.' },
+                { ticker: 'UVE', name: 'Universal Insurance', type: 'Speculative', thesis: 'Florida niche. Deep value (7x P/E). Cash machine if no Q4 hurricane.' },
+                { ticker: 'IYF', name: 'US Financials ETF', type: 'Defensive', thesis: 'Broad exposure to sector alpha. Betting on resilient US consumer borrower.' }
             ]
         }
     }
@@ -216,7 +210,7 @@ Avoid property insurers exposed to catastrophes without pricing power. Seek spec
 const ReportModal: React.FC<{ report: IndustryReport; onClose: () => void }> = ({ report, onClose }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fade-in">
-            <div 
+            <div
                 className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-[#050A14] border border-accent-gold/30 rounded-xl shadow-2xl custom-scrollbar"
                 onClick={(e) => e.stopPropagation()}
             >
@@ -233,7 +227,7 @@ const ReportModal: React.FC<{ report: IndustryReport; onClose: () => void }> = (
                             {report.subtitle}
                         </p>
                     </div>
-                    <button 
+                    <button
                         onClick={onClose}
                         className="p-2 rounded-full hover:bg-white/10 text-text-muted hover:text-white transition-colors"
                     >
@@ -279,8 +273,8 @@ const ReportModal: React.FC<{ report: IndustryReport; onClose: () => void }> = (
 
                             <div className="space-y-6">
                                 {report.content.picks.map((pick) => (
-                                    <div 
-                                        key={pick.ticker} 
+                                    <div
+                                        key={pick.ticker}
                                         className="group relative overflow-hidden rounded-lg bg-[#0B1221] border border-white/10 hover:border-accent-gold/50 transition-all duration-300 p-6"
                                     >
                                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
@@ -290,13 +284,12 @@ const ReportModal: React.FC<{ report: IndustryReport; onClose: () => void }> = (
                                                 </span>
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-medium text-text-primary">{pick.name}</span>
-                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider w-fit mt-1 ${
-                                                        pick.type === 'Value' ? 'bg-blue-500/20 text-blue-400' :
-                                                        pick.type === 'Growth' ? 'bg-green-500/20 text-green-400' :
-                                                        pick.type === 'Turnaround' ? 'bg-orange-500/20 text-orange-400' :
-                                                        pick.type === 'Speculative' ? 'bg-purple-500/20 text-purple-400' :
-                                                        'bg-gray-500/20 text-gray-400'
-                                                    }`}>
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider w-fit mt-1 ${pick.type === 'Value' ? 'bg-blue-500/20 text-blue-400' :
+                                                            pick.type === 'Growth' ? 'bg-green-500/20 text-green-400' :
+                                                                pick.type === 'Turnaround' ? 'bg-orange-500/20 text-orange-400' :
+                                                                    pick.type === 'Speculative' ? 'bg-purple-500/20 text-purple-400' :
+                                                                        'bg-gray-500/20 text-gray-400'
+                                                        }`}>
                                                         {pick.type}
                                                     </span>
                                                 </div>
@@ -332,8 +325,8 @@ export const IndustryResearch: React.FC = () => {
     const otherReports = REPORT_DATA.filter(r => !r.isFeatured);
 
     return (
-        <WidgetCard 
-            title="Industry Research" 
+        <WidgetCard
+            title="Industry Research"
             tooltip="Deep dive analysis into sectors with high alpha potential. Updated monthly."
         >
             <div className="space-y-6">
@@ -347,7 +340,7 @@ export const IndustryResearch: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
                     {/* FEATURED CARD (Left/Top - Large) */}
                     {featuredReport && (
-                        <div 
+                        <div
                             onClick={() => setSelectedReport(featuredReport)}
                             className="lg:col-span-2 group cursor-pointer rounded-xl p-6 bg-gradient-to-br from-bg-tertiary to-[#0F1623] border border-white/10 hover:border-accent-gold/40 transition-all duration-300 relative overflow-hidden min-h-[200px] flex flex-col justify-between"
                         >
@@ -379,7 +372,7 @@ export const IndustryResearch: React.FC = () => {
 
                     {/* OTHER REPORTS GRID */}
                     {otherReports.map((report) => (
-                        <div 
+                        <div
                             key={report.id}
                             onClick={() => setSelectedReport(report)}
                             className="group cursor-pointer rounded-lg p-5 bg-bg-tertiary border border-white/5 hover:border-accent-cyan/30 hover:bg-white/5 transition-all duration-300 flex flex-col h-full"
@@ -390,14 +383,14 @@ export const IndustryResearch: React.FC = () => {
                                 </div>
                                 <span className="text-[10px] text-text-subtle">{report.readTime}</span>
                             </div>
-                            
+
                             <h3 className="text-sm font-bold text-white group-hover:text-accent-cyan transition-colors font-display tracking-wide mb-1">
                                 {report.title}
                             </h3>
                             <p className="text-xs text-text-muted line-clamp-2 mb-3 flex-grow">
                                 {report.subtitle}
                             </p>
-                            
+
                             <div className="flex gap-1 mt-auto">
                                 {report.tags.slice(0, 1).map(tag => (
                                     <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-text-muted border border-white/5">
@@ -411,9 +404,9 @@ export const IndustryResearch: React.FC = () => {
             </div>
 
             {selectedReport && (
-                <ReportModal 
-                    report={selectedReport} 
-                    onClose={() => setSelectedReport(null)} 
+                <ReportModal
+                    report={selectedReport}
+                    onClose={() => setSelectedReport(null)}
                 />
             )}
         </WidgetCard>

@@ -69,6 +69,7 @@ class LiquidityService:
             "state": "NEUTRAL",
             "net_liquidity_bn": 0.0,
             "yield_curve_10y2y": 0.0,
+            "trend_roc_4w": 0.0,
             "last_updated": datetime.now().isoformat(),
             "error": "Data unavailable"
         }

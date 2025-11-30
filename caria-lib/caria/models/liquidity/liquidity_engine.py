@@ -28,13 +28,14 @@ class LiquidityEngine:
     def fetch_data(self):
         """Fetches necessary series from FRED."""
         if not self.fred:
-            raise RuntimeError("Cannot fetch data: No FRED Client (Key missing or lib missing).")
+            print("WARNING: Cannot fetch data - No FRED Client (Key missing or lib missing).")
+            return None
         
         print("Fetching Liquidity Data from FRED...")
         # WALCL: Fed Total Assets
         # WTREGEN: Treasury General Account
         # RRPONTSYD: Reverse Repo (Overnight)
-        # T10Y2Y: 10Y-2Y Yield Spread
+        #T10Y2Y: 10Y-2Y Yield Spread
         
         series_ids = {
             'WALCL': 'Fed Assets',
@@ -51,6 +52,10 @@ class LiquidityEngine:
                 print(f"  Fetched {name} ({sid}): {len(s)} records")
             except Exception as e:
                 print(f"  ERROR fetching {sid}: {e}")
+        
+        if not data:
+            print("ERROR: No data fetched from FRED")
+            return None
         
         df = pd.DataFrame(data)
         df = df.fillna(method='ffill') # Forward fill daily/weekly mismatches
@@ -126,11 +131,12 @@ class LiquidityEngine:
         df = self.fetch_data()
         if df is not None:
             df = self.calculate_signals(df)
-            current_state = df.iloc[-1]
-            return {
-                'score': current_state['hydraulic_score'],
-                'state': current_state['liquidity_state'],
-                'net_liquidity': current_state['net_liquidity'],
-                'yield_curve': current_state['T10Y2Y']
-            }
+            if df is not None and not df.empty:
+                current_state = df.iloc[-1]
+                return {
+                    'score': current_state['hydraulic_score'],
+                    'state': current_state['liquidity_state'],
+                    'net_liquidity': current_state['net_liquidity'],
+                    'yield_curve': current_state['T10Y2Y']
+                }
         return None

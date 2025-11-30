@@ -26,7 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from caria.backend.api.routes import liquidity, topology, screener
+from .routes import liquidity, topology, screener
 
 app.include_router(simulation.router)
 app.include_router(watchlist.router)

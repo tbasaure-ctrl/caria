@@ -23,6 +23,7 @@ import { ModelOutlook } from './widgets/ModelOutlook';
 import { FearGreedIndex } from './widgets/FearGreedIndex';
 import LiquidityGauge from './LiquidityGauge';
 import HydraulicStackWidget from './HydraulicStackWidget';
+import TopologicalMRIWidget from './TopologicalMRIWidget';
 import { ProtectedWidget } from './ProtectedWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
@@ -213,6 +214,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         {/* AI-Hydraulic Stack Status - Full Width */}
                         <div className="w-full">
                             <HydraulicStackWidget />
+                        </div>
+
+                        {/* Topological MRI - Full Width */}
+                        <div className="w-full">
+                            <TopologicalMRIWidget />
                         </div>
 
                         {/* Crisis & Macro Simulators */}

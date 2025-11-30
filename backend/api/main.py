@@ -26,14 +26,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from caria.backend.api.routes import liquidity, topology
+
 app.include_router(simulation.router)
 app.include_router(watchlist.router)
 app.include_router(liquidity.router)
-
-
-# Load models
-BASE_DIR = Path(__file__).resolve().parents[2]
-MODELS_DIR = BASE_DIR / "models"
+app.include_router(topology.router)
 
 quality_model = None
 valuation_model = None

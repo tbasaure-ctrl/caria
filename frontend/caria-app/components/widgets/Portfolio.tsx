@@ -1,9 +1,89 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, createHolding, deleteHolding } from '../../services/apiService';
+import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, createHolding, deleteHolding, getToken, fetchPrices } from '../../services/apiService';
+import { 
+    getGuestHoldings, 
+    createGuestHolding, 
+    deleteGuestHolding,
+    GuestHolding 
+} from '../../services/guestStorageService';
 import { WidgetCard } from './WidgetCard';
 import { getErrorMessage } from '../../src/utils/errorHandling';
 import { AreaChart, Area, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, XAxis, YAxis } from 'recharts';
+
+// Helper to check if user is logged in
+const isLoggedIn = (): boolean => !!getToken();
+
+// Convert guest holdings to HoldingsWithPrices format with mock prices
+const convertGuestHoldingsToPortfolioData = async (
+    guestHoldings: GuestHolding[]
+): Promise<HoldingsWithPrices> => {
+    if (guestHoldings.length === 0) {
+        return {
+            holdings: [],
+            total_value: 0,
+            total_cost: 0,
+            total_gain_loss: 0,
+            total_gain_loss_pct: 0,
+        };
+    }
+
+    // Try to fetch real prices for the tickers
+    let prices: Record<string, any> = {};
+    try {
+        const tickers = guestHoldings.map(h => h.ticker);
+        prices = await fetchPrices(tickers);
+    } catch (error) {
+        console.warn('Could not fetch prices for guest holdings, using estimates');
+    }
+
+    let totalValue = 0;
+    let totalCost = 0;
+
+    const holdingsWithPrices: HoldingWithPrice[] = guestHoldings.map(holding => {
+        // Get price from API or estimate based on average cost
+        const priceData = prices[holding.ticker];
+        const currentPrice = priceData?.price || holding.average_cost * 1.05; // 5% gain estimate if no price
+        const priceChange = priceData?.change || 0;
+        const priceChangePct = priceData?.changesPercentage || 0;
+
+        const costBasis = holding.quantity * holding.average_cost;
+        const currentValue = holding.quantity * currentPrice;
+        const gainLoss = currentValue - costBasis;
+        const gainLossPct = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
+
+        totalValue += currentValue;
+        totalCost += costBasis;
+
+        return {
+            id: holding.id,
+            ticker: holding.ticker,
+            quantity: holding.quantity,
+            average_cost: holding.average_cost,
+            notes: holding.notes,
+            created_at: holding.created_at,
+            updated_at: holding.updated_at,
+            current_price: currentPrice,
+            cost_basis: costBasis,
+            current_value: currentValue,
+            gain_loss: gainLoss,
+            gain_loss_pct: gainLossPct,
+            price_change: priceChange,
+            price_change_pct: priceChangePct,
+        };
+    });
+
+    const totalGainLoss = totalValue - totalCost;
+    const totalGainLossPct = totalCost > 0 ? (totalGainLoss / totalCost) * 100 : 0;
+
+    return {
+        holdings: holdingsWithPrices,
+        total_value: totalValue,
+        total_cost: totalCost,
+        total_gain_loss: totalGainLoss,
+        total_gain_loss_pct: totalGainLossPct,
+    };
+};
 
 type AllocationData = { name: string; value: number; color: string };
 
@@ -279,10 +359,29 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             setError(null);
 
             try {
-                const data = await fetchHoldingsWithPrices();
-                setPortfolioData(data);
+                if (isLoggedIn()) {
+                    // Authenticated user - fetch from API
+                    const data = await fetchHoldingsWithPrices();
+                    setPortfolioData(data);
+                } else {
+                    // Guest mode - load from localStorage
+                    const guestHoldings = getGuestHoldings();
+                    const data = await convertGuestHoldingsToPortfolioData(guestHoldings);
+                    setPortfolioData(data);
+                }
             } catch (err: unknown) {
-                setError(getErrorMessage(err) || 'Could not load your portfolio. Please try again.');
+                // In guest mode, errors are less critical - just show empty state
+                if (!isLoggedIn()) {
+                    setPortfolioData({
+                        holdings: [],
+                        total_value: 0,
+                        total_cost: 0,
+                        total_gain_loss: 0,
+                        total_gain_loss_pct: 0,
+                    });
+                } else {
+                    setError(getErrorMessage(err) || 'Could not load your portfolio. Please try again.');
+                }
             } finally {
                 if (showSpinner) {
                     setLoading(false);
@@ -605,13 +704,27 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
 
         try {
             setActionLoading(true);
-            await createHolding({
-                ticker,
-                quantity,
-                average_cost: averageCost,
-                purchase_date: formData.purchase_date,
-                notes: formData.notes || undefined,
-            });
+            
+            if (isLoggedIn()) {
+                // Authenticated user - save to API
+                await createHolding({
+                    ticker,
+                    quantity,
+                    average_cost: averageCost,
+                    purchase_date: formData.purchase_date,
+                    notes: formData.notes || undefined,
+                });
+            } else {
+                // Guest mode - save to localStorage
+                createGuestHolding({
+                    ticker,
+                    quantity,
+                    average_cost: averageCost,
+                    purchase_date: formData.purchase_date,
+                    notes: formData.notes || undefined,
+                });
+            }
+            
             setFormData(createDefaultFormState());
             setShowForm(false);
             await loadPortfolio(false);
@@ -626,8 +739,16 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         if (!window.confirm('Delete this position?')) return;
         try {
             setActionLoading(true);
-            await deleteHolding(id);
-            // Optimistic update or reload
+            
+            if (isLoggedIn()) {
+                // Authenticated user - delete from API
+                await deleteHolding(id);
+            } else {
+                // Guest mode - delete from localStorage
+                deleteGuestHolding(id);
+            }
+            
+            // Optimistic update
             setPortfolioData(prev => prev ? {
                 ...prev,
                 holdings: prev.holdings.filter(h => h.id !== id)

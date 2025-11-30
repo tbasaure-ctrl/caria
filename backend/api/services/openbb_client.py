@@ -4,6 +4,12 @@ import os
 import yfinance as yf
 from openbb import obb
 
+# Import Alpha Vantage client for fallback
+try:
+    from .alpha_vantage_client import alpha_vantage_client
+except ImportError:
+    alpha_vantage_client = None
+
 LOGGER = logging.getLogger("caria.services.openbb_client")
 DEFAULT_PROVIDER = os.getenv("OPENBB_PROVIDER", "fmp")
 
@@ -11,13 +17,17 @@ class OpenBBClient:
     """
     Unified client for OpenBB data integration.
     Replaces FMP and Yahoo wrappers.
-    Includes robust yfinance fallback for when keys are missing.
+    Includes robust fallback chain: FMP -> Alpha Vantage -> yfinance.
     """
 
     def __init__(self):
         self.provider = DEFAULT_PROVIDER
         # Ensure FMP API key is set if available
         self._configure_fmp_key()
+        # Check Alpha Vantage availability
+        self.alpha_vantage_available = alpha_vantage_client and alpha_vantage_client.is_available()
+        if self.alpha_vantage_available:
+            LOGGER.info("✅ Alpha Vantage fallback available")
     
     def _configure_fmp_key(self):
         """Configure FMP API key in OpenBB if available."""
@@ -108,6 +118,7 @@ class OpenBBClient:
     def get_current_price(self, symbol: str) -> float:
         """
         Get the latest price for a symbol.
+        Fallback chain: FMP -> Alpha Vantage -> yfinance
         """
         # Try OpenBB/FMP Quote
         try:
@@ -119,6 +130,15 @@ class OpenBBClient:
                     if val > 0: return float(val)
         except Exception:
             pass
+        
+        # Try Alpha Vantage
+        if self.alpha_vantage_available:
+            try:
+                av_quote = alpha_vantage_client.get_quote(symbol)
+                if av_quote and av_quote.get("price", 0) > 0:
+                    return float(av_quote["price"])
+            except Exception as e:
+                LOGGER.warning(f"Alpha Vantage price fetch failed for {symbol}: {e}")
             
         # Fallback to yfinance
         try:
@@ -140,6 +160,8 @@ class OpenBBClient:
         """
         Get latest prices for multiple symbols.
         Returns dict: {symbol: {price: float, change: float, ...}}
+        
+        Fallback chain: FMP -> Alpha Vantage -> yfinance
         """
         results = {}
         
@@ -164,7 +186,19 @@ class OpenBBClient:
         except Exception as e:
             LOGGER.warning(f"Batch FMP fetch failed: {e}")
 
-        # 2. Fill missing with yfinance (Batch)
+        # 2. Fill missing with Alpha Vantage
+        missing_symbols = [s for s in symbols if s not in results]
+        if missing_symbols and self.alpha_vantage_available:
+            try:
+                LOGGER.info(f"Trying Alpha Vantage for {len(missing_symbols)} missing symbols")
+                av_quotes = alpha_vantage_client.get_bulk_quotes(missing_symbols)
+                for sym, quote_data in av_quotes.items():
+                    if quote_data and quote_data.get("price", 0) > 0:
+                        results[sym] = quote_data
+            except Exception as e:
+                LOGGER.warning(f"Alpha Vantage batch fetch failed: {e}")
+
+        # 3. Fill remaining missing with yfinance (Batch)
         missing_symbols = [s for s in symbols if s not in results]
         if missing_symbols:
             try:

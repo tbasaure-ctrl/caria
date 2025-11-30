@@ -79,6 +79,103 @@ body {
   100% { background-position: -200% 0; }
 }
 
+@keyframes wave-drift {
+  0% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-2%) translateY(1%); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.8; }
+}
+
+/* ============================================
+   DARK WAVE BACKGROUND SYSTEM
+   Premium institutional-grade background
+   ============================================ */
+
+.dark-wave-bg {
+  position: relative;
+  background: linear-gradient(180deg, 
+    #0a0a0a 0%, 
+    #0d0d0d 20%,
+    #111111 40%,
+    #0a0a0a 100%
+  );
+  overflow: hidden;
+}
+
+.dark-wave-bg::before,
+.dark-wave-bg::after {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  pointer-events: none;
+}
+
+/* Primary wave layer - subtle dark gray curves */
+.dark-wave-bg::before {
+  background: 
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(30, 30, 35, 0.8) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 60%, rgba(25, 25, 30, 0.6) 0%, transparent 45%),
+    radial-gradient(ellipse 100% 60% at 50% 80%, rgba(20, 20, 25, 0.7) 0%, transparent 50%);
+  animation: wave-drift 20s ease-in-out infinite;
+}
+
+/* Secondary wave layer - depth and dimension */
+.dark-wave-bg::after {
+  background: 
+    radial-gradient(ellipse 70% 45% at 70% 30%, rgba(35, 35, 40, 0.5) 0%, transparent 40%),
+    radial-gradient(ellipse 90% 50% at 30% 70%, rgba(28, 28, 33, 0.6) 0%, transparent 45%);
+  animation: wave-drift 25s ease-in-out infinite reverse;
+}
+
+/* Wave overlay for additional depth */
+.wave-overlay {
+  position: absolute;
+  inset: 0;
+  background: 
+    linear-gradient(135deg, transparent 0%, rgba(15, 15, 20, 0.4) 50%, transparent 100%),
+    linear-gradient(225deg, transparent 0%, rgba(20, 20, 25, 0.3) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Subtle grain texture for premium feel */
+.grain-texture {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Glassmorphism utility classes */
+.glass-card {
+  background: rgba(15, 15, 20, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 
+    0 4px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.glass-card:hover {
+  background: rgba(20, 20, 25, 0.7);
+  border-color: rgba(34, 211, 238, 0.15);
+}
+
+.glass-card-strong {
+  background: rgba(10, 10, 15, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 /* ============================================
    RESPONSIVE UTILITIES - Mobile First
    ============================================ */

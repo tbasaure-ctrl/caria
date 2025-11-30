@@ -154,8 +154,19 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onClose }) => {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     const [showProfile, setShowProfile] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(() => {
+        // Persist collapse state in localStorage
+        const saved = localStorage.getItem('caria-sidebar-expanded');
+        return saved === 'true';
+    });
     const [searchParams] = useSearchParams();
     const location = useLocation();
+    const token = getToken();
+
+    // Save collapse state to localStorage
+    useEffect(() => {
+        localStorage.setItem('caria-sidebar-expanded', String(isExpanded));
+    }, [isExpanded]);
 
     const navItems = [
         { to: '/dashboard?tab=portfolio', icon: PortfolioIcon, label: 'Portfolio' },
@@ -176,22 +187,50 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
 
     return (
         <>
-            {/* Desktop Sidebar - Ultra Minimal Dock */}
+            {/* Desktop Sidebar - Collapsible */}
             <aside 
-                className="hidden md:flex flex-col w-16 h-screen shrink-0 border-r border-white/5 bg-bg-primary z-50 items-center py-6"
+                className={`
+                    hidden md:flex flex-col h-screen shrink-0 border-r border-white/5 bg-bg-primary z-50 py-6
+                    transition-all duration-300 ease-in-out
+                    ${isExpanded ? 'w-52' : 'w-16'}
+                `}
             >
-                {/* Logo */}
-                <div className="mb-10">
+                {/* Header: Logo + Collapse Toggle */}
+                <div className={`flex items-center mb-8 ${isExpanded ? 'px-4 justify-between' : 'justify-center'}`}>
                     <NavLink 
                         to="/dashboard?tab=portfolio" 
-                        className="block w-10 h-10 text-accent-cyan hover:text-white transition-colors duration-300"
+                        className="flex items-center gap-3 text-accent-cyan hover:text-white transition-colors duration-300"
                     >
-                        <CariaLogoIcon className="w-full h-full" />
+                        <CariaLogoIcon className="w-10 h-10 flex-shrink-0" />
+                        {isExpanded && (
+                            <span className="font-display text-lg text-white tracking-wide animate-fade-in">
+                                Caria
+                            </span>
+                        )}
                     </NavLink>
+                    
+                    {/* Collapse Toggle Button */}
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className={`
+                            w-7 h-7 rounded-lg flex items-center justify-center text-text-muted hover:text-white hover:bg-white/10 transition-all duration-200
+                            ${isExpanded ? '' : 'absolute left-[52px] top-6'}
+                        `}
+                        title={isExpanded ? 'Collapse' : 'Expand'}
+                    >
+                        <svg 
+                            className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} 
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
                 </div>
 
-                {/* Nav Icons */}
-                <nav className="flex-1 flex flex-col gap-6 w-full items-center">
+                {/* Nav Items */}
+                <nav className={`flex-1 flex flex-col gap-2 w-full ${isExpanded ? 'px-3' : 'items-center'}`}>
                     {navItems.map((item) => {
                         const isActive = isNavItemActive(item.to);
                         return (
@@ -199,20 +238,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
                                 key={item.to}
                                 to={item.to}
                                 className={`
-                                    relative w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 group
+                                    relative flex items-center gap-3 rounded-xl transition-all duration-300 group
+                                    ${isExpanded ? 'px-3 py-2.5' : 'w-10 h-10 justify-center'}
                                     ${isActive 
                                         ? 'text-accent-cyan bg-accent-cyan/10 shadow-[0_0_15px_rgba(34,211,238,0.2)]' 
                                         : 'text-text-muted hover:text-white hover:bg-white/5'
                                     }
                                 `}
-                                title={item.label}
+                                title={!isExpanded ? item.label : undefined}
                             >
-                                <item.icon className="w-5 h-5" />
+                                <item.icon className="w-5 h-5 flex-shrink-0" />
                                 
-                                {/* Hover Label Tooltip */}
-                                <span className="absolute left-full ml-4 px-2 py-1 bg-bg-secondary border border-white/10 rounded text-[10px] uppercase tracking-wider text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                                    {item.label}
-                                </span>
+                                {/* Expanded Label */}
+                                {isExpanded && (
+                                    <span className="text-sm font-medium">{item.label}</span>
+                                )}
+                                
+                                {/* Collapsed Hover Label Tooltip */}
+                                {!isExpanded && (
+                                    <span className="absolute left-full ml-4 px-2 py-1 bg-bg-secondary border border-white/10 rounded text-[10px] uppercase tracking-wider text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                                        {item.label}
+                                    </span>
+                                )}
                                 
                                 {/* Active Indicator Line */}
                                 {isActive && (
@@ -224,26 +271,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
                 </nav>
 
                 {/* Bottom Actions */}
-                <div className="flex flex-col gap-4 mt-auto w-full items-center">
-                    <button
-                        onClick={() => setShowProfile(!showProfile)}
-                        className={`
-                            w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200
-                            ${showProfile ? 'text-white bg-white/10' : 'text-text-muted hover:text-white hover:bg-white/5'}
-                        `}
-                        title="Profile"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                    </button>
+                <div className={`flex flex-col gap-2 mt-auto w-full ${isExpanded ? 'px-3' : 'items-center'}`}>
+                    {/* Profile Button - Only show for logged in users */}
+                    {token && (
+                        <button
+                            onClick={() => setShowProfile(!showProfile)}
+                            className={`
+                                flex items-center gap-3 rounded-xl transition-all duration-200
+                                ${isExpanded ? 'px-3 py-2.5' : 'w-10 h-10 justify-center'}
+                                ${showProfile ? 'text-white bg-white/10' : 'text-text-muted hover:text-white hover:bg-white/5'}
+                            `}
+                            title={!isExpanded ? 'Profile' : undefined}
+                        >
+                            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            {isExpanded && <span className="text-sm font-medium">Profile</span>}
+                        </button>
+                    )}
 
+                    {/* Logout/Exit Button */}
                     <button
-                        onClick={onLogout}
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-text-muted hover:text-negative hover:bg-negative/10 transition-all duration-200"
-                        title="Sign Out"
+                        onClick={token ? onLogout : () => window.location.href = '/'}
+                        className={`
+                            flex items-center gap-3 rounded-xl transition-all duration-200
+                            ${isExpanded ? 'px-3 py-2.5' : 'w-10 h-10 justify-center'}
+                            text-text-muted hover:text-negative hover:bg-negative/10
+                        `}
+                        title={!isExpanded ? (token ? 'Sign Out' : 'Back to Home') : undefined}
                     >
-                        <LogoutIcon className="w-5 h-5" />
+                        <LogoutIcon className="w-5 h-5 flex-shrink-0" />
+                        {isExpanded && <span className="text-sm font-medium">{token ? 'Sign Out' : 'Home'}</span>}
                     </button>
                 </div>
             </aside>

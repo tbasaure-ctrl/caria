@@ -7,18 +7,10 @@ import { RegisterModal } from './components/RegisterModal';
 import { DashboardPage } from './components/pages/DashboardPage';
 import { CommunityPage } from './components/pages/CommunityPage';
 import { ResourcesPage } from './components/pages/ResourcesPage';
+import { GuestModeBanner } from './components/GuestModeBanner';
 import { getToken, saveToken, removeToken } from './services/apiService';
 
-// Protected Route Component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = getToken();
-  if (!token) {
-    return <Navigate to="/" replace />;
-  }
-  return <>{children}</>;
-};
-
-// Dashboard Layout (Sidebar + Content)
+// Dashboard Layout (Sidebar + Content + Guest Banner)
 const DashboardLayout: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   return (
     <div className="flex h-screen w-full bg-[var(--color-bg-primary)]">
@@ -26,6 +18,8 @@ const DashboardLayout: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       <div className="flex-1 overflow-y-auto bg-[var(--color-bg-primary)]">
         <Outlet />
       </div>
+      {/* Guest Mode Banner - shows for unauthenticated users */}
+      <GuestModeBanner />
     </div>
   );
 };

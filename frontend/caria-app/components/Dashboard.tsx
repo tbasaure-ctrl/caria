@@ -71,23 +71,24 @@ interface RegimeData {
     confidence: number;
 }
 
-type DashboardTab = 'portfolio' | 'analysis' | 'research' | 'tutorial';
+type DashboardTab = 'portfolio' | 'analysis' | 'research';
 
 export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [regimeData, setRegimeData] = useState<RegimeData | null>(null);
+    const [showTutorial, setShowTutorial] = useState(false);
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
 
     const tabFromUrl = searchParams.get('tab') as DashboardTab;
     const [activeTab, setActiveTab] = useState<DashboardTab>(
-        tabFromUrl && ['portfolio', 'analysis', 'research', 'tutorial'].includes(tabFromUrl)
+        tabFromUrl && ['portfolio', 'analysis', 'research'].includes(tabFromUrl)
             ? tabFromUrl
             : 'portfolio'
     );
 
     useEffect(() => {
         const tabFromUrl = searchParams.get('tab') as DashboardTab;
-        if (tabFromUrl && ['portfolio', 'analysis', 'research', 'tutorial'].includes(tabFromUrl)) {
+        if (tabFromUrl && ['portfolio', 'analysis', 'research'].includes(tabFromUrl)) {
             setActiveTab(tabFromUrl);
         } else if (!tabFromUrl) {
             setSearchParams({ tab: 'portfolio' }, { replace: true });
@@ -123,7 +124,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
         { id: 'portfolio' as DashboardTab, label: 'Portfolio' },
         { id: 'analysis' as DashboardTab, label: 'Analysis' },
         { id: 'research' as DashboardTab, label: 'Research' },
-        { id: 'tutorial' as DashboardTab, label: 'Tutorial' },
     ];
 
     return (
@@ -339,14 +339,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         </div>
                     </div>
                 )}
-
-                {/* TUTORIAL TAB */}
-                {activeTab === 'tutorial' && (
-                    <div className=\"flex flex-col gap-4 sm:gap-6 animate-fade-in\">
-                <TutorialPanel onClose={() => { }} />
             </div>
-                )}
-        </div>
-        </main >
+            {showTutorial && <TutorialPanel onClose={() => setShowTutorial(false)} />}
+        </main>
     );
 };

@@ -36,9 +36,9 @@ interface MarketTileProps {
 
 const MarketTile: React.FC<MarketTileProps> = ({ name, symbol, region, price, change, changePercent }) => {
     const isPositive = change >= 0;
-    
+
     return (
-        <div 
+        <div
             className="p-4 rounded-lg transition-all duration-200"
             style={{
                 backgroundColor: 'var(--color-bg-tertiary)',
@@ -53,7 +53,7 @@ const MarketTile: React.FC<MarketTileProps> = ({ name, symbol, region, price, ch
         >
             {/* Top Row: Symbol & Region */}
             <div className="flex items-center justify-between mb-2">
-                <span 
+                <span
                     className="text-xs font-mono font-semibold px-2 py-0.5 rounded"
                     style={{
                         backgroundColor: 'var(--color-bg-surface)',
@@ -62,54 +62,54 @@ const MarketTile: React.FC<MarketTileProps> = ({ name, symbol, region, price, ch
                 >
                     {symbol}
                 </span>
-                <span 
+                <span
                     className="text-[10px] font-medium tracking-wider uppercase"
                     style={{ color: 'var(--color-text-subtle)' }}
                 >
                     {region}
                 </span>
             </div>
-            
+
             {/* Index Name */}
-            <div 
+            <div
                 className="text-sm font-medium mb-3"
                 style={{ color: 'var(--color-text-secondary)' }}
             >
                 {name}
             </div>
-            
+
             {/* Price & Change */}
             <div className="flex items-end justify-between">
-                <span 
+                <span
                     className="text-xl font-mono font-semibold"
                     style={{ color: 'var(--color-text-primary)' }}
                 >
-                    {price.toLocaleString(undefined, { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
+                    {price.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
                     })}
                 </span>
                 <div className="text-right">
-                    <div 
+                    <div
                         className="text-sm font-mono font-semibold flex items-center gap-1"
                         style={{ color: isPositive ? '#10b981' : '#ef4444' }}
                     >
-                        <svg 
-                            className="w-3 h-3" 
-                            fill="none" 
-                            stroke="currentColor" 
+                        <svg
+                            className="w-3 h-3"
+                            fill="none"
+                            stroke="currentColor"
                             viewBox="0 0 24 24"
                         >
-                            <path 
-                                strokeLinecap="round" 
-                                strokeLinejoin="round" 
-                                strokeWidth={2} 
-                                d={isPositive ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"} 
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d={isPositive ? "M5 15l7-7 7 7" : "M19 9l-7 7-7-7"}
                             />
                         </svg>
                         {changePercent >= 0 ? '+' : ''}{changePercent.toFixed(2)}%
                     </div>
-                    <div 
+                    <div
                         className="text-xs font-mono"
                         style={{ color: 'var(--color-text-muted)' }}
                     >
@@ -117,14 +117,14 @@ const MarketTile: React.FC<MarketTileProps> = ({ name, symbol, region, price, ch
                     </div>
                 </div>
             </div>
-            
+
             {/* Mini Sparkline Placeholder */}
-            <div 
+            <div
                 className="mt-3 h-8 rounded overflow-hidden"
                 style={{ backgroundColor: 'var(--color-bg-surface)' }}
             >
-                <svg 
-                    viewBox="0 0 100 32" 
+                <svg
+                    viewBox="0 0 100 32"
                     className="w-full h-full"
                     preserveAspectRatio="none"
                 >
@@ -142,7 +142,7 @@ const MarketTile: React.FC<MarketTileProps> = ({ name, symbol, region, price, ch
 };
 
 const LoadingTile: React.FC = () => (
-    <div 
+    <div
         className="p-4 rounded-lg"
         style={{
             backgroundColor: 'var(--color-bg-tertiary)',
@@ -151,25 +151,25 @@ const LoadingTile: React.FC = () => (
     >
         <div className="animate-pulse space-y-3">
             <div className="flex justify-between">
-                <div 
+                <div
                     className="h-5 w-12 rounded"
                     style={{ backgroundColor: 'var(--color-bg-surface)' }}
                 />
-                <div 
+                <div
                     className="h-4 w-8 rounded"
                     style={{ backgroundColor: 'var(--color-bg-surface)' }}
                 />
             </div>
-            <div 
+            <div
                 className="h-4 w-20 rounded"
                 style={{ backgroundColor: 'var(--color-bg-surface)' }}
             />
             <div className="flex justify-between items-end">
-                <div 
+                <div
                     className="h-6 w-24 rounded"
                     style={{ backgroundColor: 'var(--color-bg-surface)' }}
                 />
-                <div 
+                <div
                     className="h-5 w-16 rounded"
                     style={{ backgroundColor: 'var(--color-bg-surface)' }}
                 />
@@ -218,15 +218,15 @@ export const GlobalMarketBar: React.FC<{ id?: string }> = ({ id }) => {
     return (
         <WidgetCard
             id={id}
-            title="GLOBAL MARKETS"
+            title="MARKET PULSE"
             tooltip="Live market data for major global indices, commodities, and asset classes. Updated every 30 seconds during market hours."
             action={lastUpdate ? {
                 label: `Updated ${lastUpdate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-                onClick: () => {}
+                onClick: () => { }
             } : undefined}
         >
             {error && error !== 'Market data temporarily unavailable' && (
-                <div 
+                <div
                     className="mb-4 px-4 py-3 rounded-lg text-sm"
                     style={{
                         backgroundColor: 'var(--color-negative-muted)',
@@ -237,14 +237,14 @@ export const GlobalMarketBar: React.FC<{ id?: string }> = ({ id }) => {
                     {error}
                 </div>
             )}
-            
+
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {loading ? (
                     GLOBAL_INDICES.map((_, idx) => <LoadingTile key={idx} />)
                 ) : (
                     GLOBAL_INDICES.map((index) => {
                         const priceData = prices[index.ticker] || MOCK_PRICES[index.ticker];
-                        
+
                         if (!priceData) {
                             return null;
                         }

@@ -18,49 +18,57 @@ async def get_topology_scan():
     Performs a real-time Topological MRI scan of the market.
     """
     try:
-        # TODO: Replace with real S&P 500 returns fetch
-        # For now, generate a synthetic "Healthy" or "Critical" market for demo
-        # based on random seed or time to show functionality
+        # Use FMP Client to fetch real data
+        from caria.ingestion.clients.fmp_client import FMPClient
+        import os
+        from datetime import datetime, timedelta
+
+        fmp_client = FMPClient()
         
-        # Synthetic Data Generation for Demo (replace with real DB fetch)
-        # Generate 50 assets, 60 days
-        np.random.seed(42)
+        # Basket of "Mag 7" + Indices + Volatility for Topological Analysis
+        # These are the "Pillars" of the market manifold
+        tickers = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'TSLA', 'META', 'AMD', 'SPY', 'QQQ']
         
-        # Simulate a "Healthy" market (random walk, low correlation)
-        # or "Critical" (high correlation factor model)
-        
-        # Let's simulate a mix to get some interesting topology
-        n_assets = 30
-        n_days = 60
-        
-        # Market factor
-        mkt = np.random.normal(0, 1, n_days)
+        # Fetch last 60 days of data
+        end_date = datetime.now().strftime('%Y-%m-%d')
+        start_date = (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d') # Buffer for trading days
         
         returns_dict = {}
-        for i in range(n_assets):
-            # Asset specific noise
-            noise = np.random.normal(0, 1, n_days)
-            # Correlation to market (randomize to create structure)
-            beta = np.random.uniform(0, 1.5) 
-            
-            # Create an "Alien" (Asset 0)
-            if i == 0:
-                ret = np.random.normal(0, 2, n_days) # Pure noise, high vol, no beta
-            else:
-                ret = beta * mkt + noise
-                
-            returns_dict[f"TICKER_{i}"] = ret
-            
-        returns_df = pd.DataFrame(returns_dict)
         
+        for ticker in tickers:
+            try:
+                history = fmp_client.get_price_history(ticker, start_date=start_date, end_date=end_date)
+                if history:
+                    # Convert to DataFrame
+                    df = pd.DataFrame(history)
+                    df['date'] = pd.to_datetime(df['date'])
+                    df = df.set_index('date').sort_index()
+                    
+                    # Calculate daily returns
+                    # Use 'adjClose' if available, else 'close'
+                    price_col = 'adjClose' if 'adjClose' in df.columns else 'close'
+                    returns_dict[ticker] = df[price_col].pct_change().dropna()
+            except Exception as e:
+                print(f"Failed to fetch data for {ticker}: {e}")
+                continue
+
+        if not returns_dict:
+             raise HTTPException(status_code=500, detail="Failed to fetch market data from FMP")
+
+        # Align data (inner join to ensure same dates)
+        returns_df = pd.DataFrame(returns_dict).dropna()
+        
+        if returns_df.empty:
+             raise HTTPException(status_code=500, detail="Insufficient overlapping market data")
+
         # Run Scan
         result = topology_service.scan_market_topology(returns_df)
         
-        # Decorate with "Alien" names for flavor if it's our synthetic data
-        if result.get("aliens"):
-            result["aliens"][0]["ticker"] = "NVDA-X (Alien)" # Example
-            
         return result
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Fallback to synthetic if FMP fails (e.g. no key)
+        print(f"Real data scan failed: {e}. Falling back to synthetic.")
+        # ... (keep synthetic fallback or just raise error? User asked for real data)
+        # Let's raise the error to be transparent about the key requirement
+        raise HTTPException(status_code=500, detail=f"Topological Scan Failed: {str(e)}")

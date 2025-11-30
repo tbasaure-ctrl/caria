@@ -66,7 +66,7 @@ class StockScreenerService:
     def get_historical_price(self, symbol: str, days: int = 180) -> List[Dict]:
         end_date = datetime.now().strftime('%Y-%m-%d')
         start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
-        data = self.fetch_fmp('/historical-price-full', {'symbol': symbol, 'from': start_date, 'to': end_date})
+        data = self.fetch_fmp(f'/historical-price-full/{symbol}', {'from': start_date, 'to': end_date})
         if isinstance(data, dict):
             return data.get('historical', [])
         return []

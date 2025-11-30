@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from typing import List, Any
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
@@ -198,3 +199,33 @@ def get_market_opportunities(
     except Exception as e:
         LOGGER.exception(f"Error running market scanner: {e}")
         raise HTTPException(status_code=500, detail=f"Error running market scanner: {str(e)}")
+@router.get("/hidden-gems", response_model=FundamentalScreenResponse)
+def get_hidden_gems(
+    limit: int = 10,
+    current_user: UserInDB = Depends(get_current_user),
+):
+    """
+    Get Hidden Gems (Fundamental Screen Results).
+    """
+    try:
+        picks = _stock_screener_service.run_screen()
+        # Convert to model
+        formatted_picks = []
+        for p in picks[:limit]:
+            formatted_picks.append(FundamentalPick(
+                symbol=p['symbol'],
+                quality_score=p['quality'],
+                valuation_score=p['valuation'],
+                momentum_score=p['momentum'],
+                catalyst_score=p['catalyst'],
+                risk_penalty=p['risk'],
+                c_score=p['c_score']
+            ))
+        
+        return FundamentalScreenResponse(
+            picks=formatted_picks,
+            timestamp=datetime.now().isoformat()
+        )
+    except Exception as e:
+        LOGGER.error(f"Hidden gems screen failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

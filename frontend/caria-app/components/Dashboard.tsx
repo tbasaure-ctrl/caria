@@ -24,6 +24,7 @@ import { FearGreedIndex } from './widgets/FearGreedIndex';
 import LiquidityGauge from './LiquidityGauge';
 import HydraulicStackWidget from './HydraulicStackWidget';
 import TopologicalMRIWidget from './TopologicalMRIWidget';
+import TutorialPanel from './TutorialPanel';
 import { ProtectedWidget } from './ProtectedWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 
@@ -75,6 +76,7 @@ type DashboardTab = 'portfolio' | 'analysis' | 'research';
 export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [regimeData, setRegimeData] = useState<RegimeData | null>(null);
+    const [showTutorial, setShowTutorial] = useState(false);
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
 
     const tabFromUrl = searchParams.get('tab') as DashboardTab;
@@ -158,7 +160,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         ))}
                     </div>
 
-                    <div className="w-auto sm:w-24 hidden sm:flex justify-end items-center gap-2 sm:gap-3 shrink-0">
+                    <div className="flex items-center gap-3 shrink-0">
+                        <button
+                            onClick={() => setShowTutorial(true)}
+                            className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+                            title="Tutorial"
+                        >
+                            <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                                <circle cx="12" cy="17" r="0.5" fill="currentColor" strokeWidth="0" />
+                            </svg>
+                        </button>
                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
                         <span className="text-[10px] text-text-muted font-mono uppercase">Live</span>
                     </div>
@@ -327,6 +340,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     </div>
                 )}
             </div>
+            {showTutorial && <TutorialPanel onClose={() => setShowTutorial(false)} />}
         </main>
     );
 };

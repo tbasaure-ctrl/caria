@@ -11,90 +11,116 @@ from .openbb_client import OpenBBClient
 LOGGER = logging.getLogger("caria.services.simulation")
 
 # Historical crisis data with pre-computed benchmark returns for reliability
+# Event types: "acute" (days-based), "recession" (months-based), "crash" (weeks-based)
 CRISIS_DATA = {
     "1929_depression": {
         "start": "1929-09-01", 
         "end": "1932-06-01", 
         "name": "Great Depression (1929)",
         "benchmark_return": -0.86,  # S&P 500 approximate
-        "description": "The worst stock market crash in U.S. history"
+        "description": "The worst stock market crash in U.S. history",
+        "event_type": "recession",
+        "event_date": "1929-10-24"  # Black Thursday
     },
     "1939_wwii": {
         "start": "1939-09-01", 
         "end": "1945-09-01", 
         "name": "WWII Start (1939)",
         "benchmark_return": 0.07,  # Markets recovered during war
-        "description": "World War II era volatility"
+        "description": "World War II era volatility",
+        "event_type": "recession",
+        "event_date": "1939-09-01"
     },
     "1962_cuban_missile": {
-        "start": "1962-10-16", 
-        "end": "1962-11-20", 
+        "start": "1962-10-15", 
+        "end": "1962-11-21", 
         "name": "Cuban Missile Crisis (1962)",
         "benchmark_return": -0.07,
-        "description": "Nuclear standoff between US and USSR"
+        "description": "Nuclear standoff between US and USSR",
+        "event_type": "acute",
+        "event_date": "1962-10-16"  # Crisis announced
     },
     "1963_jfk": {
-        "start": "1963-11-22", 
-        "end": "1964-06-01", 
+        "start": "1963-11-21", 
+        "end": "1963-12-06", 
         "name": "Kennedy Assassination (1963)",
         "benchmark_return": 0.15,
-        "description": "Markets recovered quickly after initial shock"
+        "description": "Markets recovered quickly after initial shock",
+        "event_type": "acute",
+        "event_date": "1963-11-22"
     },
     "1987_black_monday": {
-        "start": "1987-10-01", 
-        "end": "1988-03-01", 
+        "start": "1987-10-15", 
+        "end": "1987-11-06", 
         "name": "Black Monday (1987)",
         "benchmark_return": -0.22,
-        "description": "Single-day crash of 22.6%"
+        "description": "Single-day crash of 22.6%",
+        "event_type": "acute",
+        "event_date": "1987-10-19"  # Black Monday
     },
     "2000_dot_com": {
         "start": "2000-03-10", 
         "end": "2002-10-09", 
         "name": "Dot Com Bubble (2000)",
         "benchmark_return": -0.49,
-        "description": "Tech bubble burst - NASDAQ fell 78%"
+        "description": "Tech bubble burst - NASDAQ fell 78%",
+        "event_type": "recession",
+        "event_date": "2000-03-10"  # Peak
     },
     "2001_911": {
-        "start": "2001-09-11", 
-        "end": "2002-01-01", 
+        "start": "2001-09-10", 
+        "end": "2001-09-28", 
         "name": "9/11 Attacks (2001)",
         "benchmark_return": -0.12,
-        "description": "Terrorist attacks on World Trade Center"
+        "description": "Terrorist attacks on World Trade Center. Market closed 9/11-9/14.",
+        "event_type": "acute",
+        "event_date": "2001-09-11",
+        "market_closure": ["2001-09-11", "2001-09-12", "2001-09-13", "2001-09-14"]
     },
     "2008_gfc": {
-        "start": "2008-09-01", 
-        "end": "2009-03-09", 
+        "start": "2007-12-01", 
+        "end": "2009-06-01", 
         "name": "Global Financial Crisis (2008)",
         "benchmark_return": -0.53,
-        "description": "Lehman Brothers collapse, global credit crisis"
+        "description": "Lehman Brothers collapse (Sept 2008), global credit crisis",
+        "event_type": "recession",
+        "event_date": "2008-09-15"  # Lehman collapse
     },
     "2011_euro_debt": {
         "start": "2011-04-01", 
         "end": "2012-07-01", 
         "name": "European Debt Crisis (2011)",
         "benchmark_return": -0.19,
-        "description": "Greek debt crisis, European contagion fears"
+        "description": "Greek debt crisis, European contagion fears",
+        "event_type": "recession",
+        "event_date": "2011-05-01"
     },
     "2018_trade_war": {
         "start": "2018-09-20", 
-        "end": "2018-12-24", 
+        "end": "2018-12-26", 
         "name": "2018 Trade War / Fed Tightening",
         "benchmark_return": -0.20,
-        "description": "US-China trade tensions and Fed rate hikes"
+        "description": "US-China trade tensions and Fed rate hikes",
+        "event_type": "crash",
+        "event_date": "2018-10-01"
     },
     "2020_covid": {
         "start": "2020-02-19", 
-        "end": "2020-03-23", 
+        "end": "2020-04-17", 
         "name": "COVID-19 Crash (2020)",
         "benchmark_return": -0.34,
-        "description": "Fastest 30% decline in history due to pandemic"
+        "description": "Fastest 30% decline in history due to pandemic. Trough: March 23",
+        "event_type": "crash",
+        "event_date": "2020-02-19"  # Peak before crash
     },
     "2022_inflation": {
         "start": "2022-01-03", 
         "end": "2022-10-12", 
         "name": "2022 Inflation Bear Market",
         "benchmark_return": -0.25,
-        "description": "Fed rate hikes to combat 40-year high inflation"
+        "description": "Fed rate hikes to combat 40-year high inflation",
+        "event_type": "recession",
+        "event_date": "2022-01-03"
     },
 }
 

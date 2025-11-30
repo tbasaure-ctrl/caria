@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Brain, Activity, AlertTriangle, Fingerprint, Scan, Zap } from 'lucide-react';
+import { Brain, Activity, AlertTriangle, Fingerprint, Scan, Zap, Info } from 'lucide-react';
 
 interface Alien {
     ticker: string;
@@ -199,7 +199,16 @@ export default function TopologicalMRIWidget() {
 
             {/* HUD Overlay - Top Left */}
             <div className="absolute top-4 left-4 z-10 border border-white/20 p-2 bg-black/50 backdrop-blur-sm">
-                <div className="text-xs text-gray-400">Caria Cortex_v1</div>
+                <div className="flex items-center gap-2">
+                    <div className="text-xs text-gray-400">Caria Cortex_v1</div>
+                    <div className="group relative">
+                        <Info className="h-3 w-3 text-gray-500 hover:text-gray-300 cursor-help" />
+                        <div className="absolute left-0 top-5 w-72 bg-slate-900 border border-cyan-500/50 rounded-lg p-3 text-xs text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-50">
+                            <p className="font-semibold text-cyan-300 mb-1">Topological MRI Scanner</p>
+                            <p>Uses Topological Data Analysis (TDA) to detect "alien" stocks - companies exhibiting abnormal behavioral patterns disconnected from their sector. High isolation scores indicate structural anomalies worth investigating.</p>
+                        </div>
+                    </div>
+                </div>
                 <div className={`text-xs flex items-center gap-2 ${isError ? 'text-red-500' : isWaiting ? 'text-yellow-500' : 'text-green-500'}`}>
                     <span className="relative flex h-2 w-2">
                         {!isError && <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isWaiting ? 'bg-yellow-400' : 'bg-green-400'}`}></span>}

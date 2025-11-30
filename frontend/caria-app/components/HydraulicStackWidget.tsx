@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, Eye, Shield, Crosshair, Droplets } from 'lucide-react';
+import { Activity, Eye, Shield, Crosshair, Droplets, Info } from 'lucide-react';
 
 interface StackStatus {
     liquidity: {
@@ -93,6 +93,13 @@ export default function HydraulicStackWidget() {
                     <span className="bg-gradient-to-r from-purple-200 via-cyan-200 to-purple-200 bg-clip-text text-transparent">
                         AI-Hydraulic Stack
                     </span>
+                    <div className="group relative ml-1">
+                        <Info className="h-4 w-4 text-purple-400/60 hover:text-purple-300 cursor-help" />
+                        <div className="absolute left-0 top-6 w-72 bg-slate-900 border border-purple-500/50 rounded-lg p-3 text-xs text-gray-300 font-normal opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-50">
+                            <p className="font-semibold text-purple-300 mb-1">AI-Hydraulic Stack</p>
+                            <p>Monitors Fed liquidity (Assets - TGA - RRP) and yield curve to determine market regime. Score &gt;60 = Expansion (growth mode), &lt;40 = Contraction (defensive mode). Guides strategy allocation in real-time.</p>
+                        </div>
+                    </div>
                     <span className="text-xs text-purple-400/60 font-normal ml-auto">LIVE</span>
                 </div>
             </div>
@@ -101,8 +108,8 @@ export default function HydraulicStackWidget() {
             <div className="relative z-10 p-4 space-y-3">
                 {/* Core Score Display */}
                 <div className={`relative p-4 rounded-lg bg-gradient-to-r ${status.liquidity.score >= 60 ? 'from-green-500/20 via-emerald-500/30 to-green-500/20' :
-                        status.liquidity.score <= 40 ? 'from-red-500/20 via-rose-500/30 to-red-500/20' :
-                            'from-yellow-500/20 via-amber-500/30 to-yellow-500/20'
+                    status.liquidity.score <= 40 ? 'from-red-500/20 via-rose-500/30 to-red-500/20' :
+                        'from-yellow-500/20 via-amber-500/30 to-yellow-500/20'
                     } border border-purple-400/20 backdrop-blur-sm`}>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -157,7 +164,7 @@ export default function HydraulicStackWidget() {
                             <div className="text-right">
                                 <div className="text-xs text-rose-100/80">{status.execution.position} Position</div>
                                 <div className={`text-[10px] mt-0.5 ${status.execution.risk === 'LOW' ? 'text-green-400' :
-                                        status.execution.risk === 'HIGH' ? 'text-red-400' : 'text-yellow-400'
+                                    status.execution.risk === 'HIGH' ? 'text-red-400' : 'text-yellow-400'
                                     }`}>
                                     {status.execution.risk} Risk
                                 </div>

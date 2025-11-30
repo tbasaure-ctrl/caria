@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Brain, Activity, AlertTriangle, Fingerprint, Scan, Zap, Info } from 'lucide-react';
+import { API_BASE_URL } from '../services/apiService';
 
 interface Alien {
     ticker: string;
@@ -166,7 +167,7 @@ export default function TopologicalMRIWidget() {
 
     const fetchScan = async () => {
         try {
-            const response = await fetch('/api/topology/scan');
+            const response = await fetch(`${API_BASE_URL}/api/topology/scan`);
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
             setScan(data);

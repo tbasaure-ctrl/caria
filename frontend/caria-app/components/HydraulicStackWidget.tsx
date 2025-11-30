@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Activity, Eye, Shield, Crosshair, Droplets, Info } from 'lucide-react';
+import { API_BASE_URL } from '../services/apiService';
 
 interface StackStatus {
     liquidity: {
@@ -37,7 +38,7 @@ export default function HydraulicStackWidget() {
 
     const fetchStackStatus = async () => {
         try {
-            const response = await fetch('/api/liquidity/status');
+            const response = await fetch(`${API_BASE_URL}/api/liquidity/status`);
             const data = await response.json();
 
             setStatus({

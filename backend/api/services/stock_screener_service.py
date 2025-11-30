@@ -171,7 +171,20 @@ class StockScreenerService:
         return 0.0
 
     def run_screen(self):
-        candidates = self.get_initial_screeners()[:5]
+        # Increase candidate pool from 5 to 30 for better Hidden Gems discovery
+        candidates = self.get_initial_screeners()[:30]
+        
+        if not candidates:
+            LOGGER.warning("No candidates found from initial screeners")
+            return [{
+                "symbol": "N/A",
+                "name": "No stocks found",
+                "sector": "N/A",
+                "quality": 0, "valuation": 0, "momentum": 0, "catalyst": 0, "risk": 0,
+                "c_score": 0,
+                "error": "No candidates matched screening criteria. Try adjusting filters or check FMP API."
+            }]
+        
         results = []
         
         for ticker in candidates:
@@ -197,6 +210,17 @@ class StockScreenerService:
             except Exception as e:
                 LOGGER.error(f"Error screening {ticker}: {e}")
                 continue
+                
+        if not results:
+            LOGGER.warning("No valid results after screening all candidates")
+            return [{
+                "symbol": "N/A",
+                "name": "No valid stocks found",
+                "sector": "N/A",
+                "quality": 0, "valuation": 0, "momentum": 0, "catalyst": 0, "risk": 0,
+                "c_score": 0,
+                "error": "All candidates failed screening. Check API connectivity or data quality."
+            }]
                 
         results.sort(key=lambda x: x['c_score'], reverse=True)
         top_results = results[:10]

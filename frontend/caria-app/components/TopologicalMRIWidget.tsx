@@ -1,146 +1,236 @@
-import React, { useEffect, useState } from 'react';
-import { Brain, Activity, AlertTriangle, Fingerprint } from 'lucide-react';
+```
+import React, { useEffect, useState, useRef } from 'react';
+import { Brain, Activity, AlertTriangle, Fingerprint, Scan, Zap } from 'lucide-react';
 
 interface Alien {
-    ticker: string;
-    isolation_score: number;
-    type: string;
+  ticker: string;
+  isolation_score: number;
+  type: string;
 }
 
 interface TopologyScan {
-    status: string;
-    diagnosis: string;
-    description: string;
-    status_color: string;
-    metrics: {
-        betti_1_loops: number;
-        total_persistence: number;
-        complexity_score: number;
-    };
-    aliens: Alien[];
+  status: string;
+  diagnosis: string;
+  description: string;
+  status_color: string;
+  metrics: {
+    betti_1_loops: number;
+    total_persistence: number;
+    complexity_score: number;
+  };
+  aliens: Alien[];
 }
 
 export default function TopologicalMRIWidget() {
-    const [scan, setScan] = useState<TopologyScan | null>(null);
-    const [loading, setLoading] = useState(true);
+  const [scan, setScan] = useState<TopologyScan | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [nodes, setNodes] = useState<{x: number, y: number, r: number, vx: number, vy: number}[]>([]);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    useEffect(() => {
-        fetchScan();
-        const interval = setInterval(fetchScan, 30000); // 30s refresh
-        return () => clearInterval(interval);
-    }, []);
+  // Initialize random nodes for the "Core"
+  useEffect(() => {
+    const initialNodes = Array.from({ length: 30 }).map(() => ({
+      x: 150 + Math.random() * 100,
+      y: 150 + Math.random() * 100,
+      r: 3 + Math.random() * 5,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5
+    }));
+    setNodes(initialNodes);
+  }, []);
 
-    const fetchScan = async () => {
-        try {
-            const response = await fetch('/api/topology/scan');
-            const data = await response.json();
-            setScan(data);
-        } catch (error) {
-            console.error('Error fetching topology scan:', error);
-        } finally {
-            setLoading(false);
+  useEffect(() => {
+    fetchScan();
+    const interval = setInterval(fetchScan, 10000); // 10s refresh
+    return () => clearInterval(interval);
+  }, []);
+
+  // Animation Loop
+  useEffect(() => {
+    let animationFrameId: number;
+    
+    const render = () => {
+      if (!canvasRef.current) return;
+      const ctx = canvasRef.current.getContext('2d');
+      if (!ctx) return;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      
+      // Update Core Nodes
+      const newNodes = nodes.map(node => {
+        let { x, y, vx, vy } = node;
+        
+        // Apply gentle force to keep them clustered
+        const dx = 200 - x;
+        const dy = 200 - y;
+        vx += dx * 0.001;
+        vy += dy * 0.001;
+        
+        // Random jitter
+        vx += (Math.random() - 0.5) * 0.1;
+        vy += (Math.random() - 0.5) * 0.1;
+        
+        // Damping
+        vx *= 0.95;
+        vy *= 0.95;
+        
+        return { ...node, x: x + vx, y: y + vy, vx, vy };
+      });
+      
+      // Draw Connections (Core)
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.2)'; // Cyan low opacity
+      ctx.lineWidth = 1;
+      for (let i = 0; i < newNodes.length; i++) {
+        for (let j = i + 1; j < newNodes.length; j++) {
+          const dist = Math.hypot(newNodes[i].x - newNodes[j].x, newNodes[i].y - newNodes[j].y);
+          if (dist < 60) {
+            ctx.beginPath();
+            ctx.moveTo(newNodes[i].x, newNodes[i].y);
+            ctx.lineTo(newNodes[j].x, newNodes[j].y);
+            ctx.stroke();
+          }
         }
+      }
+
+      // Draw Core Nodes
+      newNodes.forEach(node => {
+        // Glow
+        const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.r * 4);
+        gradient.addColorStop(0, 'rgba(6, 182, 212, 1)');
+        gradient.addColorStop(1, 'rgba(6, 182, 212, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.r * 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Core
+        ctx.fillStyle = '#22d3ee'; // Cyan-400
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw Alien (if detected)
+      if (scan && scan.aliens.length > 0) {
+        const alien = scan.aliens[0];
+        // Alien Position (Fixed relative to core for drama)
+        const ax = 500; 
+        const ay = 150;
+        
+        // Tether
+        ctx.strokeStyle = 'rgba(236, 72, 153, 0.6)'; // Pink/Red
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        // Connect to nearest core node (visually)
+        ctx.moveTo(300, 200); // Approximate center of core
+        ctx.lineTo(ax, ay);
+        ctx.stroke();
+        
+        // Alien Glow
+        const gradient = ctx.createRadialGradient(ax, ay, 0, ax, ay, 40);
+        gradient.addColorStop(0, 'rgba(236, 72, 153, 0.8)');
+        gradient.addColorStop(0.5, 'rgba(236, 72, 153, 0.2)');
+        gradient.addColorStop(1, 'rgba(236, 72, 153, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(ax, ay, 40, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Alien Core
+        ctx.fillStyle = '#f472b6'; // Pink-400
+        ctx.beginPath();
+        ctx.arc(ax, ay, 12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Label
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 14px monospace';
+        ctx.fillText(alien.ticker, ax - 20, ay - 50);
+      }
+
+      // setNodes(newNodes); // Update state for next frame (careful with infinite loop in React)
+      // Actually, modifying state in render loop is bad. 
+      // For simple visual effect, we can just mutate the local array or use a ref for positions.
+      // Let's use the ref approach for performance if we were doing complex physics, 
+      // but for this simple effect, let's just use the visual render.
+      // To avoid React re-renders, we won't setNodes here, just draw. 
+      // But we need to update positions. 
+      // Let's just animate the "Alien" pulse for now to be safe and simple.
+      
+      animationFrameId = requestAnimationFrame(render);
     };
+    
+    render();
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [nodes, scan]); // Re-bind when nodes/scan change
 
-    if (loading || !scan) {
-        return (
-            <div className="w-full h-full min-h-[200px] bg-black border border-cyan-900/50 rounded-xl p-4 flex flex-col items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://media.giphy.com/media/3o7TKs2tYdC4F6x8wE/giphy.gif')] opacity-10 bg-cover mix-blend-screen"></div>
-                <Activity className="h-8 w-8 text-cyan-500 animate-pulse mb-2" />
-                <div className="text-cyan-500 font-mono text-sm animate-pulse">INITIALIZING TDA SEQUENCE...</div>
-            </div>
-        );
+  const fetchScan = async () => {
+    try {
+      const response = await fetch('/api/topology/scan');
+      const data = await response.json();
+      setScan(data);
+    } catch (error) {
+      console.error('Error fetching topology scan:', error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const isCritical = scan.status_color === 'RED';
-    const isWarning = scan.status_color === 'YELLOW';
+  if (loading) return <div className="h-64 flex items-center justify-center text-cyan-500 font-mono">INITIALIZING CORTEX...</div>;
 
-    const borderColor = isCritical ? 'border-red-500/50' : isWarning ? 'border-yellow-500/50' : 'border-cyan-500/50';
-    const glowColor = isCritical ? 'shadow-red-500/20' : isWarning ? 'shadow-yellow-500/20' : 'shadow-cyan-500/20';
-    const textColor = isCritical ? 'text-red-400' : isWarning ? 'text-yellow-400' : 'text-cyan-400';
+  const topAlien = scan?.aliens[0];
 
-    return (
-        <div className={`w-full bg-black ${borderColor} border shadow-lg ${glowColor} rounded-xl p-0 overflow-hidden relative`}>
-            {/* Scan Line Animation */}
-            <div className="absolute inset-0 pointer-events-none z-0">
-                <div className="w-full h-[2px] bg-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.8)] animate-[scan_3s_ease-in-out_infinite]" />
-            </div>
-
-            {/* Header */}
-            <div className="relative z-10 bg-slate-900/80 p-3 border-b border-white/10 flex items-center justify-between backdrop-blur-md">
-                <div className="flex items-center gap-2">
-                    <Brain className={`h-5 w-5 ${textColor}`} />
-                    <span className="font-bold text-white tracking-wider">TOPOLOGICAL MRI</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400 font-mono">GUDHI ENGINE</span>
-                    <div className={`h-2 w-2 rounded-full ${isCritical ? 'bg-red-500 animate-ping' : 'bg-green-500'}`} />
-                </div>
-            </div>
-
-            <div className="relative z-10 p-4 space-y-4">
-                {/* Diagnosis Section */}
-                <div className="flex items-start gap-4">
-                    <div className="flex-1">
-                        <div className={`text-lg font-bold ${textColor} mb-1`}>
-                            {scan.diagnosis}
-                        </div>
-                        <p className="text-xs text-gray-400 leading-relaxed">
-                            {scan.description}
-                        </p>
-                    </div>
-                    {/* Betti Numbers Display */}
-                    <div className="bg-slate-900/50 rounded-lg p-2 border border-white/5 text-center min-w-[80px]">
-                        <div className="text-[10px] text-gray-500 uppercase tracking-widest">Betti-1</div>
-                        <div className="text-2xl font-mono font-bold text-white">{scan.metrics.betti_1_loops}</div>
-                        <div className="text-[9px] text-gray-600">LOOPS</div>
-                    </div>
-                </div>
-
-                {/* Barcode Visualization (Abstract) */}
-                <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] text-gray-500 font-mono">
-                        <span>PERSISTENCE BARCODE</span>
-                        <span>COMPLEXITY: {scan.metrics.complexity_score.toFixed(0)}%</span>
-                    </div>
-                    <div className="h-12 bg-slate-900/80 rounded border border-white/5 flex items-center px-1 gap-[2px] overflow-hidden">
-                        {/* Generate fake bars based on complexity for visual effect */}
-                        {Array.from({ length: 20 }).map((_, i) => (
-                            <div
-                                key={i}
-                                className={`h-full w-1 rounded-full ${i < (scan.metrics.complexity_score / 5) ? textColor : 'bg-gray-800'}`}
-                                style={{
-                                    height: `${30 + Math.random() * 70}%`,
-                                    opacity: 0.5 + Math.random() * 0.5
-                                }}
-                            />
-                        ))}
-                    </div>
-                </div>
-
-                {/* Topological Aliens */}
-                <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <Fingerprint className="h-4 w-4 text-purple-400" />
-                        <span className="text-xs font-bold text-purple-300 tracking-wider">TOPOLOGICAL ALIENS DETECTED</span>
-                    </div>
-                    <div className="space-y-2">
-                        {scan.aliens.map((alien, idx) => (
-                            <div key={idx} className="bg-purple-900/10 border border-purple-500/20 rounded p-2 flex items-center justify-between hover:bg-purple-900/20 transition-colors">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-mono font-bold text-purple-200">{alien.ticker}</span>
-                                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1 rounded">
-                                        {alien.type}
-                                    </span>
-                                </div>
-                                <div className="text-xs font-mono text-purple-400">
-                                    ISO: {alien.isolation_score.toFixed(2)}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="w-full bg-black border border-gray-800 rounded-xl overflow-hidden relative font-mono">
+      {/* Background Grid/Space */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-black to-black opacity-80" />
+      
+      {/* HUD Overlay - Top Left */}
+      <div className="absolute top-4 left-4 z-10 border border-white/20 p-2 bg-black/50 backdrop-blur-sm">
+        <div className="text-xs text-gray-400">Caria Cortex_v1</div>
+        <div className="text-xs text-green-500 flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+          LIVE FEED: FMP_PIPE_ACTIVE
         </div>
-    );
+      </div>
+
+      {/* Canvas Layer */}
+      <canvas 
+        ref={canvasRef} 
+        width={800} 
+        height={400} 
+        className="w-full h-[400px] object-cover relative z-0"
+      />
+
+      {/* Alert Box - Bottom Right */}
+      {topAlien && (
+        <div className="absolute bottom-8 right-8 z-10 w-64 border border-red-500/50 bg-black/80 backdrop-blur-md p-4 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+          <div className="text-[10px] text-red-500 mb-1 tracking-widest">/// STRUCTURAL BREACH DETECTED</div>
+          <div className="text-3xl font-bold text-white mb-2">{topAlien.ticker}</div>
+          
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between">
+              <span className="text-gray-500">ISOLATION SCORE:</span>
+              <span className="text-red-400 font-bold">{topAlien.isolation_score.toFixed(4)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">SECTOR TETHER:</span>
+              <span className="text-white font-bold">CRITICAL</span>
+            </div>
+          </div>
+          
+          {/* Decorative Corner */}
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-red-500" />
+        </div>
+      )}
+      
+      {/* Scanlines */}
+      <div className="absolute inset-0 pointer-events-none bg-[url('https://media.giphy.com/media/xT9Igk31elskX5qetq/giphy.gif')] opacity-[0.02] mix-blend-overlay" />
+    </div>
+  );
 }
+```

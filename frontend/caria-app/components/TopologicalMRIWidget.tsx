@@ -172,5 +172,6 @@ export default function TopologicalMRIWidget() {
         {/* Scanlines */ }
         <div className="absolute inset-0 pointer-events-none bg-[url('https://media.giphy.com/media/xT9Igk31elskX5qetq/giphy.gif')] opacity-[0.02] mix-blend-overlay" />
         </div >
+            {/* End Widget */ }
     );
 }

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, API_BASE_URL, getToken } from '../../services/apiService';
-import { getGuestHoldings } from '../../services/guestStorageService';
-import { MoreHorizontal, ArrowUpRight, ArrowDownRight, TrendingUp, AlertCircle } from 'lucide-react';
+import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, API_BASE_URL, getToken, createHolding, deleteHolding } from '../../services/apiService';
+import { getGuestHoldings, createGuestHolding, deleteGuestHolding } from '../../services/guestStorageService';
+import { MoreHorizontal, ArrowUpRight, ArrowDownRight, TrendingUp, AlertCircle, Plus, Info, Edit2, Trash2 } from 'lucide-react';
+import { getErrorMessage } from '../../src/utils/errorHandling';
+import { Portfolio } from '../widgets/Portfolio';
+import { PortfolioAnalytics } from '../widgets/PortfolioAnalytics';
 
 // TSMOM Status Dot Component
 const TrendDot: React.FC<{ ticker: string }> = ({ ticker }) => {
@@ -12,7 +15,6 @@ const TrendDot: React.FC<{ ticker: string }> = ({ ticker }) => {
     useEffect(() => {
         const fetchTrend = async () => {
             try {
-                // Avoid fetching if not a valid ticker
                 if (!ticker || ticker.length > 10) return;
                 
                 const token = getToken();
@@ -25,7 +27,7 @@ const TrendDot: React.FC<{ ticker: string }> = ({ ticker }) => {
                     setTrend(data.trend_direction);
                 }
             } catch (error) {
-                // Silent fail for list view
+                // Silent fail
             } finally {
                 setLoading(false);
             }
@@ -38,26 +40,26 @@ const TrendDot: React.FC<{ ticker: string }> = ({ ticker }) => {
     let color = 'bg-gray-500';
     let tooltip = 'Neutral';
 
-    if (trend === 'Bullish') { color = 'bg-positive shadow-[0_0_8px_rgba(16,185,129,0.4)]'; tooltip = 'Positive Trend'; }
-    else if (trend === 'Bearish') { color = 'bg-negative'; tooltip = 'Negative Trend'; }
+    if (trend === 'Bullish') { color = 'bg-positive shadow-[0_0_8px_rgba(16,185,129,0.4)]'; tooltip = 'Positive Trend (Bullish)'; }
+    else if (trend === 'Bearish') { color = 'bg-negative'; tooltip = 'Negative Trend (Bearish)'; }
     else if (trend === 'High Risk Bullish') { color = 'bg-warning'; tooltip = 'High Risk Trend'; }
 
     return (
-        <div className="group relative flex items-center justify-center w-full h-full">
-            <div className={`w-2.5 h-2.5 rounded-full ${color} cursor-help`} />
-            <div className="absolute bottom-full mb-2 hidden group-hover:block bg-black border border-white/10 px-2 py-1 text-[10px] rounded whitespace-nowrap z-10">
+        <div className="group relative flex items-center justify-center w-full h-full cursor-help">
+            <div className={`w-2.5 h-2.5 rounded-full ${color}`} />
+            <div className="absolute bottom-full mb-2 hidden group-hover:block bg-black border border-white/10 px-2 py-1 text-[10px] rounded whitespace-nowrap z-50 shadow-lg">
                 {tooltip}
             </div>
         </div>
     );
 };
 
-// Helper to convert guest holdings (simplified for list view)
+// Helper to convert guest holdings
 const convertGuestHoldings = (guestHoldings: any[]): HoldingsWithPrices => {
     return {
         holdings: guestHoldings.map(h => ({
             ...h,
-            current_price: h.average_cost, // Mock
+            current_price: h.average_cost, // Mock price for guest
             current_value: h.quantity * h.average_cost,
             gain_loss: 0,
             gain_loss_pct: 0,
@@ -72,130 +74,297 @@ const convertGuestHoldings = (guestHoldings: any[]): HoldingsWithPrices => {
     };
 };
 
+type SortKey = 'ticker' | 'current_price' | 'current_value' | 'gain_loss_pct' | 'trend';
+type Section = 'main' | 'performance' | 'analytics';
+
 export const PortfolioPage: React.FC = () => {
     const navigate = useNavigate();
     const [portfolioData, setPortfolioData] = useState<HoldingsWithPrices | null>(null);
     const [loading, setLoading] = useState(true);
+    const [sortKey, setSortKey] = useState<SortKey>('current_value');
+    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [activeSection, setActiveSection] = useState<Section>('main');
+    
+    // Add Form State
+    const [formData, setFormData] = useState({
+        ticker: '',
+        quantity: '',
+        average_cost: '',
+        purchase_date: new Date().toISOString().split('T')[0],
+        notes: ''
+    });
+    const [actionLoading, setActionLoading] = useState(false);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            if (getToken()) {
+                const data = await fetchHoldingsWithPrices();
+                setPortfolioData(data);
+            } else {
+                const guest = getGuestHoldings();
+                setPortfolioData(convertGuestHoldings(guest));
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const loadData = async () => {
-            setLoading(true);
-            try {
-                if (getToken()) {
-                    const data = await fetchHoldingsWithPrices();
-                    setPortfolioData(data);
-                } else {
-                    const guest = getGuestHoldings();
-                    setPortfolioData(convertGuestHoldings(guest));
-                }
-            } catch (e) {
-                console.error(e);
-            } finally {
-                setLoading(false);
-            }
-        };
         loadData();
     }, []);
 
+    const handleSort = (key: SortKey) => {
+        if (sortKey === key) {
+            setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortKey(key);
+            setSortDir('desc');
+        }
+    };
+
+    const sortedHoldings = [...(portfolioData?.holdings || [])].sort((a, b) => {
+        let valA: any = a[key as keyof HoldingWithPrice];
+        let valB: any = b[key as keyof HoldingWithPrice];
+
+        if (key === 'ticker') {
+            valA = a.ticker;
+            valB = b.ticker;
+        }
+
+        if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+    });
+
+    const handleAddHolding = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setActionLoading(true);
+        try {
+            const holdingData = {
+                ticker: formData.ticker.toUpperCase(),
+                quantity: parseFloat(formData.quantity),
+                average_cost: parseFloat(formData.average_cost),
+                purchase_date: formData.purchase_date,
+                notes: formData.notes
+            };
+
+            if (getToken()) {
+                await createHolding(holdingData);
+            } else {
+                createGuestHolding(holdingData);
+            }
+            
+            setShowAddForm(false);
+            setFormData({ ticker: '', quantity: '', average_cost: '', purchase_date: new Date().toISOString().split('T')[0], notes: '' });
+            await loadData();
+        } catch (err) {
+            console.error(err);
+            alert('Failed to add holding');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!window.confirm('Delete this holding?')) return;
+        
+        try {
+            if (getToken()) {
+                await deleteHolding(id);
+            } else {
+                deleteGuestHolding(id);
+            }
+            await loadData();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     if (loading) return <div className="text-sm text-text-muted animate-pulse">Loading portfolio...</div>;
 
-    const holdings = portfolioData?.holdings || [];
-
     return (
-        <div className="animate-fade-in">
-            {/* Header Stats */}
-            <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-lg border border-white/5 bg-bg-secondary">
-                    <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1">Total Equity</div>
-                    <div className="text-2xl font-display text-white">
-                        ${portfolioData?.total_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </div>
-                </div>
-                <div className="p-4 rounded-lg border border-white/5 bg-bg-secondary">
-                    <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1">Total Return</div>
-                    <div className={`text-2xl font-mono ${portfolioData?.total_gain_loss_pct && portfolioData.total_gain_loss_pct >= 0 ? 'text-positive' : 'text-negative'}`}>
-                        {portfolioData?.total_gain_loss_pct >= 0 ? '+' : ''}{portfolioData?.total_gain_loss_pct.toFixed(2)}%
-                    </div>
-                </div>
-                <div className="p-4 rounded-lg border border-white/5 bg-bg-secondary flex items-center justify-between">
-                    <div>
-                        <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1">Health Check</div>
-                        <div className="text-sm text-text-secondary">TSMOM Signals Active</div>
-                    </div>
-                    <TrendingUp className="w-5 h-5 text-accent-primary opacity-50" />
+        <div className="flex h-[calc(100vh-100px)] animate-fade-in">
+            {/* Sidebar Navigation */}
+            <div className="w-48 border-r border-white/10 pr-4 hidden md:block">
+                <div className="space-y-1 sticky top-0">
+                    <button 
+                        onClick={() => setActiveSection('main')}
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'main' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                    >
+                        Overview & Holdings
+                    </button>
+                    <button 
+                        onClick={() => setActiveSection('performance')}
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'performance' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                    >
+                        Performance Graph
+                    </button>
+                    <button 
+                        onClick={() => setActiveSection('analytics')}
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'analytics' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                    >
+                        Deep Analytics
+                    </button>
                 </div>
             </div>
 
-            {/* GitHub-style Table */}
-            <div className="border border-white/10 rounded-lg overflow-hidden bg-bg-secondary/50">
-                {/* Table Header */}
-                <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-bg-tertiary border-b border-white/10 text-[10px] text-text-muted uppercase tracking-wider font-medium">
-                    <div className="col-span-4 sm:col-span-3">Asset</div>
-                    <div className="col-span-3 sm:col-span-2 text-right">Price</div>
-                    <div className="col-span-3 sm:col-span-2 text-right">Value</div>
-                    <div className="hidden sm:block sm:col-span-2 text-right">Return</div>
-                    <div className="col-span-2 sm:col-span-1 text-center">12m Trend</div>
-                    <div className="hidden sm:block sm:col-span-2 text-right">Action</div>
-                </div>
-
-                {/* Table Rows */}
-                <div className="divide-y divide-white/5">
-                    {holdings.map((holding) => (
-                        <div 
-                            key={holding.ticker}
-                            onClick={() => navigate(`/analysis?ticker=${holding.ticker}`)}
-                            className="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer items-center group"
-                        >
-                            {/* Asset */}
-                            <div className="col-span-4 sm:col-span-3 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[10px] font-bold text-accent-cyan">
-                                    {holding.ticker.substring(0, 2)}
+            {/* Main Content Area */}
+            <div className="flex-1 pl-0 md:pl-8 overflow-y-auto custom-scrollbar pr-2">
+                
+                {/* Section: Main (Overview + Holdings) */}
+                {activeSection === 'main' && (
+                    <div className="space-y-8">
+                        {/* Header Stats */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="p-4 rounded-lg border border-white/5 bg-bg-secondary">
+                                <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1">Total Equity</div>
+                                <div className="text-2xl font-display text-white">
+                                    ${portfolioData?.total_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                 </div>
+                            </div>
+                            <div className="p-4 rounded-lg border border-white/5 bg-bg-secondary">
+                                <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1">Total P&L</div>
+                                <div className={`text-2xl font-mono ${portfolioData?.total_gain_loss_pct && portfolioData.total_gain_loss_pct >= 0 ? 'text-positive' : 'text-negative'}`}>
+                                    {portfolioData?.total_gain_loss_pct >= 0 ? '+' : ''}{portfolioData?.total_gain_loss_pct.toFixed(2)}%
+                                </div>
+                            </div>
+                            <div className="p-4 rounded-lg border border-white/5 bg-bg-secondary flex items-center justify-between cursor-help group relative">
                                 <div>
-                                    <div className="text-sm font-bold text-white font-mono">{holding.ticker}</div>
-                                    <div className="text-[10px] text-text-muted">{holding.quantity} units</div>
+                                    <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1">TSMOM Status</div>
+                                    <div className="text-sm text-text-secondary">Trend Signals Active</div>
+                                </div>
+                                <TrendingUp className="w-5 h-5 text-accent-primary opacity-50" />
+                                <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-black border border-white/10 rounded shadow-xl text-xs text-text-muted z-50 hidden group-hover:block">
+                                    Time Series Momentum (TSMOM) analyzes 12-month trends and volatility to signal Bullish/Bearish regimes.
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Price */}
-                            <div className="col-span-3 sm:col-span-2 text-right text-sm font-mono text-text-secondary">
-                                ${holding.current_price?.toFixed(2)}
+                        {/* Controls */}
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-display text-white">Holdings</h3>
+                            <button 
+                                onClick={() => setShowAddForm(!showAddForm)}
+                                className="flex items-center gap-2 px-3 py-1.5 bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 border border-accent-primary/20 rounded text-xs font-bold uppercase tracking-wider transition-all"
+                            >
+                                <Plus className="w-3 h-3" /> Add Holding
+                            </button>
+                        </div>
+
+                        {/* Add Form */}
+                        {showAddForm && (
+                            <div className="bg-bg-secondary border border-white/10 rounded-lg p-4 animate-fade-in-up">
+                                <form onSubmit={handleAddHolding} className="grid grid-cols-2 md:grid-cols-5 gap-4 items-end">
+                                    <div>
+                                        <label className="text-[10px] text-text-muted uppercase">Ticker</label>
+                                        <input required type="text" value={formData.ticker} onChange={e => setFormData({...formData, ticker: e.target.value})} className="w-full bg-bg-tertiary border border-white/10 rounded px-2 py-1 text-sm text-white" placeholder="AAPL" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-text-muted uppercase">Quantity</label>
+                                        <input required type="number" step="any" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} className="w-full bg-bg-tertiary border border-white/10 rounded px-2 py-1 text-sm text-white" placeholder="0" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-text-muted uppercase">Avg Cost</label>
+                                        <input required type="number" step="any" value={formData.average_cost} onChange={e => setFormData({...formData, average_cost: e.target.value})} className="w-full bg-bg-tertiary border border-white/10 rounded px-2 py-1 text-sm text-white" placeholder="0.00" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-text-muted uppercase">Date</label>
+                                        <input type="date" value={formData.purchase_date} onChange={e => setFormData({...formData, purchase_date: e.target.value})} className="w-full bg-bg-tertiary border border-white/10 rounded px-2 py-1 text-sm text-white" />
+                                    </div>
+                                    <button disabled={actionLoading} type="submit" className="bg-accent-primary text-black font-bold text-xs py-2 rounded hover:bg-accent-primary/90 transition-colors">
+                                        {actionLoading ? 'Saving...' : 'Save Position'}
+                                    </button>
+                                </form>
                             </div>
+                        )}
 
-                            {/* Value */}
-                            <div className="col-span-3 sm:col-span-2 text-right">
-                                <div className="text-sm font-mono text-white">
-                                    ${holding.current_value?.toLocaleString()}
+                        {/* List View */}
+                        <div className="border border-white/10 rounded-lg overflow-hidden bg-bg-secondary/50">
+                            {/* Header */}
+                            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-bg-tertiary border-b border-white/10 text-[10px] text-text-muted uppercase tracking-wider font-medium">
+                                <div className="col-span-3 cursor-pointer hover:text-white" onClick={() => handleSort('ticker')}>Asset {sortKey === 'ticker' && (sortDir === 'asc' ? '↑' : '↓')}</div>
+                                <div className="col-span-2 text-right cursor-pointer hover:text-white" onClick={() => handleSort('current_price')}>Price {sortKey === 'current_price' && (sortDir === 'asc' ? '↑' : '↓')}</div>
+                                <div className="col-span-2 text-right cursor-pointer hover:text-white" onClick={() => handleSort('current_value')}>Value {sortKey === 'current_value' && (sortDir === 'asc' ? '↑' : '↓')}</div>
+                                <div className="col-span-2 text-right cursor-pointer hover:text-white" onClick={() => handleSort('gain_loss_pct')}>P&L % {sortKey === 'gain_loss_pct' && (sortDir === 'asc' ? '↑' : '↓')}</div>
+                                <div className="col-span-1 text-center flex items-center justify-center gap-1">
+                                    12m Trend <span className="text-[8px] text-text-muted">(TSMOM)</span>
                                 </div>
+                                <div className="col-span-2 text-right">Analysis</div>
                             </div>
 
-                            {/* Return (Hidden on Mobile) */}
-                            <div className={`hidden sm:block sm:col-span-2 text-right text-sm font-mono ${holding.gain_loss_pct >= 0 ? 'text-positive' : 'text-negative'}`}>
-                                {holding.gain_loss_pct >= 0 ? '+' : ''}{holding.gain_loss_pct.toFixed(2)}%
-                            </div>
-
-                            {/* 12m Trend (TSMOM) */}
-                            <div className="col-span-2 sm:col-span-1 flex justify-center">
-                                <TrendDot ticker={holding.ticker} />
-                            </div>
-
-                            {/* Action (Hidden on Mobile) */}
-                            <div className="hidden sm:flex sm:col-span-2 justify-end">
-                                <button className="p-1.5 rounded hover:bg-white/10 text-text-muted hover:text-white transition-colors opacity-0 group-hover:opacity-100">
-                                    <ArrowUpRight className="w-4 h-4" />
-                                </button>
+                            {/* Rows */}
+                            <div className="divide-y divide-white/5">
+                                {sortedHoldings.map((holding) => (
+                                    <div 
+                                        key={holding.ticker}
+                                        onClick={() => navigate(`/analysis?ticker=${holding.ticker}`)}
+                                        className="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer items-center group"
+                                    >
+                                        <div className="col-span-3 flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[10px] font-bold text-accent-cyan">
+                                                {holding.ticker.substring(0, 2)}
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-bold text-white font-mono">{holding.ticker}</div>
+                                                <div className="text-[10px] text-text-muted">{holding.quantity} units</div>
+                                            </div>
+                                        </div>
+                                        <div className="col-span-2 text-right text-sm font-mono text-text-secondary">
+                                            ${holding.current_price?.toFixed(2)}
+                                        </div>
+                                        <div className="col-span-2 text-right">
+                                            <div className="text-sm font-mono text-white">
+                                                ${holding.current_value?.toLocaleString()}
+                                            </div>
+                                        </div>
+                                        <div className={`col-span-2 text-right text-sm font-mono ${holding.gain_loss_pct >= 0 ? 'text-positive' : 'text-negative'}`}>
+                                            {holding.gain_loss_pct >= 0 ? '+' : ''}{holding.gain_loss_pct.toFixed(2)}%
+                                        </div>
+                                        <div className="col-span-1 flex justify-center">
+                                            <TrendDot ticker={holding.ticker} />
+                                        </div>
+                                        <div className="col-span-2 flex justify-end items-center gap-3">
+                                            <button 
+                                                onClick={(e) => handleDelete(holding.id, e)}
+                                                className="p-1.5 text-text-muted hover:text-negative opacity-0 group-hover:opacity-100 transition-opacity"
+                                                title="Sell/Delete"
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                            </button>
+                                            <button className="flex items-center gap-1 text-[10px] text-accent-cyan hover:text-white transition-colors">
+                                                Analyze <ArrowUpRight className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {sortedHoldings.length === 0 && (
+                                    <div className="p-8 text-center text-text-muted text-sm">No holdings found.</div>
+                                )}
                             </div>
                         </div>
-                    ))}
+                    </div>
+                )}
 
-                    {holdings.length === 0 && (
-                        <div className="p-8 text-center text-text-muted text-sm">
-                            No holdings found. Add assets to start tracking.
-                        </div>
-                    )}
-                </div>
+                {/* Section: Performance Graph */}
+                {activeSection === 'performance' && (
+                    <div className="h-[600px]">
+                        {/* Reusing the Portfolio widget which contains the graph logic */}
+                        <Portfolio />
+                    </div>
+                )}
+
+                {/* Section: Deep Analytics */}
+                {activeSection === 'analytics' && (
+                    <div className="h-[600px]">
+                        <PortfolioAnalytics />
+                    </div>
+                )}
             </div>
         </div>
     );
 };
-

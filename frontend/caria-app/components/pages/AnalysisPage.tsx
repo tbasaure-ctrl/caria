@@ -6,6 +6,11 @@ import { ProjectionValuation } from '../widgets/ProjectionValuation';
 import { CrisisSimulator } from '../widgets/CrisisSimulator';
 import { RiskRewardWidget } from '../widgets/RiskRewardWidget';
 import { ChatWindow } from '../ChatWindow';
+import { PortfolioAnalytics } from '../widgets/PortfolioAnalytics';
+import { HiddenGemsScreener } from '../widgets/HiddenGemsScreener';
+import { IndustryResearch } from '../widgets/IndustryResearch';
+import { HiddenRiskReport } from '../widgets/HiddenRiskReport';
+import { ProtectedWidget } from '../ProtectedWidget';
 
 // Components for "Progressive Disclosure" UI
 
@@ -36,11 +41,13 @@ const ScorecardPillar: React.FC<{ label: string; value: string; subtext: string;
 
 export const AnalysisPage: React.FC = () => {
     const [searchParams] = useSearchParams();
-    const ticker = searchParams.get('ticker') || 'AAPL';
+    const ticker = searchParams.get('ticker') || '';
     const [tsmomData, setTsmomData] = useState<any>(null);
     const [showLogs, setShowLogs] = useState(false);
 
     useEffect(() => {
+        if (!ticker) return; // Don't fetch if no ticker selected
+
         const fetchTsmom = async () => {
             try {
                 const token = getToken();
@@ -59,11 +66,37 @@ export const AnalysisPage: React.FC = () => {
         fetchTsmom();
     }, [ticker]);
 
+    // If no ticker is selected, show general market analysis tools (Screeners, Industry Research)
+    if (!ticker) {
+        return (
+            <div className="animate-fade-in space-y-8 pb-20">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="h-[500px]">
+                        <ProtectedWidget featureName="Hidden Gems Screener">
+                            <HiddenGemsScreener />
+                        </ProtectedWidget>
+                    </div>
+                    <div className="h-[500px]">
+                        <ProtectedWidget featureName="Portfolio Analytics">
+                            <PortfolioAnalytics />
+                        </ProtectedWidget>
+                    </div>
+                </div>
+
+                <div className="min-h-[600px]">
+                    <ProtectedWidget featureName="Industry Research">
+                        <IndustryResearch />
+                    </ProtectedWidget>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex gap-8 animate-fade-in h-[calc(100vh-100px)]">
             {/* Left Sidebar - Context */}
-            <div className="w-64 hidden lg:block border-r border-white/10 pr-6">
-                <div className="sticky top-24 space-y-8">
+            <div className="w-64 hidden lg:block border-r border-white/10 pr-6 overflow-y-auto custom-scrollbar pb-20">
+                <div className="space-y-8">
                     <div>
                         <h3 className="text-2xl font-display text-white mb-1">{ticker}</h3>
                         <div className="text-xs text-text-muted">Equity Asset</div>
@@ -73,18 +106,18 @@ export const AnalysisPage: React.FC = () => {
                         <div>
                             <div className="text-[10px] text-text-muted uppercase tracking-widest mb-2">Valuation Details</div>
                             <div className="space-y-2 text-sm text-text-secondary">
-                                <div className="flex justify-between"><span>P/E Ratio</span> <span className="text-white">28.5x</span></div>
-                                <div className="flex justify-between"><span>EV/EBITDA</span> <span className="text-white">22.1x</span></div>
-                                <div className="flex justify-between"><span>FCF Yield</span> <span className="text-white">3.2%</span></div>
+                                <div className="flex justify-between"><span>P/E Ratio</span> <span className="text-white">--</span></div>
+                                <div className="flex justify-between"><span>EV/EBITDA</span> <span className="text-white">--</span></div>
+                                <div className="flex justify-between"><span>FCF Yield</span> <span className="text-white">--</span></div>
                             </div>
                         </div>
 
                         <div>
                             <div className="text-[10px] text-text-muted uppercase tracking-widest mb-2">Risk Profile</div>
                             <div className="space-y-2 text-sm text-text-secondary">
-                                <div className="flex justify-between"><span>Beta</span> <span className="text-white">1.12</span></div>
-                                <div className="flex justify-between"><span>Volatility</span> <span className="text-white">{(tsmomData?.annualized_volatility * 100)?.toFixed(1)}%</span></div>
-                                <div className="flex justify-between"><span>Drawdown</span> <span className="text-negative">-12%</span></div>
+                                <div className="flex justify-between"><span>Beta</span> <span className="text-white">--</span></div>
+                                <div className="flex justify-between"><span>Volatility</span> <span className="text-white">{(tsmomData?.annualized_volatility * 100)?.toFixed(1) || '--'}%</span></div>
+                                <div className="flex justify-between"><span>Drawdown</span> <span className="text-negative">--</span></div>
                             </div>
                         </div>
                     </div>
@@ -118,20 +151,20 @@ export const AnalysisPage: React.FC = () => {
                         <div className="flex border-b border-white/10">
                             <ScorecardPillar 
                                 label="Value" 
-                                value="Fair" 
-                                subtext="Within 10% of fair value"
+                                value="--" 
+                                subtext="Run Valuation Model"
                                 status="neutral" 
                             />
                             <ScorecardPillar 
                                 label="Risk" 
-                                value="Moderate" 
-                                subtext="1.5 : 1 Reward/Risk"
+                                value="--" 
+                                subtext="Check Risk Engine"
                                 status="neutral" 
                             />
                             <ScorecardPillar 
                                 label="Momentum (TSMOM)" 
                                 value={tsmomData?.trend_direction || "Loading..."} 
-                                subtext={`12m Return: ${(tsmomData?.trend_strength_12m * 100)?.toFixed(1)}%`}
+                                subtext={tsmomData ? `12m Return: ${(tsmomData.trend_strength_12m * 100).toFixed(1)}%` : "Calculating..."}
                                 status={tsmomData?.trend_direction === 'Bullish' ? 'positive' : 'negative'} 
                             />
                         </div>
@@ -140,7 +173,9 @@ export const AnalysisPage: React.FC = () => {
                         <div className="p-6 flex-1 flex flex-col justify-center items-center text-center">
                             <div className="text-xs text-text-muted mb-2 uppercase tracking-widest">Algorithm Verdict</div>
                             <p className="text-lg text-white font-display leading-relaxed">
-                                "Fundamentals are solid but momentum is overheated. TSMOM indicates a positive trend, but volatility suggests caution. Consider a <strong>half-sized starter position</strong>."
+                                {tsmomData 
+                                    ? "TSMOM signal generated. Combine with Fundamental Valuation (DCF) and Risk Assessment below to form a complete thesis." 
+                                    : "Initializing TSMOM Engine..."}
                             </p>
                         </div>
                     </div>
@@ -159,8 +194,15 @@ export const AnalysisPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="h-[400px]">
-                        <CrisisSimulator />
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="h-[400px]">
+                            <CrisisSimulator />
+                        </div>
+                        <div className="h-[400px]">
+                            <ProtectedWidget featureName="Hidden Risk Scanner">
+                                <HiddenRiskReport />
+                            </ProtectedWidget>
+                        </div>
                     </div>
                 </div>
 
@@ -199,4 +241,3 @@ export const AnalysisPage: React.FC = () => {
         </div>
     );
 };
-

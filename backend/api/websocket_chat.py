@@ -68,27 +68,25 @@ async def handle_connect(sid: str, environ: dict, auth: Optional[dict]):
     """
     LOGGER.info(f"WebSocket connection attempt from session {sid}")
     
-    # Extract token from auth dict (sent by client)
-    token = None
-    if auth:
-        token = auth.get('token')
-    
-    # If no token in auth, try to get from query string (fallback)
-    if not token:
-        query_string = environ.get('QUERY_STRING', '')
-        if 'token=' in query_string:
-            token = query_string.split('token=')[1].split('&')[0]
-    
-    if not token:
-        LOGGER.warning(f"WebSocket connection rejected: No token provided for session {sid}")
-        try:
-            await sio.emit('connect_error', {'message': 'Authentication required'}, room=sid)
-        except Exception as emit_err:
-            LOGGER.error(f"Failed to emit connect_error: {emit_err}")
-        return False  # Reject connection
-    
-    # Validate token using AuthService
     try:
+        # Extract token from auth dict (sent by client)
+        token = None
+        if auth and isinstance(auth, dict):
+            token = auth.get('token')
+        
+        # If no token in auth, try to get from query string (fallback)
+        if not token:
+            query_string = environ.get('QUERY_STRING', '')
+            if 'token=' in query_string:
+                token = query_string.split('token=')[1].split('&')[0]
+        
+        if not token:
+            LOGGER.warning(f"WebSocket connection rejected: No token provided for session {sid}")
+            # Don't emit error here - just reject the connection
+            # Socket.IO will handle the rejection properly
+            return False  # Reject connection
+    
+        # Validate token using AuthService
         auth_service = get_auth_service()
         token_payload = AuthService.decode_token(token)
         user_id = UUID(token_payload.sub)
@@ -97,11 +95,7 @@ async def handle_connect(sid: str, environ: dict, auth: Optional[dict]):
         user = auth_service.get_user_by_id(user_id)
         if not user:
             LOGGER.warning(f"WebSocket connection rejected: User not found for token")
-            try:
-                await sio.emit('connect_error', {'message': 'Invalid token'}, room=sid)
-            except Exception as emit_err:
-                LOGGER.error(f"Failed to emit connect_error: {emit_err}")
-            return False
+            return False  # Reject connection - don't emit error, Socket.IO handles it
         
         # Store session mapping
         user_sessions[sid] = str(user_id)
@@ -112,24 +106,16 @@ async def handle_connect(sid: str, environ: dict, auth: Optional[dict]):
         
         LOGGER.info(f"WebSocket connected: session {sid} -> user {user.username} ({user_id})")
         
-        # Connection is successful - don't emit here as Socket.IO handles connection event automatically
-        # The client will receive 'connect' event automatically when connection is accepted
-        
+        # Connection is successful - Socket.IO automatically emits 'connect' event to client
         return True  # Accept connection
         
     except ValueError as e:
         LOGGER.warning(f"WebSocket connection rejected: Invalid token - {e}")
-        try:
-            await sio.emit('connect_error', {'message': 'Invalid token'}, room=sid)
-        except:
-            pass  # Ignore if emit fails (connection already closed)
+        # Don't emit error - just reject, Socket.IO handles it
         return False
     except Exception as e:
         LOGGER.exception(f"WebSocket connection error: {e}")
-        try:
-            await sio.emit('connect_error', {'message': f'Authentication failed: {str(e)}'}, room=sid)
-        except:
-            pass  # Ignore if emit fails (connection already closed)
+        # Don't emit error - just reject, Socket.IO handles it
         return False
 
 

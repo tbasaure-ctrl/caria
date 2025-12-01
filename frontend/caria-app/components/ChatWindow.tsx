@@ -53,8 +53,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
 
                 // Connect with JWT token in auth object (per audit document Problem #1)
                 // Socket.IO connects to the base URL (without /api), e.g., http://localhost:8000
-                // Connect with JWT token in auth object (per audit document Problem #1)
-                // Socket.IO connects to the base URL (without /api), e.g., http://localhost:8000
                 let socketBaseUrl = API_BASE_URL;
 
                 // Remove /api suffix if present to get the root URL
@@ -65,6 +63,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
                 // Ensure URL doesn't have trailing slash
                 socketBaseUrl = socketBaseUrl.replace(/\/$/, '');
 
+                // Socket.IO automatically handles HTTPS -> WSS conversion, but ensure URL is clean
                 console.log('Connecting to WebSocket at:', socketBaseUrl);
 
                 const socket = socketIO(socketBaseUrl, {
@@ -79,8 +78,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
                     reconnectionDelayMax: 6000,
                     randomizationFactor: 0.5,
                     timeout: 20000, // 20 second timeout
-                    forceNew: false, // Reuse existing connection if available
+                    forceNew: true, // Force new connection to avoid stale connections
                     autoConnect: true,
+                    upgrade: true, // Allow transport upgrade from polling to websocket
+                    rememberUpgrade: false, // Don't remember upgrade to avoid issues
                 });
 
                 socketRef.current = socket;
@@ -181,9 +182,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
                 // Handle parse errors (common Socket.IO issue)
                 socket.io.on('error', (error: any) => {
                     console.error('Socket.IO error:', error);
-                    if (error?.message?.includes('parse')) {
+                    const errorMsg = error?.message || String(error);
+                    if (errorMsg.includes('parse') || errorMsg.includes('Parse')) {
+                        console.error('Parse error detected - this may indicate a protocol mismatch');
                         setConnectionStatus('error');
-                        setConnectionMessage('Connection error. Please refresh the page.');
+                        setConnectionMessage('Connection protocol error. Please refresh the page.');
+                        // Try to reconnect with fresh connection
+                        setTimeout(() => {
+                            if (socketRef.current && !socketRef.current.connected) {
+                                socketRef.current.disconnect();
+                                socketRef.current.connect();
+                            }
+                        }, 2000);
                     }
                 });
 

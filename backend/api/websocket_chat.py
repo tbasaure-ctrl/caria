@@ -27,7 +27,11 @@ sio = socketio.AsyncServer(
     cors_allowed_origins="*",  # Configure per environment
     ping_interval=25,  # Per audit document - Problem #2
     ping_timeout=60,   # Per audit document - Problem #2
-    async_mode='asgi'
+    async_mode='asgi',
+    logger=True,  # Enable logging for debugging
+    engineio_logger=True,  # Enable engine.io logging
+    allow_upgrades=True,  # Allow transport upgrades
+    transports=['polling', 'websocket'],  # Supported transports
 )
 
 # Store for chat messages (in production, use Redis or database)
@@ -77,7 +81,10 @@ async def handle_connect(sid: str, environ: dict, auth: Optional[dict]):
     
     if not token:
         LOGGER.warning(f"WebSocket connection rejected: No token provided for session {sid}")
-        await sio.emit('connect_error', {'message': 'Authentication required'}, room=sid)
+        try:
+            await sio.emit('connect_error', {'message': 'Authentication required'}, room=sid)
+        except Exception as emit_err:
+            LOGGER.error(f"Failed to emit connect_error: {emit_err}")
         return False  # Reject connection
     
     # Validate token using AuthService
@@ -90,7 +97,10 @@ async def handle_connect(sid: str, environ: dict, auth: Optional[dict]):
         user = auth_service.get_user_by_id(user_id)
         if not user:
             LOGGER.warning(f"WebSocket connection rejected: User not found for token")
-            await sio.emit('connect_error', {'message': 'Invalid token'}, room=sid)
+            try:
+                await sio.emit('connect_error', {'message': 'Invalid token'}, room=sid)
+            except Exception as emit_err:
+                LOGGER.error(f"Failed to emit connect_error: {emit_err}")
             return False
         
         # Store session mapping
@@ -102,8 +112,8 @@ async def handle_connect(sid: str, environ: dict, auth: Optional[dict]):
         
         LOGGER.info(f"WebSocket connected: session {sid} -> user {user.username} ({user_id})")
         
-        # Emit connection success
-        await sio.emit('connect', {'message': 'Connected and authenticated'}, room=sid)
+        # Connection is successful - don't emit here as Socket.IO handles connection event automatically
+        # The client will receive 'connect' event automatically when connection is accepted
         
         return True  # Accept connection
         

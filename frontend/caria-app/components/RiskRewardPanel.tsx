@@ -169,7 +169,7 @@ export const RiskRewardPanel: React.FC<RiskRewardPanelProps> = ({ ticker: initia
 
     return (
         <div
-            className="h-full flex flex-col overflow-hidden"
+            className="h-full flex flex-col overflow-hidden min-w-0 flex-shrink-0"
             style={{
                 backgroundColor: 'var(--color-bg-secondary)',
                 borderLeft: '1px solid var(--color-border-subtle)',

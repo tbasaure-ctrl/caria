@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { API_BASE_URL } from '../services/apiService';
-import { getAuthToken } from '../services/apiService';
+import { API_BASE_URL, getToken } from '../services/apiService';
 
 // Import socket.io-client - if it fails, the app will still work without chat
 import { io as socketIO, Socket } from 'socket.io-client';
@@ -41,7 +40,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
     useEffect(() => {
         const connectSocket = async () => {
             try {
-                const token = getAuthToken();
+                const token = getToken();
                 if (!token) {
                     console.warn('No auth token available for WebSocket connection');
                     setConnectionStatus('unauthenticated');

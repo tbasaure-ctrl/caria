@@ -5,7 +5,6 @@ import { OpportunityRadar } from '../widgets/OpportunityRadar';
 import { CommunityFeed } from '../widgets/CommunityFeed';
 import { Resources } from '../widgets/Resources';
 import { ProtectedWidget } from '../ProtectedWidget';
-import { RedditSentiment } from '../widgets/RedditSentiment';
 import { ModelOutlook } from '../widgets/ModelOutlook';
 import HydraulicStackWidget from '../HydraulicStackWidget';
 import TopologicalMRIWidget from '../TopologicalMRIWidget';
@@ -62,14 +61,9 @@ export const CommunityPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Social Sentiment & Community */}
+                        {/* Community & Resources */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="flex flex-col gap-6">
-                                <div className="h-[400px]">
-                                    <ProtectedWidget featureName="Social Sentiment">
-                                        <RedditSentiment />
-                                    </ProtectedWidget>
-                                </div>
                                 <div className="h-[400px]">
                                     <ProtectedWidget featureName="Community">
                                         <CommunityFeed />

@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 
 from api.dependencies import get_current_user, get_db_connection
 from caria.models.auth import UserInDB
+from api.services.alpha_vantage_client import alpha_vantage_client
 
 router = APIRouter(prefix="/api/holdings", tags=["holdings"])
 
@@ -184,6 +185,7 @@ def get_holdings_with_prices(
     
     Calculates total value, gain/loss and percentages.
     Falls back to average cost if real-time price unavailable.
+    Uses Alpha Vantage for Crypto (tickers like BTC, ETH, BTCUSD).
     """
     import logging
     logger = logging.getLogger("caria.api.holdings")
@@ -211,19 +213,51 @@ def get_holdings_with_prices(
                 total_gain_loss_pct=0.0,
             )
         
-        # Get unique tickers
-        tickers = [row[1] for row in rows]
-        logger.info(f"Fetching prices for tickers: {tickers}")
+        # Separate tickers
+        crypto_tickers = []
+        stock_tickers = []
         
-        # Try to get real-time prices from FMP
+        # Heuristic: If ticker is 3-4 chars and in common list OR contains 'USD', treat as crypto
+        # Or if user explicitly marked it (we don't have that flag yet)
+        # Simple list for now + USD suffix check
+        known_crypto = {'BTC', 'ETH', 'SOL', 'ADA', 'XRP', 'DOGE', 'DOT', 'LINK'}
+        
+        for row in rows:
+            ticker = row[1].upper()
+            if ticker in known_crypto or ticker.endswith('USD') or ticker.endswith('-USD'):
+                crypto_tickers.append(ticker)
+            else:
+                stock_tickers.append(ticker)
+        
+        logger.info(f"Fetching prices for Stocks: {stock_tickers}, Crypto: {crypto_tickers}")
+        
         prices: dict = {}
-        try:
-            from caria.ingestion.clients.fmp_client import FMPClient
-            fmp_client = FMPClient()
-            prices = fmp_client.get_realtime_prices_batch(tickers)
-            logger.info(f"FMP returned prices for: {list(prices.keys())}")
-        except Exception as fmp_exc:
-            logger.warning(f"FMP price fetch failed: {fmp_exc}. Using fallback prices.")
+        
+        # 1. Fetch Stocks from FMP
+        if stock_tickers:
+            try:
+                from caria.ingestion.clients.fmp_client import FMPClient
+                fmp_client = FMPClient()
+                stock_prices = fmp_client.get_realtime_prices_batch(stock_tickers)
+                prices.update(stock_prices)
+            except Exception as fmp_exc:
+                logger.warning(f"FMP price fetch failed: {fmp_exc}")
+
+        # 2. Fetch Crypto from Alpha Vantage
+        for ticker in crypto_tickers:
+            try:
+                # Normalize ticker for AV (needs 'BTC' for 'BTCUSD' usually, or explicit pair)
+                # If it's just 'BTC', assume 'USD' market
+                symbol = ticker.replace('USD', '').replace('-', '')
+                data = alpha_vantage_client.get_crypto_price(symbol=symbol, market='USD')
+                if data:
+                    prices[ticker] = {
+                        "price": data["price"],
+                        "change": 0, # AV realtime rate doesn't give 24h change directly in this endpoint easily without daily series
+                        "changesPercentage": 0
+                    }
+            except Exception as av_exc:
+                logger.warning(f"AV crypto fetch failed for {ticker}: {av_exc}")
         
         # Calculate values
         holdings_data = []
@@ -258,7 +292,7 @@ def get_holdings_with_prices(
             gain_loss_pct = (gain_loss / cost_basis * 100) if cost_basis > 0 else 0.0
             
             holdings_data.append({
-                "id": str(holding_id),  # FIX: Include ID for delete/edit
+                "id": str(holding_id),
                 "ticker": ticker,
                 "quantity": quantity,
                 "average_cost": avg_cost,

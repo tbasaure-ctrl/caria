@@ -7,6 +7,8 @@ Supports:
 - Historical price data
 - Commodity prices (WTI, Brent, etc.)
 - Economic indicators (GDP, CPI, etc.)
+- Crypto prices
+- News Sentiment
 """
 
 import os
@@ -183,6 +185,56 @@ class AlphaVantageClient:
         
         results.sort(key=lambda x: x["timestamp"])
         return results
+
+    # =========================================================================
+    # CRYPTO DATA
+    # =========================================================================
+
+    def get_crypto_price(self, symbol: str, market: str = "USD") -> Optional[Dict[str, Any]]:
+        """
+        Get real-time crypto exchange rate.
+        """
+        data = self._make_request({
+            "function": "CURRENCY_EXCHANGE_RATE",
+            "from_currency": symbol,
+            "to_currency": market
+        })
+
+        if not data or "Realtime Currency Exchange Rate" not in data:
+            return None
+        
+        rate = data["Realtime Currency Exchange Rate"]
+        return {
+            "symbol": f"{symbol}{market}",
+            "price": float(rate.get("5. Exchange Rate", 0)),
+            "bid": float(rate.get("8. Bid Price", 0)),
+            "ask": float(rate.get("9. Ask Price", 0)),
+            "date": rate.get("6. Last Refreshed", "")
+        }
+
+    # =========================================================================
+    # NEWS & SENTIMENT
+    # =========================================================================
+
+    def get_news_sentiment(self, tickers: str = "", limit: int = 10) -> Optional[List[Dict[str, Any]]]:
+        """
+        Get news sentiment for tickers.
+        tickers: comma separated string
+        """
+        params = {
+            "function": "NEWS_SENTIMENT",
+            "limit": limit,
+            "sort": "LATEST"
+        }
+        if tickers:
+            params["tickers"] = tickers
+
+        data = self._make_request(params)
+        
+        if not data or "feed" not in data:
+            return None
+            
+        return data["feed"]
 
     # =========================================================================
     # COMMODITY DATA
@@ -424,4 +476,3 @@ class AlphaVantageClient:
 
 # Singleton instance
 alpha_vantage_client = AlphaVantageClient()
-

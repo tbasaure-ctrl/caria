@@ -28,6 +28,7 @@ import TopologicalMRIWidget from './TopologicalMRIWidget';
 import TutorialPanel from './TutorialPanel';
 import { ProtectedWidget } from './ProtectedWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
+import { HiddenRiskReport } from './widgets/HiddenRiskReport';
 
 // Ask Caria Widget (Satellite for Portfolio) - Enhanced UX
 const AskCariaWidget: React.FC<{ onClick: () => void }> = ({ onClick }) => (
@@ -263,6 +264,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                 {/* Added Regime Test Widget Here */}
                                 <div className="flex-1 min-h-[350px]">
                                     <RegimeTestWidget />
+                                </div>
+                                {/* New Hidden Risk Report */}
+                                <div className="flex-1 min-h-[350px]">
+                                    <ProtectedWidget featureName="Hidden Risk Scanner">
+                                        <HiddenRiskReport />
+                                    </ProtectedWidget>
                                 </div>
                             </div>
                         </div>

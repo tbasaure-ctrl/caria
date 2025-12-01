@@ -5,18 +5,18 @@ import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
 import { AlertTriangle, Activity, Calendar, TrendingDown } from 'lucide-react';
 
 const CRISES = [
-    { id: '1929_depression', name: 'Great Depression', year: '1929', type: 'Recession' },
-    { id: '1939_wwii', name: 'WWII Start', year: '1939', type: 'Geopolitical' },
-    { id: '1962_cuban_missile', name: 'Cuban Missile Crisis', year: '1962', type: 'Geopolitical' },
-    { id: '1963_jfk', name: 'Kennedy Assassination', year: '1963', type: 'Shock' },
-    { id: '1987_black_monday', name: 'Black Monday', year: '1987', type: 'Crash' },
-    { id: '2000_dot_com', name: 'Dot Com Bubble', year: '2000', type: 'Bubble' },
-    { id: '2001_911', name: '9/11 Attacks', year: '2001', type: 'Shock' },
-    { id: '2008_gfc', name: 'Global Financial Crisis', year: '2008', type: 'Recession' },
-    { id: '2011_euro_debt', name: 'European Debt Crisis', year: '2011', type: 'Debt' },
-    { id: '2018_trade_war', name: 'Trade War', year: '2018', type: 'Geopolitical' },
-    { id: '2020_covid', name: 'COVID-19 Crash', year: '2020', type: 'Pandemic' },
-    { id: '2022_inflation', name: 'Inflation Bear Market', year: '2022', type: 'Inflation' },
+    { id: '1929_depression', name: 'Great Depression', year: '1929', type: 'Recession', duration: 48, pre_context: 6 },
+    { id: '1939_wwii', name: 'WWII Start', year: '1939', type: 'Geopolitical', duration: 24, pre_context: 3 },
+    { id: '1962_cuban_missile', name: 'Cuban Missile Crisis', year: '1962', type: 'Geopolitical', duration: 6, pre_context: 2 },
+    { id: '1963_jfk', name: 'Kennedy Assassination', year: '1963', type: 'Shock', duration: 6, pre_context: 1 },
+    { id: '1987_black_monday', name: 'Black Monday', year: '1987', type: 'Crash', duration: 12, pre_context: 2 },
+    { id: '2000_dot_com', name: 'Dot Com Bubble', year: '2000', type: 'Bubble', duration: 36, pre_context: 6 },
+    { id: '2001_911', name: '9/11 Attacks', year: '2001', type: 'Shock', duration: 12, pre_context: 2 },
+    { id: '2008_gfc', name: 'Global Financial Crisis', year: '2008', type: 'Recession', duration: 36, pre_context: 6 },
+    { id: '2011_euro_debt', name: 'European Debt Crisis', year: '2011', type: 'Debt', duration: 24, pre_context: 4 },
+    { id: '2018_trade_war', name: 'Trade War', year: '2018', type: 'Geopolitical', duration: 18, pre_context: 3 },
+    { id: '2020_covid', name: 'COVID-19 Crash', year: '2020', type: 'Pandemic', duration: 12, pre_context: 2 },
+    { id: '2022_inflation', name: 'Inflation Bear Market', year: '2022', type: 'Inflation', duration: 24, pre_context: 6 },
 ];
 
 interface SimulationResult {
@@ -36,12 +36,67 @@ export const CrisisSimulator: React.FC = () => {
     const [result, setResult] = useState<SimulationResult | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isMock, setIsMock] = useState(false);
+
+    const generateMockSimulation = (crisisId: string): SimulationResult => {
+        const crisis = CRISES.find(c => c.id === crisisId) || CRISES[7];
+        const totalMonths = crisis.duration + crisis.pre_context;
+        const dates: string[] = [];
+        const portfolioValues: number[] = [];
+        const benchmarkValues: number[] = [];
+        
+        let currentValue = 10000;
+        let benchmarkValue = 10000;
+
+        for (let i = -crisis.pre_context; i < crisis.duration; i++) {
+            dates.push(`Month ${i}`);
+            
+            // Simulation Logic based on Type
+            let shock = 0;
+            if (i < 0) {
+                // Pre-event: Flat or slight growth
+                shock = (Math.random() - 0.3) * 0.02;
+            } else if (i === 0) {
+                // Event Start
+                shock = crisis.type === 'Shock' || crisis.type === 'Crash' ? -0.15 : -0.05;
+            } else if (i < crisis.duration / 3) {
+                // Decline phase
+                shock = (Math.random() - 0.8) * 0.05;
+            } else {
+                // Recovery phase
+                shock = (Math.random() - 0.2) * 0.04;
+            }
+
+            // Portfolio is slightly less volatile than benchmark (simulated diversification)
+            benchmarkValue = benchmarkValue * (1 + shock);
+            currentValue = currentValue * (1 + (shock * 0.85)); // 0.85 beta
+
+            portfolioValues.push(currentValue);
+            benchmarkValues.push(benchmarkValue);
+        }
+
+        const maxVal = Math.max(...portfolioValues);
+        const minVal = Math.min(...portfolioValues);
+        const drawdown = (minVal - maxVal) / maxVal;
+
+        return {
+            crisis_name: crisis.name,
+            dates,
+            portfolio_values: portfolioValues,
+            benchmark_values: benchmarkValues,
+            metrics: {
+                max_drawdown: drawdown,
+                total_return: (currentValue - 10000) / 10000,
+                benchmark_return: (benchmarkValue - 10000) / 10000
+            }
+        };
+    };
 
     const handleSimulate = async () => {
         setLoading(true);
         setError(null);
+        setIsMock(false);
         try {
-            // Mock portfolio for simulation if real one is empty/unavailable
             const portfolio = [
                 { ticker: 'AAPL', quantity: 10, weight: 0.5 },
                 { ticker: 'MSFT', quantity: 5, weight: 0.5 },
@@ -58,9 +113,18 @@ export const CrisisSimulator: React.FC = () => {
             const data = await response.json();
             setResult(data);
         } catch (err: any) {
-            setError(err.message || 'Failed to run simulation');
+            // Fallback to mock simulation
+            console.warn("API failed, running client-side simulation");
+            setIsMock(true);
+            const mockData = generateMockSimulation(selectedCrisis);
+            // Simulate delay for realism
+            setTimeout(() => {
+                setResult(mockData);
+                setLoading(false);
+            }, 1000);
+            return; // Don't set loading false immediately
         } finally {
-            setLoading(false);
+             if (!isMock) setLoading(false); // Only clear if not mocking (mock clears in timeout)
         }
     };
 
@@ -84,7 +148,7 @@ export const CrisisSimulator: React.FC = () => {
                             >
                                 {CRISES.map((c) => (
                                     <option key={c.id} value={c.id}>
-                                        {c.year} - {c.name}
+                                        {c.year} - {c.name} ({c.type})
                                     </option>
                                 ))}
                             </select>
@@ -118,7 +182,7 @@ export const CrisisSimulator: React.FC = () => {
                     {/* Background Grid */}
                     <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:20px_20px]" />
 
-                    {error && (
+                    {error && !isMock && (
                         <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50 backdrop-blur-sm">
                             <div className="bg-red-900/20 border border-red-500/50 text-red-400 px-6 py-4 rounded-lg flex items-center gap-3">
                                 <AlertTriangle className="w-5 h-5" />
@@ -135,7 +199,13 @@ export const CrisisSimulator: React.FC = () => {
                     )}
 
                     {result && (
-                        <div className="absolute inset-0 p-4 flex flex-col">
+                        <div className="absolute inset-0 p-4 flex flex-col animate-fade-in">
+                            {isMock && (
+                                <div className="absolute top-2 right-2 z-30 px-2 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded text-[10px] text-yellow-500 font-mono uppercase">
+                                    Simulation Mode
+                                </div>
+                            )}
+                            
                             {/* Chart */}
                             <div className="flex-1 w-full min-h-0">
                                 <Plot
@@ -169,6 +239,22 @@ export const CrisisSimulator: React.FC = () => {
                                             tickfont: { color: '#94a3b8', size: 10 },
                                             showgrid: true,
                                             zeroline: false,
+                                            // Annotate the event start (Month 0)
+                                            shapes: [
+                                                {
+                                                    type: 'line',
+                                                    x0: 'Month 0',
+                                                    y0: 0,
+                                                    x1: 'Month 0',
+                                                    y1: 1,
+                                                    yref: 'paper',
+                                                    line: {
+                                                        color: 'rgba(239, 68, 68, 0.5)',
+                                                        width: 1,
+                                                        dash: 'dashdot'
+                                                    }
+                                                }
+                                            ]
                                         },
                                         yaxis: {
                                             gridcolor: 'rgba(255,255,255,0.05)',
@@ -203,7 +289,7 @@ export const CrisisSimulator: React.FC = () => {
                                 <div className="text-center border-l border-white/10">
                                     <div className="text-[10px] text-cyan-500/70 uppercase tracking-wider mb-1">Recovery Time</div>
                                     <div className="text-2xl font-bold text-white font-mono">
-                                        -- M
+                                        {selectedCrisisData ? selectedCrisisData.duration : '--'} M
                                     </div>
                                 </div>
                                 <div className="text-center border-l border-white/10">

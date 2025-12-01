@@ -76,7 +76,7 @@ export default function HydraulicStackWidget() {
 
     if (!status) {
         return (
-            <div className="w-full bg-bg-tertiary border border-white/5 rounded-xl p-6">
+            <div className="w-full bg-bg-tertiary border border-white/5 rounded-xl p-6" role="alert" aria-busy="true">
                 <div className="text-text-muted text-center text-xs animate-pulse">Initializing Hydraulic Stack...</div>
             </div>
         );
@@ -103,24 +103,28 @@ export default function HydraulicStackWidget() {
     };
 
     return (
-        <div className="w-full bg-[#0B1221] border border-white/5 shadow-lg relative overflow-hidden rounded-xl h-full flex flex-col">
+        <div 
+            className="w-full bg-[#0B1221] border border-white/5 shadow-lg relative overflow-hidden rounded-xl h-full flex flex-col"
+            role="region"
+            aria-label="Hydraulic Stack Status Widget"
+        >
             {/* Header */}
             <div className="relative z-10 p-4 pb-3 border-b border-white/5 flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-accent-cyan animate-pulse" />
+                    <Activity className="h-4 w-4 text-accent-cyan animate-pulse" aria-hidden="true" />
                     <span className="font-display font-bold text-white tracking-wide text-sm">
                         AI-Hydraulic Stack
                     </span>
                     <div className="group relative ml-1">
-                        <Info className="h-3 w-3 text-text-muted hover:text-accent-cyan cursor-help" />
+                        <Info className="h-3 w-3 text-text-muted hover:text-accent-cyan cursor-help" aria-label="Info" />
                         <div className="absolute left-0 top-6 w-64 bg-bg-surface border border-white/10 rounded-lg p-3 text-[10px] text-text-secondary opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-50 shadow-xl">
                             <p className="font-bold text-white mb-1">Liquidity Engine</p>
                             <p>Monitors Fed liquidity (Assets - TGA - RRP) to determine market regime. Score &gt;60 = Expansion, &lt;40 = Contraction.</p>
                         </div>
                     </div>
                 </div>
-                <span className="text-[10px] font-mono text-accent-cyan/80 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent-cyan animate-pulse"></span>
+                <span className="text-[10px] font-mono text-accent-cyan/80 flex items-center gap-1" aria-live="polite">
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-cyan animate-pulse" aria-hidden="true"></span>
                     LIVE
                 </span>
             </div>
@@ -131,7 +135,7 @@ export default function HydraulicStackWidget() {
                 <div className={`relative p-4 rounded-lg border backdrop-blur-sm transition-colors duration-500 ${getBgColor(status.liquidity.score)}`}>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <Droplets className={`h-8 w-8 ${getTextColor(status.liquidity.score)}`} />
+                            <Droplets className={`h-8 w-8 ${getTextColor(status.liquidity.score)}`} aria-hidden="true" />
                             <div>
                                 <div className={`text-3xl font-mono font-bold ${getTextColor(status.liquidity.score)}`}>
                                     {status.liquidity.score}
@@ -151,7 +155,7 @@ export default function HydraulicStackWidget() {
                     {/* Layer 2: Scout (LLM) */}
                     <div className="p-3 rounded-lg bg-bg-tertiary border border-white/5 hover:border-accent-cyan/30 transition-all">
                         <div className="flex items-center gap-2 mb-1">
-                            <Eye className="h-3 w-3 text-accent-cyan" />
+                            <Eye className="h-3 w-3 text-accent-cyan" aria-hidden="true" />
                             <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Scout</span>
                         </div>
                         <div className="text-xs font-bold text-white">{status.llm.mode}</div>
@@ -163,7 +167,7 @@ export default function HydraulicStackWidget() {
                     {/* Layer 3: Guard (Vol) */}
                     <div className="p-3 rounded-lg bg-bg-tertiary border border-white/5 hover:border-warning/30 transition-all">
                         <div className="flex items-center gap-2 mb-1">
-                            <Shield className="h-3 w-3 text-warning" />
+                            <Shield className="h-3 w-3 text-warning" aria-hidden="true" />
                             <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Guard</span>
                         </div>
                         <div className="text-xs font-bold text-white">{status.volatility.signal}</div>
@@ -176,7 +180,7 @@ export default function HydraulicStackWidget() {
                     <div className="p-3 rounded-lg bg-bg-tertiary border border-white/5 hover:border-accent-primary/30 transition-all col-span-2">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Crosshair className="h-3 w-3 text-accent-primary" />
+                                <Crosshair className="h-3 w-3 text-accent-primary" aria-hidden="true" />
                                 <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Sniper Execution</span>
                             </div>
                             <div className="text-right flex items-center gap-3">
@@ -200,7 +204,7 @@ export default function HydraulicStackWidget() {
             <div className="relative z-10 bg-black/40 border-t border-white/5 p-3">
                 <div className="flex items-start gap-3">
                     <div className="p-1.5 bg-accent-cyan/10 rounded border border-accent-cyan/30 mt-0.5">
-                        <Zap className="w-3 h-3 text-accent-cyan" />
+                        <Zap className="w-3 h-3 text-accent-cyan" aria-hidden="true" />
                     </div>
                     <div>
                         <div className="text-[10px] text-accent-cyan uppercase tracking-wider font-bold mb-0.5">Tactical Insight</div>

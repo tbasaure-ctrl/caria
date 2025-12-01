@@ -153,27 +153,39 @@ body {
   pointer-events: none;
 }
 
-/* Glassmorphism utility classes */
+/* Glassmorphism utility classes - REFINED for Humanization */
 .glass-card {
-  background: rgba(15, 15, 20, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(18, 25, 38, 0.5); /* More subtle background */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.04); /* Softer border */
   box-shadow: 
-    0 4px 30px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  border-radius: 16px; /* Rounded corners for softer feel */
 }
 
 .glass-card:hover {
-  background: rgba(20, 20, 25, 0.7);
-  border-color: rgba(34, 211, 238, 0.15);
+  background: rgba(22, 30, 45, 0.6);
+  border-color: rgba(34, 211, 238, 0.2);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(34, 211, 238, 0.1);
+  transform: translateY(-1px);
+  transition: all 0.3s ease;
 }
 
 .glass-card-strong {
-  background: rgba(10, 10, 15, 0.8);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 15, 22, 0.85);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+}
+
+/* Typography Updates for Readability */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.01em; /* Slightly tighter for modern look */
 }
 
 /* ============================================
@@ -207,7 +219,7 @@ body {
   button,
   [role="button"],
   input[type="submit"] {
-    min-height: 40px;
+    min-height: 44px; /* Increased to 44px for accessibility */
   }
 
   /* Prevent horizontal scroll on body */
@@ -217,7 +229,7 @@ body {
 
   /* Reduce padding on widgets for mobile */
   .rounded-xl {
-    padding: 0.75rem;
+    padding: 1rem; /* Slightly more padding than before for breathing room */
   }
 }
 
@@ -249,9 +261,9 @@ body {
 
 /* Responsive grid gap adjustments */
 @media (max-width: 640px) {
-  .gap-8 { gap: 1rem !important; }
-  .gap-6 { gap: 0.75rem !important; }
-  .gap-4 { gap: 0.5rem !important; }
+  .gap-8 { gap: 1.25rem !important; } /* Increased gap for better separation */
+  .gap-6 { gap: 1rem !important; }
+  .gap-4 { gap: 0.75rem !important; }
 }
 
 /* Touch-friendly spacing for interactive elements */
@@ -259,7 +271,7 @@ body {
   /* Larger touch targets for touch devices */
   button:not(.icon-button),
   [role="button"]:not(.icon-button) {
-    padding-top: 0.625rem;
-    padding-bottom: 0.625rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
   }
 }

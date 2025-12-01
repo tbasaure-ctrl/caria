@@ -180,7 +180,7 @@ export default function TopologicalMRIWidget() {
         }
     };
 
-    if (loading) return <div className="h-64 flex items-center justify-center text-cyan-500 font-mono">INITIALIZING CORTEX...</div>;
+    if (loading) return <div className="h-64 flex items-center justify-center text-cyan-500 font-mono" role="status">INITIALIZING CORTEX...</div>;
 
     const topAlien = scan?.aliens[0];
     const isError = scan?.status === "ERROR" || scan?.status === "OFFLINE";
@@ -196,7 +196,11 @@ export default function TopologicalMRIWidget() {
     };
 
     return (
-        <div className="w-full bg-black border border-gray-800 rounded-xl overflow-hidden relative font-mono">
+        <div 
+            className="w-full bg-black border border-gray-800 rounded-xl overflow-hidden relative font-mono"
+            role="region"
+            aria-label="Topological MRI Widget - Market Structure Analysis"
+        >
             {/* Background Grid/Space */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-black to-black opacity-80" />
 
@@ -205,7 +209,7 @@ export default function TopologicalMRIWidget() {
                 <div className="flex items-center gap-2">
                     <div className="text-xs text-gray-400">Caria Cortex_v1</div>
                     <div className="group relative">
-                        <Info className="h-3 w-3 text-gray-500 hover:text-gray-300 cursor-help" />
+                        <Info className="h-3 w-3 text-gray-500 hover:text-gray-300 cursor-help" aria-label="Info" />
                         <div className="absolute left-0 top-5 w-72 bg-slate-900 border border-cyan-500/50 rounded-lg p-3 text-xs text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity z-50">
                             <p className="font-semibold text-cyan-300 mb-1">Topological MRI Scanner</p>
                             <p>Uses Topological Data Analysis (TDA) to detect "alien" stocks - companies exhibiting abnormal behavioral patterns disconnected from their sector. High isolation scores indicate structural anomalies worth investigating.</p>
@@ -213,13 +217,15 @@ export default function TopologicalMRIWidget() {
                     </div>
                 </div>
                 <div className={`text-xs flex items-center gap-2 ${isError ? 'text-red-500' : isWaiting ? 'text-yellow-500' : 'text-green-500'}`}>
-                    <span className="relative flex h-2 w-2">
+                    <span className="relative flex h-2 w-2" aria-hidden="true">
                         {!isError && <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isWaiting ? 'bg-yellow-400' : 'bg-green-400'}`}></span>}
                         <span className={`relative inline-flex rounded-full h-2 w-2 ${isError ? 'bg-red-500' : isWaiting ? 'bg-yellow-500' : 'bg-green-500'}`}></span>
                     </span>
-                    {isError ? 'SYSTEM FAILURE' : isWaiting ? 'AWAITING DATA' : 'LIVE FEED: FMP_PIPE_ACTIVE'}
+                    <span aria-live="polite">
+                        {isError ? 'SYSTEM FAILURE' : isWaiting ? 'AWAITING DATA' : 'LIVE FEED: FMP_PIPE_ACTIVE'}
+                    </span>
                 </div>
-                {isError && <div className="text-[10px] text-red-400 mt-1">{scan?.diagnosis}</div>}
+                {isError && <div className="text-[10px] text-red-400 mt-1" role="alert">{scan?.diagnosis}</div>}
             </div>
 
             {/* Metrics Panel - Top Right (Plain English) */}
@@ -244,17 +250,19 @@ export default function TopologicalMRIWidget() {
                 width={800}
                 height={400}
                 className="w-full h-[400px] object-cover relative z-0"
+                role="img"
+                aria-label={`Live topological scan showing market interconnectedness. ${topAlien ? `Alert: ${topAlien.ticker} is exhibiting anomalous behavior.` : 'Market structure appears stable.'}`}
             />
 
             {/* Tactical Insight Footer */}
             <div className="absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md border-t border-white/10 p-3 z-20">
                 <div className="flex items-start gap-3">
                     <div className="p-1.5 bg-cyan-500/10 rounded border border-cyan-500/30 mt-0.5">
-                        <Zap className="w-4 h-4 text-cyan-400" />
+                        <Zap className="w-4 h-4 text-cyan-400" aria-hidden="true" />
                     </div>
                     <div>
                         <div className="text-[10px] text-cyan-500 uppercase tracking-wider font-bold mb-0.5">Tactical Insight</div>
-                        <p className="text-sm text-gray-300 leading-tight">
+                        <p className="text-sm text-gray-300 leading-tight" aria-live="polite">
                             {getTacticalInsight()}
                         </p>
                     </div>
@@ -263,7 +271,10 @@ export default function TopologicalMRIWidget() {
 
             {/* Alert Box - Floating near Alien */}
             {topAlien && (
-                <div className="absolute bottom-20 right-8 z-10 w-64 border border-red-500/50 bg-black/80 backdrop-blur-md p-4 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+                <div 
+                    className="absolute bottom-20 right-8 z-10 w-64 border border-red-500/50 bg-black/80 backdrop-blur-md p-4 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                    role="alert"
+                >
                     <div className="text-[10px] text-red-500 mb-1 tracking-widest">/// STRUCTURAL BREACH DETECTED</div>
                     <div className="text-3xl font-bold text-white mb-2">{topAlien.ticker}</div>
 
@@ -279,12 +290,12 @@ export default function TopologicalMRIWidget() {
                     </div>
 
                     {/* Decorative Corner */}
-                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-red-500" />
+                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-red-500" aria-hidden="true" />
                 </div>
             )}
 
             {/* Scanlines */}
-            <div className="absolute inset-0 pointer-events-none bg-[url('https://media.giphy.com/media/xT9Igk31elskX5qetq/giphy.gif')] opacity-[0.02] mix-blend-overlay" />
+            <div className="absolute inset-0 pointer-events-none bg-[url('https://media.giphy.com/media/xT9Igk31elskX5qetq/giphy.gif')] opacity-[0.02] mix-blend-overlay" aria-hidden="true" />
         </div>
     );
 }

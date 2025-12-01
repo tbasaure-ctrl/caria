@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Portfolio } from './widgets/Portfolio';
@@ -34,8 +32,11 @@ import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 // Ask Caria Widget (Satellite for Portfolio) - Enhanced UX
 const AskCariaWidget: React.FC<{ onClick: () => void }> = ({ onClick }) => (
     <div
-        className="rounded-lg p-4 sm:p-6 cursor-pointer group h-full flex flex-col justify-between relative overflow-hidden bg-[#0B1221] border border-white/5 hover:border-accent-cyan/30 transition-all duration-300"
+        className="rounded-lg p-4 sm:p-6 cursor-pointer group h-full flex flex-col justify-between relative overflow-hidden bg-[#0B1221] border border-white/5 hover:border-accent-cyan/30 transition-all duration-300 glass-card"
         onClick={onClick}
+        role="button"
+        tabIndex={0}
+        onKeyPress={(e) => e.key === 'Enter' && onClick()}
     >
         <div className="absolute top-0 right-0 p-3 sm:p-4 opacity-20 group-hover:opacity-40 transition-opacity">
             <ThesisIcon className="w-8 h-8 sm:w-12 sm:h-12 text-accent-cyan" />
@@ -133,8 +134,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     return (
         <main className="flex-1 overflow-y-auto relative min-h-screen bg-transparent custom-scrollbar">
             {/* Dashboard Header - Mobile First */}
-            <div className="sticky top-0 z-40 border-b border-white/5 bg-[#020408]/80 backdrop-blur-xl">
-                <div className="w-full px-3 sm:px-6 lg:px-12 py-3 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6">
+            <div className="sticky top-0 z-40 border-b border-white/5 bg-[#020408]/80 backdrop-blur-xl supports-[backdrop-filter]:bg-[#020408]/60">
+                <div className="w-full px-3 sm:px-6 lg:px-12 py-3 sm:py-4 lg:py-6 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6">
                     <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                         <h1 className="text-lg sm:text-xl font-display text-white tracking-wide hidden sm:block">
                             Caria Terminal
@@ -146,7 +147,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     </div>
 
                     {/* Tabs - Responsive sizing */}
-                    <div className="flex bg-white/5 rounded-full p-1 sm:p-1.5 border border-white/5 gap-1 sm:gap-2 overflow-x-auto max-w-full scrollbar-hide">
+                    <div className="flex bg-white/5 rounded-full p-1 sm:p-1.5 border border-white/5 gap-1 sm:gap-2 overflow-x-auto max-w-full scrollbar-hide mx-auto sm:mx-0">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
@@ -154,7 +155,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                 className={`
                                     px-4 sm:px-6 lg:px-8 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest transition-all duration-300 whitespace-nowrap
                                     ${activeTab === tab.id
-                                        ? 'bg-accent-primary text-white shadow-[0_0_15px_rgba(56,189,248,0.4)]'
+                                        ? 'bg-accent-primary text-white shadow-glow-sm'
                                         : 'text-text-muted hover:text-white hover:bg-white/5'
                                     }
                                 `}
@@ -164,7 +165,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         ))}
                     </div>
 
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex items-center gap-3 shrink-0 hidden sm:flex">
                         <button
                             onClick={() => handleTabChange('tutorial')}
                             className="p-2 rounded-lg hover:bg-white/5 transition-colors"
@@ -195,10 +196,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                         {/* Section 2: Advanced Models (The "Brain") */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div className="h-[300px] lg:h-[350px]">
+                            <div className="h-[350px]">
                                 <HydraulicStackWidget />
                             </div>
-                            <div className="h-[300px] lg:h-[350px]">
+                            <div className="h-[350px]">
                                 <TopologicalMRIWidget />
                             </div>
                         </div>
@@ -255,8 +256,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                     <ThesisArena />
                                 </ProtectedWidget>
                             </div>
-                            <div className="col-span-1 xl:col-span-5 min-h-[600px]">
-                                <RiskRewardWidget />
+                            <div className="col-span-1 xl:col-span-5 flex flex-col gap-6">
+                                <div className="flex-1 min-h-[350px]">
+                                    <RiskRewardWidget />
+                                </div>
+                                {/* Added Regime Test Widget Here */}
+                                <div className="flex-1 min-h-[350px]">
+                                    <RegimeTestWidget />
+                                </div>
                             </div>
                         </div>
 
@@ -265,7 +272,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="flex flex-col gap-6">
                                 <div className="h-[400px]">
-                                    <div className="rounded-xl p-4 sm:p-6 h-full" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
+                                    <div className="rounded-xl p-4 sm:p-6 h-full glass-card" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
                                         <h3 className="text-base sm:text-lg font-display font-bold text-white mb-3 sm:mb-4">DCF Valuation: 5-Year Target Price</h3>
                                         <ProjectionValuation />
                                     </div>

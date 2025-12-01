@@ -15,6 +15,7 @@ import { ValuationWorkshop } from './widgets/ValuationWorkshop';
 import { ProjectionValuation } from './widgets/ProjectionValuation';
 import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 import { HiddenGemsScreener } from './widgets/HiddenGemsScreener';
+import { RiskRewardWidget } from './widgets/RiskRewardWidget';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { OpportunityRadar } from './widgets/OpportunityRadar';
 import { Resources } from './widgets/Resources';
@@ -258,11 +259,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {/* ANALYSIS TAB */}
                 {activeTab === 'analysis' && (
                     <div className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
-                        {/* CARIA ARENA - HERO POSITION - Responsive height */}
-                        <div className="w-full min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] xl:h-[650px]">
-                            <ProtectedWidget featureName="Investment Thesis Analysis">
-                                <ThesisArena />
-                            </ProtectedWidget>
+                        {/* Top Row: Thesis Arena + Risk-Reward Engine */}
+                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6">
+                            {/* CARIA ARENA - HERO POSITION */}
+                            <div className="col-span-1 xl:col-span-7 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
+                                <ProtectedWidget featureName="Investment Thesis Analysis">
+                                    <ThesisArena />
+                                </ProtectedWidget>
+                            </div>
+
+                            {/* RISK-REWARD ENGINE */}
+                            <div className="col-span-1 xl:col-span-5 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
+                                <RiskRewardWidget />
+                            </div>
                         </div>
 
                         {/* Valuation Tools Grid - Mobile: Stack, Desktop: Side by Side */}

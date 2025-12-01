@@ -53,16 +53,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
 
                 // Connect with JWT token in auth object (per audit document Problem #1)
                 // Socket.IO connects to the base URL (without /api), e.g., http://localhost:8000
+                // Connect with JWT token in auth object (per audit document Problem #1)
+                // Socket.IO connects to the base URL (without /api), e.g., http://localhost:8000
                 let socketBaseUrl = API_BASE_URL;
-                if (socketBaseUrl.includes('/api')) {
-                    socketBaseUrl = socketBaseUrl.replace('/api', '');
-                }
-                if (!socketBaseUrl || socketBaseUrl === '') {
-                    socketBaseUrl = 'http://localhost:8000';
+
+                // Remove /api suffix if present to get the root URL
+                if (socketBaseUrl.endsWith('/api')) {
+                    socketBaseUrl = socketBaseUrl.slice(0, -4);
                 }
 
                 // Ensure URL doesn't have trailing slash
                 socketBaseUrl = socketBaseUrl.replace(/\/$/, '');
+
+                console.log('Connecting to WebSocket at:', socketBaseUrl);
 
                 const socket = socketIO(socketBaseUrl, {
                     auth: {
@@ -93,10 +96,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
                     try {
                         // Fix: API_BASE_URL already contains the base, just append the path
                         // Avoid double /api by checking if API_BASE_URL already ends with /api
-                        const chatHistoryUrl = API_BASE_URL.endsWith('/api') 
+                        const chatHistoryUrl = API_BASE_URL.endsWith('/api')
                             ? `${API_BASE_URL}/chat/history${lastMessageTimestamp ? `?since=${lastMessageTimestamp}` : ''}`
                             : `${API_BASE_URL}/api/chat/history${lastMessageTimestamp ? `?since=${lastMessageTimestamp}` : ''}`;
-                        
+
                         const response = await fetch(chatHistoryUrl, {
                             headers: {
                                 'Authorization': `Bearer ${token}`
@@ -127,7 +130,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
                 socket.on('connect_error', (error: any) => {
                     console.error('WebSocket connection error:', error);
                     const errorMessage = error?.message || 'Connection error';
-                    
+
                     // Check if it's an authentication error
                     if (errorMessage.includes('Authentication') || errorMessage.includes('Invalid token') || errorMessage.includes('401')) {
                         setConnectionStatus('error');
@@ -136,7 +139,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
                         socket.disconnect();
                         return;
                     }
-                    
+
                     setConnectionStatus('reconnecting');
                     setConnectionMessage(`Connection error: ${errorMessage}. Retrying...`);
                 });
@@ -144,21 +147,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
                 // Handle disconnection
                 socket.on('disconnect', (reason: Socket.DisconnectReason) => {
                     console.log('WebSocket disconnected:', reason);
-                    
+
                     // Don't reconnect if server disconnected us (likely auth issue)
                     if (reason === 'io server disconnect') {
                         setConnectionStatus('error');
                         setConnectionMessage('Disconnected by server. Please refresh the page.');
                         return;
                     }
-                    
+
                     // Don't reconnect if client disconnected intentionally
                     if (reason === 'io client disconnect') {
                         setConnectionStatus('error');
                         setConnectionMessage('Connection closed.');
                         return;
                     }
-                    
+
                     // For other reasons (network issues, etc.), try to reconnect
                     setConnectionStatus('reconnecting');
                     setConnectionMessage('Connection lost. Reconnecting...');
@@ -384,8 +387,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
                     >
                         <div
                             className={`max-w-[80%] rounded-lg p-3 ${msg.role === 'user'
-                                    ? 'bg-slate-700 text-slate-100'
-                                    : 'bg-slate-800 text-slate-200'
+                                ? 'bg-slate-700 text-slate-100'
+                                : 'bg-slate-800 text-slate-200'
                                 }`}
                         >
                             <p className="text-sm whitespace-pre-wrap">{msg.message}</p>

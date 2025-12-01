@@ -196,7 +196,7 @@ export default function TopologicalMRIWidget() {
     };
 
     return (
-        <div 
+        <div
             className="w-full bg-black border border-gray-800 rounded-xl overflow-hidden relative font-mono"
             role="region"
             aria-label="Topological MRI Widget - Market Structure Analysis"
@@ -230,6 +230,15 @@ export default function TopologicalMRIWidget() {
 
             {/* Metrics Panel - Top Right (Plain English) */}
             <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end">
+                <button
+                    onClick={() => { setLoading(true); fetchScan(); }}
+                    disabled={loading}
+                    className="bg-cyan-900/50 hover:bg-cyan-800/50 border border-cyan-500/30 text-cyan-400 text-xs px-3 py-1.5 rounded uppercase tracking-wider transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {loading ? <Activity className="w-3 h-3 animate-spin" /> : <Scan className="w-3 h-3" />}
+                    {loading ? 'SCANNING...' : 'RUN SCAN'}
+                </button>
+
                 <div className="bg-black/60 backdrop-blur-sm border border-white/10 p-2 rounded text-right">
                     <div className="text-[10px] text-gray-500 uppercase tracking-wider">Market Fragility</div>
                     <div className={`text-lg font-bold ${scan && scan.metrics.betti_1_loops > 5 ? 'text-red-500' : 'text-cyan-400'}`}>
@@ -271,7 +280,7 @@ export default function TopologicalMRIWidget() {
 
             {/* Alert Box - Floating near Alien */}
             {topAlien && (
-                <div 
+                <div
                     className="absolute bottom-20 right-8 z-10 w-64 border border-red-500/50 bg-black/80 backdrop-blur-md p-4 shadow-[0_0_20px_rgba(239,68,68,0.2)]"
                     role="alert"
                 >

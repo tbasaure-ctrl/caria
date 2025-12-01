@@ -6,6 +6,18 @@ interface LeagueProfileProps {
 }
 
 const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId }) => {
+    const [hasJoined, setHasJoined] = React.useState(false);
+
+    React.useEffect(() => {
+        const joined = localStorage.getItem('caria_league_joined');
+        if (joined) setHasJoined(true);
+    }, []);
+
+    const handleJoin = () => {
+        localStorage.setItem('caria_league_joined', 'true');
+        setHasJoined(true);
+    };
+
     // Mock data for now
     const stats = {
         rank: 42,
@@ -20,8 +32,35 @@ const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId }) => {
         worstMonth: -0.05
     };
 
+    if (!hasJoined) {
+        return (
+            <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-white/10 rounded-xl p-8 text-center mb-8">
+                <div className="max-w-2xl mx-auto">
+                    <Shield className="w-16 h-16 text-blue-400 mx-auto mb-6 opacity-80" />
+                    <h2 className="text-2xl font-bold text-white mb-4">Join the Global Portfolio League</h2>
+                    <p className="text-white/70 mb-8 leading-relaxed">
+                        Test your investment discipline against the best.
+                        <br />
+                        <span className="text-white/50 text-sm block mt-4 bg-black/20 p-4 rounded-lg border border-white/5">
+                            <span className="text-blue-400 font-bold block mb-1">🔒 Privacy Guarantee</span>
+                            Joining the league does <strong>NOT</strong> publicly disclose your holdings, portfolio value, or personal identity.
+                            We only display your <strong>Rank Score</strong> and an anonymous username (or alias).
+                            Your financial data remains strictly private and encrypted.
+                        </span>
+                    </p>
+                    <button
+                        onClick={handleJoin}
+                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg transition-all transform hover:scale-105 shadow-lg shadow-blue-900/20"
+                    >
+                        Join League (Anonymous)
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
             {/* Main Score Card */}
             <div className="col-span-1 md:col-span-1 bg-gradient-to-br from-blue-900/40 to-purple-900/40 border border-white/10 rounded-xl p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10">

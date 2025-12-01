@@ -2,9 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import Dict, Any
 import pandas as pd
 import numpy as np
+import sys
+import os
+# Add caria-lib to path to allow importing shared services
+# Path relative to this file: ../../../../caria-lib
+current_dir = os.path.dirname(os.path.abspath(__file__))
+caria_lib_path = os.path.abspath(os.path.join(current_dir, "../../../../caria-lib"))
+if caria_lib_path not in sys.path:
+    sys.path.append(caria_lib_path)
+
 try:
     from caria.services.topology_service import TopologyService
-except ImportError:
+except ImportError as e:
+    print(f"Failed to import TopologyService: {e}")
     TopologyService = None
 
 # Mock data generator for demo purposes if real data isn't fully piped yet

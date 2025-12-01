@@ -35,11 +35,6 @@ app.include_router(topology.router)
 app.include_router(screener.router)
 app.include_router(league.router)
 
-# Mount Socket.IO
-from .websocket_chat import sio
-import socketio
-socket_app = socketio.ASGIApp(sio, socketio_path="/socket.io")
-app.mount("/socket.io", socket_app)
 
 quality_model = None
 valuation_model = None
@@ -243,6 +238,14 @@ def detect_biases_in_query(query: str) -> list[BiasDetection]:
 
     return biases
 
+
+# Mount Socket.IO - Wrap FastAPI app
+from .websocket_chat import sio
+import socketio
+
+# Create the ASGI application
+# This wraps the FastAPI app and handles /socket.io requests
+app = socketio.ASGIApp(sio, app)
 
 if __name__ == "__main__":
     import uvicorn

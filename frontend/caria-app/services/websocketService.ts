@@ -38,9 +38,12 @@ class WebSocketService {
         }
 
         const token = getToken();
+        // Even if no token, we might want to connect for public chat features or handle auth error gracefully
+        // But per instruction "No auth token available", we should probably return if strict auth required.
+        // The backend requires auth for chat.
         if (!token) {
             console.error('No authentication token available. Please log in first.');
-            this.notifyError('Authentication required. Please log in.');
+            // this.notifyError('Authentication required. Please log in.'); // Don't spam error on load
             return;
         }
 
@@ -60,6 +63,7 @@ class WebSocketService {
             reconnectionAttempts: this.maxReconnectAttempts,
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
+            path: '/socket.io/', // Ensure path is correct (default is /socket.io/)
         });
 
         // Handle connection success
@@ -83,7 +87,7 @@ class WebSocketService {
             } else if (this.reconnectAttempts < this.maxReconnectAttempts) {
                 console.log(`Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
             } else {
-                this.notifyError('Failed to connect to chat server. Please refresh the page.');
+                // this.notifyError('Failed to connect to chat server. Please refresh the page.'); // Reduced noise
             }
         });
 
@@ -175,7 +179,9 @@ class WebSocketService {
      */
     sendMessage(message: string): void {
         if (!this.socket?.connected) {
-            this.notifyError('Not connected to chat server. Please wait...');
+            this.notifyError('Not connected to chat server. Connecting...');
+            this.connect(); // Try to reconnect
+            // Retry send after short delay? Or let user retry.
             return;
         }
 
@@ -250,4 +256,3 @@ class WebSocketService {
 
 // Export singleton instance
 export const websocketService = new WebSocketService();
-

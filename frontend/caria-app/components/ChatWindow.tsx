@@ -14,14 +14,15 @@ interface Message {
 
 interface ChatWindowProps {
     onClose?: () => void;
+    initialMessage?: string;
 }
 
-export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
+export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [lastMessageTimestamp, setLastMessageTimestamp] = useState<string | null>(null);
-    const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'reconnecting' | 'error'>(
+    const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'reconnecting' | 'error' | 'unauthenticated'>(
         'connecting'
     );
     const [connectionMessage, setConnectionMessage] = useState('Connecting to Caria...');
@@ -43,7 +44,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 const token = getAuthToken();
                 if (!token) {
                     console.warn('No auth token available for WebSocket connection');
-                    setConnectionStatus('error');
+                    setConnectionStatus('unauthenticated');
                     setConnectionMessage('Please log in to chat with Caria.');
                     return;
                 }
@@ -195,6 +196,22 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
         };
     }, []);
 
+    // Send initial message if provided and connected
+    useEffect(() => {
+        if (initialMessage && connectionStatus === 'connected' && socketRef.current) {
+            // Small delay to ensure socket is ready
+            const timer = setTimeout(() => {
+                // Check if we haven't already sent this message (simple check)
+                const alreadySent = messages.some(m => m.role === 'user' && m.message === initialMessage);
+                if (!alreadySent) {
+                    setInputValue(initialMessage);
+                    // Optionally auto-send: handleSendMessage();
+                }
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [initialMessage, connectionStatus]);
+
     const handleSendMessage = async () => {
         const isReady = connectionStatus === 'connected';
         if (!inputValue.trim() || !socketRef.current || !isReady) return;
@@ -247,13 +264,38 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 ? 'Connecting...'
                 : connectionStatus === 'reconnecting'
                     ? 'Reconnecting...'
-                    : 'Disconnected';
+                    : connectionStatus === 'unauthenticated'
+                        ? 'Disconnected'
+                        : 'Disconnected';
     const statusColor =
         connectionStatus === 'connected'
             ? 'bg-green-500'
-            : connectionStatus === 'error'
+            : connectionStatus === 'error' || connectionStatus === 'unauthenticated'
                 ? 'bg-red-500'
                 : 'bg-yellow-400';
+
+    if (connectionStatus === 'unauthenticated') {
+        return (
+            <div className="flex flex-col h-full bg-gray-950 border border-slate-800 rounded-lg justify-center items-center p-6 text-center">
+                <h3 className="text-lg font-bold text-slate-200 mb-2">Start a conversation with Caria</h3>
+                <p className="text-sm text-slate-400 mb-6">Please log in to chat with Caria.</p>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => window.location.href = '/?login=true'}
+                        className="bg-slate-700 text-white font-bold px-4 py-2 rounded-md hover:bg-slate-600 transition-all text-sm"
+                    >
+                        Log In
+                    </button>
+                    <button
+                        onClick={() => window.location.href = '/?register=true'}
+                        className="border border-slate-600 text-slate-300 font-bold px-4 py-2 rounded-md hover:bg-slate-800 transition-all text-sm"
+                    >
+                        Create Account
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col h-full bg-gray-950 border border-slate-800 rounded-lg">
@@ -263,7 +305,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
                 <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${statusColor}`}></div>
                     <span className="text-xs text-slate-400">{statusLabel}</span>
-                    {connectionStatus !== 'connected' && (
+                    {connectionStatus !== 'connected' && connectionStatus !== 'unauthenticated' && (
                         <button
                             onClick={handleManualReconnect}
                             className="text-xs text-slate-400 border border-slate-600 rounded px-2 py-1 hover:text-slate-100"
@@ -328,7 +370,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose }) => {
 
             {/* Input */}
             <div className="p-4 border-t border-slate-800">
-                {connectionMessage && (
+                {connectionMessage && connectionStatus !== 'connected' && (
                     <div className="text-xs text-slate-400 mb-2">{connectionMessage}</div>
                 )}
                 <div className="flex gap-2">

@@ -97,7 +97,7 @@ export const PortfolioPage: React.FC = () => {
         loadData();
     }, []);
 
-    if (loading) return <div className="text-sm text-text-muted animate-pulse">Loading repository...</div>;
+    if (loading) return <div className="text-sm text-text-muted animate-pulse">Loading portfolio...</div>;
 
     const holdings = portfolioData?.holdings || [];
 

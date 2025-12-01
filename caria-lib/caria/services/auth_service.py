@@ -344,9 +344,9 @@ class AuthService:
         with self.db.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(
                 """
-                SELECT token_hash, expires_at, revoked
+                SELECT token_hash, expires_at, revoked_at
                 FROM refresh_tokens
-                WHERE user_id = %s AND revoked IS NULL
+                WHERE user_id = %s AND revoked_at IS NULL
                 ORDER BY created_at DESC
                 LIMIT 10
                 """,
@@ -371,7 +371,7 @@ class AuthService:
             cursor.execute(
                 """
                 UPDATE refresh_tokens
-                SET revoked = CURRENT_TIMESTAMP
+                SET revoked_at = CURRENT_TIMESTAMP
                 WHERE user_id = %s AND token_hash = %s
                 """,
                 (str(user_id), token_hash)

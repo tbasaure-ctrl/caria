@@ -109,11 +109,17 @@ async def handle_connect(sid: str, environ: dict, auth: Optional[dict]):
         
     except ValueError as e:
         LOGGER.warning(f"WebSocket connection rejected: Invalid token - {e}")
-        await sio.emit('connect_error', {'message': 'Invalid token'}, room=sid)
+        try:
+            await sio.emit('connect_error', {'message': 'Invalid token'}, room=sid)
+        except:
+            pass  # Ignore if emit fails (connection already closed)
         return False
     except Exception as e:
         LOGGER.exception(f"WebSocket connection error: {e}")
-        await sio.emit('connect_error', {'message': 'Authentication failed'}, room=sid)
+        try:
+            await sio.emit('connect_error', {'message': f'Authentication failed: {str(e)}'}, room=sid)
+        except:
+            pass  # Ignore if emit fails (connection already closed)
         return False
 
 

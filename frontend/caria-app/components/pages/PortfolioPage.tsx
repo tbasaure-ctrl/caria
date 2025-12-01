@@ -130,12 +130,15 @@ export const PortfolioPage: React.FC = () => {
     };
 
     const sortedHoldings = [...(portfolioData?.holdings || [])].sort((a, b) => {
-        let valA: any = a[key as keyof HoldingWithPrice];
-        let valB: any = b[key as keyof HoldingWithPrice];
+        let valA: any;
+        let valB: any;
 
-        if (key === 'ticker') {
+        if (sortKey === 'ticker') {
             valA = a.ticker;
             valB = b.ticker;
+        } else {
+            valA = a[sortKey as keyof HoldingWithPrice];
+            valB = b[sortKey as keyof HoldingWithPrice];
         }
 
         if (valA < valB) return sortDir === 'asc' ? -1 : 1;

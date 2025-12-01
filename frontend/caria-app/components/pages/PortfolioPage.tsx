@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, API_BASE_URL, getToken, createHolding, deleteHolding } from '../../services/apiService';
 import { getGuestHoldings, createGuestHolding, deleteGuestHolding } from '../../services/guestStorageService';
-import { MoreHorizontal, ArrowUpRight, ArrowDownRight, TrendingUp, AlertCircle, Plus, Info, Edit2, Trash2 } from 'lucide-react';
-import { getErrorMessage } from '../../src/utils/errorHandling';
+import { TrendingUp, Plus, Edit2, Trash2, ArrowUpRight } from 'lucide-react';
 import { Portfolio } from '../widgets/Portfolio';
 import { PortfolioAnalytics } from '../widgets/PortfolioAnalytics';
+import { CrisisSimulator } from '../widgets/CrisisSimulator';
+import { MacroSimulator } from '../widgets/MacroSimulator';
+import { RegimeTestWidget } from '../widgets/RegimeTestWidget';
+import { ProtectedWidget } from '../ProtectedWidget';
 
 // TSMOM Status Dot Component
 const TrendDot: React.FC<{ ticker: string }> = ({ ticker }) => {
@@ -47,7 +50,7 @@ const TrendDot: React.FC<{ ticker: string }> = ({ ticker }) => {
     return (
         <div className="group relative flex items-center justify-center w-full h-full cursor-help">
             <div className={`w-2.5 h-2.5 rounded-full ${color}`} />
-            <div className="absolute bottom-full mb-2 hidden group-hover:block bg-black border border-white/10 px-2 py-1 text-[10px] rounded whitespace-nowrap z-50 shadow-lg">
+            <div className="absolute bottom-full mb-2 hidden group-hover:block bg-black border border-white/10 px-2 py-1 text-[10px] rounded whitespace-nowrap z-50 shadow-lg text-white">
                 {tooltip}
             </div>
         </div>
@@ -74,8 +77,8 @@ const convertGuestHoldings = (guestHoldings: any[]): HoldingsWithPrices => {
     };
 };
 
-type SortKey = 'ticker' | 'current_price' | 'current_value' | 'gain_loss_pct' | 'trend';
-type Section = 'main' | 'performance' | 'analytics';
+type SortKey = 'ticker' | 'current_price' | 'current_value' | 'gain_loss_pct';
+type Section = 'main' | 'performance' | 'analytics' | 'stress';
 
 export const PortfolioPage: React.FC = () => {
     const navigate = useNavigate();
@@ -209,6 +212,12 @@ export const PortfolioPage: React.FC = () => {
                         className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'analytics' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                     >
                         Deep Analytics
+                    </button>
+                    <button 
+                        onClick={() => setActiveSection('stress')}
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'stress' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                    >
+                        Stress Your Portfolio
                     </button>
                 </div>
             </div>
@@ -362,6 +371,36 @@ export const PortfolioPage: React.FC = () => {
                 {activeSection === 'analytics' && (
                     <div className="h-[600px]">
                         <PortfolioAnalytics />
+                    </div>
+                )}
+
+                {/* Section: Stress Your Portfolio */}
+                {activeSection === 'stress' && (
+                    <div className="space-y-8">
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <div className="h-[500px]">
+                                <ProtectedWidget featureName="Crisis Simulator">
+                                    <CrisisSimulator />
+                                </ProtectedWidget>
+                                <p className="text-xs text-text-muted mt-2 p-2">
+                                    Simulate historical crashes (e.g., 2008, Covid-19) to test portfolio resilience.
+                                </p>
+                            </div>
+                            <div className="h-[500px]">
+                                <ProtectedWidget featureName="Regime Test">
+                                    <RegimeTestWidget />
+                                </ProtectedWidget>
+                                <p className="text-xs text-text-muted mt-2 p-2">
+                                    Test how your assets perform under different economic regimes (Inflation, Recession, Growth).
+                                </p>
+                            </div>
+                        </div>
+                        <div className="h-[500px]">
+                            <MacroSimulator />
+                            <p className="text-xs text-text-muted mt-2 p-2">
+                                Adjust macro variables (Rates, GDP, Oil) to see potential impacts on your holdings.
+                            </p>
+                        </div>
                     </div>
                 )}
             </div>

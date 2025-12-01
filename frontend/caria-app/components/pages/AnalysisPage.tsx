@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { MessageSquare, Activity, Target, ChevronDown, ChevronRight, Terminal } from 'lucide-react';
+import { MessageSquare, Activity, Target, ChevronDown, ChevronRight, Terminal, Search } from 'lucide-react';
 import { fetchWithAuth, API_BASE_URL, getToken } from '../../services/apiService';
 import { ProjectionValuation } from '../widgets/ProjectionValuation';
 import { CrisisSimulator } from '../widgets/CrisisSimulator';
@@ -11,6 +11,11 @@ import { HiddenGemsScreener } from '../widgets/HiddenGemsScreener';
 import { IndustryResearch } from '../widgets/IndustryResearch';
 import { HiddenRiskReport } from '../widgets/HiddenRiskReport';
 import { ProtectedWidget } from '../ProtectedWidget';
+import { AlphaStockPicker } from '../widgets/AlphaStockPicker';
+import { ValuationTool } from '../widgets/ValuationTool';
+import { ValuationWorkshop } from '../widgets/ValuationWorkshop';
+import { MacroSimulator } from '../widgets/MacroSimulator';
+import { RegimeTestWidget } from '../widgets/RegimeTestWidget';
 
 // Components for "Progressive Disclosure" UI
 
@@ -40,13 +45,14 @@ const ScorecardPillar: React.FC<{ label: string; value: string; subtext: string;
 };
 
 export const AnalysisPage: React.FC = () => {
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const ticker = searchParams.get('ticker') || '';
     const [tsmomData, setTsmomData] = useState<any>(null);
     const [showLogs, setShowLogs] = useState(false);
+    const [activeSidebarSection, setActiveSection] = useState<'main' | 'valuation' | 'screener'>('main');
 
     useEffect(() => {
-        if (!ticker) return; // Don't fetch if no ticker selected
+        if (!ticker) return; 
 
         const fetchTsmom = async () => {
             try {
@@ -66,40 +72,125 @@ export const AnalysisPage: React.FC = () => {
         fetchTsmom();
     }, [ticker]);
 
-    // If no ticker is selected, show general market analysis tools (Screeners, Industry Research)
+    // --- MARKET VIEW (No Ticker Selected) ---
     if (!ticker) {
         return (
-            <div className="animate-fade-in space-y-8 pb-20">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="h-[500px]">
-                        <ProtectedWidget featureName="Hidden Gems Screener">
-                            <HiddenGemsScreener />
-                        </ProtectedWidget>
-                    </div>
-                    <div className="h-[500px]">
-                        <ProtectedWidget featureName="Portfolio Analytics">
-                            <PortfolioAnalytics />
-                        </ProtectedWidget>
+            <div className="flex gap-8 h-[calc(100vh-100px)] animate-fade-in">
+                {/* Sidebar */}
+                <div className="w-64 border-r border-white/10 pr-6 hidden md:block">
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="text-lg font-display text-white mb-2">Analysis Center</h3>
+                            <p className="text-xs text-text-secondary leading-relaxed">
+                                Access advanced valuation models, screeners, and market research tools. Select a tool to begin.
+                            </p>
+                        </div>
+                        <div className="space-y-1">
+                            <button 
+                                onClick={() => setActiveSection('main')}
+                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'main' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                            >
+                                Overview
+                            </button>
+                            <button 
+                                onClick={() => setActiveSection('valuation')}
+                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'valuation' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                            >
+                                Valuation Tools
+                            </button>
+                            <button 
+                                onClick={() => setActiveSection('screener')}
+                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'screener' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                            >
+                                Screener Tools
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div className="min-h-[600px]">
-                    <ProtectedWidget featureName="Industry Research">
-                        <IndustryResearch />
-                    </ProtectedWidget>
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
+                    {activeSection === 'main' && (
+                        <div className="space-y-8">
+                            {/* Intro Banner */}
+                            <div className="bg-bg-secondary border border-white/10 rounded-lg p-6 text-center">
+                                <h2 className="text-xl font-display text-white mb-2">Market Intelligence</h2>
+                                <p className="text-sm text-text-secondary max-w-2xl mx-auto">
+                                    "Want a starter position? Looking for a deep dive? Here you can find all the tools you need to make a well-informed decision. We'll show you all the components involved in your future investment and, using our skeptical and critical point of view (that made us so popular in high school), challenge your conviction so we arrive together at a solid, second-order thinking-like investment thesis you will be proud of."
+                                </p>
+                            </div>
+
+                            <div className="h-[500px]">
+                                <ProtectedWidget featureName="Portfolio Analytics">
+                                    <PortfolioAnalytics />
+                                </ProtectedWidget>
+                            </div>
+                            <div className="min-h-[600px]">
+                                <ProtectedWidget featureName="Industry Research">
+                                    <IndustryResearch />
+                                </ProtectedWidget>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeSection === 'valuation' && (
+                        <div className="space-y-8">
+                            <h2 className="text-lg font-display text-white border-b border-white/10 pb-2">Valuation Suite</h2>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="h-[600px]">
+                                    <ValuationTool />
+                                </div>
+                                <div className="h-[600px]">
+                                    <ValuationWorkshop />
+                                </div>
+                            </div>
+                            <div className="h-[400px]">
+                                <RiskRewardWidget />
+                            </div>
+                        </div>
+                    )}
+
+                    {activeSection === 'screener' && (
+                        <div className="space-y-8">
+                            <h2 className="text-lg font-display text-white border-b border-white/10 pb-2">Idea Generation</h2>
+                            
+                            <div className="h-[500px]">
+                                <ProtectedWidget featureName="Alpha Stock Picker">
+                                    <AlphaStockPicker />
+                                </ProtectedWidget>
+                                <div className="mt-4 p-4 bg-bg-secondary border border-white/5 rounded-lg text-xs text-text-secondary">
+                                    <strong className="text-white block mb-1">About the C-Score:</strong>
+                                    The C-Score is a proprietary multi-factor model that ranks stocks based on Quality (ROIC, Margins), Value (FCF Yield, EV/EBIT), and Momentum (Price Strength). A score above 80 indicates an "Investable" candidate with strong fundamentals and technicals.
+                                </div>
+                            </div>
+
+                            <div className="h-[500px]">
+                                <ProtectedWidget featureName="Hidden Gems Screener">
+                                    <HiddenGemsScreener />
+                                </ProtectedWidget>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         );
     }
 
+    // --- ASSET VIEW (Ticker Selected) ---
     return (
         <div className="flex gap-8 animate-fade-in h-[calc(100vh-100px)]">
             {/* Left Sidebar - Context */}
             <div className="w-64 hidden lg:block border-r border-white/10 pr-6 overflow-y-auto custom-scrollbar pb-20">
                 <div className="space-y-8">
                     <div>
-                        <h3 className="text-2xl font-display text-white mb-1">{ticker}</h3>
-                        <div className="text-xs text-text-muted">Equity Asset</div>
+                        <div className="flex items-center justify-between mb-1">
+                            <h3 className="text-2xl font-display text-white">{ticker}</h3>
+                            <button onClick={() => setSearchParams({})} className="text-xs text-accent-primary hover:text-white">Change</button>
+                        </div>
+                        <div className="text-xs text-text-muted">Stock Analysis</div>
+                        <p className="text-[10px] text-text-secondary mt-2 italic leading-relaxed">
+                            "Challenge your conviction. Use the tools on the right to stress-test this asset before committing capital."
+                        </p>
                     </div>
 
                     <div className="space-y-4">

@@ -145,55 +145,74 @@ class LeagueService:
         if not holdings:
             return None
 
-        # 2. Get Historical Data (Mocking logic for now, ideally use PortfolioAnalyticsService)
-        # In a real implementation, we'd fetch 1 year of history for these tickers
-        # and reconstruct the portfolio value series.
+        # 2. Get Real Analytics
+        from api.services.portfolio_analytics import get_portfolio_analytics_service
         
-        # Placeholder metrics for MVP/Verification
-        # We should try to use the existing PortfolioAnalyticsService if possible, 
-        # but it might be slow for batch processing.
-        
-        # Let's assume we have a helper or we do a simplified calculation.
-        # For now, I will generate semi-random metrics based on "mock" performance 
-        # to ensure the pipeline works, then we refine the math.
-        # TODO: Connect to real PortfolioAnalyticsService
-        
-        import random
-        sharpe = random.uniform(0.5, 3.0)
-        cagr = random.uniform(0.05, 0.40)
-        max_dd = random.uniform(0.05, 0.30)
-        diversification = min(len(holdings) * 10, 100) / 100.0 # Simple count based
-        account_age_days = random.randint(30, 365)
-        account_age_factor = min(account_age_days / 365.0, 1.0)
+        try:
+            analytics_service = get_portfolio_analytics_service()
+            # Use 'SPY' as default benchmark for now
+            analysis_result = analytics_service.analyze_portfolio(user_id, db_conn, benchmark="SPY")
+            metrics = analysis_result.get("metrics", {})
+            
+            # Extract metrics with defaults
+            sharpe = metrics.get("sharpe_ratio") or 0.0
+            cagr = metrics.get("cagr") or 0.0
+            max_dd = metrics.get("max_drawdown") or 0.0
+            
+            # Calculate diversification (simple ticker count for now, could be more complex later)
+            diversification = min(len(holdings) * 10, 100) / 100.0
+            
+            # Calculate account age
+            # We need to find the earliest holding creation date
+            earliest_date = min(h['created_at'] for h in holdings) if holdings else datetime.utcnow()
+            if isinstance(earliest_date, str):
+                earliest_date = datetime.fromisoformat(earliest_date.replace('Z', '+00:00'))
+            
+            # Ensure timezone awareness compatibility
+            now = datetime.now(earliest_date.tzinfo) if earliest_date.tzinfo else datetime.utcnow()
+            account_age_days = (now - earliest_date).days
+            account_age_days = max(account_age_days, 1) # Minimum 1 day
+            
+            account_age_factor = min(account_age_days / 365.0, 1.0)
 
-        # Normalize metrics for scoring (0-1 scale roughly)
-        # Sharpe: >3 is amazing (1.0), <0 is bad (0.0)
-        norm_sharpe = min(max(sharpe / 3.0, 0), 1.0)
-        
-        # CAGR: >30% is amazing (1.0)
-        norm_cagr = min(max(cagr / 0.30, 0), 1.0)
-        
-        # Drawdown: 0 is best (1.0), >50% is bad (0.0)
-        norm_dd = max(1.0 - (max_dd / 0.50), 0)
-        
-        score = (
-            0.35 * norm_sharpe +
-            0.30 * norm_cagr +
-            0.15 * norm_dd +
-            0.10 * diversification +
-            0.10 * account_age_factor
-        ) * 1000  # Scale to 0-1000
+            # Normalize metrics for scoring (0-1 scale roughly)
+            # Sharpe: >3 is amazing (1.0), <0 is bad (0.0)
+            norm_sharpe = min(max(sharpe / 3.0, 0), 1.0)
+            
+            # CAGR: >30% is amazing (1.0)
+            norm_cagr = min(max(cagr / 0.30, 0), 1.0)
+            
+            # Drawdown: 0 is best (1.0), >50% is bad (0.0)
+            # Note: max_drawdown is usually negative in quantstats, e.g. -0.15
+            # If it comes as positive (0.15), adjust logic. 
+            # Quantstats usually returns negative float for DD.
+            # Let's assume negative, so we take abs() or just -max_dd if it's negative.
+            # Actually qs returns negative. So -0.15.
+            abs_dd = abs(max_dd)
+            norm_dd = max(1.0 - (abs_dd / 0.50), 0)
+            
+            score = (
+                0.35 * norm_sharpe +
+                0.30 * norm_cagr +
+                0.15 * norm_dd +
+                0.10 * diversification +
+                0.10 * account_age_factor
+            ) * 1000  # Scale to 0-1000
 
-        return {
-            "user_id": user_id,
-            "date": date,
-            "score": score,
-            "sharpe_ratio": sharpe,
-            "cagr": cagr,
-            "max_drawdown": max_dd,
-            "diversification_score": diversification * 100, # Display as 0-100
-            "account_age_days": account_age_days
-        }
+            return {
+                "user_id": user_id,
+                "date": date,
+                "score": score,
+                "sharpe_ratio": sharpe,
+                "cagr": cagr,
+                "max_drawdown": max_dd,
+                "diversification_score": diversification * 100,
+                "account_age_days": account_age_days
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to calculate real metrics for user {user_id}: {e}")
+            return None
 
     def _save_rankings(self, db_conn, df_scores: pd.DataFrame, date: datetime.date):
         with db_conn.cursor() as cur:

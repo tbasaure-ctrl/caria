@@ -32,12 +32,11 @@ const Leaderboard: React.FC = () => {
                 setEntries(data);
             } else {
                 console.error('Failed to fetch leaderboard');
-                // Fallback mock data for demo if API fails/not ready
-                setEntries(MOCK_ENTRIES);
+                setEntries([]);
             }
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
-            setEntries(MOCK_ENTRIES);
+            setEntries([]);
         } finally {
             setLoading(false);
         }
@@ -96,17 +95,27 @@ const Leaderboard: React.FC = () => {
                                     <td className="py-4 px-6"><div className="h-4 w-12 bg-white/10 rounded ml-auto"></div></td>
                                 </tr>
                             ))
+                        ) : entries.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className="py-12 text-center text-white/30">
+                                    <div className="flex flex-col items-center gap-3">
+                                        <Users className="w-12 h-12 opacity-20" />
+                                        <p>No rankings available yet.</p>
+                                        <p className="text-xs">Rankings are updated daily based on portfolio performance.</p>
+                                    </div>
+                                </td>
+                            </tr>
                         ) : (
                             entries.map((entry) => (
                                 <tr key={entry.user_id} className="hover:bg-white/5 transition-colors group">
                                     <td className="py-4 px-6">
                                         <div className={`
-                      w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm
-                      ${entry.rank === 1 ? 'bg-yellow-500/20 text-yellow-500' :
+                                            w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm
+                                            ${entry.rank === 1 ? 'bg-yellow-500/20 text-yellow-500' :
                                                 entry.rank === 2 ? 'bg-gray-400/20 text-gray-400' :
                                                     entry.rank === 3 ? 'bg-orange-700/20 text-orange-700' :
                                                         'text-white/50'}
-                    `}>
+                                        `}>
                                             {entry.rank}
                                         </div>
                                     </td>
@@ -159,13 +168,5 @@ const getSharpeColor = (sharpe: number | null) => {
     if (sharpe >= 1) return 'text-yellow-400';
     return 'text-red-400';
 };
-
-const MOCK_ENTRIES: LeagueEntry[] = [
-    { rank: 1, user_id: '1', username: 'AquilaVX', score: 942, sharpe_ratio: 2.8, cagr: 0.45, max_drawdown: 0.12, diversification_score: 85, account_age_days: 365 },
-    { rank: 2, user_id: '2', username: 'QuantMaster', score: 890, sharpe_ratio: 2.4, cagr: 0.38, max_drawdown: 0.15, diversification_score: 90, account_age_days: 200 },
-    { rank: 3, user_id: '3', username: 'AlphaSeeker', score: 855, sharpe_ratio: 2.1, cagr: 0.42, max_drawdown: 0.18, diversification_score: 75, account_age_days: 150 },
-    { rank: 4, user_id: '4', username: 'SafeHaven', score: 820, sharpe_ratio: 1.9, cagr: 0.25, max_drawdown: 0.08, diversification_score: 95, account_age_days: 400 },
-    { rank: 5, user_id: '5', username: 'CryptoKing', score: 780, sharpe_ratio: 1.5, cagr: 0.80, max_drawdown: 0.45, diversification_score: 40, account_age_days: 100 },
-];
 
 export default Leaderboard;

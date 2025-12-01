@@ -26,13 +26,13 @@ export const CommunityPage: React.FC = () => {
                         </p>
                     </div>
                     <div className="space-y-1">
-                        <button 
+                        <button
                             onClick={() => setActiveSection('main')}
                             className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'main' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                         >
                             Main Research
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveSection('models')}
                             className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'models' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                         >
@@ -44,7 +44,7 @@ export const CommunityPage: React.FC = () => {
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
-                
+
                 {/* MAIN RESEARCH */}
                 {activeSection === 'main' && (
                     <div className="space-y-8">
@@ -71,10 +71,10 @@ export const CommunityPage: React.FC = () => {
                                 </div>
                             </div>
                             <div className="flex flex-col gap-6">
-                                <div className="h-[400px]">
+                                <div className="min-h-[400px] flex-1">
                                     <Resources />
                                 </div>
-                                <div className="h-[400px]">
+                                <div className="min-h-[400px]">
                                     <RankingsWidget />
                                 </div>
                             </div>

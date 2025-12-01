@@ -35,6 +35,12 @@ app.include_router(topology.router)
 app.include_router(screener.router)
 app.include_router(league.router)
 
+# Mount Socket.IO
+from .websocket_chat import sio
+import socketio
+socket_app = socketio.ASGIApp(sio, socketio_path="/socket.io")
+app.mount("/socket.io", socket_app)
+
 quality_model = None
 valuation_model = None
 momentum_model = None

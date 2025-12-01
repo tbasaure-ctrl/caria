@@ -1,3 +1,4 @@
+import React from 'react';
 import Leaderboard from '../../components/league/Leaderboard';
 import LeagueProfile from '../../components/league/LeagueProfile';
 
@@ -20,6 +21,39 @@ const LeaguePage: React.FC = () => {
                     <div className="flex items-center gap-2 text-sm text-white/50 bg-white/5 px-4 py-2 rounded-full border border-white/10">
                         <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                         Season 1 Active • Ends Dec 31
+                    </div>
+                </div>
+
+                {/* Ranking Criteria Explanation */}
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                        <span className="text-blue-400">ℹ️</span> How Rankings Work
+                    </h3>
+                    <p className="text-sm text-white/70 mb-4">
+                        The Caria Rank Score is a composite metric designed to reward long-term, risk-adjusted performance rather than short-term luck.
+                        We prioritize consistency and discipline over volatility.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 text-sm">
+                        <div className="bg-black/20 p-3 rounded-lg border border-white/5">
+                            <div className="text-green-400 font-bold mb-1">35% Sharpe Ratio</div>
+                            <div className="text-xs text-white/50">Risk-adjusted return. Rewards high returns with low volatility.</div>
+                        </div>
+                        <div className="bg-black/20 p-3 rounded-lg border border-white/5">
+                            <div className="text-blue-400 font-bold mb-1">30% CAGR</div>
+                            <div className="text-xs text-white/50">Compound Annual Growth Rate. Pure performance velocity.</div>
+                        </div>
+                        <div className="bg-black/20 p-3 rounded-lg border border-white/5">
+                            <div className="text-red-400 font-bold mb-1">15% Max Drawdown</div>
+                            <div className="text-xs text-white/50">Capital preservation. Penalizes deep losses and poor risk management.</div>
+                        </div>
+                        <div className="bg-black/20 p-3 rounded-lg border border-white/5">
+                            <div className="text-purple-400 font-bold mb-1">10% Diversification</div>
+                            <div className="text-xs text-white/50">Portfolio health. Penalizes extreme concentration.</div>
+                        </div>
+                        <div className="bg-black/20 p-3 rounded-lg border border-white/5">
+                            <div className="text-yellow-400 font-bold mb-1">10% Account Age</div>
+                            <div className="text-xs text-white/50">Longevity. Rewards time in the market and experience.</div>
+                        </div>
                     </div>
                 </div>
 

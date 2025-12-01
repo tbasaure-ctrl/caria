@@ -58,6 +58,7 @@ export const RiskRewardPanel: React.FC<RiskRewardPanelProps> = ({ ticker: initia
             }, 500); // Debounce
             return () => clearTimeout(timeoutId);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ticker, horizonMonths, probabilities]);
 
     const analyzeRiskReward = async () => {
@@ -348,7 +349,7 @@ export const RiskRewardPanel: React.FC<RiskRewardPanelProps> = ({ ticker: initia
                             >
                                 Scenario Outcomes
                             </h3>
-                            <div className="h-64 w-full">
+                            <div className="w-full" style={{ minHeight: '256px', height: '256px' }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />

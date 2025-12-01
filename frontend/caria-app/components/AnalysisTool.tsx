@@ -246,7 +246,7 @@ export const AnalysisTool: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                 {/* Main Content: Chat + Risk-Reward Panel */}
                 <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
                     {/* Chat Section */}
-                    <div className={`flex flex-col ${showRiskReward ? 'lg:w-1/2' : 'w-full'} border-r lg:border-r border-b lg:border-b-0`} style={{ borderColor: 'var(--color-border-subtle)' }}>
+                    <div className={`flex flex-col ${showRiskReward ? 'lg:w-1/2 w-full' : 'w-full'} ${showRiskReward ? 'border-r lg:border-r border-b lg:border-b-0' : ''}`} style={{ borderColor: 'var(--color-border-subtle)' }}>
 
                         {/* Chat Area */}
                         <main 

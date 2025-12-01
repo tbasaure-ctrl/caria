@@ -185,7 +185,7 @@ export const AnalysisPage: React.FC = () => {
                                     <div>[CALC] Price(t-12): ${tsmomData.raw_data.price_t_minus_12.toFixed(2)}</div>
                                     <div>[MATH] Excess Return r(t-12,t) = ({tsmomData.raw_data.current_price.toFixed(2)} / {tsmomData.raw_data.price_t_minus_12.toFixed(2)}) - 1 = {(tsmomData.trend_strength_12m * 100).toFixed(2)}%</div>
                                     <div>[CALC] Ex-ante Volatility (sigma_t): {(tsmomData.annualized_volatility * 100).toFixed(2)}% (Annualized)</div>
-                                    <div>[LOGIC] Trend > 0 ? YES. Volatility > 30% ? {tsmomData.volatility_context === 'High' ? 'YES' : 'NO'}.</div>
+                                    <div>[LOGIC] Trend &gt; 0 ? YES. Volatility &gt; 30% ? {tsmomData.volatility_context === 'High' ? 'YES' : 'NO'}.</div>
                                     <div className="text-white">[RESULT] Signal: {tsmomData.trend_direction.toUpperCase()}</div>
                                 </>
                             ) : (

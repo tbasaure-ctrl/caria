@@ -32,7 +32,7 @@ const App: React.FC = () => {
     if (token) {
       setAuthToken(token);
     }
-    
+
     // Check for login query parameter
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('login') === 'true' && !token) {
@@ -76,13 +76,18 @@ const App: React.FC = () => {
             )
           } />
 
+          import LeaguePage from './src/pages/LeaguePage';
+
+          // ... (existing imports)
+
           {/* GitHub Layout Routes - Replaces DashboardLayout */}
           <Route element={<GitHubLayout />}>
             <Route path="/portfolio" element={<PortfolioPage />} />
             <Route path="/analysis" element={<AnalysisPage />} />
+            <Route path="/league" element={<LeaguePage />} />
             <Route path="/research" element={<CommunityPage />} /> {/* Mapping Research to Community for now, or can create dedicated */}
             <Route path="/about" element={<ResourcesPage />} />
-            
+
             {/* Fallback redirects */}
             <Route path="/dashboard" element={<Navigate to="/portfolio" replace />} />
             <Route path="*" element={<Navigate to="/portfolio" replace />} />

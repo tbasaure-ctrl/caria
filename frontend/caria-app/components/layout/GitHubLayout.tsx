@@ -3,18 +3,18 @@ import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Bell, Menu, X, User, Search, LogIn, UserPlus } from 'lucide-react';
 import { getToken, removeToken } from '../../services/apiService';
 
-const NavItem: React.FC<{ 
-    label: string; 
-    path: string; 
-    isActive: boolean; 
-    onClick: (path: string) => void 
+const NavItem: React.FC<{
+    label: string;
+    path: string;
+    isActive: boolean;
+    onClick: (path: string) => void
 }> = ({ label, path, isActive, onClick }) => (
     <button
         onClick={() => onClick(path)}
         className={`
             px-4 py-2 text-sm font-medium transition-all duration-200
-            ${isActive 
-                ? 'text-white border-b-2 border-accent-primary' 
+            ${isActive
+                ? 'text-white border-b-2 border-accent-primary'
                 : 'text-text-muted hover:text-text-secondary hover:bg-white/5 rounded-md'
             }
         `}
@@ -32,6 +32,7 @@ export const TopNav: React.FC = () => {
     const navItems = [
         { label: 'Portfolio', path: '/portfolio' },
         { label: 'Analysis', path: '/analysis' },
+        { label: 'League', path: '/league' },
         { label: 'Research', path: '/research' },
         { label: 'About Us', path: '/about' },
     ];
@@ -51,17 +52,17 @@ export const TopNav: React.FC = () => {
         <nav className="w-full bg-[#020408] border-b border-white/10 sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                    
+
                     {/* Left: Logo & Desktop Nav */}
                     <div className="flex items-center gap-8">
-                        <div 
+                        <div
                             className="flex-shrink-0 cursor-pointer flex items-center gap-2"
                             onClick={() => navigate('/')}
                         >
                             <div className="w-8 h-8 rounded bg-white text-black flex items-center justify-center font-display font-bold text-xl">C</div>
                             <span className="font-display font-bold text-white text-lg tracking-wide hidden sm:block">CARIA</span>
                         </div>
-                        
+
                         <div className="hidden md:flex items-center gap-2">
                             {navItems.map((item) => (
                                 <NavItem
@@ -79,21 +80,21 @@ export const TopNav: React.FC = () => {
                     <div className="flex items-center gap-4">
                         <div className="relative hidden sm:block">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                            <input 
-                                type="text" 
-                                placeholder="Search ticker..." 
+                            <input
+                                type="text"
+                                placeholder="Search ticker..."
                                 className="bg-bg-secondary border border-white/10 rounded-full pl-9 pr-4 py-1.5 text-sm text-white focus:border-accent-primary focus:outline-none w-64 transition-all"
                             />
                         </div>
-                        
+
                         {isAuthenticated ? (
                             <>
                                 <button className="text-text-muted hover:text-white transition-colors relative">
                                     <Bell className="w-5 h-5" />
                                     <span className="absolute top-0 right-0 w-2 h-2 bg-accent-primary rounded-full"></span>
                                 </button>
-                                
-                                <div 
+
+                                <div
                                     onClick={handleLogout}
                                     className="w-8 h-8 rounded-full bg-bg-tertiary border border-white/10 flex items-center justify-center text-text-secondary cursor-pointer hover:border-white/30 transition-colors group relative"
                                     title="Log Out"
@@ -104,13 +105,13 @@ export const TopNav: React.FC = () => {
                             </>
                         ) : (
                             <div className="flex items-center gap-2">
-                                <button 
+                                <button
                                     onClick={() => window.location.href = '/?login=true'}
                                     className="text-sm font-medium text-text-secondary hover:text-white px-3 py-1.5 transition-colors flex items-center gap-1"
                                 >
                                     <LogIn className="w-4 h-4" /> <span className="hidden sm:inline">Log In</span>
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => window.location.href = '/?register=true'}
                                     className="text-sm font-bold text-black bg-white hover:bg-gray-200 px-3 py-1.5 rounded transition-colors flex items-center gap-1"
                                 >
@@ -120,7 +121,7 @@ export const TopNav: React.FC = () => {
                         )}
 
                         {/* Mobile Menu Button */}
-                        <button 
+                        <button
                             className="md:hidden text-text-muted hover:text-white"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                         >
@@ -151,13 +152,13 @@ export const TopNav: React.FC = () => {
                         ))}
                         {!isAuthenticated && (
                             <div className="mt-4 flex flex-col gap-2 px-3">
-                                <button 
+                                <button
                                     onClick={() => window.location.href = '/?login=true'}
                                     className="w-full text-center py-2 border border-white/20 rounded text-white font-medium"
                                 >
                                     Log In
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => window.location.href = '/?register=true'}
                                     className="w-full text-center py-2 bg-white text-black rounded font-bold"
                                 >

@@ -26,13 +26,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from .routes import liquidity, topology, screener
+from .routes import liquidity, topology, screener, league
 
 app.include_router(simulation.router)
 app.include_router(watchlist.router)
 app.include_router(liquidity.router)
 app.include_router(topology.router)
 app.include_router(screener.router)
+app.include_router(league.router)
 
 quality_model = None
 valuation_model = None

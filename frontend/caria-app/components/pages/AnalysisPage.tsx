@@ -6,9 +6,7 @@ import { ProjectionValuation } from '../widgets/ProjectionValuation';
 import { CrisisSimulator } from '../widgets/CrisisSimulator';
 import { RiskRewardWidget } from '../widgets/RiskRewardWidget';
 import { ChatWindow } from '../ChatWindow';
-import { PortfolioAnalytics } from '../widgets/PortfolioAnalytics';
 import { HiddenGemsScreener } from '../widgets/HiddenGemsScreener';
-import { IndustryResearch } from '../widgets/IndustryResearch';
 import { HiddenRiskReport } from '../widgets/HiddenRiskReport';
 import { ProtectedWidget } from '../ProtectedWidget';
 import { AlphaStockPicker } from '../widgets/AlphaStockPicker';
@@ -49,6 +47,7 @@ export const AnalysisPage: React.FC = () => {
     const ticker = searchParams.get('ticker') || '';
     const [tsmomData, setTsmomData] = useState<any>(null);
     const [showLogs, setShowLogs] = useState(false);
+    const [searchInput, setSearchInput] = useState('');
     const [activeSidebarSection, setActiveSection] = useState<'main' | 'valuation' | 'screener'>('main');
 
     useEffect(() => {
@@ -72,105 +71,166 @@ export const AnalysisPage: React.FC = () => {
         fetchTsmom();
     }, [ticker]);
 
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchInput.trim()) {
+            setSearchParams({ ticker: searchInput.trim().toUpperCase() });
+        }
+    };
+
     // --- MARKET VIEW (No Ticker Selected) ---
     if (!ticker) {
         return (
             <div className="flex gap-8 h-[calc(100vh-100px)] animate-fade-in">
-                {/* Sidebar */}
-                <div className="w-64 border-r border-white/10 pr-6 hidden md:block">
-                    <div className="space-y-6">
+                {/* Left Sidebar - Context */}
+                <div className="w-64 hidden lg:block border-r border-white/10 pr-6 overflow-y-auto custom-scrollbar pb-20">
+                    <div className="space-y-8">
                         <div>
-                            <h3 className="text-lg font-display text-white mb-2">Analysis Center</h3>
-                            <p className="text-xs text-text-secondary leading-relaxed">
-                                Access advanced valuation models, screeners, and market research tools. Select a tool to begin.
+                            <h3 className="text-2xl font-display text-white mb-2">Stock Analysis</h3>
+                            <div className="text-xs text-text-muted">Enter a ticker to begin</div>
+                            <p className="text-[10px] text-text-secondary mt-2 italic leading-relaxed">
+                                Want a starter position? Looking for a deep dive? Here you can find all the tools you need to make a well-informed decision. We'll show you all the components involved in your future investment and, using our skeptical and critical point of view (that made us so popular in high school), challenge your conviction so we arrive together at a solid, second-order thinking-like investment thesis you will be proud of.
                             </p>
                         </div>
-                        <div className="space-y-1">
-                            <button 
-                                onClick={() => setActiveSection('main')}
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSidebarSection === 'main' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+
+                        {/* Search Form */}
+                        <form onSubmit={handleSearchSubmit} className="space-y-2">
+                            <input
+                                type="text"
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
+                                placeholder="Enter ticker (e.g., AAPL)"
+                                className="w-full bg-bg-tertiary border border-white/10 rounded px-3 py-2 text-sm text-white placeholder-text-muted focus:border-accent-primary focus:outline-none"
+                            />
+                            <button
+                                type="submit"
+                                className="w-full bg-accent-primary text-black font-bold text-xs py-2 rounded hover:bg-accent-primary/90 transition-colors"
                             >
-                                Overview
+                                Analyze Stock
                             </button>
-                            <button 
-                                onClick={() => setActiveSection('valuation')}
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSidebarSection === 'valuation' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
-                            >
-                                Valuation Tools
-                            </button>
-                            <button 
-                                onClick={() => setActiveSection('screener')}
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSidebarSection === 'screener' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
-                            >
-                                Screener Tools
-                            </button>
+                        </form>
+
+                        <div className="space-y-4">
+                            <div>
+                                <div className="text-[10px] text-text-muted uppercase tracking-widest mb-2">Valuation Details</div>
+                                <div className="space-y-2 text-sm text-text-secondary">
+                                    <div className="flex justify-between"><span>P/E Ratio</span> <span className="text-white">--</span></div>
+                                    <div className="flex justify-between"><span>EV/EBITDA</span> <span className="text-white">--</span></div>
+                                    <div className="flex justify-between"><span>FCF Yield</span> <span className="text-white">--</span></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="text-[10px] text-text-muted uppercase tracking-widest mb-2">Risk Profile</div>
+                                <div className="space-y-2 text-sm text-text-secondary">
+                                    <div className="flex justify-between"><span>Beta</span> <span className="text-white">--</span></div>
+                                    <div className="flex justify-between"><span>Volatility</span> <span className="text-white">--</span></div>
+                                    <div className="flex justify-between"><span>Drawdown</span> <span className="text-negative">--</span></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
-                    {activeSidebarSection === 'main' && (
-                        <div className="space-y-8">
-                            {/* Intro Banner */}
-                            <div className="bg-bg-secondary border border-white/10 rounded-lg p-6 text-center">
-                                <h2 className="text-xl font-display text-white mb-2">Market Intelligence</h2>
-                                <p className="text-sm text-text-secondary max-w-2xl mx-auto">
-                                    "Want a starter position? Looking for a deep dive? Here you can find all the tools you need to make a well-informed decision. We'll show you all the components involved in your future investment and, using our skeptical and critical point of view (that made us so popular in high school), challenge your conviction so we arrive together at a solid, second-order thinking-like investment thesis you will be proud of."
-                                </p>
+                {/* Main Content - Same as Asset View */}
+                <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-8 pb-20">
+                    
+                    {/* ZONE 1: The Synthesis (Immediate Value) */}
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 min-h-[400px]">
+                        {/* Left: Caria Chat */}
+                        <div className="border border-white/10 rounded-lg overflow-hidden bg-bg-secondary flex flex-col">
+                            <div className="p-3 border-b border-white/10 bg-bg-tertiary flex items-center gap-2">
+                                <MessageSquare className="w-4 h-4 text-accent-primary" />
+                                <span className="text-xs font-bold text-white">Qualitative Synthesis</span>
                             </div>
-
-                            <div className="h-[500px]">
-                                <ProtectedWidget featureName="Portfolio Analytics">
-                                    <PortfolioAnalytics />
-                                </ProtectedWidget>
-                            </div>
-                            <div className="min-h-[600px]">
-                                <ProtectedWidget featureName="Industry Research">
-                                    <IndustryResearch />
-                                </ProtectedWidget>
+                            <div className="flex-1 relative">
+                                <ChatWindow />
                             </div>
                         </div>
-                    )}
 
-                    {activeSidebarSection === 'valuation' && (
-                        <div className="space-y-8">
-                            <h2 className="text-lg font-display text-white border-b border-white/10 pb-2">Valuation Suite</h2>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div className="h-[600px]">
-                                    <ValuationTool />
-                                </div>
-                                <div className="h-[600px]">
-                                    <ValuationWorkshop />
-                                </div>
+                        {/* Right: Starter Position Scorecard */}
+                        <div className="border border-white/10 rounded-lg overflow-hidden bg-bg-secondary flex flex-col">
+                            <div className="p-3 border-b border-white/10 bg-bg-tertiary flex items-center gap-2">
+                                <Target className="w-4 h-4 text-accent-gold" />
+                                <span className="text-xs font-bold text-white">Starter Position Scorecard</span>
                             </div>
+                            
+                            {/* Pillars */}
+                            <div className="flex border-b border-white/10">
+                                <ScorecardPillar 
+                                    label="Value" 
+                                    value="--" 
+                                    subtext="Enter ticker to analyze"
+                                    status="neutral" 
+                                />
+                                <ScorecardPillar 
+                                    label="Risk" 
+                                    value="--" 
+                                    subtext="Enter ticker to analyze"
+                                    status="neutral" 
+                                />
+                                <ScorecardPillar 
+                                    label="Momentum (TSMOM)" 
+                                    value="--" 
+                                    subtext="Enter ticker to analyze"
+                                    status="neutral" 
+                                />
+                            </div>
+
+                            {/* Verdict */}
+                            <div className="p-6 flex-1 flex flex-col justify-center items-center text-center">
+                                <div className="text-xs text-text-muted mb-2 uppercase tracking-widest">Ready to Analyze</div>
+                                <p className="text-lg text-white font-display leading-relaxed">
+                                    Enter a ticker symbol in the sidebar to begin your analysis. We'll provide a comprehensive evaluation combining Value, Risk, and Momentum metrics.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ZONE 2: The Evidence (Scroll for Details) */}
+                    <div className="space-y-6">
+                        <h4 className="text-sm font-display text-white border-b border-white/10 pb-2">Deep Dive Evidence</h4>
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="h-[400px]">
                                 <RiskRewardWidget />
                             </div>
+                            <div className="h-[400px]">
+                                <ProjectionValuation />
+                            </div>
                         </div>
-                    )}
 
-                    {activeSidebarSection === 'screener' && (
-                        <div className="space-y-8">
-                            <h2 className="text-lg font-display text-white border-b border-white/10 pb-2">Idea Generation</h2>
-                            
-                            <div className="h-[500px]">
-                                <ProtectedWidget featureName="Alpha Stock Picker">
-                                    <AlphaStockPicker />
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="h-[400px]">
+                                <CrisisSimulator />
+                            </div>
+                            <div className="h-[400px]">
+                                <ProtectedWidget featureName="Hidden Risk Scanner">
+                                    <HiddenRiskReport />
                                 </ProtectedWidget>
-                                <div className="mt-4 p-4 bg-bg-secondary border border-white/5 rounded-lg text-xs text-text-secondary">
-                                    <strong className="text-white block mb-1">About the C-Score:</strong>
-                                    The C-Score is a proprietary multi-factor model that ranks stocks based on Quality (ROIC, Margins), Value (FCF Yield, EV/EBIT), and Momentum (Price Strength). A score above 80 indicates an "Investable" candidate with strong fundamentals and technicals.
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ZONE 3: The Engine Room (System Logs) */}
+                    <div className="border border-white/10 rounded-lg bg-[#050912] overflow-hidden">
+                        <SectionHeader 
+                            title="System Logs (Engine Room)" 
+                            isOpen={showLogs} 
+                            onToggle={() => setShowLogs(!showLogs)} 
+                        />
+                        
+                        {showLogs && (
+                            <div className="p-4 font-mono text-xs text-text-muted space-y-2">
+                                <div className="flex items-center gap-2 text-accent-primary mb-2">
+                                    <Terminal className="w-3 h-3" />
+                                    <span>Waiting for ticker input...</span>
                                 </div>
+                                <div>Enter a ticker symbol to see TSMOM calculations and system logs.</div>
                             </div>
+                        )}
+                    </div>
 
-                            <div className="h-[500px]">
-                                <ProtectedWidget featureName="Hidden Gems Screener">
-                                    <HiddenGemsScreener />
-                                </ProtectedWidget>
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
         );

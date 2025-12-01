@@ -75,15 +75,9 @@ export const ResourcesPage: React.FC = () => {
                     </p>
 
                     <p className="font-bold text-white mt-8">
-                        Because the future favors not those who demand certainty, but those who walk forward despite uncertainty—who understand that to fear suffering is already to suffer it, and that true valor lies not in strength of hand, but in strength of spirit, and that this is less of a quality than a decision in everyone life´s.
+                        Because the future favors not those who demand certainty, but those who walk forward despite uncertainty—who understand that to fear suffering is already to suffer it, and that true valor lies not in strength of hand, but in strength of spirit, and that this is less of a quality than a decision in everyone's life.
                     </p>
                 </div>
-            </div>
-
-            {/* Resources Widget (Legacy) */}
-            <div className="pt-12 border-t border-white/5">
-                <h2 className="text-2xl font-display text-white mb-6">Library</h2>
-                <Resources />
             </div>
         </div>
     );

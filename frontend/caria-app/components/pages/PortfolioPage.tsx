@@ -334,7 +334,9 @@ export const PortfolioPage: React.FC = () => {
                                                 ${holding.current_value?.toLocaleString()}
                                             </div>
                                         </div>
-                                        <div className={`col-span-2 text-right text-sm font-mono ${holding.gain_loss_pct >= 0 ? 'text-positive' : 'text-negative'}`}>
+                                        <div className={`col-span-2 text-right text-sm font-mono px-2 py-1 rounded ${holding.gain_loss_pct >= 0 
+                                            ? 'text-white bg-gradient-to-r from-green-500/20 to-green-600/10 border border-green-500/30' 
+                                            : 'text-white bg-gradient-to-r from-red-500/20 to-red-600/10 border border-red-500/30'}`}>
                                             {holding.gain_loss_pct >= 0 ? '+' : ''}{holding.gain_loss_pct.toFixed(2)}%
                                         </div>
                                         <div className="col-span-1 flex justify-center">

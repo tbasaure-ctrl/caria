@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { Bell, Menu, X, User, Search } from 'lucide-react';
+import { Bell, Menu, X, User, Search, LogIn, UserPlus } from 'lucide-react';
+import { getToken, removeToken } from '../../services/apiService';
 
 const NavItem: React.FC<{ 
     label: string; 
@@ -26,6 +27,7 @@ export const TopNav: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const isAuthenticated = !!getToken();
 
     const navItems = [
         { label: 'Portfolio', path: '/portfolio' },
@@ -37,6 +39,12 @@ export const TopNav: React.FC = () => {
     const handleNavClick = (path: string) => {
         navigate(path);
         setIsMobileMenuOpen(false);
+    };
+
+    const handleLogout = () => {
+        removeToken();
+        localStorage.removeItem('cariaChatHistory');
+        navigate('/');
     };
 
     return (
@@ -78,14 +86,38 @@ export const TopNav: React.FC = () => {
                             />
                         </div>
                         
-                        <button className="text-text-muted hover:text-white transition-colors relative">
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute top-0 right-0 w-2 h-2 bg-accent-primary rounded-full"></span>
-                        </button>
-                        
-                        <div className="w-8 h-8 rounded-full bg-bg-tertiary border border-white/10 flex items-center justify-center text-text-secondary cursor-pointer hover:border-white/30 transition-colors">
-                            <User className="w-4 h-4" />
-                        </div>
+                        {isAuthenticated ? (
+                            <>
+                                <button className="text-text-muted hover:text-white transition-colors relative">
+                                    <Bell className="w-5 h-5" />
+                                    <span className="absolute top-0 right-0 w-2 h-2 bg-accent-primary rounded-full"></span>
+                                </button>
+                                
+                                <div 
+                                    onClick={handleLogout}
+                                    className="w-8 h-8 rounded-full bg-bg-tertiary border border-white/10 flex items-center justify-center text-text-secondary cursor-pointer hover:border-white/30 transition-colors group relative"
+                                    title="Log Out"
+                                >
+                                    <User className="w-4 h-4" />
+                                    <div className="absolute top-full right-0 mt-2 hidden group-hover:block bg-black border border-white/10 px-2 py-1 rounded text-xs text-white whitespace-nowrap">Log Out</div>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={() => window.location.href = '/?login=true'}
+                                    className="text-sm font-medium text-text-secondary hover:text-white px-3 py-1.5 transition-colors flex items-center gap-1"
+                                >
+                                    <LogIn className="w-4 h-4" /> <span className="hidden sm:inline">Log In</span>
+                                </button>
+                                <button 
+                                    onClick={() => window.location.href = '/?register=true'}
+                                    className="text-sm font-bold text-black bg-white hover:bg-gray-200 px-3 py-1.5 rounded transition-colors flex items-center gap-1"
+                                >
+                                    <UserPlus className="w-4 h-4" /> <span className="hidden sm:inline">Sign Up</span>
+                                </button>
+                            </div>
+                        )}
 
                         {/* Mobile Menu Button */}
                         <button 
@@ -117,6 +149,22 @@ export const TopNav: React.FC = () => {
                                 {item.label}
                             </button>
                         ))}
+                        {!isAuthenticated && (
+                            <div className="mt-4 flex flex-col gap-2 px-3">
+                                <button 
+                                    onClick={() => window.location.href = '/?login=true'}
+                                    className="w-full text-center py-2 border border-white/20 rounded text-white font-medium"
+                                >
+                                    Log In
+                                </button>
+                                <button 
+                                    onClick={() => window.location.href = '/?register=true'}
+                                    className="w-full text-center py-2 bg-white text-black rounded font-bold"
+                                >
+                                    Sign Up
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -134,4 +182,3 @@ export const GitHubLayout: React.FC = () => {
         </div>
     );
 };
-

@@ -88,19 +88,19 @@ export const AnalysisPage: React.FC = () => {
                         <div className="space-y-1">
                             <button 
                                 onClick={() => setActiveSection('main')}
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'main' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSidebarSection === 'main' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                             >
                                 Overview
                             </button>
                             <button 
                                 onClick={() => setActiveSection('valuation')}
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'valuation' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSidebarSection === 'valuation' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                             >
                                 Valuation Tools
                             </button>
                             <button 
                                 onClick={() => setActiveSection('screener')}
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'screener' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSidebarSection === 'screener' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                             >
                                 Screener Tools
                             </button>
@@ -110,7 +110,7 @@ export const AnalysisPage: React.FC = () => {
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
-                    {activeSection === 'main' && (
+                    {activeSidebarSection === 'main' && (
                         <div className="space-y-8">
                             {/* Intro Banner */}
                             <div className="bg-bg-secondary border border-white/10 rounded-lg p-6 text-center">
@@ -133,7 +133,7 @@ export const AnalysisPage: React.FC = () => {
                         </div>
                     )}
 
-                    {activeSection === 'valuation' && (
+                    {activeSidebarSection === 'valuation' && (
                         <div className="space-y-8">
                             <h2 className="text-lg font-display text-white border-b border-white/10 pb-2">Valuation Suite</h2>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -150,7 +150,7 @@ export const AnalysisPage: React.FC = () => {
                         </div>
                     )}
 
-                    {activeSection === 'screener' && (
+                    {activeSidebarSection === 'screener' && (
                         <div className="space-y-8">
                             <h2 className="text-lg font-display text-white border-b border-white/10 pb-2">Idea Generation</h2>
                             

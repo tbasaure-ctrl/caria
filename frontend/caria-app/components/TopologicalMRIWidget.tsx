@@ -149,15 +149,6 @@ export default function TopologicalMRIWidget() {
                 ctx.fillText(alien.ticker, ax - 20, ay - 50);
             }
 
-            // setNodes(newNodes); // Update state for next frame (careful with infinite loop in React)
-            // Actually, modifying state in render loop is bad. 
-            // For simple visual effect, we can just mutate the local array or use a ref for positions.
-            // Let's use the ref approach for performance if we were doing complex physics, 
-            // but for this simple effect, let's just use the visual render.
-            // To avoid React re-renders, we won't setNodes here, just draw. 
-            // But we need to update positions. 
-            // Let's just animate the "Alien" pulse for now to be safe and simple.
-
             animationFrameId = requestAnimationFrame(render);
         };
 
@@ -195,6 +186,15 @@ export default function TopologicalMRIWidget() {
     const isError = scan?.status === "ERROR" || scan?.status === "OFFLINE";
     const isWaiting = scan?.status === "WAITING";
 
+    // Tactical Insight Logic
+    const getTacticalInsight = () => {
+        if (!scan) return "Analyzing market topology...";
+        if (scan.metrics.betti_1_loops > 5) return "High market fragility detected. Structure is breaking down. Consider hedging or reducing beta.";
+        if (scan.metrics.total_persistence < 0.5) return "Trends are weak and short-lived. Avoid momentum strategies; focus on mean reversion.";
+        if (topAlien && topAlien.isolation_score > 0.9) return `Critical anomaly in ${topAlien.ticker}. It has decoupled from the market. Potential mean reversion trade.`;
+        return "Market structure is robust. Trend following strategies are favored.";
+    };
+
     return (
         <div className="w-full bg-black border border-gray-800 rounded-xl overflow-hidden relative font-mono">
             {/* Background Grid/Space */}
@@ -222,6 +222,22 @@ export default function TopologicalMRIWidget() {
                 {isError && <div className="text-[10px] text-red-400 mt-1">{scan?.diagnosis}</div>}
             </div>
 
+            {/* Metrics Panel - Top Right (Plain English) */}
+            <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end">
+                <div className="bg-black/60 backdrop-blur-sm border border-white/10 p-2 rounded text-right">
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">Market Fragility</div>
+                    <div className={`text-lg font-bold ${scan && scan.metrics.betti_1_loops > 5 ? 'text-red-500' : 'text-cyan-400'}`}>
+                        {scan?.metrics.betti_1_loops} <span className="text-[10px] font-normal text-gray-600">(Loops)</span>
+                    </div>
+                </div>
+                <div className="bg-black/60 backdrop-blur-sm border border-white/10 p-2 rounded text-right">
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">Trend Durability</div>
+                    <div className="text-lg font-bold text-cyan-400">
+                        {scan?.metrics.total_persistence.toFixed(2)}
+                    </div>
+                </div>
+            </div>
+
             {/* Canvas Layer */}
             <canvas
                 ref={canvasRef}
@@ -230,9 +246,24 @@ export default function TopologicalMRIWidget() {
                 className="w-full h-[400px] object-cover relative z-0"
             />
 
-            {/* Alert Box - Bottom Right */}
+            {/* Tactical Insight Footer */}
+            <div className="absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md border-t border-white/10 p-3 z-20">
+                <div className="flex items-start gap-3">
+                    <div className="p-1.5 bg-cyan-500/10 rounded border border-cyan-500/30 mt-0.5">
+                        <Zap className="w-4 h-4 text-cyan-400" />
+                    </div>
+                    <div>
+                        <div className="text-[10px] text-cyan-500 uppercase tracking-wider font-bold mb-0.5">Tactical Insight</div>
+                        <p className="text-sm text-gray-300 leading-tight">
+                            {getTacticalInsight()}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Alert Box - Floating near Alien */}
             {topAlien && (
-                <div className="absolute bottom-8 right-8 z-10 w-64 border border-red-500/50 bg-black/80 backdrop-blur-md p-4 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+                <div className="absolute bottom-20 right-8 z-10 w-64 border border-red-500/50 bg-black/80 backdrop-blur-md p-4 shadow-[0_0_20px_rgba(239,68,68,0.2)]">
                     <div className="text-[10px] text-red-500 mb-1 tracking-widest">/// STRUCTURAL BREACH DETECTED</div>
                     <div className="text-3xl font-bold text-white mb-2">{topAlien.ticker}</div>
 

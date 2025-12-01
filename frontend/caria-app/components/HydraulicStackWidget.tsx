@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, Eye, Shield, Crosshair, Droplets, Info } from 'lucide-react';
+import { Activity, Eye, Shield, Crosshair, Droplets, Info, Zap } from 'lucide-react';
 import { API_BASE_URL } from '../services/apiService';
 
 interface StackStatus {
@@ -94,6 +94,14 @@ export default function HydraulicStackWidget() {
         return 'bg-warning/10 border-warning/20';
     };
 
+    const getTacticalInsight = () => {
+        const { score } = status.liquidity;
+        if (score >= 65) return "Liquidity is abundant. Risk-on environment favored. Increase exposure to growth and beta.";
+        if (score >= 45) return "Liquidity is neutral. Market is choppy. Focus on stock selection and quality factors.";
+        if (score >= 30) return "Liquidity is tightening. Risk-off environment. Reduce leverage and increase cash or defensive allocations.";
+        return "Liquidity crisis detected. Maximum defensive posture recommended. Cash is king.";
+    };
+
     return (
         <div className="w-full bg-[#0B1221] border border-white/5 shadow-lg relative overflow-hidden rounded-xl h-full flex flex-col">
             {/* Header */}
@@ -118,7 +126,7 @@ export default function HydraulicStackWidget() {
             </div>
 
             {/* Content */}
-            <div className="relative z-10 p-4 space-y-3 flex-1">
+            <div className="relative z-10 p-4 space-y-3 flex-1 overflow-y-auto custom-scrollbar">
                 {/* Core Score Display */}
                 <div className={`relative p-4 rounded-lg border backdrop-blur-sm transition-colors duration-500 ${getBgColor(status.liquidity.score)}`}>
                     <div className="flex items-center justify-between">
@@ -184,6 +192,21 @@ export default function HydraulicStackWidget() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Tactical Insight Footer */}
+            <div className="relative z-10 bg-black/40 border-t border-white/5 p-3">
+                <div className="flex items-start gap-3">
+                    <div className="p-1.5 bg-accent-cyan/10 rounded border border-accent-cyan/30 mt-0.5">
+                        <Zap className="w-3 h-3 text-accent-cyan" />
+                    </div>
+                    <div>
+                        <div className="text-[10px] text-accent-cyan uppercase tracking-wider font-bold mb-0.5">Tactical Insight</div>
+                        <p className="text-xs text-text-secondary leading-snug">
+                            {getTacticalInsight()}
+                        </p>
                     </div>
                 </div>
             </div>

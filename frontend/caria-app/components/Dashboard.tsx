@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Portfolio } from './widgets/Portfolio';
@@ -78,6 +80,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [regimeData, setRegimeData] = useState<RegimeData | null>(null);
     const [isLoadingRegime, setIsLoadingRegime] = useState(true);
+    const [showTutorial, setShowTutorial] = useState(false);
 
     const tabFromUrl = searchParams.get('tab') as DashboardTab;
     const [activeTab, setActiveTab] = useState<DashboardTab>(
@@ -121,9 +124,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
     }, []);
 
     const tabs = [
-        { id: 'portfolio' as DashboardTab, label: 'Portfolio' },
-        { id: 'analysis' as DashboardTab, label: 'Analysis' },
-        { id: 'research' as DashboardTab, label: 'Research' },
+        { id: 'portfolio' as DashboardTab, label: 'Command Center' },
+        { id: 'analysis' as DashboardTab, label: 'Deep Dive' },
+        { id: 'research' as DashboardTab, label: 'Intel & Research' },
         { id: 'tutorial' as DashboardTab, label: 'Tutorial' },
     ];
 
@@ -134,11 +137,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 <div className="w-full px-3 sm:px-6 lg:px-12 py-3 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6">
                     <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                         <h1 className="text-lg sm:text-xl font-display text-white tracking-wide hidden sm:block">
-                            Terminal
+                            Caria Terminal
                         </h1>
                         <span className="text-white/20 text-xl font-light hidden sm:block">/</span>
                         <span className="text-accent-cyan font-mono text-[10px] sm:text-xs uppercase tracking-widest">
-                            {activeTab}
+                            {activeTab.replace('-', ' ')}
                         </span>
                     </div>
 
@@ -163,7 +166,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                     <div className="flex items-center gap-3 shrink-0">
                         <button
-                            onClick={() => setShowTutorial(true)}
+                            onClick={() => handleTabChange('tutorial')}
                             className="p-2 rounded-lg hover:bg-white/5 transition-colors"
                             title="Tutorial"
                         >
@@ -174,7 +177,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             </svg>
                         </button>
                         <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
-                        <span className="text-[10px] text-text-muted font-mono uppercase">Live</span>
+                        <span className="text-[10px] text-text-muted font-mono uppercase">System Online</span>
                     </div>
                 </div>
             </div>
@@ -182,73 +185,59 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             {/* Tab Content - Mobile First with responsive padding */}
             <div className="w-full px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8 relative z-10 max-w-[2400px] mx-auto">
 
-                {/* PORTFOLIO TAB */}
+                {/* PORTFOLIO TAB (COMMAND CENTER) */}
                 {activeTab === 'portfolio' && (
-                    <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 animate-fade-in">
-                        {/* Global Market Bar - Full Width */}
+                    <div className="flex flex-col gap-6 animate-fade-in">
+                        {/* Section 1: Market Vitals (Full Width) */}
                         <div className="w-full">
                             <GlobalMarketBar id="market-bar-widget" />
                         </div>
 
-                        {/* Main Content Grid - Mobile: Stack, Tablet: 2 cols, Desktop: 12 cols */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
-                            {/* Indicators - Mobile: horizontal scroll or stack */}
-                            <div className="col-span-1 md:col-span-2 xl:col-span-2 flex flex-row md:flex-col gap-4 sm:gap-6 overflow-x-auto xl:overflow-visible pb-2 xl:pb-0">
-                                <div className="min-w-[160px] sm:min-w-[200px] xl:min-w-0 h-auto min-h-[180px] sm:min-h-[200px] xl:h-[220px] flex-shrink-0 xl:flex-shrink">
-                                    <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
-                                </div>
-                                <div className="min-w-[160px] sm:min-w-[200px] xl:min-w-0 h-auto min-h-[180px] sm:min-h-[200px] xl:h-[220px] flex-shrink-0 xl:flex-shrink">
-                                    <FearGreedIndex />
-                                </div>
-                                <div className="min-w-[160px] sm:min-w-[200px] xl:min-w-0 h-auto min-h-[180px] sm:min-h-[200px] xl:h-[220px] flex-shrink-0 xl:flex-shrink">
-                                    <LiquidityGauge />
-                                </div>
+                        {/* Section 2: Advanced Models (The "Brain") */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="h-[300px] lg:h-[350px]">
+                                <HydraulicStackWidget />
                             </div>
-
-                            {/* Portfolio - Main widget */}
-                            <div className="col-span-1 md:col-span-2 xl:col-span-7 min-h-[400px] sm:min-h-[500px] lg:min-h-[650px]">
-                                <ProtectedWidget featureName="Portfolio Management">
-                                    <Portfolio id="portfolio-widget" />
-                                </ProtectedWidget>
+                            <div className="h-[300px] lg:h-[350px]">
+                                <TopologicalMRIWidget />
                             </div>
+                        </div>
 
-                            {/* Portfolio Analytics & Ask Caria */}
-                            <div className="col-span-1 md:col-span-2 xl:col-span-3 flex flex-col gap-4 sm:gap-6">
-                                <div className="flex-1 min-h-[250px] sm:min-h-[300px]">
-                                    <ProtectedWidget featureName="Portfolio Analytics">
-                                        <PortfolioAnalytics />
+                        {/* Section 3: Portfolio Core */}
+                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                            {/* Left: Portfolio & Analytics */}
+                            <div className="col-span-1 xl:col-span-8 flex flex-col gap-6">
+                                <div className="min-h-[500px]">
+                                    <ProtectedWidget featureName="Portfolio Management">
+                                        <Portfolio id="portfolio-widget" />
                                     </ProtectedWidget>
                                 </div>
-                                <div className="h-auto min-h-[150px] sm:min-h-[180px]">
-                                    <AskCariaWidget onClick={switchToAnalysis} />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="h-[300px]">
+                                        <ProtectedWidget featureName="Portfolio Analytics">
+                                            <PortfolioAnalytics />
+                                        </ProtectedWidget>
+                                    </div>
+                                    <div className="h-[300px]">
+                                        <AskCariaWidget onClick={switchToAnalysis} />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* AI-Hydraulic Stack Status - Full Width */}
-                        <div className="w-full">
-                            <HydraulicStackWidget />
-                        </div>
-
-                        {/* Topological MRI - Full Width */}
-                        <div className="w-full">
-                            <TopologicalMRIWidget />
-                        </div>
-
-                        {/* Crisis & Macro Simulators */}
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
-                            <div className="col-span-1 lg:col-span-8 min-h-[350px] sm:min-h-[400px] lg:min-h-[450px]">
-                                <ProtectedWidget featureName="Crisis Simulator">
-                                    <CrisisSimulator />
-                                </ProtectedWidget>
-                            </div>
-                            <div className="col-span-1 lg:col-span-4 flex flex-col gap-4 sm:gap-6 lg:gap-8">
-                                <div className="min-h-[180px] sm:min-h-[200px] lg:min-h-[220px]">
-                                    <MacroSimulator />
+                            {/* Right: Risk & Simulation */}
+                            <div className="col-span-1 xl:col-span-4 flex flex-col gap-6">
+                                <div className="h-[200px]">
+                                    <ModelOutlook regimeData={regimeData} isLoading={isLoadingRegime} />
                                 </div>
-                                <div className="min-h-[180px] sm:min-h-[200px] lg:min-h-[220px]">
-                                    <ProtectedWidget featureName="Regime Test">
-                                        <RegimeTestWidget />
+                                <div className="h-[200px]">
+                                    <FearGreedIndex />
+                                </div>
+                                <div className="h-[200px]">
+                                    <LiquidityGauge />
+                                </div>
+                                <div className="flex-1 min-h-[400px]">
+                                    <ProtectedWidget featureName="Crisis Simulator">
+                                        <CrisisSimulator />
                                     </ProtectedWidget>
                                 </div>
                             </div>
@@ -256,55 +245,49 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     </div>
                 )}
 
-                {/* ANALYSIS TAB */}
+                {/* ANALYSIS TAB (DEEP DIVE) */}
                 {activeTab === 'analysis' && (
-                    <div className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
-                        {/* Top Row: Thesis Arena + Risk-Reward Engine */}
-                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6">
-                            {/* CARIA ARENA - HERO POSITION */}
-                            <div className="col-span-1 xl:col-span-7 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
+                    <div className="flex flex-col gap-6 animate-fade-in">
+                        {/* Hero Section: Thesis & Risk */}
+                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                            <div className="col-span-1 xl:col-span-7 min-h-[600px]">
                                 <ProtectedWidget featureName="Investment Thesis Analysis">
                                     <ThesisArena />
                                 </ProtectedWidget>
                             </div>
-
-                            {/* RISK-REWARD ENGINE */}
-                            <div className="col-span-1 xl:col-span-5 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
+                            <div className="col-span-1 xl:col-span-5 min-h-[600px]">
                                 <RiskRewardWidget />
                             </div>
                         </div>
 
-                        {/* Valuation Tools Grid - Mobile: Stack, Desktop: Side by Side */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                            {/* Left Column: DCF + Monte Carlo stacked */}
-                            <div className="flex flex-col gap-4 sm:gap-6">
-                                {/* DCF Valuation Tool */}
-                                <div className="min-h-[350px] sm:min-h-[400px] lg:min-h-[500px]">
+                        {/* Valuation Suite */}
+                        <h2 className="text-xl font-display text-white mt-8 mb-4 border-b border-white/10 pb-2">Valuation Suite</h2>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="flex flex-col gap-6">
+                                <div className="h-[400px]">
                                     <div className="rounded-xl p-4 sm:p-6 h-full" style={{ backgroundColor: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)' }}>
                                         <h3 className="text-base sm:text-lg font-display font-bold text-white mb-3 sm:mb-4">DCF Valuation: 5-Year Target Price</h3>
                                         <ProjectionValuation />
                                     </div>
                                 </div>
-                                {/* Monte Carlo Simulation Tool */}
-                                <div className="min-h-[500px] sm:min-h-[600px] lg:min-h-[700px]">
+                                <div className="h-[600px]">
                                     <ValuationTool />
                                 </div>
                             </div>
-
-                            {/* Right Column: Business Valuation Workshop */}
-                            <div className="min-h-[400px] sm:min-h-[500px] lg:min-h-[600px]">
+                            <div className="h-full min-h-[600px]">
                                 <ValuationWorkshop />
                             </div>
                         </div>
 
-                        {/* Screeners - Mobile: Stack, Desktop: Side by Side */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                            <div className="min-h-[350px] sm:min-h-[400px] lg:min-h-[500px]">
+                        {/* Screeners */}
+                        <h2 className="text-xl font-display text-white mt-8 mb-4 border-b border-white/10 pb-2">Idea Generation</h2>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="h-[500px]">
                                 <ProtectedWidget featureName="Alpha Stock Picker">
                                     <AlphaStockPicker />
                                 </ProtectedWidget>
                             </div>
-                            <div className="min-h-[350px] sm:min-h-[400px] lg:min-h-[500px]">
+                            <div className="h-[500px]">
                                 <ProtectedWidget featureName="Hidden Gems Screener">
                                     <HiddenGemsScreener />
                                 </ProtectedWidget>
@@ -313,36 +296,32 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                     </div>
                 )}
 
-                {/* RESEARCH TAB */}
+                {/* RESEARCH TAB (INTEL) */}
                 {activeTab === 'research' && (
-                    <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8 animate-fade-in">
-                        {/* Industry Research + Sidebar */}
-                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
-                            <div className="col-span-1 xl:col-span-8 min-h-[350px] sm:min-h-[400px] lg:min-h-[500px]">
+                    <div className="flex flex-col gap-6 animate-fade-in">
+                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                            <div className="col-span-1 xl:col-span-8 min-h-[600px]">
                                 <ProtectedWidget featureName="Industry Research">
                                     <IndustryResearch />
                                 </ProtectedWidget>
                             </div>
-
-                            <div className="col-span-1 xl:col-span-4 flex flex-col gap-4 sm:gap-6 lg:gap-8">
+                            <div className="col-span-1 xl:col-span-4 flex flex-col gap-6">
                                 <OpportunityRadar />
                                 <WeeklyMedia compact={false} />
                             </div>
                         </div>
 
-                        {/* Community & Resources */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-                            <div className="min-h-[300px] sm:min-h-[350px] lg:min-h-[400px]">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="h-[400px]">
                                 <ProtectedWidget featureName="Community">
                                     <CommunityFeed />
                                 </ProtectedWidget>
                             </div>
-                            <div className="min-h-[300px] sm:min-h-[350px] lg:min-h-[400px]">
+                            <div className="h-[400px]">
                                 <Resources />
                             </div>
                         </div>
 
-                        {/* Rankings - Full Width */}
                         <div className="w-full">
                             <RankingsWidget />
                         </div>
@@ -351,8 +330,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* TUTORIAL TAB */}
                 {activeTab === 'tutorial' && (
-                    <div className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
-                        <TutorialPanel onClose={() => { }} />
+                    <div className="flex flex-col gap-6 animate-fade-in">
+                        <TutorialPanel onClose={() => handleTabChange('portfolio')} />
                     </div>
                 )}
             </div>

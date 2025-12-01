@@ -12,24 +12,28 @@ LOGGER = logging.getLogger("caria.services.simulation")
 
 # Historical crisis data with pre-computed benchmark returns for reliability
 # Event types: "acute" (days-based), "recession" (months-based), "crash" (weeks-based)
+# Historical crisis data with pre-computed benchmark returns for reliability
+# Event types: "acute" (days-based), "recession" (months-based), "crash" (weeks-based)
 CRISIS_DATA = {
     "1929_depression": {
         "start": "1929-09-01", 
         "end": "1932-06-01", 
         "name": "Great Depression (1929)",
-        "benchmark_return": -0.86,  # S&P 500 approximate
+        "benchmark_return": -0.86,
         "description": "The worst stock market crash in U.S. history",
         "event_type": "recession",
-        "event_date": "1929-10-24"  # Black Thursday
+        "event_date": "1929-10-24",
+        "pre_crisis_months": 3
     },
     "1939_wwii": {
         "start": "1939-09-01", 
         "end": "1945-09-01", 
         "name": "WWII Start (1939)",
-        "benchmark_return": 0.07,  # Markets recovered during war
+        "benchmark_return": 0.07,
         "description": "World War II era volatility",
         "event_type": "recession",
-        "event_date": "1939-09-01"
+        "event_date": "1939-09-01",
+        "pre_crisis_months": 3
     },
     "1962_cuban_missile": {
         "start": "1962-10-15", 
@@ -38,7 +42,8 @@ CRISIS_DATA = {
         "benchmark_return": -0.07,
         "description": "Nuclear standoff between US and USSR",
         "event_type": "acute",
-        "event_date": "1962-10-16"  # Crisis announced
+        "event_date": "1962-10-16",
+        "pre_crisis_months": 1
     },
     "1963_jfk": {
         "start": "1963-11-21", 
@@ -47,7 +52,8 @@ CRISIS_DATA = {
         "benchmark_return": 0.15,
         "description": "Markets recovered quickly after initial shock",
         "event_type": "acute",
-        "event_date": "1963-11-22"
+        "event_date": "1963-11-22",
+        "pre_crisis_months": 1
     },
     "1987_black_monday": {
         "start": "1987-10-15", 
@@ -56,7 +62,8 @@ CRISIS_DATA = {
         "benchmark_return": -0.22,
         "description": "Single-day crash of 22.6%",
         "event_type": "acute",
-        "event_date": "1987-10-19"  # Black Monday
+        "event_date": "1987-10-19",
+        "pre_crisis_months": 1
     },
     "2000_dot_com": {
         "start": "2000-03-10", 
@@ -65,7 +72,8 @@ CRISIS_DATA = {
         "benchmark_return": -0.49,
         "description": "Tech bubble burst - NASDAQ fell 78%",
         "event_type": "recession",
-        "event_date": "2000-03-10"  # Peak
+        "event_date": "2000-03-10",
+        "pre_crisis_months": 6
     },
     "2001_911": {
         "start": "2001-09-10", 
@@ -75,7 +83,8 @@ CRISIS_DATA = {
         "description": "Terrorist attacks on World Trade Center. Market closed 9/11-9/14.",
         "event_type": "acute",
         "event_date": "2001-09-11",
-        "market_closure": ["2001-09-11", "2001-09-12", "2001-09-13", "2001-09-14"]
+        "market_closure": ["2001-09-11", "2001-09-12", "2001-09-13", "2001-09-14"],
+        "pre_crisis_months": 1
     },
     "2008_gfc": {
         "start": "2007-12-01", 
@@ -84,7 +93,8 @@ CRISIS_DATA = {
         "benchmark_return": -0.53,
         "description": "Lehman Brothers collapse (Sept 2008), global credit crisis",
         "event_type": "recession",
-        "event_date": "2008-09-15"  # Lehman collapse
+        "event_date": "2008-09-15",
+        "pre_crisis_months": 6
     },
     "2011_euro_debt": {
         "start": "2011-04-01", 
@@ -93,7 +103,8 @@ CRISIS_DATA = {
         "benchmark_return": -0.19,
         "description": "Greek debt crisis, European contagion fears",
         "event_type": "recession",
-        "event_date": "2011-05-01"
+        "event_date": "2011-05-01",
+        "pre_crisis_months": 3
     },
     "2018_trade_war": {
         "start": "2018-09-20", 
@@ -102,7 +113,8 @@ CRISIS_DATA = {
         "benchmark_return": -0.20,
         "description": "US-China trade tensions and Fed rate hikes",
         "event_type": "crash",
-        "event_date": "2018-10-01"
+        "event_date": "2018-10-01",
+        "pre_crisis_months": 2
     },
     "2020_covid": {
         "start": "2020-02-19", 
@@ -111,7 +123,8 @@ CRISIS_DATA = {
         "benchmark_return": -0.34,
         "description": "Fastest 30% decline in history due to pandemic. Trough: March 23",
         "event_type": "crash",
-        "event_date": "2020-02-19"  # Peak before crash
+        "event_date": "2020-02-19",
+        "pre_crisis_months": 2
     },
     "2022_inflation": {
         "start": "2022-01-03", 
@@ -120,7 +133,8 @@ CRISIS_DATA = {
         "benchmark_return": -0.25,
         "description": "Fed rate hikes to combat 40-year high inflation",
         "event_type": "recession",
-        "event_date": "2022-01-03"
+        "event_date": "2022-01-03",
+        "pre_crisis_months": 3
     },
 }
 
@@ -161,7 +175,20 @@ class SimulationService:
             return {"error": f"Invalid crisis_id: {crisis_id}. Valid options: {list(CRISIS_DATA.keys())}"}
             
         crisis = CRISIS_DATA[crisis_id]
-        start_date = crisis["start"]
+        
+        # Calculate adjusted start date based on pre_crisis_months
+        start_date_str = crisis["start"]
+        pre_months = crisis.get("pre_crisis_months", 0)
+        
+        if pre_months > 0:
+            try:
+                start_dt = datetime.strptime(start_date_str, "%Y-%m-%d")
+                # Approximate months as 30 days
+                adjusted_start = start_dt - timedelta(days=pre_months * 30)
+                start_date_str = adjusted_start.strftime("%Y-%m-%d")
+            except Exception as e:
+                LOGGER.warning(f"Error adjusting start date: {e}")
+        
         end_date = crisis["end"]
         
         # Calculate total weight and normalize
@@ -177,7 +204,7 @@ class SimulationService:
             p['weight'] = p['weight'] / total_weight
         
         # Try to fetch actual historical data first
-        benchmark_data = self._fetch_benchmark_data(start_date, end_date)
+        benchmark_data = self._fetch_benchmark_data(start_date_str, end_date)
         
         if benchmark_data is not None and not benchmark_data.empty:
             # Use actual data
@@ -185,7 +212,7 @@ class SimulationService:
         else:
             # Fallback to synthetic simulation using pre-computed crisis returns
             LOGGER.info(f"Using synthetic simulation for {crisis_id} (no benchmark data available)")
-            return self._simulate_synthetic(portfolio, crisis)
+            return self._simulate_synthetic(portfolio, crisis, start_date_str)
 
     def _fetch_benchmark_data(self, start_date: str, end_date: str) -> Optional[pd.DataFrame]:
         """Fetch benchmark data, trying multiple symbols."""
@@ -271,13 +298,15 @@ class SimulationService:
             }
         }
 
-    def _simulate_synthetic(self, portfolio: List[Dict[str, Any]], crisis: Dict) -> Dict[str, Any]:
+    def _simulate_synthetic(self, portfolio: List[Dict[str, Any]], crisis: Dict, start_date: str = None) -> Dict[str, Any]:
         """Run synthetic simulation when actual data isn't available."""
         benchmark_return = crisis.get("benchmark_return", -0.30)
         
         # Generate synthetic timeline (30 trading days)
         days = 30
-        dates = pd.date_range(start=crisis["start"], periods=days, freq='B')
+        # Use provided start_date if available, otherwise crisis start
+        sim_start = start_date if start_date else crisis["start"]
+        dates = pd.date_range(start=sim_start, periods=days, freq='B')
         
         # Generate smooth benchmark decline using sigmoid
         t = np.linspace(0, 6, days)

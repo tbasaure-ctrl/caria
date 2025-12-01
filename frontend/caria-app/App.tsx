@@ -1,28 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { LandingPage } from './components/LandingPage';
-import { Sidebar } from './components/Sidebar';
 import { LoginModal } from './components/LoginModal';
 import { RegisterModal } from './components/RegisterModal';
 import { DashboardPage } from './components/pages/DashboardPage';
+import { PortfolioPage } from './components/pages/PortfolioPage';
+import { AnalysisPage } from './components/pages/AnalysisPage';
 import { CommunityPage } from './components/pages/CommunityPage';
 import { ResourcesPage } from './components/pages/ResourcesPage';
-import { GuestModeBanner } from './components/GuestModeBanner';
+import { GitHubLayout } from './components/layout/GitHubLayout';
 import { getToken, saveToken, removeToken } from './services/apiService';
-
-// Dashboard Layout (Sidebar + Content + Guest Banner)
-const DashboardLayout: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-  return (
-    <div className="flex h-screen w-full bg-[var(--color-bg-primary)]">
-      <Sidebar onLogout={onLogout} />
-      <div className="flex-1 overflow-y-auto bg-[var(--color-bg-primary)]">
-        <Outlet />
-      </div>
-      {/* Guest Mode Banner - shows for unauthenticated users */}
-      <GuestModeBanner />
-    </div>
-  );
-};
 
 const App: React.FC = () => {
   const [authToken, setAuthToken] = useState<string | null>(getToken());
@@ -59,27 +46,16 @@ const App: React.FC = () => {
     saveToken(token);
     setAuthToken(token);
     setLoginModalOpen(false);
-    // Force reload to ensure everything syncs or just navigate?
-    // Navigation will happen automatically if we are on landing page and now have token?
-    // Actually, LandingPage is at "/", Dashboard is at "/dashboard".
-    // We need to navigate to dashboard.
-    window.location.href = '/dashboard';
-  };
-
-  const handleLogout = () => {
-    removeToken();
-    localStorage.removeItem('cariaChatHistory');
-    setAuthToken(null);
-    window.location.href = '/';
+    window.location.href = '/portfolio';
   };
 
   return (
-    <div className="min-h-screen text-[var(--color-text-primary)] font-sans antialiased" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+    <div className="min-h-screen text-[var(--color-text-primary)] font-sans antialiased bg-[var(--color-bg-primary)]">
       <Router>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={
-            authToken ? <Navigate to="/dashboard" replace /> : (
+            authToken ? <Navigate to="/portfolio" replace /> : (
               <>
                 <LandingPage onLogin={handleShowLogin} onRegister={handleShowRegister} />
                 {isLoginModalOpen && (
@@ -100,13 +76,16 @@ const App: React.FC = () => {
             )
           } />
 
-          {/* Dashboard Routes - accessible without login, but widgets may require auth */}
-          <Route element={<DashboardLayout onLogout={handleLogout} />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/community" element={<CommunityPage />} />
-            <Route path="/resources" element={<ResourcesPage />} />
-            {/* Fallback for unknown routes */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* GitHub Layout Routes - Replaces DashboardLayout */}
+          <Route element={<GitHubLayout />}>
+            <Route path="/portfolio" element={<PortfolioPage />} />
+            <Route path="/analysis" element={<AnalysisPage />} />
+            <Route path="/research" element={<CommunityPage />} /> {/* Mapping Research to Community for now, or can create dedicated */}
+            <Route path="/about" element={<ResourcesPage />} />
+            
+            {/* Fallback redirects */}
+            <Route path="/dashboard" element={<Navigate to="/portfolio" replace />} />
+            <Route path="*" element={<Navigate to="/portfolio" replace />} />
           </Route>
         </Routes>
       </Router>

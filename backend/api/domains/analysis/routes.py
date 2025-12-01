@@ -14,6 +14,7 @@ from api.routes.model_validation import router as validation_router
 from api.routes.ux_tracking import router as ux_tracking_router
 from api.routes.risk_reward import router as risk_reward_router
 from api.routes.hidden_risk import router as hidden_risk_router
+from api.routes.tsmom import router as tsmom_router
 
 # Combine into analysis domain router
 router = APIRouter()
@@ -25,3 +26,4 @@ router.include_router(validation_router)
 router.include_router(ux_tracking_router)  # UX tracking and analytics
 router.include_router(risk_reward_router)  # Risk-Reward Engine
 router.include_router(hidden_risk_router)  # Hidden Risk AI Report
+router.include_router(tsmom_router)        # TSMOM / Market Regime

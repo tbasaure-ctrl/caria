@@ -149,6 +149,40 @@ class AlphaVantageClient:
         results.sort(key=lambda x: x["date"])
         return results
 
+    def get_monthly_adjusted_prices(
+        self, 
+        symbol: str
+    ) -> Optional[List[Dict[str, Any]]]:
+        """
+        Get monthly adjusted historical prices.
+        """
+        data = self._make_request({
+            "function": "TIME_SERIES_MONTHLY_ADJUSTED",
+            "symbol": symbol
+        })
+        
+        if not data or "Monthly Adjusted Time Series" not in data:
+            return None
+        
+        time_series = data["Monthly Adjusted Time Series"]
+        results = []
+        
+        for date_str, values in time_series.items():
+            results.append({
+                "date": date_str,
+                "open": float(values.get("1. open", 0)),
+                "high": float(values.get("2. high", 0)),
+                "low": float(values.get("3. low", 0)),
+                "close": float(values.get("4. close", 0)),
+                "adjusted_close": float(values.get("5. adjusted close", 0)),
+                "volume": int(values.get("6. volume", 0)),
+                "dividend": float(values.get("7. dividend amount", 0)),
+            })
+        
+        # Sort by date ascending
+        results.sort(key=lambda x: x["date"])
+        return results
+
     def get_intraday_prices(
         self, 
         symbol: str, 

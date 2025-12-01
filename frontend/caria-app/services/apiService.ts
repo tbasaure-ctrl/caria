@@ -291,6 +291,25 @@ export const deleteHolding = async (holdingId: string): Promise<void> => {
     }
 };
 
+export const updateHolding = async (holdingId: string, updates: {
+    quantity?: number;
+    average_cost?: number;
+    notes?: string;
+}): Promise<Holding> => {
+    const response = await fetchWithAuth(`${API_URL}/api/holdings/${holdingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: response.statusText }));
+        throw new Error(error.detail || `Error updating holding: ${response.statusText}`);
+    }
+
+    return response.json();
+};
+
 // ============================================================================
 // LECTURES API
 // ============================================================================

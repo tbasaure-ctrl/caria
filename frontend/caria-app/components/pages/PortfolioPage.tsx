@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, API_BASE_URL, getToken, createHolding, deleteHolding } from '../../services/apiService';
-import { getGuestHoldings, createGuestHolding, deleteGuestHolding } from '../../services/guestStorageService';
-import { TrendingUp, Plus, Edit2, Trash2, ArrowUpRight } from 'lucide-react';
+import { fetchHoldingsWithPrices, HoldingsWithPrices, HoldingWithPrice, API_BASE_URL, getToken, createHolding, deleteHolding, updateHolding } from '../../services/apiService';
+import { getGuestHoldings, createGuestHolding, deleteGuestHolding, updateGuestHolding } from '../../services/guestStorageService';
+import { TrendingUp, Plus, Edit2, Trash2, ArrowUpRight, X, Check } from 'lucide-react';
 import { Portfolio } from '../widgets/Portfolio';
 import { PortfolioAnalytics } from '../widgets/PortfolioAnalytics';
 import { CrisisSimulator } from '../widgets/CrisisSimulator';
@@ -98,6 +98,10 @@ export const PortfolioPage: React.FC = () => {
         notes: ''
     });
     const [actionLoading, setActionLoading] = useState(false);
+    
+    // Edit State
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editData, setEditData] = useState({ quantity: '', average_cost: '' });
 
     const loadData = async () => {
         setLoading(true);
@@ -188,6 +192,47 @@ export const PortfolioPage: React.FC = () => {
             await loadData();
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const startEdit = (holding: HoldingWithPrice, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setEditingId(holding.id);
+        setEditData({
+            quantity: holding.quantity.toString(),
+            average_cost: holding.average_cost.toString()
+        });
+    };
+
+    const cancelEdit = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setEditingId(null);
+        setEditData({ quantity: '', average_cost: '' });
+    };
+
+    const handleUpdate = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setActionLoading(true);
+        try {
+            const updates = {
+                quantity: parseFloat(editData.quantity),
+                average_cost: parseFloat(editData.average_cost)
+            };
+
+            if (getToken()) {
+                await updateHolding(id, updates);
+            } else {
+                updateGuestHolding(id, updates);
+            }
+            
+            setEditingId(null);
+            setEditData({ quantity: '', average_cost: '' });
+            await loadData();
+        } catch (err) {
+            console.error(err);
+            alert('Failed to update holding');
+        } finally {
+            setActionLoading(false);
         }
     };
 
@@ -314,8 +359,8 @@ export const PortfolioPage: React.FC = () => {
                                 {sortedHoldings.map((holding) => (
                                     <div 
                                         key={holding.ticker}
-                                        onClick={() => navigate(`/analysis?ticker=${holding.ticker}`)}
-                                        className="grid grid-cols-12 gap-4 px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer items-center group"
+                                        onClick={() => editingId !== holding.id && navigate(`/analysis?ticker=${holding.ticker}`)}
+                                        className={`grid grid-cols-12 gap-4 px-4 py-3 hover:bg-white/5 transition-colors items-center group ${editingId === holding.id ? 'bg-white/5' : 'cursor-pointer'}`}
                                     >
                                         <div className="col-span-3 flex items-center gap-3">
                                             <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[10px] font-bold text-accent-cyan">
@@ -323,7 +368,31 @@ export const PortfolioPage: React.FC = () => {
                                             </div>
                                             <div>
                                                 <div className="text-sm font-bold text-white font-mono">{holding.ticker}</div>
-                                                <div className="text-[10px] text-text-muted">{holding.quantity} units</div>
+                                                {editingId === holding.id ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <input
+                                                            type="number"
+                                                            step="any"
+                                                            value={editData.quantity}
+                                                            onChange={(e) => setEditData({...editData, quantity: e.target.value})}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="w-16 bg-bg-tertiary border border-white/20 rounded px-1 py-0.5 text-[10px] text-white"
+                                                            placeholder="Qty"
+                                                        />
+                                                        <span className="text-[10px] text-text-muted">@</span>
+                                                        <input
+                                                            type="number"
+                                                            step="any"
+                                                            value={editData.average_cost}
+                                                            onChange={(e) => setEditData({...editData, average_cost: e.target.value})}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="w-16 bg-bg-tertiary border border-white/20 rounded px-1 py-0.5 text-[10px] text-white"
+                                                            placeholder="Cost"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-[10px] text-text-muted">{holding.quantity} units @ ${holding.average_cost.toFixed(2)}</div>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="col-span-2 text-right text-sm font-mono text-text-secondary">
@@ -342,17 +411,46 @@ export const PortfolioPage: React.FC = () => {
                                         <div className="col-span-1 flex justify-center">
                                             <TrendDot ticker={holding.ticker} />
                                         </div>
-                                        <div className="col-span-2 flex justify-end items-center gap-3">
-                                            <button 
-                                                onClick={(e) => handleDelete(holding.id, e)}
-                                                className="p-1.5 text-text-muted hover:text-negative opacity-0 group-hover:opacity-100 transition-opacity"
-                                                title="Sell/Delete"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                            </button>
-                                            <button className="flex items-center gap-1 text-[10px] text-accent-cyan hover:text-white transition-colors">
-                                                Analyze <ArrowUpRight className="w-3 h-3" />
-                                            </button>
+                                        <div className="col-span-2 flex justify-end items-center gap-2">
+                                            {editingId === holding.id ? (
+                                                <>
+                                                    <button 
+                                                        onClick={(e) => handleUpdate(holding.id, e)}
+                                                        disabled={actionLoading}
+                                                        className="p-1.5 text-green-400 hover:text-green-300 transition-colors"
+                                                        title="Save"
+                                                    >
+                                                        <Check className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button 
+                                                        onClick={cancelEdit}
+                                                        className="p-1.5 text-text-muted hover:text-white transition-colors"
+                                                        title="Cancel"
+                                                    >
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button 
+                                                        onClick={(e) => startEdit(holding, e)}
+                                                        className="p-1.5 text-text-muted hover:text-accent-cyan opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        title="Edit Position"
+                                                    >
+                                                        <Edit2 className="w-3 h-3" />
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => handleDelete(holding.id, e)}
+                                                        className="p-1.5 text-text-muted hover:text-negative opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        title="Sell/Delete"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                    <button className="flex items-center gap-1 text-[10px] text-accent-cyan hover:text-white transition-colors">
+                                                        Analyze <ArrowUpRight className="w-3 h-3" />
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 ))}

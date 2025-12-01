@@ -144,6 +144,84 @@ def create_holding(
         ) from exc
 
 
+class HoldingUpdate(BaseModel):
+    """Request para actualizar holding parcialmente."""
+    quantity: float | None = Field(None, ge=0, description="Cantidad de acciones")
+    average_cost: float | None = Field(None, ge=0, description="Costo promedio por acción")
+    notes: str | None = Field(None, description="Notas adicionales")
+
+
+@router.patch("/{holding_id}", response_model=HoldingResponse)
+def update_holding(
+    holding_id: UUID,
+    updates: HoldingUpdate,
+    current_user: UserInDB = Depends(get_current_user),
+    conn = Depends(get_db_connection),
+) -> HoldingResponse:
+    """Actualiza parcialmente un holding del usuario."""
+    try:
+        # Build dynamic update query based on provided fields
+        update_fields = []
+        values = []
+        
+        if updates.quantity is not None:
+            update_fields.append("quantity = %s")
+            values.append(updates.quantity)
+        if updates.average_cost is not None:
+            update_fields.append("average_cost = %s")
+            values.append(updates.average_cost)
+        if updates.notes is not None:
+            update_fields.append("notes = %s")
+            values.append(updates.notes)
+        
+        if not update_fields:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No fields to update provided",
+            )
+        
+        update_fields.append("updated_at = CURRENT_TIMESTAMP")
+        values.extend([str(holding_id), str(current_user.id)])
+        
+        with conn.cursor() as cur:
+            cur.execute(
+                f"""
+                UPDATE holdings
+                SET {', '.join(update_fields)}
+                WHERE id = %s AND user_id = %s
+                RETURNING id, ticker, quantity, average_cost, notes, created_at, updated_at
+                """,
+                tuple(values),
+            )
+            row = cur.fetchone()
+            
+            if not row:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Holding no encontrado",
+                )
+            
+            conn.commit()
+            
+            return HoldingResponse(
+                id=row[0],
+                ticker=row[1],
+                quantity=float(row[2]),
+                average_cost=float(row[3]),
+                notes=row[4],
+                created_at=row[5].isoformat() if row[5] else "",
+                updated_at=row[6].isoformat() if row[6] else "",
+            )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        conn.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error actualizando holding: {str(exc)}",
+        ) from exc
+
+
 @router.delete("/{holding_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 def delete_holding(
     holding_id: UUID,

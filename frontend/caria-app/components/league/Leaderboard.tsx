@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, TrendingUp, Shield, Activity, Users } from 'lucide-react';
+import { API_BASE_URL, getToken } from '../../services/apiService';
 
 interface LeagueEntry {
     rank: number;
@@ -16,17 +17,19 @@ interface LeagueEntry {
 const Leaderboard: React.FC = () => {
     const [entries, setEntries] = useState<LeagueEntry[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<'global' | 'friends'>('global');
 
     useEffect(() => {
         fetchLeaderboard();
-    }, [filter]);
+    }, []);
 
     const fetchLeaderboard = async () => {
         setLoading(true);
         try {
-            // In a real app, use the API URL from config
-            const response = await fetch('http://localhost:8000/api/league/leaderboard?limit=50');
+            const token = getToken();
+            const headers: HeadersInit = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            
+            const response = await fetch(`${API_BASE_URL}/api/league/leaderboard?limit=50`, { headers });
             if (response.ok) {
                 const data = await response.json();
                 setEntries(data);
@@ -44,30 +47,13 @@ const Leaderboard: React.FC = () => {
 
     return (
         <div className="bg-[#0A0A0A] border border-white/10 rounded-xl overflow-hidden">
-            <div className="p-6 border-b border-white/10 flex justify-between items-center">
+            <div className="p-6 border-b border-white/10">
                 <div>
                     <h2 className="text-xl font-bold text-white flex items-center gap-2">
                         <Trophy className="w-5 h-5 text-yellow-500" />
                         Global League
                     </h2>
                     <p className="text-white/50 text-sm mt-1">Top investors ranked by risk-adjusted performance</p>
-                </div>
-
-                <div className="flex bg-white/5 rounded-lg p-1">
-                    <button
-                        onClick={() => setFilter('global')}
-                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${filter === 'global' ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white'
-                            }`}
-                    >
-                        Global
-                    </button>
-                    <button
-                        onClick={() => setFilter('friends')}
-                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${filter === 'friends' ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white'
-                            }`}
-                    >
-                        Friends
-                    </button>
                 </div>
             </div>
 

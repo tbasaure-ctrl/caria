@@ -10,6 +10,7 @@ import { CommunityPage } from './components/pages/CommunityPage';
 import { ResourcesPage } from './components/pages/ResourcesPage';
 import { GitHubLayout } from './components/layout/GitHubLayout';
 import { getToken, saveToken, removeToken } from './services/apiService';
+import LeaguePage from './src/pages/LeaguePage';
 
 const App: React.FC = () => {
   const [authToken, setAuthToken] = useState<string | null>(getToken());
@@ -76,9 +77,7 @@ const App: React.FC = () => {
             )
           } />
 
-          import LeaguePage from './src/pages/LeaguePage';
 
-          // ... (existing imports)
 
           {/* GitHub Layout Routes - Replaces DashboardLayout */}
           <Route element={<GitHubLayout />}>

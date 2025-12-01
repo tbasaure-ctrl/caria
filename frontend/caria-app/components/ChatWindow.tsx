@@ -61,17 +61,23 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
                     socketBaseUrl = 'http://localhost:8000';
                 }
 
+                // Ensure URL doesn't have trailing slash
+                socketBaseUrl = socketBaseUrl.replace(/\/$/, '');
+
                 const socket = socketIO(socketBaseUrl, {
                     auth: {
                         token: token
                     },
                     path: '/socket.io/',
-                    transports: ['websocket', 'polling'],
+                    transports: ['polling', 'websocket'], // Try polling first, then upgrade to websocket
                     reconnection: true,
                     reconnectionAttempts: 5,
                     reconnectionDelay: 1000,
                     reconnectionDelayMax: 6000,
                     randomizationFactor: 0.5,
+                    timeout: 20000, // 20 second timeout
+                    forceNew: false, // Reuse existing connection if available
+                    autoConnect: true,
                 });
 
                 socketRef.current = socket;
@@ -120,13 +126,40 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
                 // Handle connection error
                 socket.on('connect_error', (error: any) => {
                     console.error('WebSocket connection error:', error);
+                    const errorMessage = error?.message || 'Connection error';
+                    
+                    // Check if it's an authentication error
+                    if (errorMessage.includes('Authentication') || errorMessage.includes('Invalid token') || errorMessage.includes('401')) {
+                        setConnectionStatus('error');
+                        setConnectionMessage('Authentication failed. Please log in again.');
+                        // Don't attempt to reconnect if auth failed
+                        socket.disconnect();
+                        return;
+                    }
+                    
                     setConnectionStatus('reconnecting');
-                    setConnectionMessage('Connection error. Retrying...');
+                    setConnectionMessage(`Connection error: ${errorMessage}. Retrying...`);
                 });
 
                 // Handle disconnection
                 socket.on('disconnect', (reason: Socket.DisconnectReason) => {
-                    console.log('WebSocket disconnected', reason);
+                    console.log('WebSocket disconnected:', reason);
+                    
+                    // Don't reconnect if server disconnected us (likely auth issue)
+                    if (reason === 'io server disconnect') {
+                        setConnectionStatus('error');
+                        setConnectionMessage('Disconnected by server. Please refresh the page.');
+                        return;
+                    }
+                    
+                    // Don't reconnect if client disconnected intentionally
+                    if (reason === 'io client disconnect') {
+                        setConnectionStatus('error');
+                        setConnectionMessage('Connection closed.');
+                        return;
+                    }
+                    
+                    // For other reasons (network issues, etc.), try to reconnect
                     setConnectionStatus('reconnecting');
                     setConnectionMessage('Connection lost. Reconnecting...');
                 });
@@ -139,7 +172,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, initialMessage 
 
                 socket.io.on('reconnect_failed', () => {
                     setConnectionStatus('error');
-                    setConnectionMessage('Could not reconnect. Please try again.');
+                    setConnectionMessage('Could not reconnect. Please refresh the page or check your connection.');
+                });
+
+                // Handle parse errors (common Socket.IO issue)
+                socket.io.on('error', (error: any) => {
+                    console.error('Socket.IO error:', error);
+                    if (error?.message?.includes('parse')) {
+                        setConnectionStatus('error');
+                        setConnectionMessage('Connection error. Please refresh the page.');
+                    }
                 });
 
                 // Handle incoming chat messages

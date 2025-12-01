@@ -240,7 +240,7 @@ export const AnalysisPage: React.FC = () => {
                             <h2 className="text-lg font-display text-white border-b border-white/10 pb-2">Valuation Suite</h2>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="h-[600px]">
-                                    <MonteCarloSimulation />
+                                    <ValuationWorkshop />
                                 </div>
                                 <div className="h-[600px]">
                                     <ValuationTool />

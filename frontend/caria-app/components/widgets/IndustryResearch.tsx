@@ -29,42 +29,188 @@ interface IndustryReport {
 // DATA: Content Translated to Professional English
 const REPORT_DATA: IndustryReport[] = [
     {
-        id: 'staples-dec-2025',
-        title: 'Consumer Staples',
-        subtitle: 'INDUSTRY OF THE MONTH: The Strategic Rotation to Resilience',
-        icon: '🛒',
-        readTime: '8 min read',
-        tags: ['Industry of the Month', 'Defensive', 'High Conviction'],
+        id: 'macro-outlook-2026',
+        title: '2026 Macro Outlook',
+        subtitle: 'INDUSTRY OF THE MONTH: Navigating a Transforming Global Economy',
+        icon: '🌐',
+        readTime: '12 min read',
+        tags: ['Industry of the Month', 'Macro', 'High Conviction'],
         isFeatured: true,
         content: {
-            overview: `Designated as the focal industry for December 2025. Amidst a "Great Rotation" out of overextended tech momentum, capital is seeking the safety of inelastic demand. Historically the best-performing sector during volatility.`,
-            fullText: `1. Industry of the Month: Consumer Staples - The Strategic Rotation to Resilience
+            overview: `A comprehensive synthesis of leading economic forecasts for 2026. Drawing insights from major institutions including S&P Global, Deloitte, J.P. Morgan, Invesco, and Allianz Research, this report identifies consensus views, original insights, and key market outlooks across all asset classes.`,
+            fullText: `2026 Macro Outlook: Navigating a Transforming Global Economy
 
-1.1 Executive Summary: Navigating the Anti-Momentum Pivot
+Executive Summary: The Consensus View
+
+After synthesizing over a dozen leading economic forecasts from institutions including S&P Global Ratings, Deloitte, J.P. Morgan Asset Management, Invesco, and Allianz Research, a clear picture emerges for 2026: a year of continued resilience marked by moderate growth, persistent but moderating inflation, and a gradual shift toward less restrictive monetary policy. The global economy is expected to demonstrate stability, though regional divergence will persist, with Asia-Pacific and emerging markets showing particular strength while developed economies navigate policy transitions.
+
+Key Consensus Points (Supported by Multiple Sources)
+
+1. **Moderate Global Growth with Regional Divergence**
+   Multiple sources converge on a baseline of steady, if unspectacular, global expansion. S&P Global forecasts U.S. GDP growth of approximately 1.4-1.6% in 2026, while Asia-Pacific economies are expected to grow at 4.2-4.4%, driven by resilient domestic demand and tech export strength.¹ Europe is projected to see stable growth around 0.9-1.0%, with Germany's fiscal reawakening providing regional support.² The consensus view suggests that while growth will not match 2025's pace, a recession remains unlikely in most major economies.
+
+2. **Inflation: Stuck Above Target, But Directionally Improving**
+   A near-universal finding across reports is that inflation will remain above central bank targets (2%) but show directional improvement. Core PCE inflation is forecast to decline from current levels around 3% to approximately 2.6% by year-end 2026.³ The tug-of-war between slowing services prices and tariff-induced goods price increases is expected to gradually resolve as trade policy stabilizes. This "sticky but improving" inflation narrative supports a shallow Fed easing cycle rather than aggressive rate cuts.
+
+3. **Monetary Policy: Shallow Easing Path**
+   There is broad agreement that the Federal Reserve will implement 2-3 rate cuts totaling 50-75 basis points through 2026, bringing the terminal fed funds rate to approximately 3.00-3.25%.⁴ The Fed's cautious approach reflects balanced risks: cutting too aggressively could rekindle inflation, while staying too restrictive risks unnecessary economic slowdown. International central banks face limited room for further cuts, with many rates approaching neutral levels.⁵
+
+4. **Trade Policy: Peak Tariff Impact Behind Us**
+   Multiple sources identify 2025 as the peak year for tariff escalation, with 2026 expected to show stabilization or modest improvement. While tariff rates will not return to 2024 levels, the effective U.S. tariff rate is forecast to stabilize around 11-14%, down from peak escalation.⁶ Trade rerouting through third countries (India, Vietnam) has mitigated initial impacts, though export-dependent economies (Canada, France, Spain, Netherlands) remain vulnerable.⁷
+
+5. **AI-Driven Growth: Real but Valuation Concerns**
+   Artificial intelligence continues to be identified as a primary growth driver across multiple reports, particularly in business investment and productivity gains. However, there is growing consensus that AI-related valuations appear stretched, with concerns about potential bubble formation similar to the dot-com era.⁸ The key distinction: current AI investments are underpinned by actual infrastructure spending (data centers, semiconductor manufacturing) rather than pure speculation, suggesting a more durable foundation than previous tech booms.
+
+Original Insights Supported by Data
+
+**Insolvency Trends: The Hidden Risk**
+Allianz Research provides original analysis showing global business insolvencies rising +5% in 2026, marking five consecutive years of increases to reach record highs (+24% above pre-pandemic average).⁹ The U.S. and China are expected to drive the bulk of this increase (+8% and +10% respectively), while Western Europe may see modest declines (-2%). This divergence reflects varying economic resilience and financial conditions. The report identifies a concerning scenario: if AI-induced boom were to burst similar to the 2001-2002 dot-com bubble, bankruptcies could surge by +4,500 companies in the U.S. alone.¹⁰
+
+**Banking Sector Transformation**
+Deloitte's analysis reveals that 2026 will be a defining year for banks, balancing macro headwinds, AI industrialization, and the disruptive entrance of stablecoins.¹¹ Banks face pressure to scale AI beyond pilots while maintaining robust data infrastructure. The stablecoin legislation (GENIUS Act) could reshape deposit flows and payment rails, forcing banks to decide quickly whether to issue, custody, process, or partner. Financial crime risks are escalating, fueled by AI-enabled fraud, requiring integrated tech-driven defenses.
+
+**FX Markets: Return to Fundamentals**
+Multiple FX outlooks converge on a "play the ball, not the man" theme for 2026—markets refocusing on fundamentals (rate differentials, growth trajectories, debt sustainability) rather than political rhetoric.¹² The U.S. dollar is expected to weaken further, particularly against Asian currencies benefiting from tech export strength and improved trade relations. This dollar weakness supports international equity returns and commodity prices.
+
+Market Outlooks by Asset Class
+
+**Equities: Quality and International Focus**
+The consensus favors international equities over U.S. markets, driven by narrowing earnings growth gaps, favorable valuations, and dollar weakness. Asian emerging markets are particularly favored, benefiting from AI-related tech exports and resilient domestic demand.¹³ European value stocks and Japanese equities also receive support. Within U.S. equities, quality remains paramount—focus on secular themes (AI ecosystem broadening, financial deregulation) rather than cyclical plays. Valuations are elevated but supported by solid fundamentals in quality names.
+
+**Fixed Income: Embrace Income, Active Selection**
+Long-term rates are expected to remain range-bound with modest curve steepening. The consensus view emphasizes embracing income in fixed income rather than trying to perfectly time yield levels. Active security selection is recommended across credit, securitized assets, global bonds, and municipals. High-yield spreads are tight but may remain so given resilient fundamentals. Investment-grade credit offers similar profile to government bonds—modest returns with lower volatility.
+
+**Commodities: Beneficiaries of Global Acceleration**
+Commodities are expected to benefit as the global economy improves, with industrial commodities particularly favored.¹⁴ Real estate (REITs) may benefit as rates fall and economies accelerate. Bank loans offer attractive risk-reward trade-offs given floating rate structures. Gold faces mixed signals: soft dollar helps, but improving geopolitics and expensive valuations limit upside.
+
+**Private Markets: Evolving Landscape**
+Private markets are becoming more transparent, accessible, and integrated into traditional portfolio models.¹⁵ The asset class offers thematic exposures (AI infrastructure, real estate) and diversification benefits for concentrated portfolios. However, investors must navigate increased complexity and ensure proper due diligence as the asset class democratizes.
+
+**Foreign Exchange: Dollar Weakness Theme**
+The U.S. dollar is expected to weaken further in 2026, driven by Fed easing, improving international growth prospects, and narrowing rate differentials.¹⁶ Asian currencies (particularly those benefiting from tech exports) and European currencies are favored. The yen receives support as a partial hedge, though Japan's monetary policy normalization remains gradual.
+
+Regional Outlooks
+
+**United States: Steady as She Goes**
+The U.S. economy is forecast to grow 1.4-2.3% in 2026, supported by fiscal policy (OBBBA tax changes), less restrictive monetary policy, and stabilized trade policy.¹⁷ Consumer spending growth will be modest (1.4%), with a K-shaped economy where affluent consumers continue spending while middle-income households feel pressure. Business investment will be sustained by AI-related capex, though traditional categories may struggle. Unemployment is expected to rise modestly to 4.5% as labor market conditions normalize.
+
+**Asia-Pacific: Signs of Relief**
+S&P Global raised 2026 GDP forecasts for Asia-Pacific to 4.2% (from 4.0%), driven by reduced tariff uncertainty, tech export strength, and resilient domestic demand.¹⁸ China's growth forecast was lifted to 4.4% (from 4.0%) due to lower U.S. tariffs. However, central banks have limited scope for further rate cuts as rates approach neutral levels and exchange rates have weakened. The region benefits from AI-driven trade, with tech exports outperforming.
+
+**Europe: Germany's Fiscal Reawakening**
+Europe will see stable economic growth in 2026, though geographical composition is shifting. Germany's expansive fiscal policy is expected to boost growth and provide positive spillover effects, particularly in Central and Eastern Europe.¹⁹ Spain's growth will slow, reflecting different fiscal positions. The region continues to contend with tariff aftereffects, though less severely than initially feared.
+
+**Emerging Markets: AI Will Drive Trade Divergence**
+Emerging markets are expected to see modestly slower growth in 2026 compared to 2025, but remain resilient.²⁰ AI and tech-related exports will continue to outperform, benefiting mostly Asian EMs. Countries with diversified export markets and strong domestic bases show better resilience than export-dependent economies.
+
+Key Risks and Opportunities
+
+**Risks:**
+- AI bubble burst scenario (similar to dot-com 2001-2002) could trigger widespread insolvencies
+- Tariff policy remains unpredictable despite stabilization expectations
+- Inflation could prove stickier than forecast, delaying Fed easing
+- Geopolitical tensions could resurface, disrupting trade flows
+- Banking sector faces multiple headwinds (macro uncertainty, AI scaling challenges, stablecoin disruption)
+
+**Opportunities:**
+- International equity markets offer better risk-adjusted returns than U.S.
+- Quality U.S. equities with secular themes (AI ecosystem, financial deregulation)
+- Fixed income income generation in a range-bound rate environment
+- Commodities and real assets benefiting from global acceleration
+- Asian emerging markets leveraging AI-driven trade
+
+Conclusion: A Year of Careful Navigation
+
+2026 presents a landscape of moderate growth, persistent but improving inflation, and gradual policy normalization. The consensus view suggests resilience rather than exuberance, with quality and diversification remaining paramount. International markets offer compelling opportunities as earnings growth gaps narrow and the dollar weakens. Within the U.S., secular themes (AI, financial deregulation) outweigh cyclical plays.
+
+The year ahead will reward investors who focus on fundamentals, embrace diversification, and maintain discipline around valuations. While risks exist—particularly around AI valuations, insolvency trends, and policy unpredictability—the baseline scenario supports continued risk asset performance with appropriate positioning.
+
+The transformation underway is real: AI is driving productivity gains, trade relationships are recalibrating, and monetary policy is normalizing. Success in 2026 will come not from predicting perfect outcomes, but from navigating the interpretation game with discipline, diversification, and focus on quality.
+
+---
+
+Footnotes:
+¹ S&P Global Ratings, "Economic Outlook Asia-Pacific Q1 2026: Signs Of Relief" (November 2025)
+² S&P Global Ratings, "Economic Outlook Europe Q1 2026: Germany's Fiscal Reawakening" (November 2025)
+³ Wells Fargo Economics, "2026 Annual Economic Outlook: Policy Reset" (November 2025)
+⁴ J.P. Morgan Asset Management, "2026 Year-Ahead Investment Outlook: AI Lift and Economic Drift" (2025)
+⁵ S&P Global Ratings, "Economic Outlook Asia-Pacific Q1 2026: Signs Of Relief" (November 2025)
+⁶ Allianz Research, "Global Insolvency Outlook 2026-27: Don't look down!" (October 2025)
+⁷ Allianz Research, "Global Insolvency Outlook 2026-27: Don't look down!" (October 2025)
+⁸ Allianz Research, "Global Insolvency Outlook 2026-27: Don't look down!" (October 2025)
+⁹ Allianz Research, "Global Insolvency Outlook 2026-27: Don't look down!" (October 2025)
+¹⁰ Allianz Research, "Global Insolvency Outlook 2026-27: Don't look down!" (October 2025)
+¹¹ Deloitte Center for Financial Services, "2026 banking and capital markets outlook" (October 2025)
+¹² ING THINK, "FX Outlook 2026: Play the ball, not the man" (November 2025)
+¹³ S&P Global Ratings, "Economic Outlook Emerging Markets Q1 2026: AI Will Drive Trade Divergence" (November 2025)
+¹⁴ Invesco Strategy & Insights, "Global Asset Allocation 2026 Outlook: The Big Picture" (November 2025)
+¹⁵ BlackRock, "Private Markets Outlook 2026: A New Continuum" (2025)
+¹⁶ Invesco Strategy & Insights, "Global Asset Allocation 2026 Outlook: The Big Picture" (November 2025)
+¹⁷ Wells Fargo Economics, "2026 Annual Economic Outlook: Policy Reset" (November 2025)
+¹⁸ S&P Global Ratings, "Economic Outlook Asia-Pacific Q1 2026: Signs Of Relief" (November 2025)
+¹⁹ S&P Global Ratings, "Economic Outlook Europe Q1 2026: Germany's Fiscal Reawakening" (November 2025)
+²⁰ S&P Global Ratings, "Economic Outlook Emerging Markets Q1 2026: AI Will Drive Trade Divergence" (November 2025)`,
+            trends: [
+                {
+                    title: "Moderate Growth with Regional Divergence",
+                    description: "U.S. steady at 1.4-2.3%, Asia-Pacific strong at 4.2-4.4%, Europe stable. Consensus: no recession, but growth below 2025 pace."
+                },
+                {
+                    title: "Shallow Fed Easing Path",
+                    description: "2-3 rate cuts (50-75bps) expected through 2026, bringing terminal rate to 3.00-3.25%. Cautious approach reflects balanced inflation/growth risks."
+                },
+                {
+                    title: "International Equity Outperformance",
+                    description: "Earnings growth gaps narrowing, dollar weakness, and favorable valuations support international markets, particularly Asian EMs and European value."
+                },
+                {
+                    title: "AI-Driven Growth with Valuation Concerns",
+                    description: "Real infrastructure spending underpins AI boom, but stretched valuations raise bubble concerns. Quality and secular themes favored over speculation."
+                },
+                {
+                    title: "Rising Insolvencies Despite Growth",
+                    description: "Global business insolvencies rising +5% in 2026, marking five consecutive years of increases. U.S. (+8%) and China (+10%) driving bulk of increase."
+                }
+            ],
+            picks: []
+        }
+    },
+    {
+        id: 'staples-dec-2025',
+        title: 'Consumer Staples',
+        subtitle: 'The Strategic Rotation to Resilience',
+        icon: '🛒',
+        readTime: '8 min read',
+        tags: ['Defensive', 'Value'],
+        content: {
+            overview: `Amidst a "Great Rotation" out of overextended tech momentum, capital is seeking the safety of inelastic demand. Historically the best-performing sector during volatility.`,
+            fullText: `Consumer Staples: The Strategic Rotation to Resilience
+
+Executive Summary: Navigating the Anti-Momentum Pivot
 As the global financial markets pivot into the final trading month of 2025, a profound regime change is underway. The aggressive "growth-at-any-cost" momentum is yielding to a disciplined, valuation-sensitive environment. Institutional capital is seeking refuge in sectors offering earnings visibility and balance sheet fortitude.
 
 The December 2025 Industry Report identifies a "Great Rotation" out of overextended technology momentum plays and into the bedrock of the economy: Consumer Staples, Healthcare & Pharma, Medical Devices, and Insurance & Managed Care.
 
-1.2 The Overarching Theme: "Rational Exuberance"
+The Overarching Theme: "Rational Exuberance"
 While indices remain near highs, internal breadth shows bifurcation. Investors grapple with a divided Fed, geopolitical friction ("Liberation Day" tariffs), and a resilient but value-conscious consumer. In this climate, the allure of speculative growth diminishes in favor of industries providing essential services—sectors where demand is inelastic.
 
-1.3 Why Consumer Staples?
-Selected as the "Industry of the Month" for its unmatched historical resilience.
+Why Consumer Staples?
+Selected for its unmatched historical resilience.
 - **Recession Performance:** In the last seven recessions, Consumer Staples was the #1 performing sector (+1% avg return vs double-digit declines elsewhere).
 - **Long-Term Compounder:** Over 20 years, staples often outperform high-growth tech due to reinvested dividends and lower volatility.
 
-2. Trends Defining the Sector in December 2025
+Trends Defining the Sector in December 2025
 
-2.1 The Rise of the "Value-Seeking" Consumer
+The Rise of the "Value-Seeking" Consumer
 High interest rates and inflation have eroded excess savings. Shoppers are focusing on value and trimming seasonal extras. This favors giants with scale (Costco, Walmart) and private label manufacturers. The "trade-down" effect accelerates market share gains for efficient operators.
 
-2.2 Cost Input Stabilization vs. Tariff Threats
+Cost Input Stabilization vs. Tariff Threats
 Input costs (commodities, energy) have stabilized, allowing margin expansion as 2024 price hikes stick. However, new tariffs could inflate packaging costs. Companies with domestic sourcing networks trade at a premium due to "supply chain security."
 
-2.3 The "Mobile-First" Grocery Shift
+The "Mobile-First" Grocery Shift
 Digital transformation has permeated the sector. Mobile devices will account for >50% of online holiday spending. Retailers optimizing apps for reordering and loyalty are seeing higher retention.
 
-3. Outlook for 2026: Stability in a Volatile World
+Outlook for 2026: Stability in a Volatile World
 - **Earnings Visibility:** Tied to population growth, not ad spending cycles.
 - **Dividend Yield:** Attractive 3-4% yields as Treasury yields cap out.
 - **M&A Potential:** Consolidation in "Better-for-You" food space.`,
@@ -331,7 +477,7 @@ export const IndustryResearch: React.FC = () => {
         >
             <div className="space-y-6">
                 <div className="flex justify-between items-end">
-                    <h4 className="text-xs text-text-muted uppercase tracking-widest">November 2025 Edition</h4>
+                    <h4 className="text-xs text-text-muted uppercase tracking-widest">December 2025 Edition</h4>
                     <span className="text-[10px] px-2 py-0.5 rounded bg-accent-primary/10 text-accent-primary font-medium">
                         Strategy Report
                     </span>

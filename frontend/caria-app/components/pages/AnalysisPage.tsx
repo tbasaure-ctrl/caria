@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { MessageSquare, Activity, Target, ChevronDown, ChevronRight, Terminal, Search } from 'lucide-react';
 import { fetchWithAuth, API_BASE_URL, getToken } from '../../services/apiService';
 import { ProjectionValuation } from '../widgets/ProjectionValuation';
-import { MonteCarloSimulation } from '../widgets/MonteCarloSimulation';
 import { RiskRewardWidget } from '../widgets/RiskRewardWidget';
 import { ChatWindow } from '../ChatWindow';
 import { HiddenGemsScreener } from '../widgets/HiddenGemsScreener';
@@ -47,6 +46,7 @@ export const AnalysisPage: React.FC = () => {
     const [showLogs, setShowLogs] = useState(false);
     const [searchInput, setSearchInput] = useState('');
     const [activeSidebarSection, setActiveSection] = useState<'main' | 'valuation' | 'screener'>('main');
+    const [tickerMetrics, setTickerMetrics] = useState<{pe?: number; evEbitda?: number; fcfYield?: number} | null>(null);
 
     useEffect(() => {
         if (!ticker) return;
@@ -66,7 +66,59 @@ export const AnalysisPage: React.FC = () => {
                 console.error(e);
             }
         };
+        
+        const fetchMetrics = async () => {
+            try {
+                const token = getToken();
+                const headers: HeadersInit = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                // Get current price first
+                const priceResp = await fetch(`${API_BASE_URL}/api/prices/realtime/${ticker}`, { headers });
+                if (!priceResp.ok) return;
+                const priceData = await priceResp.json();
+                const currentPrice = priceData.price ?? priceData.current_price;
+                if (!currentPrice) return;
+
+                // Get valuation which includes metrics
+                const valResp = await fetch(`${API_BASE_URL}/api/valuation/${ticker}`, {
+                    method: 'POST',
+                    headers: { ...headers, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ current_price: currentPrice }),
+                });
+                if (valResp.ok) {
+                    const valData = await valResp.json();
+                    // Extract metrics from valuation response
+                    const metrics: any = {};
+                    
+                    // Get P/E and EV/EBITDA from multiples
+                    if (valData.multiples?.multiples) {
+                        metrics.pe = valData.multiples.multiples.pe || 
+                                   valData.multiples.multiples.pe_ratio || 
+                                   valData.multiples.multiples.priceEarningsRatio;
+                        metrics.evEbitda = valData.multiples.multiples.ev_ebitda || 
+                                        valData.multiples.multiples.evEbitda ||
+                                        valData.multiples.multiples.enterpriseValueMultiple;
+                    }
+                    
+                    // Get FCF Yield from DCF assumptions or calculate from multiples
+                    if (valData.dcf?.assumptions?.fcf_yield_start) {
+                        metrics.fcfYield = valData.dcf.assumptions.fcf_yield_start * 100;
+                    } else if (valData.multiples?.multiples?.fcf_yield) {
+                        metrics.fcfYield = valData.multiples.multiples.fcf_yield * 100;
+                    } else if (valData.multiples?.multiples?.freeCashFlowYield) {
+                        metrics.fcfYield = valData.multiples.multiples.freeCashFlowYield * 100;
+                    }
+                    
+                    setTickerMetrics(metrics);
+                }
+            } catch (e) {
+                console.error('Error fetching metrics:', e);
+            }
+        };
+
         fetchTsmom();
+        fetchMetrics();
     }, [ticker]);
 
     const handleSearchSubmit = (e: React.FormEvent) => {
@@ -211,7 +263,7 @@ export const AnalysisPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* ZONE 2: The Evidence (Scroll for Details) */}
+                            {/* ZONE 2: The Evidence (Scroll for Details) - Added Monte Carlo from ValuationTool */}
                             <div className="space-y-6">
                                 <h4 className="text-sm font-display text-white border-b border-white/10 pb-2">Deep Dive Evidence</h4>
 
@@ -220,7 +272,7 @@ export const AnalysisPage: React.FC = () => {
                                         <RiskRewardWidget />
                                     </div>
                                     <div className="h-[400px]">
-                                        <MonteCarloSimulation />
+                                        <ValuationTool />
                                     </div>
                                 </div>
 
@@ -278,23 +330,33 @@ export const AnalysisPage: React.FC = () => {
                         <div className="space-y-8">
                             <h2 className="text-lg font-display text-white border-b border-white/10 pb-2">Idea Generation</h2>
 
-                            <div className="h-[500px]">
-                                <ProtectedWidget featureName="Alpha Stock Picker">
-                                    <AlphaStockPicker />
-                                </ProtectedWidget>
-                                <div className="mt-4 p-4 bg-bg-secondary border border-white/5 rounded-lg text-xs text-text-secondary">
-                                    <strong className="text-white block mb-2">About the C-Score:</strong>
-                                    <p className="mb-2">The C-Score is a proprietary multi-factor model that ranks stocks based on three key dimensions:</p>
-                                    <ul className="list-disc list-inside space-y-1 ml-2">
-                                        <li><strong>Quality:</strong> Measures business fundamentals including Return on Invested Capital (ROIC), profit margins, and operational efficiency. High-quality companies generate superior returns on capital.</li>
-                                        <li><strong>Value:</strong> Assesses valuation attractiveness through Free Cash Flow (FCF) Yield and Enterprise Value to EBIT (EV/EBIT) ratios. Identifies companies trading below intrinsic value.</li>
-                                        <li><strong>Momentum:</strong> Evaluates price strength and trend persistence. Captures stocks with positive momentum that may continue outperforming.</li>
-                                    </ul>
-                                    <p className="mt-2">A score above 80 indicates an "Investable" candidate with strong fundamentals, attractive valuation, and positive price momentum—a combination that historically outperforms the market.</p>
+                            <div className="space-y-6">
+                                <div className="min-h-[500px]">
+                                    <ProtectedWidget featureName="Alpha Stock Picker">
+                                        <AlphaStockPicker />
+                                    </ProtectedWidget>
+                                </div>
+                                
+                                {/* C-Score Explanation - Fixed positioning to avoid overlap */}
+                                <div className="p-4 bg-bg-secondary border border-white/5 rounded-lg text-xs text-text-secondary space-y-3">
+                                    <strong className="text-white block text-sm mb-3">Understanding the C-Score</strong>
+                                    <p className="mb-3">The C-Score is a proprietary multi-factor model that ranks stocks based on three key dimensions:</p>
+                                    <div className="space-y-2">
+                                        <div>
+                                            <strong className="text-white">Quality:</strong> Measures business fundamentals including Return on Invested Capital (ROIC), profit margins, and operational efficiency. High-quality companies generate superior returns on capital.
+                                        </div>
+                                        <div>
+                                            <strong className="text-white">Value:</strong> Assesses valuation attractiveness through Free Cash Flow (FCF) Yield and Enterprise Value to EBIT (EV/EBIT) ratios. Identifies companies trading below intrinsic value.
+                                        </div>
+                                        <div>
+                                            <strong className="text-white">Momentum:</strong> Evaluates price strength and trend persistence. Captures stocks with positive momentum that may continue outperforming.
+                                        </div>
+                                    </div>
+                                    <p className="mt-3 pt-3 border-t border-white/5">A score above 80 indicates an "Investable" candidate with strong fundamentals, attractive valuation, and positive price momentum—a combination that historically outperforms the market.</p>
                                 </div>
                             </div>
 
-                            <div className="h-[500px]">
+                            <div className="min-h-[500px]">
                                 <ProtectedWidget featureName="Hidden Gems Screener">
                                     <HiddenGemsScreener />
                                 </ProtectedWidget>
@@ -327,9 +389,24 @@ export const AnalysisPage: React.FC = () => {
                         <div>
                             <div className="text-[10px] text-text-muted uppercase tracking-widest mb-2">Valuation Details</div>
                             <div className="space-y-2 text-sm text-text-secondary">
-                                <div className="flex justify-between"><span>P/E Ratio</span> <span className="text-white">--</span></div>
-                                <div className="flex justify-between"><span>EV/EBITDA</span> <span className="text-white">--</span></div>
-                                <div className="flex justify-between"><span>FCF Yield</span> <span className="text-white">--</span></div>
+                                <div className="flex justify-between">
+                                    <span>P/E Ratio</span> 
+                                    <span className="text-white">
+                                        {tickerMetrics?.pe ? tickerMetrics.pe.toFixed(2) : '--'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>EV/EBITDA</span> 
+                                    <span className="text-white">
+                                        {tickerMetrics?.evEbitda ? tickerMetrics.evEbitda.toFixed(2) : '--'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>FCF Yield</span> 
+                                    <span className="text-white">
+                                        {tickerMetrics?.fcfYield ? `${tickerMetrics.fcfYield.toFixed(2)}%` : '--'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
@@ -358,8 +435,18 @@ export const AnalysisPage: React.FC = () => {
                         <div>
                             <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1">Valuation</div>
                             <div className="space-y-1 text-text-secondary">
-                                <div className="flex justify-between"><span>P/E</span> <span className="text-white">--</span></div>
-                                <div className="flex justify-between"><span>FCF Yield</span> <span className="text-white">--</span></div>
+                                <div className="flex justify-between">
+                                    <span>P/E</span> 
+                                    <span className="text-white">
+                                        {tickerMetrics?.pe ? tickerMetrics.pe.toFixed(2) : '--'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>FCF Yield</span> 
+                                    <span className="text-white">
+                                        {tickerMetrics?.fcfYield ? `${tickerMetrics.fcfYield.toFixed(2)}%` : '--'}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -426,7 +513,7 @@ export const AnalysisPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* ZONE 2: The Evidence (Scroll for Details) */}
+                {/* ZONE 2: The Evidence (Scroll for Details) - Using ValuationTool's Monte Carlo */}
                 <div className="space-y-6">
                     <h4 className="text-sm font-display text-white border-b border-white/10 pb-2">Deep Dive Evidence</h4>
 
@@ -435,7 +522,7 @@ export const AnalysisPage: React.FC = () => {
                             <RiskRewardWidget />
                         </div>
                         <div className="h-[400px]">
-                            <MonteCarloSimulation />
+                            <ValuationTool />
                         </div>
                     </div>
 

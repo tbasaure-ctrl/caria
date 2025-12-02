@@ -383,13 +383,20 @@ const ReportModal: React.FC<{ report: IndustryReport; onClose: () => void }> = (
                     </button>
                 </div>
 
-                {/* Report Content */}
-                <div className="p-8 space-y-10">
+                {/* Report Content - Improved Reader View */}
+                <div className="p-6 md:p-8 space-y-8 md:space-y-10">
                     {/* Full Text */}
                     <div className="prose prose-invert max-w-none">
-                        <p className="text-text-secondary text-lg leading-relaxed whitespace-pre-line font-serif">
+                        <div 
+                            className="text-text-secondary text-base md:text-lg leading-relaxed whitespace-pre-wrap"
+                            style={{
+                                fontFamily: 'var(--font-serif, Georgia, serif)',
+                                lineHeight: '1.8',
+                                color: 'var(--color-text-secondary)',
+                            }}
+                        >
                             {report.content.fullText}
-                        </p>
+                        </div>
                     </div>
 
                     {/* Key Trends */}
@@ -472,7 +479,7 @@ export const IndustryResearch: React.FC = () => {
 
     return (
         <WidgetCard
-            title="Industry Research"
+            title="Sector Deep Dives"
             tooltip="Deep dive analysis into sectors with high alpha potential. Updated monthly."
         >
             <div className="space-y-6">

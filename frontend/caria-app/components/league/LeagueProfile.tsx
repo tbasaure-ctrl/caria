@@ -1,61 +1,226 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, Activity, Shield, Clock, BarChart3 } from 'lucide-react';
+import { fetchWithAuth, API_BASE_URL, getToken } from '../../services/apiService';
 
 interface LeagueProfileProps {
     userId?: string; // If undefined, show current user
 }
 
 const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId }) => {
-    const [hasJoined, setHasJoined] = React.useState(false);
+    const [hasJoined, setHasJoined] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [showUsernameModal, setShowUsernameModal] = useState(false);
+    const [usernameChoice, setUsernameChoice] = useState<'current' | 'new'>('current');
+    const [newUsername, setNewUsername] = useState('');
+    const [currentUsername, setCurrentUsername] = useState('');
+    const [leagueUsername, setLeagueUsername] = useState('');
+    const [stats, setStats] = useState<any>(null);
 
-    React.useEffect(() => {
-        const joined = localStorage.getItem('caria_league_joined');
-        if (joined) setHasJoined(true);
+    useEffect(() => {
+        const checkJoinStatus = async () => {
+            try {
+                const token = getToken();
+                if (!token) {
+                    setLoading(false);
+                    return;
+                }
+
+                // Check if user has joined
+                const joined = localStorage.getItem('caria_league_joined');
+                if (joined) {
+                    setHasJoined(true);
+                    // Fetch current user info
+                    const userResp = await fetchWithAuth(`${API_BASE_URL}/api/auth/me`);
+                    if (userResp.ok) {
+                        const userData = await userResp.json();
+                        setCurrentUsername(userData.username || '');
+                        setLeagueUsername(localStorage.getItem('caria_league_username') || userData.username || '');
+                    }
+                    // Fetch real stats (when backend endpoint is ready)
+                    // For now, keep mock but mark as loading
+                    await fetchLeagueStats();
+                }
+            } catch (err) {
+                console.error('Error checking league status:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        checkJoinStatus();
     }, []);
 
-    const handleJoin = () => {
-        localStorage.setItem('caria_league_joined', 'true');
-        setHasJoined(true);
+    const fetchLeagueStats = async () => {
+        try {
+            // TODO: Replace with real API endpoint when available
+            // const resp = await fetchWithAuth(`${API_BASE_URL}/api/league/stats`);
+            // if (resp.ok) {
+            //     setStats(await resp.json());
+            // }
+            // For now, use mock data but mark as placeholder
+            setStats({
+                rank: null, // Will be fetched from backend
+                score: null,
+                percentile: null,
+                sharpe: null,
+                cagr: null,
+                drawdown: null,
+                diversification: null,
+                accountAge: null,
+            });
+        } catch (err) {
+            console.error('Error fetching league stats:', err);
+        }
     };
 
-    // Mock data for now
-    const stats = {
-        rank: 42,
-        score: 750,
-        percentile: 85,
-        sharpe: 1.8,
-        cagr: 0.28,
-        drawdown: 0.14,
-        diversification: 78,
-        accountAge: 124,
-        bestMonth: 0.12,
-        worstMonth: -0.05
+    const handleJoinClick = () => {
+        setShowUsernameModal(true);
     };
+
+    const handleJoinConfirm = async () => {
+        try {
+            const finalUsername = usernameChoice === 'current' 
+                ? currentUsername 
+                : newUsername.trim();
+            
+            if (!finalUsername) {
+                alert('Please enter a username');
+                return;
+            }
+
+            // Store join status and username
+            localStorage.setItem('caria_league_joined', 'true');
+            localStorage.setItem('caria_league_username', finalUsername);
+            setLeagueUsername(finalUsername);
+            setHasJoined(true);
+            setShowUsernameModal(false);
+            
+            // TODO: Call backend API to register user in league
+            // await fetchWithAuth(`${API_BASE_URL}/api/league/join`, {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ display_username: finalUsername }),
+            // });
+            
+            // Fetch stats after joining
+            await fetchLeagueStats();
+        } catch (err) {
+            console.error('Error joining league:', err);
+            alert('Failed to join league. Please try again.');
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-white/10 rounded-xl p-8 text-center mb-8">
+                <div className="text-white/50">Loading...</div>
+            </div>
+        );
+    }
 
     if (!hasJoined) {
         return (
-            <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-white/10 rounded-xl p-8 text-center mb-8">
-                <div className="max-w-2xl mx-auto">
-                    <Shield className="w-16 h-16 text-blue-400 mx-auto mb-6 opacity-80" />
-                    <h2 className="text-2xl font-bold text-white mb-4">Join the Global Portfolio League</h2>
-                    <p className="text-white/70 mb-8 leading-relaxed">
-                        Test your investment discipline against the best.
-                        <br />
-                        <span className="text-white/50 text-sm block mt-4 bg-black/20 p-4 rounded-lg border border-white/5">
-                            <span className="text-blue-400 font-bold block mb-1">🔒 Privacy Guarantee</span>
-                            Joining the league does <strong>NOT</strong> publicly disclose your holdings, portfolio value, or personal identity.
-                            We only display your <strong>Rank Score</strong> and an anonymous username (or alias).
-                            Your financial data remains strictly private and encrypted.
-                        </span>
-                    </p>
-                    <button
-                        onClick={handleJoin}
-                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg transition-all transform hover:scale-105 shadow-lg shadow-blue-900/20"
-                    >
-                        Join League (Anonymous)
-                    </button>
+            <>
+                <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-white/10 rounded-xl p-8 text-center mb-8">
+                    <div className="max-w-2xl mx-auto">
+                        <Shield className="w-16 h-16 text-blue-400 mx-auto mb-6 opacity-80" />
+                        <h2 className="text-2xl font-bold text-white mb-4">Join the Global Portfolio League</h2>
+                        <p className="text-white/70 mb-8 leading-relaxed">
+                            Test your investment discipline against the best.
+                            <br />
+                            <span className="text-white/50 text-sm block mt-4 bg-black/20 p-4 rounded-lg border border-white/5">
+                                <span className="text-blue-400 font-bold block mb-1">🔒 Privacy Guarantee</span>
+                                Joining the league does <strong>NOT</strong> publicly disclose your holdings, portfolio value, or personal identity.
+                                We only display your <strong>Rank Score</strong> and an anonymous username (or alias).
+                                Your financial data remains strictly private and encrypted.
+                            </span>
+                        </p>
+                        <button
+                            onClick={handleJoinClick}
+                            className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg transition-all transform hover:scale-105 shadow-lg shadow-blue-900/20"
+                        >
+                            Join League
+                        </button>
+                    </div>
                 </div>
-            </div>
+
+                {/* Username Selection Modal */}
+                {showUsernameModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fade-in">
+                        <div className="w-full max-w-md bg-[#050A14] border border-accent-gold/30 rounded-xl shadow-2xl p-6">
+                            <h3 className="text-xl font-display text-white mb-4">Choose Your Display Name</h3>
+                            <p className="text-sm text-text-secondary mb-6">
+                                This username will be displayed in the rankings. Your privacy is protected.
+                            </p>
+                            
+                            <div className="space-y-4 mb-6">
+                                <label className="flex items-center gap-3 p-4 rounded-lg border cursor-pointer hover:border-accent-cyan/50 transition-colors"
+                                    style={{ 
+                                        borderColor: usernameChoice === 'current' ? 'var(--color-accent-cyan)' : 'var(--color-bg-tertiary)',
+                                        backgroundColor: usernameChoice === 'current' ? 'rgba(6, 182, 212, 0.1)' : 'transparent'
+                                    }}>
+                                    <input
+                                        type="radio"
+                                        name="username"
+                                        value="current"
+                                        checked={usernameChoice === 'current'}
+                                        onChange={() => setUsernameChoice('current')}
+                                        className="w-4 h-4"
+                                    />
+                                    <div className="flex-1">
+                                        <div className="text-white font-medium">Join with your current username</div>
+                                        <div className="text-xs text-text-muted mt-1">
+                                            {currentUsername || 'Loading...'}
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label className="flex items-center gap-3 p-4 rounded-lg border cursor-pointer hover:border-accent-cyan/50 transition-colors"
+                                    style={{ 
+                                        borderColor: usernameChoice === 'new' ? 'var(--color-accent-cyan)' : 'var(--color-bg-tertiary)',
+                                        backgroundColor: usernameChoice === 'new' ? 'rgba(6, 182, 212, 0.1)' : 'transparent'
+                                    }}>
+                                    <input
+                                        type="radio"
+                                        name="username"
+                                        value="new"
+                                        checked={usernameChoice === 'new'}
+                                        onChange={() => setUsernameChoice('new')}
+                                        className="w-4 h-4"
+                                    />
+                                    <div className="flex-1">
+                                        <div className="text-white font-medium">Join with a new username</div>
+                                        {usernameChoice === 'new' && (
+                                            <input
+                                                type="text"
+                                                value={newUsername}
+                                                onChange={(e) => setNewUsername(e.target.value)}
+                                                placeholder="Enter display name"
+                                                className="w-full mt-2 px-3 py-2 rounded bg-bg-tertiary border border-white/10 text-white placeholder-text-muted focus:border-accent-cyan focus:outline-none"
+                                            />
+                                        )}
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowUsernameModal(false)}
+                                    className="flex-1 px-4 py-2 rounded-lg border border-white/10 text-white hover:bg-white/5 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleJoinConfirm}
+                                    disabled={usernameChoice === 'new' && !newUsername.trim()}
+                                    className="flex-1 px-4 py-2 rounded-lg bg-accent-primary text-black font-bold hover:bg-accent-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Join League
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </>
         );
     }
 
@@ -68,24 +233,44 @@ const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId }) => {
                 </div>
 
                 <h3 className="text-white/70 font-medium mb-2">Current Rank</h3>
-                <div className="flex items-baseline gap-2 mb-6">
-                    <span className="text-4xl font-bold text-white">#{stats.rank}</span>
-                    <span className="text-green-400 text-sm font-medium">Top {100 - stats.percentile}%</span>
+                <div className="flex items-baseline gap-2 mb-4">
+                    {stats?.rank ? (
+                        <>
+                            <span className="text-4xl font-bold text-white">#{stats.rank}</span>
+                            {stats.percentile && (
+                                <span className="text-green-400 text-sm font-medium">Top {100 - stats.percentile}%</span>
+                            )}
+                        </>
+                    ) : (
+                        <span className="text-white/50 text-sm">Calculating rank...</span>
+                    )}
                 </div>
 
-                <div className="space-y-4">
-                    <div>
-                        <div className="flex justify-between text-sm mb-1">
-                            <span className="text-white/50">League Score</span>
-                            <span className="text-white font-mono">{stats.score}</span>
-                        </div>
-                        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-                                style={{ width: `${stats.score / 10}%` }}
-                            />
-                        </div>
+                {leagueUsername && (
+                    <div className="text-xs text-white/50 mb-4">
+                        Display name: <span className="text-white font-mono">{leagueUsername}</span>
                     </div>
+                )}
+
+                <div className="space-y-4">
+                    {stats?.score ? (
+                        <>
+                            <div>
+                                <div className="flex justify-between text-sm mb-1">
+                                    <span className="text-white/50">League Score</span>
+                                    <span className="text-white font-mono">{stats.score}</span>
+                                </div>
+                                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
+                                        style={{ width: `${Math.min((stats.score / 10), 100)}%` }}
+                                    />
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="text-xs text-white/50">Rank score will appear after your first portfolio analysis</div>
+                    )}
                 </div>
             </div>
 
@@ -93,25 +278,25 @@ const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId }) => {
             <div className="col-span-1 md:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <MetricCard
                     label="Risk-Adj Return"
-                    value={stats.sharpe.toFixed(2)}
+                    value={stats?.sharpe ? stats.sharpe.toFixed(2) : '--'}
                     subLabel="Sharpe Ratio"
                     icon={<Activity className="w-4 h-4 text-blue-400" />}
                 />
                 <MetricCard
                     label="Growth"
-                    value={`${(stats.cagr * 100).toFixed(1)}%`}
+                    value={stats?.cagr ? `${(stats.cagr * 100).toFixed(1)}%` : '--'}
                     subLabel="CAGR"
                     icon={<TrendingUp className="w-4 h-4 text-green-400" />}
                 />
                 <MetricCard
                     label="Safety"
-                    value={`-${(stats.drawdown * 100).toFixed(1)}%`}
+                    value={stats?.drawdown ? `-${(stats.drawdown * 100).toFixed(1)}%` : '--'}
                     subLabel="Max Drawdown"
                     icon={<Shield className="w-4 h-4 text-red-400" />}
                 />
                 <MetricCard
                     label="Experience"
-                    value={`${stats.accountAge}d`}
+                    value={stats?.accountAge ? `${stats.accountAge}d` : '--'}
                     subLabel="Active Days"
                     icon={<Clock className="w-4 h-4 text-yellow-400" />}
                 />

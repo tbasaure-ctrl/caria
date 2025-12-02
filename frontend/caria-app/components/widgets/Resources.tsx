@@ -158,7 +158,6 @@ export const Resources: React.FC = () => {
     };
 
     return (
-
         <div className="rounded-lg p-6" style={{
             backgroundColor: 'var(--color-bg-secondary)',
             border: '1px solid var(--color-bg-tertiary)'
@@ -167,7 +166,7 @@ export const Resources: React.FC = () => {
                 fontFamily: 'var(--font-display)',
                 color: 'var(--color-cream)'
             }}>
-                Recommended Research & Lectures
+                Curated Research & Learning
             </h2>
             <p className="text-xs mb-4" style={{ color: 'var(--color-text-secondary)' }}>
                 Curated daily from Abnormal Returns, The Motley Fool, CFA Institute, Farnam Street, and other trusted sources. Sponsored and low-quality pieces are filtered out.

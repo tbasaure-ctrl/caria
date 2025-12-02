@@ -290,7 +290,7 @@ export const WeeklyMedia: React.FC<WeeklyMediaProps> = ({ compact = false }) => 
     // Full version (original)
     return (
         <WidgetCard
-            title="📺 Media of the Week"
+            title="This Week's Media"
             tooltip="Weekly curated podcast and YouTube video recommendations"
         >
             <div className="space-y-4">

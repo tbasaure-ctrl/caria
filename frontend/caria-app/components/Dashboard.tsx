@@ -244,6 +244,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Section 4: Monte Carlo Simulation (from ValuationTool) */}
+                        <div className="w-full mt-6">
+                            <div className="h-[600px]">
+                                <ValuationTool />
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -312,7 +319,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
 
                 {/* RESEARCH TAB (INTEL) */}
                 {activeTab === 'research' && (
-                    <div className="flex flex-col gap-6 animate-fade-in">
+                    <div className="flex flex-col gap-8 animate-fade-in">
+                        {/* Top Section: Industry Research and Media */}
                         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                             <div className="col-span-1 xl:col-span-8 min-h-[600px]">
                                 <ProtectedWidget featureName="Industry Research">
@@ -325,18 +333,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                             </div>
                         </div>
 
+                        {/* Middle Section: Community and Resources - Fixed spacing */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div className="h-[400px]">
+                            <div className="min-h-[400px]">
                                 <ProtectedWidget featureName="Community">
                                     <CommunityFeed />
                                 </ProtectedWidget>
                             </div>
-                            <div className="h-[400px]">
+                            <div className="min-h-[400px]">
                                 <Resources />
                             </div>
                         </div>
 
-                        <div className="w-full">
+                        {/* Bottom Section: Rankings */}
+                        <div className="w-full mt-4">
                             <RankingsWidget />
                         </div>
                     </div>

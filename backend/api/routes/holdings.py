@@ -366,13 +366,19 @@ def get_holdings_with_prices(
             # Handle cash position
             if ticker.upper() == "CASH":
                 current_price = 1.0  # Cash is always 1:1
-                # Cash is stored in USD, convert to target currency
+                # Cash is stored in USD (quantity is the USD amount)
+                # avg_cost should always be 1.0 for cash
+                cash_amount_usd = quantity
+                cash_cost_basis_usd = cash_amount_usd * avg_cost  # Should be quantity * 1.0 = quantity
+                
+                # Convert to target currency
                 if currency.upper() == "CLP":
-                    current_value = quantity * fx_rate
-                    cost_basis = quantity * avg_cost * fx_rate
+                    current_value = cash_amount_usd * fx_rate
+                    cost_basis = cash_cost_basis_usd * fx_rate
                 else:
-                    current_value = quantity
-                    cost_basis = quantity * avg_cost
+                    current_value = cash_amount_usd
+                    cost_basis = cash_cost_basis_usd
+                
                 total_value += current_value
                 total_cost += cost_basis
                 gain_loss = 0.0  # Cash doesn't have gain/loss
@@ -381,13 +387,13 @@ def get_holdings_with_prices(
                 price_change_pct = 0.0
                 price_source = "cash"
             else:
-                cost_basis = quantity * avg_cost
-                total_cost += cost_basis
+                # Calculate cost basis in USD first
+                cost_basis_usd = quantity * avg_cost
                 
                 price_data = prices.get(ticker, {})
                 
                 # Try multiple fields for current price with fallback to average cost
-                current_price = (
+                current_price_usd = (
                     price_data.get("price") or 
                     price_data.get("previousClose") or
                     price_data.get("close") or
@@ -396,23 +402,25 @@ def get_holdings_with_prices(
                 
                 # Ensure we have a valid number
                 try:
-                    current_price = float(current_price) if current_price else avg_cost
+                    current_price_usd = float(current_price_usd) if current_price_usd else avg_cost
                 except (ValueError, TypeError):
-                    current_price = avg_cost
+                    current_price_usd = avg_cost
                 
                 # Convert to target currency
-                current_price = current_price * fx_rate
+                current_price = current_price_usd * fx_rate
                 current_value = quantity * current_price
-                cost_basis = cost_basis * fx_rate
-                total_cost += cost_basis
+                cost_basis = cost_basis_usd * fx_rate
                 
+                # Calculate gain/loss in target currency
                 gain_loss = current_value - cost_basis
                 gain_loss_pct = (gain_loss / cost_basis * 100) if cost_basis > 0 else 0.0
                 price_change = (price_data.get("change", 0.0) or 0.0) * fx_rate
                 price_change_pct = price_data.get("changesPercentage", 0.0) or 0.0
                 price_source = "live" if price_data.get("price") else "fallback"
-            
-            total_value += current_value
+                
+                # Add to totals AFTER conversion
+                total_value += current_value
+                total_cost += cost_basis
             
             holdings_data.append({
                 "id": str(holding_id),

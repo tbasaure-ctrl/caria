@@ -360,6 +360,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
     const [formError, setFormError] = useState<string | null>(null);
     const [sortOption, setSortOption] = useState<'value' | 'return' | 'ticker'>('value');
     const [showForm, setShowForm] = useState(false);
+    const [formMode, setFormMode] = useState<'stock' | 'cash'>('stock');
     const [actionLoading, setActionLoading] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [currency, setCurrency] = useState<'USD' | 'CLP'>('USD');
@@ -709,13 +710,39 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         event.preventDefault();
         setFormError(null);
 
-        const ticker = formData.ticker.trim().toUpperCase();
-        const quantity = parseFloat(formData.quantity);
-        const averageCost = parseFloat(formData.average_cost);
+        let ticker: string;
+        let quantity: number;
+        let averageCost: number;
 
-        if (!ticker) { setFormError('Invalid ticker.'); return; }
-        if (!Number.isFinite(quantity) || quantity <= 0) { setFormError('Invalid quantity.'); return; }
-        if (!Number.isFinite(averageCost) || averageCost < 0) { setFormError('Invalid cost.'); return; }
+        if (formMode === 'cash') {
+            // Cash position: ticker is always CASH, quantity is the cash amount, avg_cost is 1.0
+            ticker = 'CASH';
+            quantity = parseFloat(formData.quantity);
+            averageCost = 1.0; // Cash always has cost basis of 1.0
+            
+            if (!Number.isFinite(quantity) || quantity <= 0) { 
+                setFormError('Invalid cash amount.'); 
+                return; 
+            }
+        } else {
+            // Stock position
+            ticker = formData.ticker.trim().toUpperCase();
+            quantity = parseFloat(formData.quantity);
+            averageCost = parseFloat(formData.average_cost);
+
+            if (!ticker || ticker === 'CASH') { 
+                setFormError('Invalid ticker. Use Cash Position tab for cash.'); 
+                return; 
+            }
+            if (!Number.isFinite(quantity) || quantity <= 0) { 
+                setFormError('Invalid quantity.'); 
+                return; 
+            }
+            if (!Number.isFinite(averageCost) || averageCost < 0) { 
+                setFormError('Invalid cost.'); 
+                return; 
+            }
+        }
 
         try {
             setActionLoading(true);
@@ -742,6 +769,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             
             setFormData(createDefaultFormState());
             setShowForm(false);
+            setFormMode('stock');
             await loadPortfolio(false);
         } catch (err: unknown) {
             setFormError(getErrorMessage(err) || 'Could not save the position.');
@@ -861,75 +889,189 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                     </button>
                                 ))}
                             </div>
-                            <button
-                                onClick={() => setShowForm((prev) => !prev)}
-                                className="text-[10px] sm:text-xs font-medium px-3 sm:px-4 py-1.5 rounded bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors border border-accent-primary/20"
-                            >
-                                {showForm ? 'Close' : 'Add +'}
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => {
+                                        setShowForm(true);
+                                        setFormMode('stock');
+                                        setFormData(createDefaultFormState());
+                                    }}
+                                    className="text-[10px] sm:text-xs font-medium px-3 sm:px-4 py-1.5 rounded bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-colors border border-accent-primary/20"
+                                >
+                                    Add Stock
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowForm(true);
+                                        setFormMode('cash');
+                                        setFormData({
+                                            ...createDefaultFormState(),
+                                            ticker: 'CASH',
+                                            average_cost: '1.0'
+                                        });
+                                    }}
+                                    className="text-[10px] sm:text-xs font-medium px-3 sm:px-4 py-1.5 rounded bg-accent-gold/10 text-accent-gold hover:bg-accent-gold/20 transition-colors border border-accent-gold/20"
+                                >
+                                    Add Cash
+                                </button>
+                                {showForm && (
+                                    <button
+                                        onClick={() => {
+                                            setShowForm(false);
+                                            setFormData(createDefaultFormState());
+                                        }}
+                                        className="text-[10px] sm:text-xs font-medium px-3 sm:px-4 py-1.5 rounded bg-white/5 text-text-muted hover:text-white transition-colors"
+                                    >
+                                        Close
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
 
                     {/* Professional Add Form - Mobile Responsive */}
                     {showForm && (
-                        <div className="bg-bg-tertiary/50 p-3 sm:p-4 lg:p-6 rounded-lg border border-accent-primary/20 mb-4 sm:mb-6 animate-fade-in-up">
-                            <h5 className="text-xs sm:text-sm text-accent-primary mb-3 sm:mb-4 font-medium">New Position Entry</h5>
-                            <form onSubmit={handleAddHolding} className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                                <div className="col-span-1">
-                                    <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Ticker</label>
-                                    <input
-                                        type="text"
-                                        value={formData.ticker}
-                                        onChange={(e) => setFormData({ ...formData, ticker: e.target.value.toUpperCase() })}
-                                        className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none font-mono"
-                                        placeholder={formData.ticker.toUpperCase() === 'CASH' ? 'CASH' : 'AAPL or CASH'}
-                                        required
-                                    />
-                                    {formData.ticker.toUpperCase() === 'CASH' && (
-                                        <p className="text-[9px] text-accent-cyan mt-1">Cash position - enter amount in USD</p>
-                                    )}
-                                </div>
-                                <div className="col-span-1">
-                                    <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Quantity</label>
-                                    <input
-                                        type="number"
-                                        step="any"
-                                        value={formData.quantity}
-                                        onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                                        className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none font-mono"
-                                        placeholder="0.00"
-                                        required
-                                    />
-                                </div>
-                                <div className="col-span-1">
-                                    <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">
-                                        Avg Cost ({currency === 'CLP' ? 'CLP' : '$'})
-                                        {formData.ticker.toUpperCase() === 'CASH' && ' (use 1.0 for cash)'}
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="any"
-                                        value={formData.average_cost}
-                                        onChange={(e) => setFormData({ ...formData, average_cost: e.target.value })}
-                                        className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none font-mono"
-                                        placeholder={formData.ticker.toUpperCase() === 'CASH' ? '1.0' : '0.00'}
-                                        required
-                                    />
-                                </div>
-                                <div className="col-span-1">
-                                    <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Date</label>
-                                    <input
-                                        type="date"
-                                        value={formData.purchase_date}
-                                        onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
-                                        className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none"
-                                        required
-                                    />
-                                </div>
-                                <div className="col-span-2 lg:col-span-4 flex gap-2 sm:gap-3 mt-2 justify-end">
+                        <div className={`bg-bg-tertiary/50 p-3 sm:p-4 lg:p-6 rounded-lg border mb-4 sm:mb-6 animate-fade-in-up ${
+                            formMode === 'cash' ? 'border-accent-gold/20' : 'border-accent-primary/20'
+                        }`}>
+                            <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                <h5 className={`text-xs sm:text-sm font-medium ${
+                                    formMode === 'cash' ? 'text-accent-gold' : 'text-accent-primary'
+                                }`}>
+                                    {formMode === 'cash' ? '💰 Cash Position Entry' : '📈 Stock Position Entry'}
+                                </h5>
+                                {/* Mode Toggle */}
+                                <div className="flex bg-bg-primary border border-white/10 rounded p-0.5">
                                     <button
                                         type="button"
-                                        onClick={() => setShowForm(false)}
+                                        onClick={() => {
+                                            setFormMode('stock');
+                                            setFormData(createDefaultFormState());
+                                        }}
+                                        className={`px-2 py-1 text-[10px] rounded transition-colors ${
+                                            formMode === 'stock' 
+                                                ? 'bg-accent-primary/20 text-accent-primary' 
+                                                : 'text-text-muted hover:text-text-secondary'
+                                        }`}
+                                    >
+                                        Stock
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setFormMode('cash');
+                                            setFormData({
+                                                ...createDefaultFormState(),
+                                                ticker: 'CASH',
+                                                average_cost: '1.0'
+                                            });
+                                        }}
+                                        className={`px-2 py-1 text-[10px] rounded transition-colors ${
+                                            formMode === 'cash' 
+                                                ? 'bg-accent-gold/20 text-accent-gold' 
+                                                : 'text-text-muted hover:text-text-secondary'
+                                        }`}
+                                    >
+                                        Cash
+                                    </button>
+                                </div>
+                            </div>
+                            <form onSubmit={handleAddHolding} className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                                {formMode === 'cash' ? (
+                                    <>
+                                        <div className="col-span-2 lg:col-span-4">
+                                            <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">
+                                                Cash Amount ({currency === 'CLP' ? 'CLP$' : 'USD$'})
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                value={formData.quantity}
+                                                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                                                className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-gold outline-none font-mono"
+                                                placeholder="0.00"
+                                                required
+                                            />
+                                            <p className="text-[9px] text-accent-gold/70 mt-1">
+                                                Enter the cash amount in {currency === 'CLP' ? 'Chilean Pesos' : 'US Dollars'}
+                                            </p>
+                                        </div>
+                                        <div className="col-span-2 lg:col-span-4">
+                                            <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Date</label>
+                                            <input
+                                                type="date"
+                                                value={formData.purchase_date}
+                                                onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
+                                                className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-gold outline-none"
+                                                required
+                                            />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="col-span-1">
+                                            <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Ticker</label>
+                                            <input
+                                                type="text"
+                                                value={formData.ticker}
+                                                onChange={(e) => setFormData({ ...formData, ticker: e.target.value.toUpperCase() })}
+                                                className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none font-mono"
+                                                placeholder="AAPL"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Quantity</label>
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                value={formData.quantity}
+                                                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                                                className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none font-mono"
+                                                placeholder="0.00"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">
+                                                Avg Cost ({currency === 'CLP' ? 'CLP' : '$'})
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="any"
+                                                value={formData.average_cost}
+                                                onChange={(e) => setFormData({ ...formData, average_cost: e.target.value })}
+                                                className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none font-mono"
+                                                placeholder="0.00"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Date</label>
+                                            <input
+                                                type="date"
+                                                value={formData.purchase_date}
+                                                onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
+                                                className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none"
+                                                required
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                                <div className="col-span-2 lg:col-span-4 flex gap-2 sm:gap-3 mt-2 justify-end">
+                                    {formError && (
+                                        <div className="text-[10px] sm:text-xs text-negative mr-auto">
+                                            {formError}
+                                        </div>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowForm(false);
+                                            setFormData(createDefaultFormState());
+                                            setFormMode('stock');
+                                            setFormError(null);
+                                        }}
                                         className="px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-medium text-text-muted hover:text-white transition-colors"
                                     >
                                         Cancel
@@ -937,9 +1079,13 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                     <button
                                         type="submit"
                                         disabled={actionLoading}
-                                        className="bg-accent-primary hover:bg-accent-primary/90 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider py-1.5 sm:py-2 px-4 sm:px-6 rounded transition-colors shadow-glow-sm"
+                                        className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider py-1.5 sm:py-2 px-4 sm:px-6 rounded transition-colors shadow-glow-sm ${
+                                            formMode === 'cash'
+                                                ? 'bg-accent-gold hover:bg-accent-gold/90 text-black'
+                                                : 'bg-accent-primary hover:bg-accent-primary/90 text-white'
+                                        }`}
                                     >
-                                        {actionLoading ? 'Saving...' : 'Save'}
+                                        {actionLoading ? 'Saving...' : formMode === 'cash' ? 'Add Cash' : 'Save'}
                                     </button>
                                 </div>
                             </form>
@@ -959,10 +1105,16 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                     <div className="min-w-0">
                                         <div className="flex items-baseline gap-1 sm:gap-2 flex-wrap">
                                             <span className="text-white font-medium font-mono text-xs sm:text-sm">{holding.ticker}</span>
-                                            <span className="text-[10px] sm:text-xs text-text-muted truncate">{holding.quantity} sh</span>
+                                            <span className="text-[10px] sm:text-xs text-text-muted truncate">
+                                                {holding.ticker === 'CASH' 
+                                                    ? formatCurrency(holding.quantity, currency)
+                                                    : `${holding.quantity} sh`}
+                                            </span>
                                         </div>
                                         <div className="text-[10px] sm:text-xs text-text-secondary">
-                                            Avg: {formatCurrency(holding.average_cost, currency)}
+                                            {holding.ticker === 'CASH' 
+                                                ? 'Cash Position'
+                                                : `Avg: ${formatCurrency(holding.average_cost, currency)}`}
                                         </div>
                                     </div>
                                 </div>

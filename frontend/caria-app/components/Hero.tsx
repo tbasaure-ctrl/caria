@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CariaLogoIcon } from './Icons';
 
 interface HeroProps {
   onLogin?: () => void;
@@ -24,27 +25,11 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
       {/* Main content */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center mt-[-5vh]">
 
-        {/* Main Title - Logo as C in CARIA */}
+        {/* Main Title - Logo + ARIA */}
         <h1 className="font-display font-medium tracking-tight mb-10 animate-fade-in relative">
           <div className="flex items-center justify-center gap-2 sm:gap-3">
-            {/* Logo replaces "C" in CARIA */}
-            <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 flex items-center justify-center flex-shrink-0">
-              <svg viewBox="0 0 100 100" className="w-full h-full">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeDasharray="200"
-                  strokeDashoffset="50"
-                  className="text-accent-cyan"
-                  style={{ transform: 'rotate(-45deg)', transformOrigin: 'center' }}
-                />
-              </svg>
-            </div>
+            {/* Caria Logo Icon */}
+            <CariaLogoIcon className="w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 text-accent-cyan flex-shrink-0" />
             <span className="text-7xl sm:text-8xl md:text-9xl text-white leading-[0.9] tracking-tight">
               ARIA
             </span>

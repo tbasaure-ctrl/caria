@@ -11,6 +11,7 @@ import { ProtectedWidget } from '../ProtectedWidget';
 import { AlphaStockPicker } from '../widgets/AlphaStockPicker';
 import { ValuationTool } from '../widgets/ValuationTool';
 import { ValuationWorkshop } from '../widgets/ValuationWorkshop';
+import { RedditSentiment } from '../widgets/RedditSentiment';
 
 // Components for "Progressive Disclosure" UI
 
@@ -359,6 +360,13 @@ export const AnalysisPage: React.FC = () => {
                             <div className="min-h-[500px]">
                                 <ProtectedWidget featureName="Hidden Gems Screener">
                                     <HiddenGemsScreener />
+                                </ProtectedWidget>
+                            </div>
+
+                            {/* Social Sentiment Screener */}
+                            <div className="mt-8">
+                                <ProtectedWidget featureName="Social Sentiment Screener">
+                                    <RedditSentiment />
                                 </ProtectedWidget>
                             </div>
                         </div>

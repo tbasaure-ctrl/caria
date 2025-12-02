@@ -26,7 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from .routes import liquidity, topology, screener, league
+from .routes import liquidity, topology, screener, league, news
 
 app.include_router(simulation.router)
 app.include_router(watchlist.router)
@@ -34,6 +34,7 @@ app.include_router(liquidity.router)
 app.include_router(topology.router)
 app.include_router(screener.router)
 app.include_router(league.router)
+app.include_router(news.router)
 
 
 quality_model = None
@@ -66,6 +67,26 @@ async def load_models():
         print("[OK] Models, valuation analyzer, and RAG components loaded successfully")
     except Exception as e:
         print(f"[WARNING] Error loading models: {e}")
+    
+    # Start automated news fetching scheduler
+    try:
+        from api.services.gdelt_service import gdelt_service
+        from api.services.news_scheduler import NewsScheduler
+        from api.dependencies import open_db_connection
+        
+        # Create scheduler instance
+        news_scheduler = NewsScheduler(
+            gdelt_service=gdelt_service,
+            db_connection_func=open_db_connection
+        )
+        
+        # Start scheduler (fetches news every 6 hours)
+        news_scheduler.start(interval_hours=6)
+        app.state.news_scheduler = news_scheduler
+        
+        print("[OK] Automated news fetching scheduler started")
+    except Exception as e:
+        print(f"[WARNING] Error starting news scheduler: {e}")
 
 
 # Request/Response models

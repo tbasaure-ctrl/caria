@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Portfolio } from './widgets/Portfolio';
-import { ThesisIcon } from './Icons';
+import { ThesisIcon, CariaLogoIcon } from './Icons';
 import { CommunityFeed } from './widgets/CommunityFeed';
 import { RankingsWidget } from './widgets/RankingsWidget';
 import { PortfolioAnalytics } from './widgets/PortfolioAnalytics';
@@ -138,6 +138,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
             <div className="sticky top-0 z-40 border-b border-white/5 bg-[#020408]/80 backdrop-blur-xl supports-[backdrop-filter]:bg-[#020408]/60">
                 <div className="w-full px-3 sm:px-6 lg:px-12 py-3 sm:py-4 lg:py-6 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-6">
                     <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                        <CariaLogoIcon className="w-6 h-6 sm:w-8 sm:h-8 text-accent-cyan shrink-0" />
                         <h1 className="text-lg sm:text-xl font-display text-white tracking-wide hidden sm:block">
                             Caria Terminal
                         </h1>

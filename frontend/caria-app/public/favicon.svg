@@ -1,14 +1,30 @@
-<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
   <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#5A2A27" />
-      <stop offset="100%" stop-color="#8B7355" />
-    </linearGradient>
+    <style>
+      .accent-cyan { fill: #22D3EE; }
+      .accent-white { fill: #FFFFFF; }
+      .accent-gold { fill: #D4AF37; }
+      .stroke-cyan { stroke: #22D3EE; }
+      .stroke-white { stroke: #FFFFFF; }
+    </style>
   </defs>
-  <rect width="64" height="64" rx="12" fill="#0B0E11"/>
-  <circle cx="32" cy="32" r="26" stroke="url(#grad)" stroke-width="3" fill="none"/>
-  <text x="32" y="38" font-family="Cormorant Garamond, serif" font-size="28" text-anchor="middle" fill="#D4D4D4">
-    C
-  </text>
+  <!-- Background -->
+  <rect width="100" height="100" rx="12" fill="#020408"/>
+  
+  <!-- Outer C Arc -->
+  <path d="M 75 25 A 35 35 0 1 0 75 75" stroke="#22D3EE" stroke-width="6" stroke-linecap="round" fill="none"/>
+  
+  <!-- Constellation Nodes -->
+  <circle cx="75" cy="25" r="4" fill="#FFFFFF"/>
+  <circle cx="50" cy="15" r="3" fill="#22D3EE"/>
+  <circle cx="25" cy="50" r="3" fill="#FFFFFF"/>
+  <circle cx="50" cy="85" r="3" fill="#22D3EE"/>
+  <circle cx="75" cy="75" r="4" fill="#FFFFFF"/>
+  
+  <!-- Connection Lines -->
+  <path d="M 75 25 L 50 15 L 25 50 L 50 85 L 75 75" stroke="#22D3EE" stroke-width="1" opacity="0.5" fill="none"/>
+  <path d="M 50 15 L 50 50 L 25 50" stroke="#FFFFFF" stroke-width="1" opacity="0.3" fill="none"/>
+  
+  <!-- Inner Core -->
+  <circle cx="50" cy="50" r="2" fill="#D4AF37"/>
 </svg>
-

@@ -95,6 +95,21 @@ class AlphaVantageClient:
             "low": float(quote.get("04. low", 0)),
         }
 
+    def get_company_overview(self, symbol: str) -> Optional[Dict[str, Any]]:
+        """
+        Get company overview (fundamental data).
+        Includes: P/E, EPS, Market Cap, EBITDA, etc.
+        """
+        data = self._make_request({
+            "function": "OVERVIEW",
+            "symbol": symbol
+        })
+        
+        if not data or "Symbol" not in data:
+            return None
+            
+        return data
+
     def get_bulk_quotes(self, symbols: List[str]) -> Dict[str, Dict[str, Any]]:
         """
         Get quotes for multiple symbols.

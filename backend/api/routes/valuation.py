@@ -74,44 +74,63 @@ async def get_valuation(ticker: str, request: ValuationRequest):
         except Exception as enhanced_error:
             LOGGER.warning(f"Enhanced valuation failed for {ticker}: {enhanced_error}, falling back to simple methods")
 
-        # Fallback to simple FMP-based approach
-        from ..services.openbb_client import OpenBBClient
-        import os
-        from openbb import obb
-        
-        obb_client = OpenBBClient()
-        fmp_key = os.getenv("FMP_API_KEY", "").strip()
-        if fmp_key:
-            obb.user.credentials.fmp_api_key = fmp_key
-
-        # Fetch ratios directly from FMP
+        # Fallback to Alpha Vantage (Primary for Metrics now per user request)
         try:
-            ratios = obb.equity.fundamental.ratios(symbol=ticker, provider="fmp", limit=1)
-            metrics = obb.equity.fundamental.metrics(symbol=ticker, provider="fmp", limit=1)
+            from ..services.alpha_vantage_client import alpha_vantage_client
             
             pe_ratio = None
             ev_ebitda = None
             ev_sales = None
             
-            if ratios and hasattr(ratios, 'to_df'):
-                df_ratios = ratios.to_df()
-                if not df_ratios.empty:
-                    row = df_ratios.iloc[0]
-                    pe_ratio = row.get('peRatio') or row.get('priceEarningsRatio') or row.get('pe_ratio')
-                    ev_ebitda = row.get('enterpriseValueMultiple') or row.get('evEbitda') or row.get('ev_ebitda')
-                    ev_sales = row.get('priceToSalesRatio') or row.get('evSales') or row.get('ev_sales')
-            
-            if metrics and hasattr(metrics, 'to_df'):
-                df_metrics = metrics.to_df()
-                if not df_metrics.empty:
-                    row = df_metrics.iloc[0]
-                    if not pe_ratio:
-                        pe_ratio = row.get('peRatio') or row.get('priceEarningsRatio')
-                    if not ev_ebitda:
-                        ev_ebitda = row.get('enterpriseValueMultiple') or row.get('evEbitda')
-                    if not ev_sales:
-                        ev_sales = row.get('evSales') or row.get('enterpriseValueOverRevenue')
-            
+            # Try Alpha Vantage first
+            if alpha_vantage_client.is_available():
+                try:
+                    overview = alpha_vantage_client.get_company_overview(ticker)
+                    if overview:
+                        pe_ratio = float(overview.get("PERatio", 0)) if overview.get("PERatio") != "None" else None
+                        ev_ebitda = float(overview.get("EVToEBITDA", 0)) if overview.get("EVToEBITDA") != "None" else None
+                        ev_sales = float(overview.get("EVToRevenue", 0)) if overview.get("EVToRevenue") != "None" else None
+                        LOGGER.info(f"Fetched metrics from Alpha Vantage for {ticker}: P/E={pe_ratio}")
+                except Exception as av_error:
+                    LOGGER.warning(f"Alpha Vantage metrics fetch failed: {av_error}")
+
+            # If Alpha Vantage failed or missing data, try OpenBB/FMP
+            if not pe_ratio:
+                from ..services.openbb_client import OpenBBClient
+                import os
+                from openbb import obb
+                
+                obb_client = OpenBBClient()
+                fmp_key = os.getenv("FMP_API_KEY", "").strip()
+                if fmp_key:
+                    obb.user.credentials.fmp_api_key = fmp_key
+
+                # Fetch ratios directly from FMP
+                try:
+                    ratios = obb.equity.fundamental.ratios(symbol=ticker, provider="fmp", limit=1)
+                    metrics = obb.equity.fundamental.metrics(symbol=ticker, provider="fmp", limit=1)
+                    
+                    if ratios and hasattr(ratios, 'to_df'):
+                        df_ratios = ratios.to_df()
+                        if not df_ratios.empty:
+                            row = df_ratios.iloc[0]
+                            pe_ratio = row.get('peRatio') or row.get('priceEarningsRatio') or row.get('pe_ratio')
+                            ev_ebitda = row.get('enterpriseValueMultiple') or row.get('evEbitda') or row.get('ev_ebitda')
+                            ev_sales = row.get('priceToSalesRatio') or row.get('evSales') or row.get('ev_sales')
+                    
+                    if metrics and hasattr(metrics, 'to_df'):
+                        df_metrics = metrics.to_df()
+                        if not df_metrics.empty:
+                            row = df_metrics.iloc[0]
+                            if not pe_ratio:
+                                pe_ratio = row.get('peRatio') or row.get('priceEarningsRatio')
+                            if not ev_ebitda:
+                                ev_ebitda = row.get('enterpriseValueMultiple') or row.get('evEbitda')
+                            if not ev_sales:
+                                ev_sales = row.get('evSales') or row.get('enterpriseValueOverRevenue')
+                except Exception as e:
+                    LOGGER.warning(f"FMP/OpenBB metrics fetch failed: {e}")
+                
             # Calculate fair value using industry averages
             fair_value = current_price
             method = "Current Price"
@@ -191,7 +210,7 @@ async def get_valuation(ticker: str, request: ValuationRequest):
             return result
             
         except Exception as e:
-            LOGGER.warning(f"Direct FMP valuation failed for {ticker}: {e}, falling back to SimpleValuationService")
+            LOGGER.warning(f"Valuation calculation failed for {ticker}: {e}, falling back to SimpleValuationService")
             # Final fallback to original service
             service = SimpleValuationService()
             result = service.get_valuation(ticker, current_price)

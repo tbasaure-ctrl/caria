@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface HeroProps {
-    onLogin?: () => void;
+  onLogin?: () => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
@@ -17,40 +17,40 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
       {/* Wave overlay layers for depth */}
       <div className="wave-overlay" />
       <div className="grain-texture" />
-      
+
       {/* Subtle top accent line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-40 bg-gradient-to-b from-accent-cyan/30 via-accent-cyan/10 to-transparent z-10" />
 
       {/* Main content */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center mt-[-5vh]">
-        
+
         {/* Main Title - Preserved */}
         <h1 className="font-display font-medium tracking-tight mb-10 animate-fade-in relative">
           <span className="block text-7xl sm:text-8xl md:text-9xl text-white leading-[0.9] tracking-tight">
-            Reason First,
+            CARIA
           </span>
-          <span className="block text-4xl sm:text-5xl md:text-6xl italic text-text-secondary mt-4 font-light">
-            returns will follow
+          <span className="block text-4xl sm:text-5xl md:text-6xl italic text-accent-cyan mt-4 font-light">
+            Cognitive Analysis and Risk Investment Assistant
           </span>
         </h1>
 
         {/* Subtitle - Preserved */}
-        <p 
+        <p
           className="text-lg md:text-xl text-text-muted max-w-2xl mx-auto mb-12 font-light leading-relaxed animate-slide-up delay-100 relative"
         >
-          Merge timeless investment wisdom with the analytical power of deep learning. 
+          Merge timeless investment wisdom with the analytical power of deep learning.
           An invaluable partner for your financial journey in the digital age.
         </p>
 
         {/* CTA Button - Preserved */}
         <button
-            onClick={handleDiscoverCaria}
-            className="group relative px-12 py-4 bg-accent-cyan/10 border border-accent-cyan/50 rounded-full overflow-hidden transition-all duration-500 hover:bg-accent-cyan hover:border-accent-cyan hover:shadow-[0_0_30px_rgba(34,211,238,0.6)] animate-slide-up delay-200 backdrop-blur-sm"
+          onClick={handleDiscoverCaria}
+          className="group relative px-12 py-4 bg-accent-cyan/10 border border-accent-cyan/50 rounded-full overflow-hidden transition-all duration-500 hover:bg-accent-cyan hover:border-accent-cyan hover:shadow-[0_0_30px_rgba(34,211,238,0.6)] animate-slide-up delay-200 backdrop-blur-sm"
         >
-            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <span className="relative text-sm font-bold tracking-[0.25em] uppercase text-accent-cyan group-hover:text-bg-primary transition-colors">
-                Access Caria
-            </span>
+          <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <span className="relative text-sm font-bold tracking-[0.25em] uppercase text-accent-cyan group-hover:text-bg-primary transition-colors">
+            Access Caria
+          </span>
         </button>
 
         {/* Bottom Vertical Line */}

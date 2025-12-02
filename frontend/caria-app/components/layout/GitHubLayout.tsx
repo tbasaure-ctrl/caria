@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Bell, Menu, X, User, Search, LogIn, UserPlus } from 'lucide-react';
 import { getToken, removeToken } from '../../services/apiService';
-import { CariaLogoIcon } from '../Icons';
 
 const NavItem: React.FC<{
     label: string;
@@ -57,11 +56,11 @@ export const TopNav: React.FC = () => {
                     {/* Left: Logo & Desktop Nav */}
                     <div className="flex items-center gap-8">
                         <div
-                            className="flex-shrink-0 cursor-pointer flex items-center gap-3"
+                            className="flex-shrink-0 cursor-pointer flex items-center gap-2"
                             onClick={() => navigate('/')}
                         >
-                            <CariaLogoIcon className="w-8 h-8 text-accent-cyan" />
-                            <span className="font-display text-2xl tracking-tight text-white">CARIA</span>
+                            <div className="w-8 h-8 rounded bg-white text-black flex items-center justify-center font-display font-bold text-xl">C</div>
+                            <span className="font-display font-bold text-white text-lg tracking-wide hidden sm:block">CARIA</span>
                         </div>
 
                         <div className="hidden md:flex items-center gap-2">

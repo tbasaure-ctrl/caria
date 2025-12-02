@@ -26,9 +26,9 @@ router = APIRouter(prefix="/api/holdings", tags=["holdings"])
 
 class HoldingCreate(BaseModel):
     """Request para crear/actualizar holding."""
-    ticker: str = Field(..., min_length=1, max_length=10, description="Símbolo del ticker")
-    quantity: float = Field(..., ge=0, description="Cantidad de acciones")
-    average_cost: float = Field(..., ge=0, description="Costo promedio por acción")
+    ticker: str = Field(..., min_length=1, max_length=10, description="Símbolo del ticker (use 'CASH' for cash position)")
+    quantity: float = Field(..., ge=0, description="Cantidad de acciones (or cash amount)")
+    average_cost: float = Field(..., ge=0, description="Costo promedio por acción (or 1.0 for cash)")
     notes: str | None = Field(None, description="Notas adicionales")
 
 
@@ -256,6 +256,7 @@ def delete_holding(
 
 @router.get("/with-prices", response_model=HoldingsWithPricesResponse)
 def get_holdings_with_prices(
+    currency: str = "USD",
     current_user: UserInDB = Depends(get_current_user),
     conn = Depends(get_db_connection),
 ) -> HoldingsWithPricesResponse:
@@ -337,6 +338,23 @@ def get_holdings_with_prices(
             except Exception as av_exc:
                 logger.warning(f"AV crypto fetch failed for {ticker}: {av_exc}")
         
+        # Get FX rate for currency conversion
+        fx_rate = 1.0
+        if currency.upper() == "CLP":
+            try:
+                from caria.ingestion.clients.fmp_client import FMPClient
+                fmp_client = FMPClient()
+                fx_data = fmp_client.get_realtime_prices_batch(["USDCLP=X"])
+                if fx_data and "USDCLP=X" in fx_data:
+                    fx_rate = float(fx_data["USDCLP=X"].get("price", 1.0))
+                else:
+                    # Fallback to approximate rate
+                    fx_rate = 950.0
+                    logger.warning("Could not fetch USD/CLP rate, using fallback")
+            except Exception as fx_exc:
+                logger.warning(f"FX rate fetch failed: {fx_exc}, using fallback")
+                fx_rate = 950.0
+        
         # Calculate values
         holdings_data = []
         total_value = 0.0
@@ -344,30 +362,57 @@ def get_holdings_with_prices(
         
         for row in rows:
             holding_id, ticker, quantity, avg_cost, notes = row[0], row[1], float(row[2]), float(row[3]), row[4]
-            cost_basis = quantity * avg_cost
-            total_cost += cost_basis
             
-            price_data = prices.get(ticker, {})
-            
-            # Try multiple fields for current price with fallback to average cost
-            current_price = (
-                price_data.get("price") or 
-                price_data.get("previousClose") or
-                price_data.get("close") or
-                avg_cost  # Fallback to average cost if no price available
-            )
-            
-            # Ensure we have a valid number
-            try:
-                current_price = float(current_price) if current_price else avg_cost
-            except (ValueError, TypeError):
-                current_price = avg_cost
+            # Handle cash position
+            if ticker.upper() == "CASH":
+                current_price = 1.0  # Cash is always 1:1
+                # Cash is stored in USD, convert to target currency
+                if currency.upper() == "CLP":
+                    current_value = quantity * fx_rate
+                    cost_basis = quantity * avg_cost * fx_rate
+                else:
+                    current_value = quantity
+                    cost_basis = quantity * avg_cost
+                total_value += current_value
+                total_cost += cost_basis
+                gain_loss = 0.0  # Cash doesn't have gain/loss
+                gain_loss_pct = 0.0
+                price_change = 0.0
+                price_change_pct = 0.0
+                price_source = "cash"
+            else:
+                cost_basis = quantity * avg_cost
+                total_cost += cost_basis
                 
-            current_value = quantity * current_price
-            total_value += current_value
+                price_data = prices.get(ticker, {})
+                
+                # Try multiple fields for current price with fallback to average cost
+                current_price = (
+                    price_data.get("price") or 
+                    price_data.get("previousClose") or
+                    price_data.get("close") or
+                    avg_cost  # Fallback to average cost if no price available
+                )
+                
+                # Ensure we have a valid number
+                try:
+                    current_price = float(current_price) if current_price else avg_cost
+                except (ValueError, TypeError):
+                    current_price = avg_cost
+                
+                # Convert to target currency
+                current_price = current_price * fx_rate
+                current_value = quantity * current_price
+                cost_basis = cost_basis * fx_rate
+                total_cost += cost_basis
+                
+                gain_loss = current_value - cost_basis
+                gain_loss_pct = (gain_loss / cost_basis * 100) if cost_basis > 0 else 0.0
+                price_change = (price_data.get("change", 0.0) or 0.0) * fx_rate
+                price_change_pct = price_data.get("changesPercentage", 0.0) or 0.0
+                price_source = "live" if price_data.get("price") else "fallback"
             
-            gain_loss = current_value - cost_basis
-            gain_loss_pct = (gain_loss / cost_basis * 100) if cost_basis > 0 else 0.0
+            total_value += current_value
             
             holdings_data.append({
                 "id": str(holding_id),
@@ -380,9 +425,9 @@ def get_holdings_with_prices(
                 "current_value": current_value,
                 "gain_loss": gain_loss,
                 "gain_loss_pct": gain_loss_pct,
-                "price_change": price_data.get("change", 0.0) or 0.0,
-                "price_change_pct": price_data.get("changesPercentage", 0.0) or 0.0,
-                "price_source": "live" if price_data.get("price") else "fallback",
+                "price_change": price_change,
+                "price_change_pct": price_change_pct,
+                "price_source": price_source,
             })
         
         total_gain_loss = total_value - total_cost

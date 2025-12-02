@@ -238,8 +238,8 @@ export const fetchHoldings = async (): Promise<Holding[]> => {
     return response.json();
 };
 
-export const fetchHoldingsWithPrices = async (): Promise<HoldingsWithPrices> => {
-    const response = await fetchWithAuth(`${API_URL}/api/holdings/with-prices`);
+export const fetchHoldingsWithPrices = async (currency: string = "USD"): Promise<HoldingsWithPrices> => {
+    const response = await fetchWithAuth(`${API_URL}/api/holdings/with-prices?currency=${currency}`);
 
     if (!response.ok) {
         if (response.status === 404) {

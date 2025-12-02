@@ -27,7 +27,7 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
 
         {/* Main Title - Logo + ARIA */}
         <h1 className="font-display font-medium tracking-tight mb-10 animate-fade-in relative">
-          <div className="flex items-center justify-center gap-2 sm:gap-3">
+          <div className="flex items-center justify-center gap-0 sm:gap-1">
             {/* Caria Logo Icon */}
             <CariaLogoIcon className="w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 text-accent-cyan flex-shrink-0" />
             <span className="text-7xl sm:text-8xl md:text-9xl text-white leading-[0.9] tracking-tight">

@@ -40,19 +40,45 @@ def join_league(
     conn = Depends(get_db_connection),
 ):
     """Join the league with optional anonymity."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     try:
+        # Check if table exists first
         with conn.cursor() as cur:
+            cur.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'league_participants'
+                );
+            """)
+            table_exists = cur.fetchone()[0]
+            
+            if not table_exists:
+                logger.error("league_participants table does not exist. Migration required.")
+                raise HTTPException(
+                    status_code=500, 
+                    detail="League feature not available. Database migration required. Please run migration 005_add_league_participants.sql"
+                )
+            
+            # Insert or update participant
             cur.execute("""
                 INSERT INTO league_participants (user_id, is_anonymous, display_name)
                 VALUES (%s, %s, %s)
                 ON CONFLICT (user_id) DO UPDATE
                 SET is_anonymous = EXCLUDED.is_anonymous,
-                    display_name = EXCLUDED.display_name
+                    display_name = EXCLUDED.display_name,
+                    updated_at = CURRENT_TIMESTAMP
             """, (str(current_user.id), request.is_anonymous, request.display_name))
         conn.commit()
         return {"message": "Successfully joined the league", "is_anonymous": request.is_anonymous}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error joining league: {e}", exc_info=True)
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to join league: {str(e)}")
 
 @router.get("/participation-status")
 def get_participation_status(

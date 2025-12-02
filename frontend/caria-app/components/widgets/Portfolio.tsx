@@ -183,7 +183,7 @@ const CustomPieChart: React.FC<{ data: AllocationData[] }> = ({ data }) => {
 
 type PerformanceGraphPoint = { date: string, value: number };
 
-const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[]; timeRange?: string }> = ({ data, timeRange = '1Y' }) => {
+const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[]; timeRange?: string; currency: 'USD' | 'CLP' }> = ({ data, timeRange = '1Y', currency = 'USD' }) => {
     if (!data || data.length === 0) return null;
 
     const startValue = data[0].value;
@@ -224,10 +224,10 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[]; timeRange?: st
             <div className="mb-3 sm:mb-4 px-2">
                 <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
                     <span className="text-2xl sm:text-3xl font-display text-white">
-                        ${endValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {formatCurrency(endValue, currency)}
                     </span>
                     <span className={`text-xs sm:text-sm font-mono font-medium ${isPositive ? 'text-positive' : 'text-negative'}`}>
-                        {isPositive ? '+' : ''}${Math.abs(change).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({pctChange >= 0 ? '+' : ''}{pctChange.toFixed(2)}%)
+                        {isPositive ? '+' : ''}{formatCurrency(Math.abs(change), currency)} ({pctChange >= 0 ? '+' : ''}{pctChange.toFixed(2)}%)
                     </span>
                 </div>
                 <div className="text-[10px] sm:text-xs text-text-muted uppercase tracking-widest mt-1">
@@ -258,7 +258,12 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[]; timeRange?: st
                             tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 10 }}
                             axisLine={false}
                             tickLine={false}
-                            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                            tickFormatter={(value) => {
+                                const symbol = currency === 'CLP' ? 'CLP$' : '$';
+                                const divisor = currency === 'CLP' ? 1000000 : 1000;
+                                const suffix = currency === 'CLP' ? 'M' : 'k';
+                                return `${symbol}${(value / divisor).toFixed(0)}${suffix}`;
+                            }}
                             width={45}
                             domain={['dataMin * 0.95', 'dataMax * 1.05']}
                         />
@@ -281,7 +286,7 @@ const PerformanceGraph: React.FC<{ data: PerformanceGraphPoint[]; timeRange?: st
                                     year: 'numeric'
                                 });
                             }}
-                            formatter={(value: number) => [`$${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, 'Value']}
+                            formatter={(value: number) => [formatCurrency(value, currency), 'Value']}
                         />
                         <Area
                             type="monotone"
@@ -321,6 +326,15 @@ const TimeRangeSelector: React.FC<{ selected: string; onSelect: (range: string) 
 
 const POLLING_INTERVAL = 30000; // 30 segundos
 
+// Currency formatting helper
+const formatCurrency = (value: number, currency: 'USD' | 'CLP'): string => {
+    const symbol = currency === 'CLP' ? 'CLP$' : '$';
+    if (currency === 'CLP') {
+        return `${symbol}${value.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    }
+    return `${symbol}${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
 type HoldingFormState = {
     ticker: string;
     quantity: string;
@@ -348,6 +362,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
     const [showForm, setShowForm] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [currency, setCurrency] = useState<'USD' | 'CLP'>('USD');
 
     const loadPortfolio = useCallback(
         async (showSpinner = true) => {
@@ -361,7 +376,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
             try {
                 if (isLoggedIn()) {
                     // Authenticated user - fetch from API
-                    const data = await fetchHoldingsWithPrices();
+                    const data = await fetchHoldingsWithPrices(currency);
                     setPortfolioData(data);
                 } else {
                     // Guest mode - load from localStorage
@@ -397,7 +412,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         loadPortfolio();
         const interval = setInterval(() => loadPortfolio(false), POLLING_INTERVAL);
         return () => clearInterval(interval);
-    }, [loadPortfolio]);
+    }, [loadPortfolio, currency]);
 
     useEffect(() => {
         if (portfolioData && portfolioData.holdings.length === 0) {
@@ -769,11 +784,27 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
         >
             <div className="space-y-8">
                 {/* Header Actions */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                     {isRefreshing && (
                         <span className="text-xs text-accent-cyan animate-pulse">Syncing...</span>
                     )}
                     <div className="flex gap-2 ml-auto">
+                        {/* Currency Toggle */}
+                        <div className="flex bg-bg-tertiary border border-white/5 rounded p-0.5">
+                            {(['USD', 'CLP'] as const).map(curr => (
+                                <button
+                                    key={curr}
+                                    onClick={() => setCurrency(curr)}
+                                    className={`px-2 sm:px-3 py-1 text-[10px] sm:text-xs uppercase font-medium rounded transition-colors ${
+                                        currency === curr 
+                                            ? 'bg-accent-cyan/20 text-accent-cyan' 
+                                            : 'text-text-muted hover:text-text-secondary'
+                                    }`}
+                                >
+                                    {curr}
+                                </button>
+                            ))}
+                        </div>
                         <TimeRangeSelector selected={timeRange} onSelect={setTimeRange} />
                     </div>
                 </div>
@@ -782,7 +813,7 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                         {/* Left: Performance Graph (Span 2) */}
                         <div className="lg:col-span-2 order-1">
-                            <PerformanceGraph data={performanceData} timeRange={timeRange} />
+                            <PerformanceGraph data={performanceData} timeRange={timeRange} currency={currency} />
                         </div>
 
                         {/* Right: Allocation Pie */}
@@ -851,9 +882,12 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                         value={formData.ticker}
                                         onChange={(e) => setFormData({ ...formData, ticker: e.target.value.toUpperCase() })}
                                         className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none font-mono"
-                                        placeholder="AAPL"
+                                        placeholder={formData.ticker.toUpperCase() === 'CASH' ? 'CASH' : 'AAPL or CASH'}
                                         required
                                     />
+                                    {formData.ticker.toUpperCase() === 'CASH' && (
+                                        <p className="text-[9px] text-accent-cyan mt-1">Cash position - enter amount in USD</p>
+                                    )}
                                 </div>
                                 <div className="col-span-1">
                                     <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Quantity</label>
@@ -868,14 +902,17 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                     />
                                 </div>
                                 <div className="col-span-1">
-                                    <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">Avg Cost ($)</label>
+                                    <label className="block text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider mb-1">
+                                        Avg Cost ({currency === 'CLP' ? 'CLP' : '$'})
+                                        {formData.ticker.toUpperCase() === 'CASH' && ' (use 1.0 for cash)'}
+                                    </label>
                                     <input
                                         type="number"
                                         step="any"
                                         value={formData.average_cost}
                                         onChange={(e) => setFormData({ ...formData, average_cost: e.target.value })}
                                         className="w-full bg-bg-primary border border-white/10 rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-white focus:border-accent-primary outline-none font-mono"
-                                        placeholder="0.00"
+                                        placeholder={formData.ticker.toUpperCase() === 'CASH' ? '1.0' : '0.00'}
                                         required
                                     />
                                 </div>
@@ -925,14 +962,14 @@ export const Portfolio: React.FC<{ id?: string }> = ({ id }) => {
                                             <span className="text-[10px] sm:text-xs text-text-muted truncate">{holding.quantity} sh</span>
                                         </div>
                                         <div className="text-[10px] sm:text-xs text-text-secondary">
-                                            Avg: ${holding.average_cost.toFixed(2)}
+                                            Avg: {formatCurrency(holding.average_cost, currency)}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0">
                                     <div className="text-right">
                                         <div className="font-mono text-white text-xs sm:text-sm">
-                                            ${(holding.current_value ?? 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                            {formatCurrency(holding.current_value ?? 0, currency)}
                                         </div>
                                         <div className={`text-[10px] sm:text-xs font-mono ${holding.gain_loss_pct! >= 0 ? 'text-positive' : 'text-negative'}`}>
                                             {holding.gain_loss_pct! >= 0 ? '+' : ''}{holding.gain_loss_pct!.toFixed(1)}%

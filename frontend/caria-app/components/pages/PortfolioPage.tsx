@@ -9,6 +9,7 @@ import { CrisisSimulator } from '../widgets/CrisisSimulator';
 import { MacroSimulator } from '../widgets/MacroSimulator';
 import { RegimeTestWidget } from '../widgets/RegimeTestWidget';
 import { ProtectedWidget } from '../ProtectedWidget';
+import { MarketNews } from '../portfolio/MarketNews';
 
 // TSMOM Status Dot Component
 const TrendDot: React.FC<{ ticker: string }> = ({ ticker }) => {

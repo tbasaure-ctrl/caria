@@ -119,14 +119,14 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}, retr
             }
         } else {
             // Refresh falló, logout
-            logout();
+            // logout();
             throw new Error('Session expired. Please log in again.');
         }
     }
 
     if (response.status === 401 && !retry) {
         // Refresh ya falló, logout
-        logout();
+        // logout();
         throw new Error('Session expired. Please log in again.');
     }
 
@@ -164,11 +164,11 @@ export const fetchPrices = async (tickers: string[]): Promise<Record<string, Rea
     // Prices endpoint now supports optional auth - try with auth first, fallback without
     const token = getToken();
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
-    
+
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
-    
+
     const response = await fetch(`${API_URL}/api/prices/realtime`, {
         method: 'POST',
         headers,

@@ -16,7 +16,7 @@ import { ValuationWorkshop } from '../widgets/ValuationWorkshop';
 // Components for "Progressive Disclosure" UI
 
 const SectionHeader: React.FC<{ title: string; isOpen: boolean; onToggle: () => void }> = ({ title, isOpen, onToggle }) => (
-    <button 
+    <button
         onClick={onToggle}
         className="w-full flex items-center justify-between p-4 bg-bg-secondary border-b border-white/5 hover:bg-white/5 transition-colors"
     >
@@ -49,14 +49,14 @@ export const AnalysisPage: React.FC = () => {
     const [activeSidebarSection, setActiveSection] = useState<'main' | 'valuation' | 'screener'>('main');
 
     useEffect(() => {
-        if (!ticker) return; 
+        if (!ticker) return;
 
         const fetchTsmom = async () => {
             try {
                 const token = getToken();
                 const headers: HeadersInit = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = `Bearer ${token}`;
-                
+
                 const response = await fetch(`${API_BASE_URL}/api/analysis/tsmom/${ticker}`, { headers });
                 if (response.ok) {
                     const data = await response.json();
@@ -90,23 +90,23 @@ export const AnalysisPage: React.FC = () => {
                             </p>
                         </div>
                         <div className="space-y-1">
-                            <button 
+                            <button
                                 onClick={() => setActiveSection('main')}
                                 className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSidebarSection === 'main' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                             >
                                 Overview
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setActiveSection('valuation')}
                                 className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSidebarSection === 'valuation' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                             >
                                 Valuation Tools
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setActiveSection('screener')}
                                 className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSidebarSection === 'screener' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                             >
-                                Screener Tools
+                                Idea Generation
                             </button>
                         </div>
                     </div>
@@ -114,6 +114,28 @@ export const AnalysisPage: React.FC = () => {
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
+                    {/* Mobile Navigation Tabs */}
+                    <div className="md:hidden flex overflow-x-auto gap-2 mb-6 pb-2 border-b border-white/10 hide-scrollbar">
+                        <button
+                            onClick={() => setActiveSection('main')}
+                            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeSidebarSection === 'main' ? 'bg-white text-black' : 'bg-white/5 text-text-muted'}`}
+                        >
+                            Overview
+                        </button>
+                        <button
+                            onClick={() => setActiveSection('valuation')}
+                            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeSidebarSection === 'valuation' ? 'bg-white text-black' : 'bg-white/5 text-text-muted'}`}
+                        >
+                            Valuation
+                        </button>
+                        <button
+                            onClick={() => setActiveSection('screener')}
+                            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeSidebarSection === 'screener' ? 'bg-white text-black' : 'bg-white/5 text-text-muted'}`}
+                        >
+                            Screener
+                        </button>
+                    </div>
+
                     {activeSidebarSection === 'main' && (
                         <div className="space-y-8">
                             {/* Search Banner */}
@@ -156,26 +178,26 @@ export const AnalysisPage: React.FC = () => {
                                         <Target className="w-4 h-4 text-accent-gold" />
                                         <span className="text-xs font-bold text-white">Starter Position Scorecard</span>
                                     </div>
-                                    
+
                                     {/* Pillars */}
                                     <div className="flex border-b border-white/10">
-                                        <ScorecardPillar 
-                                            label="Value" 
-                                            value="--" 
+                                        <ScorecardPillar
+                                            label="Value"
+                                            value="--"
                                             subtext="Enter ticker to analyze"
-                                            status="neutral" 
+                                            status="neutral"
                                         />
-                                        <ScorecardPillar 
-                                            label="Risk" 
-                                            value="--" 
+                                        <ScorecardPillar
+                                            label="Risk"
+                                            value="--"
                                             subtext="Enter ticker to analyze"
-                                            status="neutral" 
+                                            status="neutral"
                                         />
-                                        <ScorecardPillar 
-                                            label="Momentum (TSMOM)" 
-                                            value="--" 
+                                        <ScorecardPillar
+                                            label="Momentum (TSMOM)"
+                                            value="--"
                                             subtext="Enter ticker to analyze"
-                                            status="neutral" 
+                                            status="neutral"
                                         />
                                     </div>
 
@@ -192,7 +214,7 @@ export const AnalysisPage: React.FC = () => {
                             {/* ZONE 2: The Evidence (Scroll for Details) */}
                             <div className="space-y-6">
                                 <h4 className="text-sm font-display text-white border-b border-white/10 pb-2">Deep Dive Evidence</h4>
-                                
+
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <div className="h-[400px]">
                                         <RiskRewardWidget />
@@ -216,12 +238,12 @@ export const AnalysisPage: React.FC = () => {
 
                             {/* ZONE 3: The Engine Room (System Logs) */}
                             <div className="border border-white/10 rounded-lg bg-[#050912] overflow-hidden">
-                                <SectionHeader 
-                                    title="System Logs (Engine Room)" 
-                                    isOpen={showLogs} 
-                                    onToggle={() => setShowLogs(!showLogs)} 
+                                <SectionHeader
+                                    title="System Logs (Engine Room)"
+                                    isOpen={showLogs}
+                                    onToggle={() => setShowLogs(!showLogs)}
                                 />
-                                
+
                                 {showLogs && (
                                     <div className="p-4 font-mono text-xs text-text-muted space-y-2">
                                         <div className="flex items-center gap-2 text-accent-primary mb-2">
@@ -255,7 +277,7 @@ export const AnalysisPage: React.FC = () => {
                     {activeSidebarSection === 'screener' && (
                         <div className="space-y-8">
                             <h2 className="text-lg font-display text-white border-b border-white/10 pb-2">Idea Generation</h2>
-                            
+
                             <div className="h-[500px]">
                                 <ProtectedWidget featureName="Alpha Stock Picker">
                                     <AlphaStockPicker />
@@ -325,7 +347,31 @@ export const AnalysisPage: React.FC = () => {
 
             {/* Main Content - Progressive Disclosure */}
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-8 pb-20">
-                
+
+                {/* Mobile Context Summary (Replaces Sidebar) */}
+                <div className="lg:hidden bg-bg-secondary border border-white/10 rounded-lg p-4 mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xl font-display text-white">{ticker}</h3>
+                        <button onClick={() => setSearchParams({})} className="text-xs text-accent-primary hover:text-white">Change</button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                        <div>
+                            <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1">Valuation</div>
+                            <div className="space-y-1 text-text-secondary">
+                                <div className="flex justify-between"><span>P/E</span> <span className="text-white">--</span></div>
+                                <div className="flex justify-between"><span>FCF Yield</span> <span className="text-white">--</span></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1">Risk</div>
+                            <div className="space-y-1 text-text-secondary">
+                                <div className="flex justify-between"><span>Vol</span> <span className="text-white">{(tsmomData?.annualized_volatility * 100)?.toFixed(1) || '--'}%</span></div>
+                                <div className="flex justify-between"><span>Drawdown</span> <span className="text-negative">--</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* ZONE 1: The Synthesis (Immediate Value) */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 min-h-[400px]">
                     {/* Left: Caria Chat */}
@@ -345,26 +391,26 @@ export const AnalysisPage: React.FC = () => {
                             <Target className="w-4 h-4 text-accent-gold" />
                             <span className="text-xs font-bold text-white">Starter Position Scorecard</span>
                         </div>
-                        
+
                         {/* Pillars */}
                         <div className="flex border-b border-white/10">
-                            <ScorecardPillar 
-                                label="Value" 
-                                value="--" 
+                            <ScorecardPillar
+                                label="Value"
+                                value="--"
                                 subtext="Run Valuation Model"
-                                status="neutral" 
+                                status="neutral"
                             />
-                            <ScorecardPillar 
-                                label="Risk" 
-                                value="--" 
+                            <ScorecardPillar
+                                label="Risk"
+                                value="--"
                                 subtext="Check Risk Engine"
-                                status="neutral" 
+                                status="neutral"
                             />
-                            <ScorecardPillar 
-                                label="Momentum (TSMOM)" 
-                                value={tsmomData?.trend_direction || "Loading..."} 
+                            <ScorecardPillar
+                                label="Momentum (TSMOM)"
+                                value={tsmomData?.trend_direction || "Loading..."}
                                 subtext={tsmomData ? `12m Return: ${(tsmomData.trend_strength_12m * 100).toFixed(1)}%` : "Calculating..."}
-                                status={tsmomData?.trend_direction === 'Bullish' ? 'positive' : 'negative'} 
+                                status={tsmomData?.trend_direction === 'Bullish' ? 'positive' : 'negative'}
                             />
                         </div>
 
@@ -372,8 +418,8 @@ export const AnalysisPage: React.FC = () => {
                         <div className="p-6 flex-1 flex flex-col justify-center items-center text-center">
                             <div className="text-xs text-text-muted mb-2 uppercase tracking-widest">Algorithm Verdict</div>
                             <p className="text-lg text-white font-display leading-relaxed">
-                                {tsmomData 
-                                    ? "TSMOM signal generated. Combine with Fundamental Valuation (DCF) and Risk Assessment below to form a complete thesis." 
+                                {tsmomData
+                                    ? "TSMOM signal generated. Combine with Fundamental Valuation (DCF) and Risk Assessment below to form a complete thesis."
                                     : "Initializing TSMOM Engine..."}
                             </p>
                         </div>
@@ -383,7 +429,7 @@ export const AnalysisPage: React.FC = () => {
                 {/* ZONE 2: The Evidence (Scroll for Details) */}
                 <div className="space-y-6">
                     <h4 className="text-sm font-display text-white border-b border-white/10 pb-2">Deep Dive Evidence</h4>
-                    
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="h-[400px]">
                             <RiskRewardWidget />
@@ -407,12 +453,12 @@ export const AnalysisPage: React.FC = () => {
 
                 {/* ZONE 3: The Engine Room (System Logs) */}
                 <div className="border border-white/10 rounded-lg bg-[#050912] overflow-hidden">
-                    <SectionHeader 
-                        title="System Logs (Engine Room)" 
-                        isOpen={showLogs} 
-                        onToggle={() => setShowLogs(!showLogs)} 
+                    <SectionHeader
+                        title="System Logs (Engine Room)"
+                        isOpen={showLogs}
+                        onToggle={() => setShowLogs(!showLogs)}
                     />
-                    
+
                     {showLogs && (
                         <div className="p-4 font-mono text-xs text-text-muted space-y-2">
                             <div className="flex items-center gap-2 text-accent-primary mb-2">

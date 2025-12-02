@@ -19,7 +19,7 @@ const TrendDot: React.FC<{ ticker: string }> = ({ ticker }) => {
         const fetchTrend = async () => {
             try {
                 if (!ticker || ticker.length > 10) return;
-                
+
                 const token = getToken();
                 const headers: HeadersInit = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -88,7 +88,7 @@ export const PortfolioPage: React.FC = () => {
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
     const [showAddForm, setShowAddForm] = useState(false);
     const [activeSection, setActiveSection] = useState<Section>('main');
-    
+
     // Add Form State
     const [formData, setFormData] = useState({
         ticker: '',
@@ -98,7 +98,7 @@ export const PortfolioPage: React.FC = () => {
         notes: ''
     });
     const [actionLoading, setActionLoading] = useState(false);
-    
+
     // Edit State
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editData, setEditData] = useState({ quantity: '', average_cost: '' });
@@ -167,7 +167,7 @@ export const PortfolioPage: React.FC = () => {
             } else {
                 createGuestHolding(holdingData);
             }
-            
+
             setShowAddForm(false);
             setFormData({ ticker: '', quantity: '', average_cost: '', purchase_date: new Date().toISOString().split('T')[0], notes: '' });
             await loadData();
@@ -182,7 +182,7 @@ export const PortfolioPage: React.FC = () => {
     const handleDelete = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
         if (!window.confirm('Delete this holding?')) return;
-        
+
         try {
             if (getToken()) {
                 await deleteHolding(id);
@@ -224,7 +224,7 @@ export const PortfolioPage: React.FC = () => {
             } else {
                 updateGuestHolding(id, updates);
             }
-            
+
             setEditingId(null);
             setEditData({ quantity: '', average_cost: '' });
             await loadData();
@@ -240,28 +240,28 @@ export const PortfolioPage: React.FC = () => {
 
     return (
         <div className="flex h-[calc(100vh-100px)] animate-fade-in">
-            {/* Sidebar Navigation */}
+            {/* Sidebar Navigation (Desktop) */}
             <div className="w-48 border-r border-white/10 pr-4 hidden md:block">
                 <div className="space-y-1 sticky top-0">
-                    <button 
+                    <button
                         onClick={() => setActiveSection('main')}
                         className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'main' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                     >
                         Overview & Holdings
                     </button>
-                    <button 
+                    <button
                         onClick={() => setActiveSection('performance')}
                         className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'performance' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                     >
                         Performance Graph
                     </button>
-                    <button 
+                    <button
                         onClick={() => setActiveSection('analytics')}
                         className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'analytics' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                     >
                         Deep Analytics
                     </button>
-                    <button 
+                    <button
                         onClick={() => setActiveSection('stress')}
                         className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'stress' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                     >
@@ -272,7 +272,35 @@ export const PortfolioPage: React.FC = () => {
 
             {/* Main Content Area */}
             <div className="flex-1 pl-0 md:pl-8 overflow-y-auto custom-scrollbar pr-2">
-                
+
+                {/* Mobile Navigation Tabs */}
+                <div className="md:hidden flex overflow-x-auto gap-2 mb-6 pb-2 border-b border-white/10 hide-scrollbar">
+                    <button
+                        onClick={() => setActiveSection('main')}
+                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeSection === 'main' ? 'bg-white text-black' : 'bg-white/5 text-text-muted'}`}
+                    >
+                        Overview
+                    </button>
+                    <button
+                        onClick={() => setActiveSection('performance')}
+                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeSection === 'performance' ? 'bg-white text-black' : 'bg-white/5 text-text-muted'}`}
+                    >
+                        Performance
+                    </button>
+                    <button
+                        onClick={() => setActiveSection('analytics')}
+                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeSection === 'analytics' ? 'bg-white text-black' : 'bg-white/5 text-text-muted'}`}
+                    >
+                        Analytics
+                    </button>
+                    <button
+                        onClick={() => setActiveSection('stress')}
+                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeSection === 'stress' ? 'bg-white text-black' : 'bg-white/5 text-text-muted'}`}
+                    >
+                        Stress Test
+                    </button>
+                </div>
+
                 {/* Section: Main (Overview + Holdings) */}
                 {activeSection === 'main' && (
                     <div className="space-y-8">
@@ -305,7 +333,7 @@ export const PortfolioPage: React.FC = () => {
                         {/* Controls */}
                         <div className="flex justify-between items-center">
                             <h3 className="text-lg font-display text-white">Holdings</h3>
-                            <button 
+                            <button
                                 onClick={() => setShowAddForm(!showAddForm)}
                                 className="flex items-center gap-2 px-3 py-1.5 bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 border border-accent-primary/20 rounded text-xs font-bold uppercase tracking-wider transition-all"
                             >
@@ -316,22 +344,22 @@ export const PortfolioPage: React.FC = () => {
                         {/* Add Form */}
                         {showAddForm && (
                             <div className="bg-bg-secondary border border-white/10 rounded-lg p-4 animate-fade-in-up">
-                                <form onSubmit={handleAddHolding} className="grid grid-cols-2 md:grid-cols-5 gap-4 items-end">
+                                <form onSubmit={handleAddHolding} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 items-end">
                                     <div>
                                         <label className="text-[10px] text-text-muted uppercase">Ticker</label>
-                                        <input required type="text" value={formData.ticker} onChange={e => setFormData({...formData, ticker: e.target.value})} className="w-full bg-bg-tertiary border border-white/10 rounded px-2 py-1 text-sm text-white" placeholder="AAPL" />
+                                        <input required type="text" value={formData.ticker} onChange={e => setFormData({ ...formData, ticker: e.target.value })} className="w-full bg-bg-tertiary border border-white/10 rounded px-2 py-1 text-sm text-white" placeholder="AAPL" />
                                     </div>
                                     <div>
                                         <label className="text-[10px] text-text-muted uppercase">Quantity</label>
-                                        <input required type="number" step="any" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} className="w-full bg-bg-tertiary border border-white/10 rounded px-2 py-1 text-sm text-white" placeholder="0" />
+                                        <input required type="number" step="any" value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: e.target.value })} className="w-full bg-bg-tertiary border border-white/10 rounded px-2 py-1 text-sm text-white" placeholder="0" />
                                     </div>
                                     <div>
                                         <label className="text-[10px] text-text-muted uppercase">Avg Cost</label>
-                                        <input required type="number" step="any" value={formData.average_cost} onChange={e => setFormData({...formData, average_cost: e.target.value})} className="w-full bg-bg-tertiary border border-white/10 rounded px-2 py-1 text-sm text-white" placeholder="0.00" />
+                                        <input required type="number" step="any" value={formData.average_cost} onChange={e => setFormData({ ...formData, average_cost: e.target.value })} className="w-full bg-bg-tertiary border border-white/10 rounded px-2 py-1 text-sm text-white" placeholder="0.00" />
                                     </div>
                                     <div>
                                         <label className="text-[10px] text-text-muted uppercase">Date</label>
-                                        <input type="date" value={formData.purchase_date} onChange={e => setFormData({...formData, purchase_date: e.target.value})} className="w-full bg-bg-tertiary border border-white/10 rounded px-2 py-1 text-sm text-white" />
+                                        <input type="date" value={formData.purchase_date} onChange={e => setFormData({ ...formData, purchase_date: e.target.value })} className="w-full bg-bg-tertiary border border-white/10 rounded px-2 py-1 text-sm text-white" />
                                     </div>
                                     <button disabled={actionLoading} type="submit" className="bg-accent-primary text-black font-bold text-xs py-2 rounded hover:bg-accent-primary/90 transition-colors">
                                         {actionLoading ? 'Saving...' : 'Save Position'}
@@ -342,8 +370,8 @@ export const PortfolioPage: React.FC = () => {
 
                         {/* List View */}
                         <div className="border border-white/10 rounded-lg overflow-hidden bg-bg-secondary/50">
-                            {/* Header */}
-                            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-bg-tertiary border-b border-white/10 text-[10px] text-text-muted uppercase tracking-wider font-medium">
+                            {/* Header (Desktop Only) */}
+                            <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 bg-bg-tertiary border-b border-white/10 text-[10px] text-text-muted uppercase tracking-wider font-medium">
                                 <div className="col-span-3 cursor-pointer hover:text-white" onClick={() => handleSort('ticker')}>Asset {sortKey === 'ticker' && (sortDir === 'asc' ? '↑' : '↓')}</div>
                                 <div className="col-span-2 text-right cursor-pointer hover:text-white" onClick={() => handleSort('current_price')}>Price {sortKey === 'current_price' && (sortDir === 'asc' ? '↑' : '↓')}</div>
                                 <div className="col-span-2 text-right cursor-pointer hover:text-white" onClick={() => handleSort('current_value')}>Value {sortKey === 'current_value' && (sortDir === 'asc' ? '↑' : '↓')}</div>
@@ -354,108 +382,71 @@ export const PortfolioPage: React.FC = () => {
                                 <div className="col-span-2 text-right">Analysis</div>
                             </div>
 
-                            {/* Rows */}
                             <div className="divide-y divide-white/5">
-                                {sortedHoldings.map((holding) => (
-                                    <div 
-                                        key={holding.ticker}
-                                        onClick={() => editingId !== holding.id && navigate(`/analysis?ticker=${holding.ticker}`)}
-                                        className={`grid grid-cols-12 gap-4 px-4 py-3 hover:bg-white/5 transition-colors items-center group ${editingId === holding.id ? 'bg-white/5' : 'cursor-pointer'}`}
-                                    >
-                                        <div className="col-span-3 flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center text-[10px] font-bold text-accent-cyan">
-                                                {holding.ticker.substring(0, 2)}
-                                            </div>
-                                            <div>
-                                                <div className="text-sm font-bold text-white font-mono">{holding.ticker}</div>
-                                                {editingId === holding.id ? (
-                                                    <div className="flex items-center gap-1">
-                                                        <input
-                                                            type="number"
-                                                            step="any"
-                                                            value={editData.quantity}
-                                                            onChange={(e) => setEditData({...editData, quantity: e.target.value})}
-                                                            onClick={(e) => e.stopPropagation()}
-                                                            className="w-16 bg-bg-tertiary border border-white/20 rounded px-1 py-0.5 text-[10px] text-white"
-                                                            placeholder="Qty"
-                                                        />
-                                                        <span className="text-[10px] text-text-muted">@</span>
-                                                        <input
-                                                            type="number"
-                                                            step="any"
-                                                            value={editData.average_cost}
-                                                            onChange={(e) => setEditData({...editData, average_cost: e.target.value})}
-                                                            onClick={(e) => e.stopPropagation()}
-                                                            className="w-16 bg-bg-tertiary border border-white/20 rounded px-1 py-0.5 text-[10px] text-white"
-                                                            placeholder="Cost"
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-[10px] text-text-muted">{holding.quantity} units @ ${holding.average_cost.toFixed(2)}</div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="col-span-2 text-right text-sm font-mono text-text-secondary">
-                                            ${holding.current_price?.toFixed(2)}
-                                        </div>
-                                        <div className="col-span-2 text-right">
-                                            <div className="text-sm font-mono text-white">
-                                                ${holding.current_value?.toLocaleString()}
-                                            </div>
-                                        </div>
-                                        <div className={`col-span-2 text-right text-sm font-mono px-2 py-1 rounded ${holding.gain_loss_pct >= 0 
-                                            ? 'text-white bg-gradient-to-r from-green-500/20 to-green-600/10 border border-green-500/30' 
-                                            : 'text-white bg-gradient-to-r from-red-500/20 to-red-600/10 border border-red-500/30'}`}>
-                                            {holding.gain_loss_pct >= 0 ? '+' : ''}{holding.gain_loss_pct.toFixed(2)}%
-                                        </div>
-                                        <div className="col-span-1 flex justify-center">
-                                            <TrendDot ticker={holding.ticker} />
-                                        </div>
-                                        <div className="col-span-2 flex justify-end items-center gap-2">
-                                            {editingId === holding.id ? (
-                                                <>
-                                                    <button 
-                                                        onClick={(e) => handleUpdate(holding.id, e)}
-                                                        disabled={actionLoading}
-                                                        className="p-1.5 text-green-400 hover:text-green-300 transition-colors"
-                                                        title="Save"
-                                                    >
-                                                        <Check className="w-3.5 h-3.5" />
-                                                    </button>
-                                                    <button 
-                                                        onClick={cancelEdit}
-                                                        className="p-1.5 text-text-muted hover:text-white transition-colors"
-                                                        title="Cancel"
-                                                    >
-                                                        <X className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <button 
-                                                        onClick={(e) => startEdit(holding, e)}
-                                                        className="p-1.5 text-text-muted hover:text-accent-cyan opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        title="Edit Position"
-                                                    >
-                                                        <Edit2 className="w-3 h-3" />
-                                                    </button>
-                                                    <button 
-                                                        onClick={(e) => handleDelete(holding.id, e)}
-                                                        className="p-1.5 text-text-muted hover:text-negative opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        title="Sell/Delete"
-                                                    >
-                                                        <Trash2 className="w-3 h-3" />
-                                                    </button>
-                                                    <button className="flex items-center gap-1 text-[10px] text-accent-cyan hover:text-white transition-colors">
-                                                        Analyze <ArrowUpRight className="w-3 h-3" />
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
+                                {sortedHoldings.length === 0 ? (
+                                    <div className="p-8 text-center text-text-muted text-xs italic">
+                                        No holdings found. Add a position to start tracking.
                                     </div>
-                                ))}
-                                {sortedHoldings.length === 0 && (
-                                    <div className="p-8 text-center text-text-muted text-sm">No holdings found.</div>
+                                ) : (
+                                    sortedHoldings.map(holding => (
+                                        <div key={holding.id} onClick={() => navigate(`/analysis?ticker=${holding.ticker}`)} className="cursor-pointer hover:bg-white/5 transition-colors group">
+                                            {/* Desktop Row */}
+                                            <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 items-center text-sm">
+                                                <div className="col-span-3 font-bold text-white flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded bg-bg-tertiary flex items-center justify-center text-[10px] text-text-muted border border-white/10">
+                                                        {holding.ticker.substring(0, 2)}
+                                                    </div>
+                                                    <div>
+                                                        <div>{holding.ticker}</div>
+                                                        <div className="text-[10px] text-text-muted font-normal">{holding.quantity} shares @ ${holding.average_cost.toFixed(2)}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-span-2 text-right text-white font-mono">${holding.current_price?.toFixed(2) || '--'}</div>
+                                                <div className="col-span-2 text-right text-white font-mono">${holding.current_value?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '--'}</div>
+                                                <div className={`col-span-2 text-right font-mono ${holding.gain_loss_pct >= 0 ? 'text-positive' : 'text-negative'}`}>
+                                                    {holding.gain_loss_pct >= 0 ? '+' : ''}{holding.gain_loss_pct?.toFixed(2)}%
+                                                </div>
+                                                <div className="col-span-1 flex justify-center h-6">
+                                                    <TrendDot ticker={holding.ticker} />
+                                                </div>
+                                                <div className="col-span-2 text-right flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={(e) => startEdit(holding, e)} className="p-1 hover:bg-white/10 rounded text-text-muted hover:text-white"><Edit2 className="w-3 h-3" /></button>
+                                                    <button onClick={(e) => handleDelete(holding.id, e)} className="p-1 hover:bg-white/10 rounded text-text-muted hover:text-negative"><Trash2 className="w-3 h-3" /></button>
+                                                </div>
+                                            </div>
+
+                                            {/* Mobile Card */}
+                                            <div className="md:hidden p-4 space-y-3">
+                                                <div className="flex justify-between items-start">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded bg-bg-tertiary flex items-center justify-center text-xs font-bold text-white border border-white/10">
+                                                            {holding.ticker.substring(0, 2)}
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-lg font-bold text-white">{holding.ticker}</div>
+                                                            <div className="text-xs text-text-muted">{holding.quantity} shares</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-lg font-mono text-white">${holding.current_value?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                                                        <div className={`text-xs font-mono ${holding.gain_loss_pct >= 0 ? 'text-positive' : 'text-negative'}`}>
+                                                            {holding.gain_loss_pct >= 0 ? '+' : ''}{holding.gain_loss_pct?.toFixed(2)}%
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] text-text-muted uppercase tracking-wider">Trend</span>
+                                                        <div className="h-4 w-4"><TrendDot ticker={holding.ticker} /></div>
+                                                    </div>
+                                                    <div className="flex gap-3">
+                                                        <button onClick={(e) => startEdit(holding, e)} className="text-xs text-text-muted hover:text-white flex items-center gap-1"><Edit2 className="w-3 h-3" /> Edit</button>
+                                                        <button onClick={(e) => handleDelete(holding.id, e)} className="text-xs text-text-muted hover:text-negative flex items-center gap-1"><Trash2 className="w-3 h-3" /> Delete</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
                                 )}
                             </div>
                         </div>

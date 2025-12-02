@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Bell, Menu, X, User, Search, LogIn, UserPlus } from 'lucide-react';
 import { getToken, removeToken } from '../../services/apiService';
+import { CariaLogoIcon } from '../Icons';
 
 const NavItem: React.FC<{
     label: string;
@@ -56,11 +57,11 @@ export const TopNav: React.FC = () => {
                     {/* Left: Logo & Desktop Nav */}
                     <div className="flex items-center gap-8">
                         <div
-                            className="flex-shrink-0 cursor-pointer flex items-center gap-2"
+                            className="flex-shrink-0 cursor-pointer flex items-center gap-3"
                             onClick={() => navigate('/')}
                         >
-                            <div className="w-8 h-8 rounded bg-white text-black flex items-center justify-center font-display font-bold text-xl">C</div>
-                            <span className="font-display font-bold text-white text-lg tracking-wide hidden sm:block">CARIA</span>
+                            <CariaLogoIcon className="w-8 h-8 text-accent-cyan" />
+                            <span className="font-display text-2xl tracking-tight text-white">CARIA</span>
                         </div>
 
                         <div className="hidden md:flex items-center gap-2">
@@ -133,14 +134,14 @@ export const TopNav: React.FC = () => {
 
             {/* Mobile Menu */}
             {isMobileMenuOpen && (
-                <div className="md:hidden bg-bg-secondary border-b border-white/10">
-                    <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <div className="md:hidden bg-bg-secondary border-b border-white/10 animate-fade-in">
+                    <div className="px-4 pt-2 pb-4 space-y-2">
                         {navItems.map((item) => (
                             <button
                                 key={item.path}
                                 onClick={() => handleNavClick(item.path)}
                                 className={`
-                                    block w-full text-left px-3 py-2 rounded-md text-base font-medium
+                                    block w-full text-left px-4 py-3 rounded-lg text-base font-medium transition-colors
                                     ${location.pathname.startsWith(item.path)
                                         ? 'bg-white/10 text-white'
                                         : 'text-text-muted hover:text-white hover:bg-white/5'
@@ -151,16 +152,16 @@ export const TopNav: React.FC = () => {
                             </button>
                         ))}
                         {!isAuthenticated && (
-                            <div className="mt-4 flex flex-col gap-2 px-3">
+                            <div className="mt-4 flex flex-col gap-3 pt-4 border-t border-white/10">
                                 <button
                                     onClick={() => window.location.href = '/?login=true'}
-                                    className="w-full text-center py-2 border border-white/20 rounded text-white font-medium"
+                                    className="w-full text-center py-3 border border-white/20 rounded-lg text-white font-medium hover:bg-white/5 transition-colors"
                                 >
                                     Log In
                                 </button>
                                 <button
                                     onClick={() => window.location.href = '/?register=true'}
-                                    className="w-full text-center py-2 bg-white text-black rounded font-bold"
+                                    className="w-full text-center py-3 bg-white text-black rounded-lg font-bold hover:bg-gray-200 transition-colors"
                                 >
                                     Sign Up
                                 </button>
@@ -177,7 +178,7 @@ export const GitHubLayout: React.FC = () => {
     return (
         <div className="min-h-screen bg-[#020408] text-text-primary font-sans selection:bg-accent-primary/30">
             <TopNav />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
                 <Outlet />
             </div>
         </div>

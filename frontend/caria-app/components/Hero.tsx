@@ -24,11 +24,31 @@ export const Hero: React.FC<HeroProps> = ({ onLogin }) => {
       {/* Main content */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center mt-[-5vh]">
 
-        {/* Main Title - Preserved */}
+        {/* Main Title - Logo as C in CARIA */}
         <h1 className="font-display font-medium tracking-tight mb-10 animate-fade-in relative">
-          <span className="block text-7xl sm:text-8xl md:text-9xl text-white leading-[0.9] tracking-tight">
-            CARIA
-          </span>
+          <div className="flex items-center justify-center gap-2 sm:gap-3">
+            {/* Logo replaces "C" in CARIA */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-28 md:h-28 flex items-center justify-center flex-shrink-0">
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeDasharray="200"
+                  strokeDashoffset="50"
+                  className="text-accent-cyan"
+                  style={{ transform: 'rotate(-45deg)', transformOrigin: 'center' }}
+                />
+              </svg>
+            </div>
+            <span className="text-7xl sm:text-8xl md:text-9xl text-white leading-[0.9] tracking-tight">
+              ARIA
+            </span>
+          </div>
           <span className="block text-4xl sm:text-5xl md:text-6xl italic text-accent-cyan mt-4 font-light">
             Cognitive Analysis and Risk Investment Assistant
           </span>

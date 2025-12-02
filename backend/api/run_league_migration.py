@@ -7,6 +7,12 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import sys
+import codecs
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+
 def get_db_connection():
     """Get database connection."""
     from urllib.parse import urlparse
@@ -56,10 +62,19 @@ def run_migration():
         UNIQUE(user_id, date)
     );
 
+    -- Create league_participants table
+    CREATE TABLE IF NOT EXISTS league_participants (
+        user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        is_anonymous BOOLEAN DEFAULT FALSE,
+        display_name TEXT,
+        joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+
     -- Create indexes
     CREATE INDEX IF NOT EXISTS idx_league_rankings_date ON league_rankings(date);
     CREATE INDEX IF NOT EXISTS idx_league_rankings_score ON league_rankings(score DESC);
     CREATE INDEX IF NOT EXISTS idx_league_rankings_user_date ON league_rankings(user_id, date);
+    CREATE INDEX IF NOT EXISTS idx_league_participants_joined ON league_participants(joined_at);
     """
 
     try:

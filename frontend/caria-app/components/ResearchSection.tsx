@@ -1,52 +1,71 @@
 import React from 'react';
 import { ValuationTool } from './widgets/ValuationTool';
-import { RedditSentiment } from './widgets/RedditSentiment';
 import { Resources } from './widgets/Resources';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 import { UnderTheRadarScreener } from './widgets/UnderTheRadarScreener';
-import { MarketScanner } from './widgets/MarketScanner';
 import { IndustryResearch } from './widgets/IndustryResearch';
 
 /**
- * ResearchSection - Groups related research and analysis widgets together
+ * ResearchSection - Professional research hub with Economist-style editorial design
  * 
- * This component provides a cohesive "Research & Analysis" section that includes:
- * - ValuationTool: Quick multiples valuation and Monte Carlo simulations (2-year horizon)
- * - RedditSentiment: Social sentiment analysis from Reddit
- * - Resources: Recommended articles, books, and educational content
- * - WeeklyContent: Curated podcast and video of the week
- * 
- * All widgets are visually grouped with a section header and improved spacing.
+ * Features:
+ * - Clean, text-focused layout (no icons)
+ * - Serif typography for professional feel
+ * - Educational resources and curated content
  */
 export const ResearchSection: React.FC = () => {
     return (
-        <div className="fade-in">
-            {/* Research Widgets - Grid Layout */}
-            <div className="space-y-8">
-                {/* Weekly Media - Video & Podcast at Top of Research */}
+        <div className="fade-in space-y-12">
+            {/* Section Header - Editorial Style */}
+            <div className="border-b border-white/10 pb-6">
+                <h2 className="text-4xl font-serif text-white mb-2">Research & Intelligence</h2>
+                <p className="text-white/60 text-lg font-serif italic">
+                    Curated insights for the discerning investor
+                </p>
+            </div>
+
+            {/* Weekly Media - Featured Content */}
+            <div>
+                <h3 className="text-2xl font-serif text-white mb-4 border-l-4 border-yellow-500 pl-4">
+                    Featured This Week
+                </h3>
                 <WeeklyMedia compact={false} />
-                
-                {/* Industry Research - Sector Deep Dives */}
+            </div>
+
+            {/* Industry Analysis */}
+            <div>
+                <h3 className="text-2xl font-serif text-white mb-4 border-l-4 border-blue-500 pl-4">
+                    Industry Deep Dives
+                </h3>
                 <IndustryResearch />
-                
-                {/* Under-the-Radar Screener - New Stock Screener */}
-                <UnderTheRadarScreener />
-                
-                {/* Market Scanner - Event-Driven Social Screener */}
-                <MarketScanner />
-                
-                {/* Monte Carlo Forecast Simulation - Quick multiples valuation and 2-year Monte Carlo simulations */}
-                <ValuationTool />
+            </div>
 
-                {/* Alpha Stock Picker - Find undervalued opportunities */}
-                <AlphaStockPicker />
-
-                {/* Two Column Layout for Social & Resources */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <RedditSentiment />
-                    <Resources />
+            {/* Stock Screening */}
+            <div>
+                <h3 className="text-2xl font-serif text-white mb-4 border-l-4 border-green-500 pl-4">
+                    Investment Ideas
+                </h3>
+                <div className="space-y-8">
+                    <UnderTheRadarScreener />
+                    <AlphaStockPicker />
                 </div>
+            </div>
+
+            {/* Valuation Tools */}
+            <div>
+                <h3 className="text-2xl font-serif text-white mb-4 border-l-4 border-purple-500 pl-4">
+                    Valuation Analysis
+                </h3>
+                <ValuationTool />
+            </div>
+
+            {/* Resources - Educational Content */}
+            <div>
+                <h3 className="text-2xl font-serif text-white mb-4 border-l-4 border-orange-500 pl-4">
+                    Learning Resources
+                </h3>
+                <Resources />
             </div>
         </div>
     );

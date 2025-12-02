@@ -1,8 +1,57 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Leaderboard from '../../components/league/Leaderboard';
 import LeagueProfile from '../../components/league/LeagueProfile';
+import { JoinLeague } from '../../components/league/JoinLeague';
+import { API_BASE_URL, getToken } from '../../services/apiService';
 
 const LeaguePage: React.FC = () => {
+    const [hasJoined, setHasJoined] = useState<boolean | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        checkParticipationStatus();
+    }, []);
+
+    const checkParticipationStatus = async () => {
+        setLoading(true);
+        try {
+            const token = getToken();
+            const headers: HeadersInit = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const response = await fetch(`${API_BASE_URL}/api/league/participation-status`, { headers });
+            if (response.ok) {
+                const data = await response.json();
+                setHasJoined(data.has_joined);
+            } else {
+                setHasJoined(false);
+            }
+        } catch (error) {
+            console.error('Error checking participation status:', error);
+            setHasJoined(false);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-black text-white p-8 flex items-center justify-center">
+                <div className="text-white/50">Loading...</div>
+            </div>
+        );
+    }
+
+    if (!hasJoined) {
+        return (
+            <div className="min-h-screen bg-black text-white p-8">
+                <div className="max-w-7xl mx-auto">
+                    <JoinLeague onJoinSuccess={() => setHasJoined(true)} />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-black text-white p-8">
             <div className="max-w-7xl mx-auto space-y-8">

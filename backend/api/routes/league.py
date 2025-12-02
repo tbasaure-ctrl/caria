@@ -29,6 +29,56 @@ class LeagueProfile(BaseModel):
     current: Optional[LeagueEntry]
     history: List[dict] # Simplified for now
 
+class JoinLeagueRequest(BaseModel):
+    is_anonymous: bool = False
+    display_name: Optional[str] = None
+
+@router.post("/join")
+def join_league(
+    request: JoinLeagueRequest,
+    current_user: UserInDB = Depends(get_current_user),
+    conn = Depends(get_db_connection),
+):
+    """Join the league with optional anonymity."""
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO league_participants (user_id, is_anonymous, display_name)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (user_id) DO UPDATE
+                SET is_anonymous = EXCLUDED.is_anonymous,
+                    display_name = EXCLUDED.display_name
+            """, (str(current_user.id), request.is_anonymous, request.display_name))
+        conn.commit()
+        return {"message": "Successfully joined the league", "is_anonymous": request.is_anonymous}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/participation-status")
+def get_participation_status(
+    current_user: UserInDB = Depends(get_current_user),
+    conn = Depends(get_db_connection),
+):
+    """Check if user has joined the league."""
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT is_anonymous, display_name, joined_at
+                FROM league_participants
+                WHERE user_id = %s
+            """, (str(current_user.id),))
+            row = cur.fetchone()
+            if row:
+                return {
+                    "has_joined": True,
+                    "is_anonymous": row[0],
+                    "display_name": row[1],
+                    "joined_at": row[2]
+                }
+            return {"has_joined": False}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/leaderboard", response_model=List[LeagueEntry])
 def get_leaderboard(
     limit: int = Query(100, ge=1, le=500),
@@ -36,11 +86,44 @@ def get_leaderboard(
     current_user: UserInDB = Depends(get_current_user),
     conn = Depends(get_db_connection),
 ):
-    """Get the global leaderboard."""
+    """Get the global leaderboard (only participants)."""
     service = LeagueService()
     try:
-        results = service.get_leaderboard(conn, limit, offset)
-        return results
+        from psycopg2.extras import RealDictCursor
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Get latest date
+            cur.execute("SELECT MAX(date) as max_date FROM league_rankings")
+            row = cur.fetchone()
+            if not row or not row['max_date']:
+                return []
+            
+            latest_date = row['max_date']
+            
+            # Join with participants and mask anonymous users
+            cur.execute("""
+                SELECT 
+                    lr.rank,
+                    u.id as user_id,
+                    CASE 
+                        WHEN lp.is_anonymous = TRUE THEN 
+                            COALESCE(lp.display_name, 'Anonymous Investor')
+                        ELSE u.username
+                    END as username,
+                    lr.score,
+                    lr.sharpe_ratio,
+                    lr.cagr,
+                    lr.max_drawdown,
+                    lr.diversification_score,
+                    lr.account_age_days
+                FROM league_rankings lr
+                JOIN users u ON lr.user_id = u.id
+                JOIN league_participants lp ON lr.user_id = lp.user_id
+                WHERE lr.date = %s
+                ORDER BY lr.rank ASC
+                LIMIT %s OFFSET %s
+            """, (latest_date, limit, offset))
+            
+            return cur.fetchall()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

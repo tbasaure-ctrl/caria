@@ -21,22 +21,40 @@ from api.models.economic_monitor import (
     CurrencyResponse, CurrencyHistoryResponse, CountryDetailsResponse,
     CountryEconomicData, BusinessCyclePoint, HeatmapCell, CurrencyRate, CurrencyHistory
 )
-from api.services.fred_client import FREDClient
-from api.services.world_bank_client import WorldBankClient
-from api.services.imf_client import IMFClient
-from api.services.oecd_client import OECDClient
-from api.services.economic_indicators_service import EconomicIndicatorsService
 
 router = APIRouter(prefix="/api/economic-monitor", tags=["economic-monitor"])
-
 logger = logging.getLogger(__name__)
 
-# Initialize clients
-fred_client = FREDClient()
-wb_client = WorldBankClient()
-imf_client = IMFClient()
-oecd_client = OECDClient()
-indicators_service = EconomicIndicatorsService()
+# Initialize clients with error handling
+try:
+    from api.services.fred_client import FREDClient
+    from api.services.world_bank_client import WorldBankClient
+    from api.services.imf_client import IMFClient
+    from api.services.oecd_client import OECDClient
+    from api.services.economic_indicators_service import EconomicIndicatorsService
+    
+    # Initialize clients
+    fred_client = FREDClient()
+    wb_client = WorldBankClient()
+    imf_client = IMFClient()
+    oecd_client = OECDClient()
+    indicators_service = EconomicIndicatorsService()
+except ImportError as e:
+    logger.warning(f"Economic monitor services not available: {e}")
+    # Create dummy clients to prevent import errors
+    fred_client = None
+    wb_client = None
+    imf_client = None
+    oecd_client = None
+    indicators_service = None
+except Exception as e:
+    logger.error(f"Error initializing economic monitor services: {e}")
+    # Create dummy clients to prevent import errors
+    fred_client = None
+    wb_client = None
+    imf_client = None
+    oecd_client = None
+    indicators_service = None
 
 # Country configuration
 MAJOR_COUNTRIES = {
@@ -113,6 +131,9 @@ def get_business_cycle(
 ):
     """Get business cycle clock data for all countries."""
     try:
+        if not fred_client or not indicators_service:
+            raise HTTPException(status_code=503, detail="Economic monitor services not available. Please ensure dependencies are installed.")
+        
         points = []
         
         for code, info in MAJOR_COUNTRIES.items():
@@ -163,6 +184,9 @@ def get_currencies(
 ):
     """Get currency exchange rates for major economies."""
     try:
+        if not fred_client:
+            raise HTTPException(status_code=503, detail="FRED client not available. Please ensure FRED_API_KEY is set.")
+        
         rates = []
         
         # Major currency pairs
@@ -250,6 +274,9 @@ def get_currency_history(
 ):
     """Get historical currency data for a currency pair."""
     try:
+        if not fred_client:
+            raise HTTPException(status_code=503, detail="FRED client not available. Please ensure FRED_API_KEY is set.")
+        
         history_series = fred_client.get_currency_history(currency_pair.upper(), days=days)
         
         if history_series is None or len(history_series) == 0:

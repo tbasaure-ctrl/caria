@@ -26,7 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from .routes import liquidity, topology, screener, league, news, economic_monitor
+from .routes import liquidity, topology, screener, league, news, economic_monitor, lectures
 
 app.include_router(simulation.router)
 app.include_router(watchlist.router)
@@ -36,6 +36,7 @@ app.include_router(screener.router)
 app.include_router(league.router)
 app.include_router(news.router)
 app.include_router(economic_monitor.router)
+app.include_router(lectures.router)
 
 
 quality_model = None

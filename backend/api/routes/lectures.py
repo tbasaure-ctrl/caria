@@ -15,7 +15,7 @@ class LectureRecommendation(BaseModel):
     source: str
     date: str
 
-@router.get("/recommended", response_model=List[LectureRecommendation])
+@router.get("/recommendations", response_model=List[LectureRecommendation])
 async def get_recommended_lectures(
     service: LecturesService = Depends(get_lectures_service)
 ) -> List[LectureRecommendation]:

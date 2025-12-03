@@ -34,6 +34,17 @@ COUNTRIES = [
     {"isoCode": "CHL", "name": "Chile", "lat": -35.6751, "lon": -71.5430, "fred_prefix": "CHL", "wb_iso": "CL"},
 ]
 
+# Manual Overrides (Ground Truth)
+# Use this to fix specific data points when APIs are unreliable or lagging.
+MANUAL_OVERRIDES = {
+    "CHL": {
+        "metrics": {
+            "gdpGrowth": 2.2,
+            "unemployment": 8.5
+        }
+    }
+}
+
 # --- FRED API HELPERS ---
 
 def get_fred_series_history(series_id, api_key, limit=24):
@@ -146,6 +157,7 @@ def fetch_real_data():
         elif iso == 'KOR': fx_id = "DEXKOUS"
         elif iso == 'MEX': fx_id = "DEXMXUS"
         elif iso == 'ZAF': fx_id = "DEXSFUS"
+        elif iso == 'CHL': fx_id = "DEXCHUS" # Chile Peso
         
         fx_change_6m = 0.0
         fx_volatility = 0.0
@@ -178,18 +190,40 @@ def fetch_real_data():
         # Current Account Balance: BN.CAB.XOKA.GD.ZS
         curr_account = get_world_bank_indicator(wb_iso, "BN.CAB.XOKA.GD.ZS") or 0.0
 
+        # --- APPLY OVERRIDES ---
+        if iso in MANUAL_OVERRIDES:
+            overrides = MANUAL_OVERRIDES[iso].get("metrics", {})
+            if "gdpGrowth" in overrides: gdp_growth = overrides["gdpGrowth"]
+            if "inflation" in overrides: inflation = overrides["inflation"]
+            if "unemployment" in overrides: unrate = overrides["unemployment"]
+            if "debtToGdp" in overrides: debt_gdp = overrides["debtToGdp"]
+
         # --- SCORING LOGIC ---
 
-        # Cycle Phase
+        # Cycle Phase (Refined)
+        # Expansion: Growth > 2.5% AND Unemployment < 7% (unless growth is super high > 5%)
+        # Slowdown: Growth > 1% but slowing OR High Inflation/Unemployment dragging it
+        # Recession: Growth < 0
+        # Recovery: Growth > 0 but < 2.5% OR recovering from negative
+        
         phase = 'stable'
-        if gdp_growth > 0.5:
-            if cycle_momentum >= -0.5: phase = 'expansion'
-            else: phase = 'slowdown'
-        elif gdp_growth <= 0.5 and gdp_growth > -1.0:
+        
+        if gdp_growth < 0:
+            phase = 'recession'
+        elif gdp_growth > 2.5:
+            if unrate > 7.5 and gdp_growth < 5.0:
+                phase = 'recovery' # High growth but high unemployment = likely recovery from deep hole
+            elif cycle_momentum >= -0.5:
+                phase = 'expansion'
+            else:
+                phase = 'slowdown'
+        elif gdp_growth > 0.5:
+            # Low positive growth
             if cycle_momentum > 0: phase = 'recovery'
             else: phase = 'slowdown'
         else:
-            phase = 'recession'
+            # Stagnation
+            phase = 'slowdown'
 
         # Structural Risk (0-100)
         # Factors: Debt/GDP (>80 bad), Inflation (>3 bad), Twin Deficits (CurrAcc < -3 bad)
@@ -215,6 +249,12 @@ def fetch_real_data():
         if phase == 'recession': stress_level += 15
         stress_level = min(100, stress_level)
 
+        # Behavioral Signal (Heuristic)
+        # Derived from Momentum (Optimism) + FX Strength (Confidence) - High Inflation (Fear)
+        # Range: -1 (Fear) to +1 (Greed/Optimism)
+        sentiment_score = (cycle_momentum * 0.5) + (fx_change_6m * 0.05) - (max(0, inflation - 3) * 0.1)
+        behavioral_signal = max(-1.0, min(1.0, sentiment_score))
+
         country_state = {
             "isoCode": iso,
             "name": country["name"],
@@ -225,7 +265,7 @@ def fetch_real_data():
             "structuralRisk": round(structural_risk, 1),
             "externalVulnerability": round(external_vuln, 1),
             "stressLevel": round(stress_level, 1),
-            "behavioralSignal": round(np.random.uniform(-0.5, 0.5), 2), # Placeholder
+            "behavioralSignal": round(behavioral_signal, 2),
             "instabilityRisk": round(instability_risk, 1),
             "metrics": {
                 "gdpGrowth": round(gdp_growth, 2),

@@ -8,6 +8,7 @@ import { ModelOutlook } from '../widgets/ModelOutlook';
 import HydraulicStackWidget from '../HydraulicStackWidget';
 import TopologicalMRIWidget from '../TopologicalMRIWidget';
 import { TSMOMOverviewWidget } from '../widgets/TSMOMOverviewWidget';
+import { ResearchSection } from '../ResearchSection';
 
 export const CommunityPage: React.FC = () => {
     const [activeSection, setActiveSection] = useState<'main' | 'models'>('main');

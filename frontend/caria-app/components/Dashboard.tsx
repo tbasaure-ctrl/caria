@@ -29,7 +29,6 @@ import TutorialPanel from './TutorialPanel';
 import { ProtectedWidget } from './ProtectedWidget';
 import { fetchWithAuth, API_BASE_URL } from '../services/apiService';
 import { HiddenRiskReport } from './widgets/HiddenRiskReport';
-import { WorldEconomiesHealth } from './widgets/WorldEconomiesHealth';
 
 // Ask Caria Widget (Satellite for Portfolio) - Enhanced UX
 const AskCariaWidget: React.FC<{ onClick: () => void }> = ({ onClick }) => (
@@ -192,11 +191,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onStartAnalysis }) => {
                 {/* PORTFOLIO TAB (COMMAND CENTER) */}
                 {activeTab === 'portfolio' && (
                     <div className="flex flex-col gap-6 animate-fade-in">
-                        {/* Section 0: World Economies Health (Mission Control) */}
-                        <div className="w-full">
-                            <WorldEconomiesHealth />
-                        </div>
-
                         {/* Section 1: Market Vitals (Full Width) */}
                         <div className="w-full">
                             <GlobalMarketBar id="market-bar-widget" />

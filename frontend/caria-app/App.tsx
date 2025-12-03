@@ -9,6 +9,7 @@ import { PortfolioPage } from './components/pages/PortfolioPage';
 import { AnalysisPage } from './components/pages/AnalysisPage';
 import { CommunityPage } from './components/pages/CommunityPage';
 import { ResourcesPage } from './components/pages/ResourcesPage';
+import { EconomicHealthPage } from './components/pages/EconomicHealthPage';
 import { GitHubLayout } from './components/layout/GitHubLayout';
 import { getToken, saveToken, removeToken } from './services/apiService';
 import LeaguePage from './src/pages/LeaguePage';
@@ -84,6 +85,7 @@ const App: React.FC = () => {
           <Route element={<GitHubLayout />}>
             <Route path="/portfolio" element={<PortfolioPage />} />
             <Route path="/analysis" element={<AnalysisPage />} />
+            <Route path="/world-economies" element={<EconomicHealthPage />} />
             <Route path="/league" element={<LeaguePage />} />
             <Route path="/research" element={<CommunityPage />} /> {/* Mapping Research to Community for now, or can create dedicated */}
             <Route path="/about" element={<ResourcesPage />} />

@@ -33,6 +33,7 @@ export const TopNav: React.FC = () => {
     const navItems = [
         { label: 'Portfolio', path: '/portfolio' },
         { label: 'Analysis', path: '/analysis' },
+        { label: 'World Economies', path: '/world-economies' },
         { label: 'League', path: '/league' },
         { label: 'Research', path: '/research' },
         { label: 'About Us', path: '/about' },

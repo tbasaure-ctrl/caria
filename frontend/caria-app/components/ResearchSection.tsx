@@ -1,5 +1,4 @@
 import React from 'react';
-import { ValuationTool } from './widgets/ValuationTool';
 import { Resources } from './widgets/Resources';
 import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { AlphaStockPicker } from './widgets/AlphaStockPicker';
@@ -59,14 +58,6 @@ export const ResearchSection: React.FC = () => {
                     <UnderTheRadarScreener />
                     <AlphaStockPicker />
                 </div>
-            </div>
-
-            {/* Valuation Tools */}
-            <div>
-                <h3 className="text-2xl font-serif text-white mb-4 border-l-4 border-purple-500 pl-4">
-                    Valuation Analysis
-                </h3>
-                <ValuationTool />
             </div>
 
             {/* Resources - Educational Content */}

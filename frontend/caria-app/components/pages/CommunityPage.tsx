@@ -8,10 +8,9 @@ import { ModelOutlook } from '../widgets/ModelOutlook';
 import HydraulicStackWidget from '../HydraulicStackWidget';
 import TopologicalMRIWidget from '../TopologicalMRIWidget';
 import { TSMOMOverviewWidget } from '../widgets/TSMOMOverviewWidget';
-import { ResearchSection } from '../ResearchSection';
 
 export const CommunityPage: React.FC = () => {
-    const [activeSection, setActiveSection] = useState<'main' | 'research' | 'models'>('main');
+    const [activeSection, setActiveSection] = useState<'main' | 'models'>('main');
 
     return (
         <div className="flex gap-8 h-[calc(100vh-100px)] animate-fade-in">
@@ -26,10 +25,10 @@ export const CommunityPage: React.FC = () => {
                     </div>
                     <div className="space-y-1">
                         <button
-                            onClick={() => setActiveSection('main')}
-                            className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'main' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                            onClick={() => setActiveSection('social')}
+                            className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'social' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                         >
-                            Main Research
+                            Social Sentiment
                         </button>
                         <button
                             onClick={() => setActiveSection('research')}
@@ -50,30 +49,16 @@ export const CommunityPage: React.FC = () => {
             {/* Content */}
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
 
-                {/* MAIN RESEARCH */}
-                {activeSection === 'main' && (
-                    <div className="space-y-8">
-                        {/* Hero Section: Industry & Media */}
-                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                            <div className="col-span-1 xl:col-span-8 min-h-[600px]">
-                                <ProtectedWidget featureName="Industry Research">
-                                    <IndustryResearch />
-                                </ProtectedWidget>
-                            </div>
-                            <div className="col-span-1 xl:col-span-4 flex flex-col gap-6">
-                                <OpportunityRadar />
-                                <WeeklyMedia compact={false} />
-                            </div>
+                {/* SOCIAL SENTIMENT */}
+                {activeSection === 'social' && (
+                    <div className="pb-20 space-y-6">
+                        <div className="max-w-3xl">
+                            <h2 className="text-2xl font-display text-white mb-2">Social Sentiment</h2>
+                            <p className="text-sm text-text-secondary leading-relaxed">
+                                Track real-time discussions from Reddit and StockTwits to gauge retail investor sentiment and identify trending tickers.
+                            </p>
                         </div>
-
-                        {/* Resources */}
-                        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                            <div className="flex flex-col gap-6">
-                                <div className="min-h-[400px] flex-1">
-                                    <Resources />
-                                </div>
-                            </div>
-                        </div>
+                        <RedditSentiment />
                     </div>
                 )}
 

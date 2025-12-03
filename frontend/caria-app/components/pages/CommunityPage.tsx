@@ -11,7 +11,7 @@ import { TSMOMOverviewWidget } from '../widgets/TSMOMOverviewWidget';
 import { ResearchSection } from '../ResearchSection';
 
 export const CommunityPage: React.FC = () => {
-    const [activeSection, setActiveSection] = useState<'main' | 'models'>('main');
+    const [activeSection, setActiveSection] = useState<'research' | 'models'>('research');
 
     return (
         <div className="flex gap-8 h-[calc(100vh-100px)] animate-fade-in">
@@ -26,16 +26,10 @@ export const CommunityPage: React.FC = () => {
                     </div>
                     <div className="space-y-1">
                         <button
-                            onClick={() => setActiveSection('social')}
-                            className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'social' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
-                        >
-                            Social Sentiment
-                        </button>
-                        <button
                             onClick={() => setActiveSection('research')}
                             className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'research' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                         >
-                            Economic Monitor
+                            Main Research
                         </button>
                         <button
                             onClick={() => setActiveSection('models')}
@@ -50,20 +44,7 @@ export const CommunityPage: React.FC = () => {
             {/* Content */}
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
 
-                {/* SOCIAL SENTIMENT */}
-                {activeSection === 'social' && (
-                    <div className="pb-20 space-y-6">
-                        <div className="max-w-3xl">
-                            <h2 className="text-2xl font-display text-white mb-2">Social Sentiment</h2>
-                            <p className="text-sm text-text-secondary leading-relaxed">
-                                Track real-time discussions from Reddit and StockTwits to gauge retail investor sentiment and identify trending tickers.
-                            </p>
-                        </div>
-                        <RedditSentiment />
-                    </div>
-                )}
-
-                {/* ECONOMIC MONITOR / RESEARCH SECTION */}
+                {/* MAIN RESEARCH SECTION */}
                 {activeSection === 'research' && (
                     <div className="pb-20">
                         <ResearchSection />

@@ -2,17 +2,16 @@ import React, { useState } from 'react';
 import { IndustryResearch } from '../widgets/IndustryResearch';
 import { WeeklyMedia } from '../widgets/WeeklyMedia';
 import { OpportunityRadar } from '../widgets/OpportunityRadar';
-import { CommunityFeed } from '../widgets/CommunityFeed';
 import { Resources } from '../widgets/Resources';
 import { ProtectedWidget } from '../ProtectedWidget';
 import { ModelOutlook } from '../widgets/ModelOutlook';
 import HydraulicStackWidget from '../HydraulicStackWidget';
 import TopologicalMRIWidget from '../TopologicalMRIWidget';
 import { TSMOMOverviewWidget } from '../widgets/TSMOMOverviewWidget';
-import { RankingsWidget } from '../widgets/RankingsWidget';
+import { ResearchSection } from '../ResearchSection';
 
 export const CommunityPage: React.FC = () => {
-    const [activeSection, setActiveSection] = useState<'main' | 'models'>('main');
+    const [activeSection, setActiveSection] = useState<'main' | 'research' | 'models'>('main');
 
     return (
         <div className="flex gap-8 h-[calc(100vh-100px)] animate-fade-in">
@@ -31,6 +30,12 @@ export const CommunityPage: React.FC = () => {
                             className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'main' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                         >
                             Main Research
+                        </button>
+                        <button
+                            onClick={() => setActiveSection('research')}
+                            className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'research' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
+                        >
+                            Economic Monitor
                         </button>
                         <button
                             onClick={() => setActiveSection('models')}
@@ -61,24 +66,21 @@ export const CommunityPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Community & Resources */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div className="flex flex-col gap-6">
-                                <div className="h-[400px]">
-                                    <ProtectedWidget featureName="Community">
-                                        <CommunityFeed />
-                                    </ProtectedWidget>
-                                </div>
-                            </div>
+                        {/* Resources */}
+                        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                             <div className="flex flex-col gap-6">
                                 <div className="min-h-[400px] flex-1">
                                     <Resources />
                                 </div>
-                                <div className="min-h-[400px]">
-                                    <RankingsWidget />
-                                </div>
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* ECONOMIC MONITOR / RESEARCH SECTION */}
+                {activeSection === 'research' && (
+                    <div className="pb-20">
+                        <ResearchSection />
                     </div>
                 )}
 

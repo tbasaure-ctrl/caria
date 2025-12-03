@@ -26,41 +26,40 @@ export const GlobalEconomicMonitor: React.FC<{ id?: string }> = ({ id }) => {
     }, []);
 
     const loadData = async () => {
+        setError(null);
+        
+        // Load business cycle data
+        setLoading(prev => ({ ...prev, businessCycle: true }));
         try {
-            // Load business cycle data
-            setLoading(prev => ({ ...prev, businessCycle: true }));
-            try {
-                const bcData = await fetchBusinessCycle();
-                setBusinessCycleData(bcData.points);
-            } catch (err) {
-                console.error('Error loading business cycle:', err);
-            } finally {
-                setLoading(prev => ({ ...prev, businessCycle: false }));
-            }
-
-            // Load currency data
-            setLoading(prev => ({ ...prev, currencies: true }));
-            try {
-                const currData = await fetchCurrencies();
-                setCurrencyData(currData.rates);
-            } catch (err) {
-                console.error('Error loading currencies:', err);
-            } finally {
-                setLoading(prev => ({ ...prev, currencies: false }));
-            }
-
-            // Load heatmap data
-            setLoading(prev => ({ ...prev, heatmap: true }));
-            try {
-                const hmData = await fetchHeatmap();
-                setHeatmapData(hmData.cells);
-            } catch (err) {
-                console.error('Error loading heatmap:', err);
-            } finally {
-                setLoading(prev => ({ ...prev, heatmap: false }));
-            }
+            const bcData = await fetchBusinessCycle();
+            setBusinessCycleData(bcData.points || []);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load economic data');
+            console.error('Error loading business cycle:', err);
+            // Don't set error state, just log - component should still render
+        } finally {
+            setLoading(prev => ({ ...prev, businessCycle: false }));
+        }
+
+        // Load currency data
+        setLoading(prev => ({ ...prev, currencies: true }));
+        try {
+            const currData = await fetchCurrencies();
+            setCurrencyData(currData.rates || []);
+        } catch (err) {
+            console.error('Error loading currencies:', err);
+        } finally {
+            setLoading(prev => ({ ...prev, currencies: false }));
+        }
+
+        // Load heatmap data
+        setLoading(prev => ({ ...prev, heatmap: true }));
+        try {
+            const hmData = await fetchHeatmap();
+            setHeatmapData(hmData.cells || []);
+        } catch (err) {
+            console.error('Error loading heatmap:', err);
+        } finally {
+            setLoading(prev => ({ ...prev, heatmap: false }));
         }
     };
 
@@ -103,8 +102,26 @@ export const GlobalEconomicMonitor: React.FC<{ id?: string }> = ({ id }) => {
 
                 {/* Error Message */}
                 {error && (
-                    <div className="bg-negative/10 border border-negative/30 text-negative text-xs p-3 rounded">
+                    <div className="bg-negative/10 border border-negative/30 text-negative text-xs p-3 rounded mb-4">
                         {error}
+                        <button 
+                            onClick={loadData}
+                            className="ml-2 underline hover:text-negative/80"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
+
+                {/* Info Message if no data */}
+                {!loading.businessCycle && !loading.currencies && !loading.heatmap && 
+                 businessCycleData.length === 0 && currencyData.length === 0 && heatmapData.length === 0 && (
+                    <div className="bg-accent-cyan/10 border border-accent-cyan/30 text-accent-cyan text-xs p-4 rounded mb-4">
+                        <p className="font-medium mb-2">Economic data is loading or unavailable.</p>
+                        <p className="text-text-muted text-[10px]">
+                            This feature requires API configuration. Ensure FRED_API_KEY is set in the backend environment.
+                            The component will display data once APIs are configured and data is available.
+                        </p>
                     </div>
                 )}
 

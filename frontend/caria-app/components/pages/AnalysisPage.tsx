@@ -138,9 +138,6 @@ export const AnalysisPage: React.FC = () => {
                     <div className="space-y-6">
                         <div>
                             <h3 className="text-lg font-display text-white mb-2">Analysis Center</h3>
-                            <p className="text-xs text-text-secondary leading-relaxed">
-                                Want a starter position? Looking for a deep dive? Here you can find all the tools you need to make a well-informed decision. We'll show you all the components involved in your future investment and, using our skeptical and critical point of view (that made us so popular in high school), challenge your conviction so we arrive together at a solid, second-order thinking-like investment thesis you will be proud of.
-                            </p>
                         </div>
                         <div className="space-y-1">
                             <button

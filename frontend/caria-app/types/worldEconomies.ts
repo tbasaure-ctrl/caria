@@ -1,5 +1,47 @@
 export type CyclePhase = 'expansion' | 'slowdown' | 'recession' | 'recovery';
 
+// CARIA Economic Graph Types
+export interface EconomicArc {
+    source: string;         // ISO code of influencer
+    target: string;         // ISO code of influenced
+    sourceName: string;
+    targetName: string;
+    startLat: number;
+    startLng: number;
+    endLat: number;
+    endLng: number;
+    weight: number;         // 0 to 1 (connection strength)
+    deviation: number;      // deviation from uniform
+    strength: 'strong' | 'medium' | 'weak' | 'usa-link';
+    isUSA?: boolean;        // true if connection involves USA
+    label: string;
+}
+
+export interface EconomicFlowData {
+    date: string;
+    generatedAt: string;
+    modelVersion: string;
+    stats: {
+        totalConnections: number;
+        maxWeight: number;
+        minWeight: number;
+        meanWeight: number;
+        threshold: number;
+        usaThreshold?: number;
+        modelAccuracy: string;
+        strongConnections: number;
+        mediumConnections: number;
+        weakConnections: number;
+        usaConnections?: number;
+    };
+    arcs: EconomicArc[];
+    nodes: string[];
+    usaAnalysis?: {
+        influencedBy: { country: string; name: string; weight: number }[];
+        influences: { country: string; name: string; weight: number }[];
+    };
+}
+
 export interface CountryState {
     isoCode: string;          // ISO-2 or ISO-3
     name: string;

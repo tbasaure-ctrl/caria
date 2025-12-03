@@ -18,3 +18,4 @@ export const EconomicHealthPage: React.FC = () => {
     );
 };
 
+

@@ -4,57 +4,19 @@
     "name": "United States",
     "lat": 37.0902,
     "lon": -95.7129,
-    "cyclePhase": "recovery",
-    "cycleMomentum": -0.51,
-    "structuralRisk": 45.9,
-    "externalVulnerability": 36.4,
-    "stressLevel": 32.9,
-    "behavioralSignal": 0.61,
-    "instabilityRisk": 22.6,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.31144356848208754,
-        "stressLevel": 23.562191214026033
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.758700884424819,
-        "stressLevel": 41.44458047815179
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.5358954517471817,
-        "stressLevel": 27.557631504266663
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.5861041985527402,
-        "stressLevel": 42.65096321524606
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.37719663967875255,
-        "stressLevel": 36.61462191193152
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "recovery",
-        "cycleMomentum": -0.5217475638144176,
-        "stressLevel": 27.253286176753882
-      }
-    ],
+    "cyclePhase": "slowdown",
+    "cycleMomentum": -0.11,
+    "structuralRisk": 15.4,
+    "externalVulnerability": 12.2,
+    "stressLevel": 11.5,
+    "behavioralSignal": 0.4,
+    "instabilityRisk": 2.5,
     "metrics": {
-      "gdpGrowth": 0.54,
-      "inflation": 2.19,
-      "debtToGdp": 56.8,
-      "unemployment": 4.5,
-      "currencyChange": 8.03
+      "gdpGrowth": 0.84,
+      "inflation": 3.02,
+      "debtToGdp": 60.0,
+      "unemployment": 4.4,
+      "currencyChange": 0.0
     }
   },
   {
@@ -63,56 +25,18 @@
     "lat": 35.8617,
     "lon": 104.1954,
     "cyclePhase": "expansion",
-    "cycleMomentum": 0.2,
-    "structuralRisk": 24.2,
-    "externalVulnerability": 35.7,
-    "stressLevel": 24.0,
-    "behavioralSignal": 0.01,
-    "instabilityRisk": 1.9,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.044408842553122885,
-        "stressLevel": 18.726589167355577
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.05382208283229353,
-        "stressLevel": 31.491547879758315
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.12395473782231876,
-        "stressLevel": 23.22499682796003
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.2947312667437544,
-        "stressLevel": 22.078398369295478
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.24157124433618588,
-        "stressLevel": 22.286509635018238
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.3077379702727504,
-        "stressLevel": 32.285340814965586
-      }
-    ],
+    "cycleMomentum": 0.0,
+    "structuralRisk": 0,
+    "externalVulnerability": 3.5,
+    "stressLevel": 2.1,
+    "behavioralSignal": -0.09,
+    "instabilityRisk": 3.5,
     "metrics": {
-      "gdpGrowth": 3.83,
-      "inflation": 3.79,
-      "debtToGdp": 92.7,
-      "unemployment": 8.3,
-      "currencyChange": -4.43
+      "gdpGrowth": 1.62,
+      "inflation": -0.07,
+      "debtToGdp": 60.0,
+      "unemployment": 5.0,
+      "currencyChange": 1.7
     }
   },
   {
@@ -120,57 +44,19 @@
     "name": "Japan",
     "lat": 36.2048,
     "lon": 138.2529,
-    "cyclePhase": "slowdown",
-    "cycleMomentum": -0.08,
-    "structuralRisk": 53.0,
-    "externalVulnerability": 42.5,
-    "stressLevel": 38.2,
-    "behavioralSignal": -0.96,
-    "instabilityRisk": 18.5,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.07361642105207775,
-        "stressLevel": 31.70858054200881
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.33529302106837655,
-        "stressLevel": 41.755431133196375
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.2115944025861503,
-        "stressLevel": 37.591678704602145
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.061861822822409984,
-        "stressLevel": 34.19478323776509
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.060569805679980944,
-        "stressLevel": 35.947424572473786
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.03775035153658477,
-        "stressLevel": 34.85258800619322
-      }
-    ],
+    "cyclePhase": "recession",
+    "cycleMomentum": 0.75,
+    "structuralRisk": 5.1,
+    "externalVulnerability": 36.3,
+    "stressLevel": 37.6,
+    "behavioralSignal": -0.22,
+    "instabilityRisk": 30.2,
     "metrics": {
-      "gdpGrowth": 3.21,
-      "inflation": 5.53,
-      "debtToGdp": 26.7,
-      "unemployment": 2.8,
-      "currencyChange": 5.78
+      "gdpGrowth": -2.97,
+      "inflation": 3.01,
+      "debtToGdp": 60.0,
+      "unemployment": 4.6,
+      "currencyChange": -9.39
     }
   },
   {
@@ -178,57 +64,19 @@
     "name": "Germany",
     "lat": 51.1657,
     "lon": 10.4515,
-    "cyclePhase": "recovery",
-    "cycleMomentum": -0.24,
-    "structuralRisk": 26.0,
-    "externalVulnerability": 22.8,
-    "stressLevel": 19.5,
-    "behavioralSignal": 0.94,
-    "instabilityRisk": 20.2,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.11889070167858504,
-        "stressLevel": 25.04819441248731
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "recovery",
-        "cycleMomentum": -0.4643515011938686,
-        "stressLevel": 20.194068422016937
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.05393528690135879,
-        "stressLevel": 21.281143692505243
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "recovery",
-        "cycleMomentum": -0.13248204096993985,
-        "stressLevel": 17.53417617666594
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.3322622120824267,
-        "stressLevel": 20.525818459831623
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.2014650815271011,
-        "stressLevel": 15.713733258745561
-      }
-    ],
+    "cyclePhase": "recession",
+    "cycleMomentum": 0.3,
+    "structuralRisk": 1.0,
+    "externalVulnerability": 12.1,
+    "stressLevel": 23.5,
+    "behavioralSignal": 0.48,
+    "instabilityRisk": 16.4,
     "metrics": {
-      "gdpGrowth": 2.1,
-      "inflation": 3.4,
-      "debtToGdp": 94.2,
-      "unemployment": 4.1,
-      "currencyChange": 7.96
+      "gdpGrowth": -4.44,
+      "inflation": 2.19,
+      "debtToGdp": 60.0,
+      "unemployment": 6.0,
+      "currencyChange": 1.47
     }
   },
   {
@@ -237,56 +85,18 @@
     "lat": 20.5937,
     "lon": 78.9629,
     "cyclePhase": "expansion",
-    "cycleMomentum": 0.97,
-    "structuralRisk": 26.8,
-    "externalVulnerability": 52.0,
-    "stressLevel": 31.5,
-    "behavioralSignal": -0.28,
-    "instabilityRisk": 22.6,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.8436387350824951,
-        "stressLevel": 35.84288066199133
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 1,
-        "stressLevel": 32.79023216087978
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 1,
-        "stressLevel": 29.082850051961067
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": 1,
-        "stressLevel": 25.732010908123723
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.9067036828635989,
-        "stressLevel": 31.263109208142993
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 1,
-        "stressLevel": 32.33325042273835
-      }
-    ],
+    "cycleMomentum": 0.04,
+    "structuralRisk": 4.8,
+    "externalVulnerability": 20.2,
+    "stressLevel": 15.0,
+    "behavioralSignal": 0.07,
+    "instabilityRisk": 25.1,
     "metrics": {
-      "gdpGrowth": 4.69,
-      "inflation": 2.66,
-      "debtToGdp": 84.9,
-      "unemployment": 6.6,
-      "currencyChange": 2.51
+      "gdpGrowth": 5.55,
+      "inflation": 2.95,
+      "debtToGdp": 60.0,
+      "unemployment": 5.0,
+      "currencyChange": -4.8
     }
   },
   {
@@ -294,57 +104,19 @@
     "name": "United Kingdom",
     "lat": 55.3781,
     "lon": -3.436,
-    "cyclePhase": "slowdown",
-    "cycleMomentum": -0.22,
-    "structuralRisk": 46.8,
-    "externalVulnerability": 19.6,
-    "stressLevel": 26.6,
-    "behavioralSignal": -0.01,
-    "instabilityRisk": 12.5,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.45189423367044657,
-        "stressLevel": 26.48850449951787
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "recovery",
-        "cycleMomentum": -0.19367833223542896,
-        "stressLevel": 31.840400985896224
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.06768424710574628,
-        "stressLevel": 23.987071914578966
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "recovery",
-        "cycleMomentum": -0.28736368491669345,
-        "stressLevel": 29.46904358810301
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.27721243275980856,
-        "stressLevel": 30.431488411734723
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.2725674729663724,
-        "stressLevel": 27.892497998130594
-      }
-    ],
+    "cyclePhase": "expansion",
+    "cycleMomentum": -0.09,
+    "structuralRisk": 10.4,
+    "externalVulnerability": 24.6,
+    "stressLevel": 17.5,
+    "behavioralSignal": -0.19,
+    "instabilityRisk": 17.3,
     "metrics": {
-      "gdpGrowth": 1.99,
-      "inflation": 4.82,
-      "debtToGdp": 150.1,
-      "unemployment": 1.3,
-      "currencyChange": -7.89
+      "gdpGrowth": 0.53,
+      "inflation": 3.42,
+      "debtToGdp": 60.0,
+      "unemployment": 8.0,
+      "currencyChange": -2.29
     }
   },
   {
@@ -352,57 +124,19 @@
     "name": "France",
     "lat": 46.2276,
     "lon": 2.2137,
-    "cyclePhase": "recovery",
-    "cycleMomentum": -0.62,
-    "structuralRisk": 60.4,
-    "externalVulnerability": 15.7,
-    "stressLevel": 30.4,
-    "behavioralSignal": 0.19,
-    "instabilityRisk": 34.1,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.6131562302353483,
-        "stressLevel": 34.92066747059063
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "recovery",
-        "cycleMomentum": -0.4619173438368358,
-        "stressLevel": 31.44659975641122
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.6215176640445134,
-        "stressLevel": 32.44831041355334
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.8854461682228332,
-        "stressLevel": 19.441632938337428
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.5977286310364304,
-        "stressLevel": 25.67066489342185
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.7751962588148166,
-        "stressLevel": 30.114890747339146
-      }
-    ],
+    "cyclePhase": "expansion",
+    "cycleMomentum": 0.25,
+    "structuralRisk": 0,
+    "externalVulnerability": 12.1,
+    "stressLevel": 7.8,
+    "behavioralSignal": 0.09,
+    "instabilityRisk": 15.0,
     "metrics": {
-      "gdpGrowth": 1.42,
-      "inflation": -0.41,
-      "debtToGdp": 29.4,
-      "unemployment": 5.3,
-      "currencyChange": 14.52
+      "gdpGrowth": 0.68,
+      "inflation": 0.76,
+      "debtToGdp": 60.0,
+      "unemployment": 9.7,
+      "currencyChange": 1.47
     }
   },
   {
@@ -410,57 +144,19 @@
     "name": "Brazil",
     "lat": -14.235,
     "lon": -51.9253,
-    "cyclePhase": "recovery",
-    "cycleMomentum": -0.92,
-    "structuralRisk": 27.6,
-    "externalVulnerability": 52.4,
-    "stressLevel": 32.0,
-    "behavioralSignal": 0.31,
-    "instabilityRisk": 31.0,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "recession",
-        "cycleMomentum": -1,
-        "stressLevel": 37.20821827069763
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -1,
-        "stressLevel": 39.02164886976985
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.9591970507993105,
-        "stressLevel": 25.81631230803949
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.7403088904813567,
-        "stressLevel": 29.66983965794178
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -1,
-        "stressLevel": 29.41327584435632
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -1,
-        "stressLevel": 26.547285422874182
-      }
-    ],
+    "cyclePhase": "expansion",
+    "cycleMomentum": 0.07,
+    "structuralRisk": 20.9,
+    "externalVulnerability": 25.4,
+    "stressLevel": 23.2,
+    "behavioralSignal": -0.26,
+    "instabilityRisk": 23.2,
     "metrics": {
-      "gdpGrowth": 2.07,
-      "inflation": 1.4,
-      "debtToGdp": 86.1,
-      "unemployment": 5.8,
-      "currencyChange": -4.95
+      "gdpGrowth": 2.27,
+      "inflation": 5.53,
+      "debtToGdp": 60.0,
+      "unemployment": 5.0,
+      "currencyChange": 6.42
     }
   },
   {
@@ -468,57 +164,19 @@
     "name": "Italy",
     "lat": 41.8719,
     "lon": 12.5674,
-    "cyclePhase": "recovery",
-    "cycleMomentum": 0.29,
-    "structuralRisk": 43.3,
-    "externalVulnerability": 0,
-    "stressLevel": 17.3,
-    "behavioralSignal": -0.41,
-    "instabilityRisk": 0,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.24685386262591028,
-        "stressLevel": 21.688053589941788
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.045056193682346035,
-        "stressLevel": 9.361182196405743
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.0819180554175257,
-        "stressLevel": 16.966589286170045
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.15290344853751747,
-        "stressLevel": 11.499353043670855
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.0651388870262612,
-        "stressLevel": 5.195368030028867
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.3031905057548825,
-        "stressLevel": 21.056299007349235
-      }
-    ],
+    "cyclePhase": "recession",
+    "cycleMomentum": -0.0,
+    "structuralRisk": 0,
+    "externalVulnerability": 12.1,
+    "stressLevel": 23.2,
+    "behavioralSignal": -0.22,
+    "instabilityRisk": 17.0,
     "metrics": {
-      "gdpGrowth": 1.5,
-      "inflation": -1.44,
-      "debtToGdp": 90.6,
-      "unemployment": 1.5,
-      "currencyChange": -3.36
+      "gdpGrowth": -3.34,
+      "inflation": 1.91,
+      "debtToGdp": 60.0,
+      "unemployment": 8.4,
+      "currencyChange": 1.47
     }
   },
   {
@@ -526,57 +184,19 @@
     "name": "Canada",
     "lat": 56.1304,
     "lon": -106.3468,
-    "cyclePhase": "expansion",
-    "cycleMomentum": 0.15,
-    "structuralRisk": 17.2,
-    "externalVulnerability": 31.2,
-    "stressLevel": 19.3,
-    "behavioralSignal": 0.75,
-    "instabilityRisk": 0,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.19153223846578135,
-        "stressLevel": 23.639906479752707
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.4598951581197393,
-        "stressLevel": 18.534904504655707
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.6094812261904146,
-        "stressLevel": 22.20478799055723
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.058123379545218845,
-        "stressLevel": 12.743627230119836
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.47513775457899726,
-        "stressLevel": 8.837762460616872
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.10292839309514805,
-        "stressLevel": 16.56844039712977
-      }
-    ],
+    "cyclePhase": "slowdown",
+    "cycleMomentum": -0.06,
+    "structuralRisk": 4.1,
+    "externalVulnerability": 14.2,
+    "stressLevel": 9.6,
+    "behavioralSignal": 0.26,
+    "instabilityRisk": 11.3,
     "metrics": {
-      "gdpGrowth": 3.79,
-      "inflation": 1.99,
-      "debtToGdp": 112.3,
-      "unemployment": 3.8,
-      "currencyChange": -0.64
+      "gdpGrowth": 0.01,
+      "inflation": 2.32,
+      "debtToGdp": 65.0,
+      "unemployment": 7.4,
+      "currencyChange": -2.01
     }
   },
   {
@@ -585,56 +205,18 @@
     "lat": 61.524,
     "lon": 105.3188,
     "cyclePhase": "slowdown",
-    "cycleMomentum": -0.76,
-    "structuralRisk": 67.5,
-    "externalVulnerability": 42.1,
-    "stressLevel": 43.8,
-    "behavioralSignal": -0.38,
-    "instabilityRisk": 25.6,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.5252196483843339,
-        "stressLevel": 40.60367517448716
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.8535865003447267,
-        "stressLevel": 44.07839442870893
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.6239630376452019,
-        "stressLevel": 39.2387662898022
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.5525249096368391,
-        "stressLevel": 48.35833742666621
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.9070398584201661,
-        "stressLevel": 47.733499762068604
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "recovery",
-        "cycleMomentum": -0.6087786818470411,
-        "stressLevel": 51.33549108666815
-      }
-    ],
+    "cycleMomentum": -0.36,
+    "structuralRisk": 73.5,
+    "externalVulnerability": 0.0,
+    "stressLevel": 42.4,
+    "behavioralSignal": 0.36,
+    "instabilityRisk": 65.2,
     "metrics": {
-      "gdpGrowth": 2.52,
-      "inflation": 5.47,
-      "debtToGdp": 96.7,
-      "unemployment": 6.4,
-      "currencyChange": 3.91
+      "gdpGrowth": 5.55,
+      "inflation": 16.7,
+      "debtToGdp": 60.0,
+      "unemployment": 5.0,
+      "currencyChange": 0.0
     }
   },
   {
@@ -642,57 +224,19 @@
     "name": "South Korea",
     "lat": 35.9078,
     "lon": 127.7669,
-    "cyclePhase": "expansion",
-    "cycleMomentum": 0.19,
-    "structuralRisk": 48.0,
-    "externalVulnerability": 42.5,
-    "stressLevel": 36.2,
-    "behavioralSignal": -0.74,
-    "instabilityRisk": 35.0,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.0008860232966534098,
-        "stressLevel": 35.041642375230396
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.62951984369501,
-        "stressLevel": 33.17372682232634
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.12544756751141686,
-        "stressLevel": 34.21013739978928
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.3443731640557146,
-        "stressLevel": 38.921877152214485
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.3763522301871489,
-        "stressLevel": 33.917407181208844
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.07785023672642133,
-        "stressLevel": 37.359123807981895
-      }
-    ],
+    "cyclePhase": "slowdown",
+    "cycleMomentum": -1,
+    "structuralRisk": 6.7,
+    "externalVulnerability": 28.7,
+    "stressLevel": 19.9,
+    "behavioralSignal": -0.09,
+    "instabilityRisk": 28.6,
     "metrics": {
-      "gdpGrowth": 3.23,
-      "inflation": 1.1,
-      "debtToGdp": 134.3,
-      "unemployment": 4.6,
-      "currencyChange": 0.01
+      "gdpGrowth": 2.47,
+      "inflation": 3.34,
+      "debtToGdp": 60.0,
+      "unemployment": 3.4,
+      "currencyChange": -6.63
     }
   },
   {
@@ -700,57 +244,19 @@
     "name": "Australia",
     "lat": -25.2744,
     "lon": 133.7751,
-    "cyclePhase": "recovery",
-    "cycleMomentum": 0.38,
-    "structuralRisk": 49.7,
-    "externalVulnerability": 33.5,
-    "stressLevel": 33.3,
-    "behavioralSignal": 0.2,
-    "instabilityRisk": 5.4,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.31693627864584084,
-        "stressLevel": 35.14800209942907
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.4824802214942267,
-        "stressLevel": 25.903516684124526
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.012059231126153314,
-        "stressLevel": 38.103639116902684
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.45921174998920444,
-        "stressLevel": 27.62806331670554
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.6599256124587729,
-        "stressLevel": 30.490699296560386
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.025573292765623368,
-        "stressLevel": 35.814240256491345
-      }
-    ],
+    "cyclePhase": "expansion",
+    "cycleMomentum": 0.0,
+    "structuralRisk": 0.3,
+    "externalVulnerability": 6.2,
+    "stressLevel": 2.6,
+    "behavioralSignal": -0.49,
+    "instabilityRisk": 0.0,
     "metrics": {
-      "gdpGrowth": 1.67,
-      "inflation": 3.5,
-      "debtToGdp": 58.6,
-      "unemployment": 4.8,
-      "currencyChange": 4.45
+      "gdpGrowth": 0.52,
+      "inflation": 1.77,
+      "debtToGdp": 60.0,
+      "unemployment": 5.1,
+      "currencyChange": 0.0
     }
   },
   {
@@ -759,56 +265,18 @@
     "lat": 23.6345,
     "lon": -102.5528,
     "cyclePhase": "expansion",
-    "cycleMomentum": -0.0,
-    "structuralRisk": 38.1,
-    "externalVulnerability": 42.2,
-    "stressLevel": 32.1,
-    "behavioralSignal": -0.79,
-    "instabilityRisk": 4.3,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.33279524922739756,
-        "stressLevel": 34.30532948371425
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.2730455395488104,
-        "stressLevel": 24.064695571842023
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.32742179666310495,
-        "stressLevel": 33.225706663740425
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.023487055118815898,
-        "stressLevel": 43.60566602649066
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.17194958502106392,
-        "stressLevel": 26.87453699017572
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.09273932194221396,
-        "stressLevel": 32.74592044663437
-      }
-    ],
+    "cycleMomentum": 0.0,
+    "structuralRisk": 17.8,
+    "externalVulnerability": 15.0,
+    "stressLevel": 16.1,
+    "behavioralSignal": -0.33,
+    "instabilityRisk": 15.1,
     "metrics": {
-      "gdpGrowth": 3.66,
-      "inflation": -1.26,
-      "debtToGdp": 50.5,
-      "unemployment": 4.9,
-      "currencyChange": 4.38
+      "gdpGrowth": 1.14,
+      "inflation": 5.57,
+      "debtToGdp": 60.0,
+      "unemployment": 5.0,
+      "currencyChange": 4.95
     }
   },
   {
@@ -817,56 +285,18 @@
     "lat": -0.7893,
     "lon": 113.9213,
     "cyclePhase": "expansion",
-    "cycleMomentum": -0.63,
-    "structuralRisk": 41.1,
-    "externalVulnerability": 29.9,
-    "stressLevel": 28.4,
-    "behavioralSignal": -0.63,
-    "instabilityRisk": 28.3,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.46767778193790693,
-        "stressLevel": 37.89133861998076
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.513559198725166,
-        "stressLevel": 25.267189071607007
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "recovery",
-        "cycleMomentum": -0.6438894113849934,
-        "stressLevel": 37.95663323584802
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.5964406497649098,
-        "stressLevel": 23.598753654425252
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.5313180239750169,
-        "stressLevel": 36.87106814784477
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.38623325156456423,
-        "stressLevel": 28.594431438988703
-      }
-    ],
+    "cycleMomentum": 0.0,
+    "structuralRisk": 0,
+    "externalVulnerability": 1.9,
+    "stressLevel": 0.7,
+    "behavioralSignal": -0.36,
+    "instabilityRisk": 0.0,
     "metrics": {
-      "gdpGrowth": 4.37,
-      "inflation": 2.83,
-      "debtToGdp": 115.1,
-      "unemployment": 4.6,
-      "currencyChange": 8.36
+      "gdpGrowth": 2.39,
+      "inflation": 1.95,
+      "debtToGdp": 60.0,
+      "unemployment": 5.0,
+      "currencyChange": 0.0
     }
   },
   {
@@ -874,57 +304,19 @@
     "name": "Saudi Arabia",
     "lat": 23.8859,
     "lon": 45.0792,
-    "cyclePhase": "expansion",
-    "cycleMomentum": 0.61,
-    "structuralRisk": 28.6,
-    "externalVulnerability": 46.7,
-    "stressLevel": 30.1,
-    "behavioralSignal": 0.05,
-    "instabilityRisk": 25.6,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.8020735949424795,
-        "stressLevel": 31.40919440117256
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.7208678774216931,
-        "stressLevel": 27.135930528940513
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.5338090920452547,
-        "stressLevel": 36.228574108552
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.7000890940170896,
-        "stressLevel": 38.6703462234481
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.7276704993065892,
-        "stressLevel": 32.342010013713505
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.889619965154743,
-        "stressLevel": 26.129734847931324
-      }
-    ],
+    "cyclePhase": "slowdown",
+    "cycleMomentum": 0.0,
+    "structuralRisk": 2.4,
+    "externalVulnerability": 1.4,
+    "stressLevel": 1.5,
+    "behavioralSignal": 0.44,
+    "instabilityRisk": 0.0,
     "metrics": {
-      "gdpGrowth": 2.54,
-      "inflation": -0.01,
-      "debtToGdp": 70.2,
-      "unemployment": 3.6,
-      "currencyChange": 4.91
+      "gdpGrowth": -0.45,
+      "inflation": 2.49,
+      "debtToGdp": 60.0,
+      "unemployment": 5.0,
+      "currencyChange": 0.0
     }
   },
   {
@@ -933,56 +325,18 @@
     "lat": 38.9637,
     "lon": 35.2433,
     "cyclePhase": "slowdown",
-    "cycleMomentum": 0.01,
-    "structuralRisk": 88.3,
-    "externalVulnerability": 50.2,
-    "stressLevel": 55.4,
-    "behavioralSignal": -0.49,
-    "instabilityRisk": 51.9,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.0732628849627508,
-        "stressLevel": 55.79563827956776
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.41474427272692815,
-        "stressLevel": 50.12478424120714
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "expansion",
-        "cycleMomentum": -0.11530885074265883,
-        "stressLevel": 57.60935984972003
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.19346485490332377,
-        "stressLevel": 56.77011586740455
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.412049035800139,
-        "stressLevel": 57.16889854104073
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.21073402084966164,
-        "stressLevel": 50.199577749095035
-      }
-    ],
+    "cycleMomentum": -1,
+    "structuralRisk": 100,
+    "externalVulnerability": 2.3,
+    "stressLevel": 60.9,
+    "behavioralSignal": -0.48,
+    "instabilityRisk": 100,
     "metrics": {
-      "gdpGrowth": 1.91,
-      "inflation": 20.57,
-      "debtToGdp": 87.2,
-      "unemployment": 8.1,
-      "currencyChange": 6.39
+      "gdpGrowth": 4.81,
+      "inflation": 37.86,
+      "debtToGdp": 60.0,
+      "unemployment": 8.8,
+      "currencyChange": 0.0
     }
   },
   {
@@ -990,115 +344,19 @@
     "name": "South Africa",
     "lat": -30.5595,
     "lon": 22.9375,
-    "cyclePhase": "recovery",
-    "cycleMomentum": 0.19,
-    "structuralRisk": 29.8,
-    "externalVulnerability": 37.6,
-    "stressLevel": 26.9,
-    "behavioralSignal": -0.64,
-    "instabilityRisk": 26.0,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.21283804170080262,
-        "stressLevel": 21.61398205471273
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.46810834475351715,
-        "stressLevel": 20.39825067596298
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.17393443778198348,
-        "stressLevel": 19.324298487372257
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": -0.02578968328870579,
-        "stressLevel": 29.793047469772024
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.06303352433765677,
-        "stressLevel": 20.85503410471418
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.304455597394898,
-        "stressLevel": 22.938881874509924
-      }
-    ],
+    "cyclePhase": "expansion",
+    "cycleMomentum": 0.0,
+    "structuralRisk": 5.4,
+    "externalVulnerability": 19.2,
+    "stressLevel": 13.3,
+    "behavioralSignal": -0.28,
+    "instabilityRisk": 17.2,
     "metrics": {
-      "gdpGrowth": 0.21,
-      "inflation": 1.9,
-      "debtToGdp": 56.6,
-      "unemployment": 3.7,
-      "currencyChange": 3.19
-    }
-  },
-  {
-    "isoCode": "ARG",
-    "name": "Argentina",
-    "lat": -38.4161,
-    "lon": -63.6167,
-    "cyclePhase": "slowdown",
-    "cycleMomentum": -0.05,
-    "structuralRisk": 71.5,
-    "externalVulnerability": 50.6,
-    "stressLevel": 48.9,
-    "behavioralSignal": 0.92,
-    "instabilityRisk": 39.1,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.0176324925228679,
-        "stressLevel": 52.146668719601315
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.037781484506643453,
-        "stressLevel": 50.953170458596105
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.2025160709973828,
-        "stressLevel": 56.39773258386471
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.36010609302696817,
-        "stressLevel": 48.288749047654406
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "recession",
-        "cycleMomentum": -0.1235517747621885,
-        "stressLevel": 54.32365305394981
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.25066873517962973,
-        "stressLevel": 42.0638088334246
-      }
-    ],
-    "metrics": {
-      "gdpGrowth": 2.23,
-      "inflation": 23.38,
-      "debtToGdp": 82.9,
-      "unemployment": 5.6,
-      "currencyChange": 0.79
+      "gdpGrowth": 1.06,
+      "inflation": 3.08,
+      "debtToGdp": 60.0,
+      "unemployment": 5.0,
+      "currencyChange": 4.19
     }
   },
   {
@@ -1106,57 +364,39 @@
     "name": "Spain",
     "lat": 40.4637,
     "lon": -3.7492,
-    "cyclePhase": "recovery",
-    "cycleMomentum": 0.18,
-    "structuralRisk": 44.6,
-    "externalVulnerability": 46.9,
-    "stressLevel": 36.6,
-    "behavioralSignal": -0.33,
-    "instabilityRisk": 37.7,
-    "history": [
-      {
-        "date": "2025-12-03",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.33646646829291416,
-        "stressLevel": 41.1723601314387
-      },
-      {
-        "date": "2025-11-03",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.08509994597306204,
-        "stressLevel": 37.76982254978658
-      },
-      {
-        "date": "2025-10-04",
-        "cyclePhase": "recovery",
-        "cycleMomentum": 0.16269522897215027,
-        "stressLevel": 32.20627989372268
-      },
-      {
-        "date": "2025-09-04",
-        "cyclePhase": "expansion",
-        "cycleMomentum": 0.18440577973358185,
-        "stressLevel": 27.571242202907236
-      },
-      {
-        "date": "2025-08-05",
-        "cyclePhase": "recession",
-        "cycleMomentum": 0.17753407965323875,
-        "stressLevel": 37.223637315037294
-      },
-      {
-        "date": "2025-07-06",
-        "cyclePhase": "slowdown",
-        "cycleMomentum": 0.18164998995362638,
-        "stressLevel": 37.46474487105102
-      }
-    ],
+    "cyclePhase": "slowdown",
+    "cycleMomentum": -0.23,
+    "structuralRisk": 1.3,
+    "externalVulnerability": 12.1,
+    "stressLevel": 8.8,
+    "behavioralSignal": -0.24,
+    "instabilityRisk": 17.3,
     "metrics": {
-      "gdpGrowth": 1.05,
-      "inflation": 3.31,
-      "debtToGdp": 148.6,
-      "unemployment": 1.4,
-      "currencyChange": -6.63
+      "gdpGrowth": -0.25,
+      "inflation": 2.26,
+      "debtToGdp": 60.0,
+      "unemployment": 21.7,
+      "currencyChange": 1.47
+    }
+  },
+  {
+    "isoCode": "CHL",
+    "name": "Chile",
+    "lat": -35.6751,
+    "lon": -71.543,
+    "cyclePhase": "expansion",
+    "cycleMomentum": 0.23,
+    "structuralRisk": 9.7,
+    "externalVulnerability": 4.4,
+    "stressLevel": 7.8,
+    "behavioralSignal": 0.24,
+    "instabilityRisk": 10.7,
+    "metrics": {
+      "gdpGrowth": 4.34,
+      "inflation": 3.94,
+      "debtToGdp": 60.0,
+      "unemployment": 7.1,
+      "currencyChange": 0.0
     }
   }
 ]

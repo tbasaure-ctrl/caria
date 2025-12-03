@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { getToken } from '../../services/apiService';
 import { WidgetCard } from './WidgetCard';
 
 interface UnderTheRadarCandidate {
@@ -37,7 +37,6 @@ interface UnderTheRadarResponse {
 }
 
 export const UnderTheRadarScreener: React.FC = () => {
-    const { token } = useAuth();
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<UnderTheRadarResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -49,10 +48,14 @@ export const UnderTheRadarScreener: React.FC = () => {
         setData(null);
 
         try {
+            const token = getToken();
+            const headers: HeadersInit = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch('/api/screener/under-the-radar', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             if (!response.ok) {

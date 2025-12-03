@@ -62,3 +62,9 @@ gudhi>=3.8.0
 # GDELT News Intelligence
 gdeltdoc>=1.4.0
 
+# Economic Data APIs
+fredapi>=0.5.0
+wbgapi>=0.1.0
+statsmodels>=0.14.0
+pandas>=2.0.0
+

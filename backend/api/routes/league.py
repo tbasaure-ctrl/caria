@@ -59,7 +59,7 @@ def join_league(
                 logger.error("league_participants table does not exist. Migration required.")
                 raise HTTPException(
                     status_code=500, 
-                    detail="League feature not available. Database migration required. Please run migration 005_add_league_participants.sql"
+                    detail="League feature not available. Database migration required. See LEAGUE_MIGRATION.md or run: POST /api/league/migrate?secret_key=YOUR_SECRET_KEY"
                 )
             
             # Insert or update participant
@@ -201,6 +201,50 @@ def get_user_profile(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/migrate")
+def run_migration(
+    secret_key: str = Query(..., description="Secret key to authorize migration"),
+    conn = Depends(get_db_connection),
+):
+    """Run league_participants table migration. Requires secret key."""
+    import os
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # Check secret key (use environment variable or default for development)
+    expected_key = os.getenv("MIGRATION_SECRET_KEY", "dev-migration-key-change-in-prod")
+    if secret_key != expected_key:
+        raise HTTPException(status_code=403, detail="Invalid migration secret key")
+    
+    migration_sql = """
+    -- Create league_participants table to track opt-in status and anonymity
+    CREATE TABLE IF NOT EXISTS league_participants (
+        user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        is_anonymous BOOLEAN DEFAULT FALSE,
+        display_name TEXT, -- Optional custom name, otherwise use username or "Anonymous"
+        joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Index for faster joins
+    CREATE INDEX IF NOT EXISTS idx_league_participants_joined ON league_participants(joined_at);
+    """
+    
+    try:
+        with conn.cursor() as cur:
+            cur.execute(migration_sql)
+        conn.commit()
+        logger.info("League participants migration applied successfully")
+        return {
+            "message": "Migration applied successfully",
+            "table": "league_participants",
+            "status": "created"
+        }
+    except Exception as e:
+        logger.error(f"Error applying migration: {e}", exc_info=True)
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
 
 @router.post("/calculate", status_code=202)
 def trigger_calculation(

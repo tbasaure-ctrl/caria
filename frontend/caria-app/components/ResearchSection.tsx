@@ -5,6 +5,7 @@ import { WeeklyMedia } from './widgets/WeeklyMedia';
 import { AlphaStockPicker } from './widgets/AlphaStockPicker';
 import { UnderTheRadarScreener } from './widgets/UnderTheRadarScreener';
 import { IndustryResearch } from './widgets/IndustryResearch';
+import { GlobalEconomicMonitor } from './widgets/GlobalEconomicMonitor';
 
 /**
  * ResearchSection - Professional research hub with Economist-style editorial design
@@ -39,6 +40,14 @@ export const ResearchSection: React.FC = () => {
                     Industry Deep Dives
                 </h3>
                 <IndustryResearch />
+            </div>
+
+            {/* Global Economic Monitor */}
+            <div>
+                <h3 className="text-2xl font-serif text-white mb-4 border-l-4 border-cyan-500 pl-4">
+                    Global Economic Monitor
+                </h3>
+                <GlobalEconomicMonitor />
             </div>
 
             {/* Stock Screening */}

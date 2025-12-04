@@ -1,0 +1,7 @@
+Model Path: c:/key/wise_adviser_cursor_context/Caria_repo/caria/models/caria_v12_acc64.pth
+Dimensions: Nodes=15, In_Feats=77, D_Model=64
+Status: Loaded and Forward Pass Successful
+Adjacency Sample (Node 0):
+[0.3506692  0.06965241 0.0315612  0.02798682 0.0580278  0.02291121
+ 0.02725415 0.04160291 0.04286762 0.0605416  0.04929244 0.05259707
+ 0.06756721 0.04345294 0.05401539]

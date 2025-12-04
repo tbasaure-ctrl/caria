@@ -78,3 +78,32 @@ export interface CountryState {
         currencyChange?: number; // % change vs USD 6m
     }
 }
+
+// Direction Prediction Types
+export interface DirectionPrediction {
+    country: string;           // ISO code
+    countryName: string;       // Full name
+    direction: 'UP' | 'DOWN';  // Predicted direction
+    confidence: number;        // Confidence score (magnitude)
+    prediction: number;        // Raw prediction value
+}
+
+export interface DirectionPredictionsData {
+    predictionDate?: string;
+    modelVersion: string;
+    modelAccuracy: string;
+    countries: string[];
+    countryNames: string[];
+    predictions: number[];     // Raw predictions
+    directions: ('UP' | 'DOWN')[];
+    confidences: number[];     // Absolute values
+    normalizedConfidences: number[];
+    summary: {
+        totalCountries: number;
+        upPredictions: number;
+        downPredictions: number;
+        avgConfidence: number;
+        maxConfidence: number;
+        minConfidence: number;
+    };
+}

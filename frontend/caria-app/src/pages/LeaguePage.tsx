@@ -103,7 +103,7 @@ const LeaguePage: React.FC = () => {
                 </div>
 
                 {/* User Stats Summary */}
-                <LeagueProfile />
+                <LeagueProfile initialHasJoined={true} />
 
                 {/* Main Leaderboard */}
                 <Leaderboard />

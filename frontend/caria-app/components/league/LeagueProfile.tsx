@@ -4,17 +4,20 @@ import { fetchWithAuth, API_BASE_URL, getToken } from '../../services/apiService
 
 interface LeagueProfileProps {
     userId?: string; // If undefined, show current user
+    initialHasJoined?: boolean;
 }
 
-const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId }) => {
-    const [hasJoined, setHasJoined] = useState(false);
-    const [loading, setLoading] = useState(true);
+const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId, initialHasJoined = false }) => {
+    const [hasJoined, setHasJoined] = useState(initialHasJoined);
+    const [loading, setLoading] = useState(!initialHasJoined); // If we know they joined, we can skip initial loading check or just load stats
     const [showUsernameModal, setShowUsernameModal] = useState(false);
     const [usernameChoice, setUsernameChoice] = useState<'current' | 'new'>('current');
     const [newUsername, setNewUsername] = useState('');
     const [currentUsername, setCurrentUsername] = useState('');
     const [leagueUsername, setLeagueUsername] = useState('');
     const [stats, setStats] = useState<any>(null);
+
+    const [currentUserId, setCurrentUserId] = useState<string | undefined>(userId);
 
     useEffect(() => {
         const checkJoinStatus = async () => {
@@ -26,19 +29,28 @@ const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId }) => {
                 }
 
                 // Check if user has joined
-                const joined = localStorage.getItem('caria_league_joined');
-                if (joined) {
-                    setHasJoined(true);
-                    // Fetch current user info
-                    const userResp = await fetchWithAuth(`${API_BASE_URL}/api/auth/me`);
-                    if (userResp.ok) {
-                        const userData = await userResp.json();
-                        setCurrentUsername(userData.username || '');
+                // If initialHasJoined is true, we trust it. Otherwise check localStorage.
+                const joined = initialHasJoined || localStorage.getItem('caria_league_joined');
+
+                // Always fetch user info to get ID and username
+                const userResp = await fetchWithAuth(`${API_BASE_URL}/api/auth/me`);
+                let fetchedUserId = userId;
+
+                if (userResp.ok) {
+                    const userData = await userResp.json();
+                    setCurrentUsername(userData.username || '');
+                    setCurrentUserId(userData.id);
+                    fetchedUserId = userData.id;
+
+                    if (joined) {
                         setLeagueUsername(localStorage.getItem('caria_league_username') || userData.username || '');
                     }
-                    // Fetch real stats (when backend endpoint is ready)
-                    // For now, keep mock but mark as loading
-                    await fetchLeagueStats();
+                }
+
+                if (joined) {
+                    setHasJoined(true);
+                    // Fetch real stats now that we have the ID
+                    if (fetchedUserId) await fetchLeagueStats(fetchedUserId);
                 }
             } catch (err) {
                 console.error('Error checking league status:', err);
@@ -47,26 +59,32 @@ const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId }) => {
             }
         };
         checkJoinStatus();
-    }, []);
+    }, [userId, initialHasJoined]);
 
-    const fetchLeagueStats = async () => {
+    const fetchLeagueStats = async (uid?: string) => {
+        const targetId = uid || currentUserId || userId;
+        if (!targetId) return;
+
         try {
-            // TODO: Replace with real API endpoint when available
-            // const resp = await fetchWithAuth(`${API_BASE_URL}/api/league/stats`);
-            // if (resp.ok) {
-            //     setStats(await resp.json());
-            // }
-            // For now, use mock data but mark as placeholder
-            setStats({
-                rank: null, // Will be fetched from backend
-                score: null,
-                percentile: null,
-                sharpe: null,
-                cagr: null,
-                drawdown: null,
-                diversification: null,
-                accountAge: null,
-            });
+            const resp = await fetchWithAuth(`${API_BASE_URL}/api/league/profile/${targetId}`);
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data.current) {
+                    setStats(data.current);
+                } else {
+                    // User joined but no stats yet (calculation pending)
+                    setStats({
+                        rank: null,
+                        score: null,
+                        percentile: null,
+                        sharpe: null,
+                        cagr: null,
+                        drawdown: null,
+                        diversification: null,
+                        accountAge: null,
+                    });
+                }
+            }
         } catch (err) {
             console.error('Error fetching league stats:', err);
         }
@@ -78,10 +96,10 @@ const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId }) => {
 
     const handleJoinConfirm = async () => {
         try {
-            const finalUsername = usernameChoice === 'current' 
-                ? currentUsername 
+            const finalUsername = usernameChoice === 'current'
+                ? currentUsername
                 : newUsername.trim();
-            
+
             if (!finalUsername) {
                 alert('Please enter a username');
                 return;
@@ -93,14 +111,14 @@ const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId }) => {
             setLeagueUsername(finalUsername);
             setHasJoined(true);
             setShowUsernameModal(false);
-            
+
             // TODO: Call backend API to register user in league
             // await fetchWithAuth(`${API_BASE_URL}/api/league/join`, {
             //     method: 'POST',
             //     headers: { 'Content-Type': 'application/json' },
             //     body: JSON.stringify({ display_username: finalUsername }),
             // });
-            
+
             // Fetch stats after joining
             await fetchLeagueStats();
         } catch (err) {
@@ -151,10 +169,10 @@ const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId }) => {
                             <p className="text-sm text-text-secondary mb-6">
                                 This username will be displayed in the rankings. Your privacy is protected.
                             </p>
-                            
+
                             <div className="space-y-4 mb-6">
                                 <label className="flex items-center gap-3 p-4 rounded-lg border cursor-pointer hover:border-accent-cyan/50 transition-colors"
-                                    style={{ 
+                                    style={{
                                         borderColor: usernameChoice === 'current' ? 'var(--color-accent-cyan)' : 'var(--color-bg-tertiary)',
                                         backgroundColor: usernameChoice === 'current' ? 'rgba(6, 182, 212, 0.1)' : 'transparent'
                                     }}>
@@ -175,7 +193,7 @@ const LeagueProfile: React.FC<LeagueProfileProps> = ({ userId }) => {
                                 </label>
 
                                 <label className="flex items-center gap-3 p-4 rounded-lg border cursor-pointer hover:border-accent-cyan/50 transition-colors"
-                                    style={{ 
+                                    style={{
                                         borderColor: usernameChoice === 'new' ? 'var(--color-accent-cyan)' : 'var(--color-bg-tertiary)',
                                         backgroundColor: usernameChoice === 'new' ? 'rgba(6, 182, 212, 0.1)' : 'transparent'
                                     }}>

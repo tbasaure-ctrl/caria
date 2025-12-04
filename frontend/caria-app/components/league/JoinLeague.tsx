@@ -28,6 +28,14 @@ export const JoinLeague: React.FC<JoinLeagueProps> = ({ onJoinSuccess }) => {
             });
 
             if (response.ok) {
+                // Store join status in localStorage to sync with LeagueProfile
+                localStorage.setItem('caria_league_joined', 'true');
+                if (isAnonymous && displayName) {
+                    localStorage.setItem('caria_league_username', displayName);
+                } else if (!isAnonymous) {
+                    // We need to fetch the username if not anonymous, but for now let's leave it empty
+                    // LeagueProfile will fetch 'me' to get the username
+                }
                 onJoinSuccess();
             } else {
                 console.error('Failed to join league');

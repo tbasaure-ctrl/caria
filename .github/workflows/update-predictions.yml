@@ -1,0 +1,59 @@
+name: Update CARIA Predictions
+
+on:
+  schedule:
+    # Every Sunday at midnight UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  update-predictions:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('models/requirements-predictions.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r models/requirements-predictions.txt
+      
+      - name: Generate predictions
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          TE_API_KEY: ${{ secrets.TE_API_KEY }}
+        run: |
+          cd models
+          python generate_weekly_predictions.py
+      
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git diff --quiet frontend/caria-app/public/data/ || echo "changes=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add frontend/caria-app/public/data/*.json
+          git add models/*.json
+          git commit -m "🔄 Update CARIA predictions [$(date +'%Y-%m-%d')]"
+          git push
+

@@ -1,9 +1,14 @@
 """
-CARIA V22 Weekly Prediction Generator
-Fetches real market data and generates direction predictions
+CARIA V22 Monthly Prediction Generator
+Fetches market data and generates direction predictions
+
+Strategy:
+- Yahoo Finance (FREE): Stock indices, FX, commodities, VIX - unlimited calls
+- FRED (FREE): US economic indicators - unlimited calls  
+- Trading Economics: Only if TE_API_KEY is set, minimal calls for macro data
 
 Run locally: python generate_weekly_predictions.py
-Run in CI: GitHub Actions workflow (update-predictions.yml)
+Run in CI: GitHub Actions workflow (update-predictions.yml) - monthly
 """
 
 import os
@@ -35,7 +40,7 @@ COUNTRY_NAMES = {
     'CHE': 'Switzerland', 'TWN': 'Taiwan', 'VNM': 'Vietnam', 'NOR': 'Norway'
 }
 
-# Yahoo Finance tickers for each country's main index
+# Yahoo Finance tickers (FREE - unlimited)
 INDEX_TICKERS = {
     'USA': '^GSPC', 'CHN': '000001.SS', 'JPN': '^N225', 'DEU': '^GDAXI',
     'GBR': '^FTSE', 'FRA': '^FCHI', 'IND': '^BSESN', 'BRA': '^BVSP',
@@ -45,7 +50,6 @@ INDEX_TICKERS = {
     'TWN': '^TWII', 'VNM': '^VNINDEX', 'NOR': 'OSEBX.OL'
 }
 
-# FX tickers (vs USD)
 FX_TICKERS = {
     'EUR': 'EURUSD=X', 'JPY': 'JPY=X', 'GBP': 'GBPUSD=X', 'CNY': 'CNY=X',
     'INR': 'INR=X', 'BRL': 'BRL=X', 'CAD': 'CAD=X', 'KRW': 'KRW=X',
@@ -60,6 +64,16 @@ COMMODITY_TICKERS = {
 
 GLOBAL_TICKERS = {
     'VIX': '^VIX', 'DXY': 'DX-Y.NYB', 'US10Y': '^TNX', 'US2Y': '^IRX'
+}
+
+# FRED Series (FREE - unlimited with API key)
+FRED_SERIES = {
+    'UNRATE': 'US Unemployment',
+    'CPIAUCSL': 'US CPI',
+    'FEDFUNDS': 'Fed Funds Rate',
+    'T10Y2Y': 'Yield Curve 10Y-2Y',
+    'UMCSENT': 'Consumer Sentiment',
+    'ICSA': 'Initial Claims'
 }
 
 
@@ -139,28 +153,28 @@ class EconomicRelationshipDiscoverer(nn.Module):
 
 
 # ============================================================
-# Data Fetching
+# Data Fetching (Optimized for minimal API costs)
 # ============================================================
 
-def fetch_market_data(seq_len=60):
-    """Fetch recent market data from Yahoo Finance"""
+def fetch_yahoo_data(seq_len=60):
+    """Fetch market data from Yahoo Finance (FREE - unlimited)"""
     import yfinance as yf
     
-    print("📊 Fetching market data from Yahoo Finance...")
+    print("📊 Fetching from Yahoo Finance (FREE)...")
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=seq_len * 2)  # Extra buffer for missing days
+    start_date = end_date - timedelta(days=seq_len * 2)
     
     all_data = {}
     
     # Fetch indices
-    print("  - Stock indices...")
+    print("  - Stock indices (22 countries)...")
     for country, ticker in INDEX_TICKERS.items():
         try:
             df = yf.download(ticker, start=start_date, end=end_date, progress=False)
             if len(df) > 0:
                 all_data[f'{country}_index'] = df['Close'].pct_change()
         except Exception as e:
-            print(f"    Warning: Failed to fetch {ticker}: {e}")
+            print(f"    ⚠ {ticker}: {e}")
     
     # Fetch FX
     print("  - FX rates...")
@@ -183,7 +197,7 @@ def fetch_market_data(seq_len=60):
             pass
     
     # Fetch global indicators
-    print("  - Global indicators...")
+    print("  - Global indicators (VIX, DXY, yields)...")
     for name, ticker in GLOBAL_TICKERS.items():
         try:
             df = yf.download(ticker, start=start_date, end=end_date, progress=False)
@@ -192,13 +206,68 @@ def fetch_market_data(seq_len=60):
         except:
             pass
     
-    # Combine into DataFrame
     combined = pd.DataFrame(all_data)
-    combined = combined.dropna(how='all')
-    combined = combined.fillna(0)
-    
-    print(f"  ✓ Fetched {len(combined.columns)} series, {len(combined)} days")
+    combined = combined.dropna(how='all').fillna(0)
+    print(f"  ✓ Yahoo: {len(combined.columns)} series, {len(combined)} days")
     return combined
+
+
+def fetch_fred_data(seq_len=60):
+    """Fetch US economic data from FRED (FREE with API key)"""
+    fred_key = os.environ.get('FRED_API_KEY')
+    if not fred_key:
+        print("  ⚠ FRED_API_KEY not set, skipping FRED data")
+        return pd.DataFrame()
+    
+    try:
+        from fredapi import Fred
+        fred = Fred(api_key=fred_key)
+        
+        print("📊 Fetching from FRED (FREE)...")
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=seq_len * 7)  # Monthly data needs more history
+        
+        all_data = {}
+        for series_id, name in FRED_SERIES.items():
+            try:
+                data = fred.get_series(series_id, start_date, end_date)
+                if len(data) > 0:
+                    all_data[series_id] = data
+                    print(f"    ✓ {name}")
+            except Exception as e:
+                print(f"    ⚠ {series_id}: {e}")
+        
+        if all_data:
+            combined = pd.DataFrame(all_data)
+            combined = combined.ffill().bfill()  # Forward/backward fill for monthly data
+            print(f"  ✓ FRED: {len(combined.columns)} series")
+            return combined
+    except ImportError:
+        print("  ⚠ fredapi not installed")
+    except Exception as e:
+        print(f"  ⚠ FRED error: {e}")
+    
+    return pd.DataFrame()
+
+
+def fetch_market_data(seq_len=60):
+    """Fetch all market data from free sources"""
+    
+    # Primary: Yahoo Finance (FREE, unlimited)
+    yahoo_data = fetch_yahoo_data(seq_len)
+    
+    # Secondary: FRED (FREE with API key)
+    fred_data = fetch_fred_data(seq_len)
+    
+    # Merge if FRED data available
+    if len(fred_data) > 0:
+        # Resample FRED to daily and merge
+        fred_daily = fred_data.resample('D').ffill()
+        yahoo_data = yahoo_data.join(fred_daily, how='left')
+        yahoo_data = yahoo_data.fillna(method='ffill').fillna(0)
+    
+    print(f"\n✓ Total: {len(yahoo_data.columns)} features, {len(yahoo_data)} days")
+    return yahoo_data
 
 
 def build_feature_tensor(market_data, num_nodes=22, num_features=79, seq_len=45):

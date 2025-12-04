@@ -3,7 +3,7 @@ import Plot from 'react-plotly.js';
 import { WidgetCard } from './WidgetCard';
 import { CountryState, EconomicFlowData, EconomicArc, DirectionPredictionsData } from '../../types/worldEconomies';
 
-// Country unique colors (maintained from original)
+// Country unique colors - 22 countries
 const COUNTRY_COLORS: Record<string, string> = {
     'USA': '#ef4444',   // Red
     'CHN': '#f59e0b',   // Amber
@@ -19,7 +19,14 @@ const COUNTRY_COLORS: Record<string, string> = {
     'MEX': '#eab308',   // Yellow
     'IDN': '#84cc16',   // Lime
     'ZAF': '#64748b',   // Slate
-    'CHL': '#dc2626'    // Dark Red
+    'CHL': '#dc2626',   // Dark Red
+    'SGP': '#6366f1',   // Indigo
+    'NLD': '#f43f5e',   // Rose
+    'HKG': '#0ea5e9',   // Light Blue
+    'CHE': '#d946ef',   // Fuchsia
+    'TWN': '#14532d',   // Dark Green
+    'VNM': '#fbbf24',   // Gold
+    'NOR': '#0284c7',   // Ocean Blue
 };
 
 // Connection strength colors
@@ -98,16 +105,55 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                 }
             } catch (predErr) {
                 console.warn("Direction predictions not available:", predErr);
-                setData(jsonData);
+            setData(jsonData);
             }
 
-            // Fetch CARIA economic flows
+            // Fetch CARIA economic flows (V22 format)
             try {
                 const flowResponse = await fetch('/data/caria_flows.json');
                 if (flowResponse.ok) {
                     const flowJson: EconomicFlowData = await flowResponse.json();
+                    
+                    // Transform V22 connections to arcs with coordinates
+                    const arcs: EconomicArc[] = flowJson.connections.map(conn => {
+                        const fromCoord = flowJson.coordinates[conn.from];
+                        const toCoord = flowJson.coordinates[conn.to];
+                        return {
+                            source: conn.from,
+                            target: conn.to,
+                            sourceName: fromCoord?.name || conn.from,
+                            targetName: toCoord?.name || conn.to,
+                            startLat: fromCoord?.lat || 0,
+                            startLng: fromCoord?.lon || 0,
+                            endLat: toCoord?.lat || 0,
+                            endLng: toCoord?.lon || 0,
+                            weight: conn.weight,
+                            raw: conn.raw,
+                            strength: conn.strength,
+                            label: conn.label
+                        };
+                    });
+                    
+                    // Build USA analysis
+                    const usaInfluences = arcs.filter(a => a.source === 'USA').map(a => ({
+                        country: a.target,
+                        name: a.targetName,
+                        weight: a.weight
+                    }));
+                    const usaInfluencedBy = arcs.filter(a => a.target === 'USA').map(a => ({
+                        country: a.source,
+                        name: a.sourceName,
+                        weight: a.weight
+                    }));
+                    
+                    flowJson.arcs = arcs;
+                    flowJson.usaAnalysis = {
+                        influences: usaInfluences.sort((a, b) => b.weight - a.weight),
+                        influencedBy: usaInfluencedBy.sort((a, b) => b.weight - a.weight)
+                    };
+                    
                     setFlowData(flowJson);
-                    console.log(`🌐 CARIA: Loaded ${flowJson.arcs.length} economic connections`);
+                    console.log(`🌐 CARIA V22: Loaded ${arcs.length} economic connections across ${flowJson.stats.totalCountries} countries`);
                 }
             } catch (flowErr) {
                 console.warn("CARIA flows not available:", flowErr);
@@ -120,12 +166,12 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
     };
 
     // Filter arcs
-    const filteredArcs = flowData?.arcs.filter(arc => {
+    const filteredArcs = flowData?.arcs?.filter(arc => {
         if (!showConnections) return false;
         if (connectionFilter === 'all') return true;
         if (connectionFilter === 'strong') return arc.strength === 'strong';
         if (connectionFilter === 'medium') return arc.strength === 'strong' || arc.strength === 'medium';
-        if (connectionFilter === 'usa') return arc.isUSA === true;
+        if (connectionFilter === 'usa') return arc.source === 'USA' || arc.target === 'USA';
         return true;
     }) || [];
 
@@ -311,10 +357,10 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                             </div>
                             <div className="text-[10px] text-text-muted font-mono space-y-1">
                                 <div className="flex justify-between gap-4"><span>NODES:</span> <span className="text-accent-cyan">{data.length} ACTIVE</span></div>
-                                {directionPredictions && (
+                                {flowData && (
                                     <div className="flex justify-between gap-4">
-                                        <span>ACCURACY:</span> 
-                                        <span className="text-white">{directionPredictions.modelAccuracy}</span>
+                                        <span>LINKS:</span> 
+                                        <span className="text-white">{flowData.arcs.length}</span>
                                     </div>
                                 )}
                             </div>
@@ -323,7 +369,7 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                             {flowData && (
                                 <div className="mt-3 pt-3 border-t border-white/10">
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[10px] text-accent-cyan font-mono">CARIA V12</span>
+                                        <span className="text-[10px] text-accent-cyan font-mono">{flowData.modelVersion}</span>
                                         <button
                                             onClick={() => setShowConnections(!showConnections)}
                                             className={`text-[10px] px-2 py-0.5 rounded font-mono transition-all ${
@@ -383,14 +429,14 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                             {showConnections && flowData && (
                                 <>
                                     <h4 className="text-text-muted text-[10px] font-mono uppercase tracking-widest mt-4 mb-3 border-b border-white/10 pb-2">Influence Flow</h4>
-                                    <div className="space-y-2">
+                            <div className="space-y-2">
                                         {Object.entries(CONNECTION_COLORS).filter(([key]) => key !== 'usa-link').map(([key, config]) => (
                                             <div key={key} className="flex items-center gap-3">
                                                 <div className="w-4 h-0.5 rounded" style={{ backgroundColor: config.color }}></div>
                                                 <span className="text-[10px] text-white font-mono uppercase opacity-80">{key}</span>
-                                            </div>
-                                        ))}
                                     </div>
+                                ))}
+                            </div>
                                 </>
                             )}
                         </div>
@@ -414,66 +460,35 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
 
                     {/* Panel Content */}
                     <div className="bg-[#0B1221] border border-white/10 rounded-lg flex-1 overflow-y-auto custom-scrollbar relative shadow-[0_0_30px_rgba(0,0,0,0.3)]">
-                        
+
                         {/* MANUAL TAB */}
                         {activeTab === 'guide' && (
                             <div className="p-6 space-y-6 animate-fade-in">
                                 <div>
-                                    <h3 className="text-lg font-display text-white mb-2">How to Read This Visualization</h3>
+                                    <h3 className="text-lg font-display text-white mb-2">How to Read the Map</h3>
                                     <div className="h-0.5 w-12 bg-accent-cyan mb-4"></div>
-                                    <p className="text-xs text-text-secondary leading-relaxed">
-                                        This visualization shows economic direction predictions and interdependencies between G20 economies, 
-                                        discovered through neural network analysis of macroeconomic indicators, market returns, and cross-border data flows.
-                                    </p>
                                 </div>
 
                                 <div className="space-y-4">
                                     <div className="p-3 bg-white/5 rounded border border-white/5">
-                                        <div className="text-xs font-bold text-white mb-1">Node Colors</div>
-                                        <p className="text-[10px] text-text-muted">Each country has a unique color that remains consistent across all visualizations. This helps track individual economies throughout the network.</p>
+                                        <div className="text-xs font-bold text-white mb-1">Nodes</div>
+                                        <p className="text-[10px] text-text-muted">Each node represents a country. Colors are unique per country for easy identification.</p>
                                     </div>
 
                                     <div className="p-3 bg-white/5 rounded border border-white/5">
-                                        <div className="text-xs font-bold text-white mb-1">Halo Size</div>
-                                        <p className="text-[10px] text-text-muted">The outer glow (halo) around each node reflects the model's <span className="text-white">confidence level</span> in its direction prediction. Larger halos indicate higher confidence in the predicted economic direction.</p>
+                                        <div className="text-xs font-bold text-white mb-1">Connections</div>
+                                        <p className="text-[10px] text-text-muted">Lines between countries show discovered economic relationships. <span className="text-white">A → B</span> means changes in A tend to precede changes in B.</p>
                                     </div>
 
                                     <div className="p-3 bg-white/5 rounded border border-white/5">
-                                        <div className="text-xs font-bold text-white mb-1">Ring Thickness</div>
-                                        <p className="text-[10px] text-text-muted">The outer ring thickness is proportional to current <span className="text-white">GDP growth</span>. Thicker rings indicate positive economic growth, while thin rings suggest stagnant or negative growth.</p>
+                                        <div className="text-xs font-bold text-white mb-1">Line Strength</div>
+                                        <p className="text-[10px] text-text-muted">Thicker, brighter lines = stronger relationships. Colors indicate strength: <span className="text-red-400">strong</span>, <span className="text-amber-400">medium</span>, <span className="text-cyan-400">weak</span>.</p>
                                     </div>
 
                                     <div className="p-3 bg-white/5 rounded border border-white/5">
-                                        <div className="text-xs font-bold text-white mb-1">Connection Lines</div>
-                                        <p className="text-[10px] text-text-muted">Lines between countries represent discovered economic dependencies. The direction (Country A → Country B) indicates that changes in Country A's economic conditions tend to <span className="text-accent-cyan">precede</span> changes in Country B. Line thickness and color reflect the strength of this relationship.</p>
+                                        <div className="text-xs font-bold text-white mb-1">Interaction</div>
+                                        <p className="text-[10px] text-text-muted">Click a country to see its connections. Use filters to show specific relationship types.</p>
                                     </div>
-
-                                    <div className="p-3 bg-gradient-to-r from-green-500/10 to-transparent rounded border border-green-500/20">
-                                        <div className="text-xs font-bold text-white mb-1">Direction Predictions</div>
-                                        <p className="text-[10px] text-text-muted leading-relaxed">
-                                            The model predicts whether each economy is expected to <span className="text-green-300">strengthen (UP)</span> or 
-                                            <span className="text-red-300"> weaken (DOWN)</span> based on current conditions and historical patterns. 
-                                            These predictions are derived from analysis of macroeconomic indicators, market signals, and cross-country dependencies.
-                                        </p>
-                                    </div>
-
-                                    <div className="p-3 bg-gradient-to-r from-purple-500/10 to-transparent rounded border border-purple-500/20">
-                                        <div className="text-xs font-bold text-white mb-1">Economic Relationships</div>
-                                        <p className="text-[10px] text-text-muted leading-relaxed">
-                                            The connections between countries reveal complex interdependencies that may not be immediately obvious. 
-                                            Some relationships reflect demand-supply dynamics (e.g., a large consumer economy influencing commodity exporters), 
-                                            while others show shared sensitivities to global financial conditions, trade flows, or policy changes.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Footer Disclaimer */}
-                                <div className="pt-4 border-t border-white/10">
-                                    <p className="text-[10px] text-text-muted leading-relaxed">
-                                        <span className="text-amber-400 font-bold">⚠️ Important:</span> This model is currently being validated with real-world data. 
-                                        Predictions should not be taken as financial advice or trading signals. 
-                                        For detailed statistical validation results, see the <span className="text-accent-cyan cursor-pointer underline" onClick={() => setActiveTab('metrics')}>Metrics</span> tab.
-                                    </p>
                                 </div>
                             </div>
                         )}
@@ -492,47 +507,18 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                 </div>
                                             </div>
                                             {selectedCountry.prediction && (
-                                                <div className="text-right">
+                                            <div className="text-right">
                                                     <div className={`text-4xl font-mono font-bold tracking-tighter ${selectedCountry.prediction.direction === 'UP' ? 'text-green-400' : 'text-red-400'}`}>
                                                         {selectedCountry.prediction.direction === 'UP' ? '▲' : '▼'}
                                                     </div>
                                                     <div className="text-[10px] text-text-muted uppercase tracking-widest">Direction</div>
-                                                </div>
+                                            </div>
                                             )}
                                         </div>
 
-                                        {selectedCountry.prediction && (
-                                            <div className="p-4 bg-white/5 rounded border border-white/10">
-                                                <div className="text-xs text-text-muted uppercase tracking-widest mb-2">Model Prediction</div>
-                                                <div className="text-lg font-medium text-white flex items-center gap-2 mb-2">
-                                                    <span className={`text-2xl ${selectedCountry.prediction.direction === 'UP' ? 'text-green-400' : 'text-red-400'}`}>
-                                                        {selectedCountry.prediction.direction === 'UP' ? '🔼' : '🔽'}
-                                                    </span>
-                                                    {selectedCountry.prediction.direction}
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <div className="flex justify-between text-xs">
-                                                        <span className="text-text-secondary">Confidence</span>
-                                                        <span className="text-white font-mono">{(selectedCountry.prediction.confidence * 100).toFixed(1)}%</span>
-                                                    </div>
-                                                    <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-                                                        <div 
-                                                            className={`h-full ${selectedCountry.prediction.direction === 'UP' ? 'bg-green-500' : 'bg-red-500'}`}
-                                                            style={{ width: `${Math.min((selectedCountry.prediction.confidence / 3.5) * 100, 100)}%` }}
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {!selectedCountry.prediction && (
-                                            <div className="p-4 bg-amber-500/10 rounded border border-amber-500/20">
-                                                <p className="text-xs text-amber-200">Direction prediction not available. The model may need to be run with current economic data.</p>
-                                            </div>
-                                        )}
 
                                         {/* Connected Countries */}
-                                        {flowData && (
+                                        {flowData && flowData.arcs && (
                                             <div>
                                                 <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3 border-b border-white/10 pb-2">
                                                     Economic Connections
@@ -559,7 +545,7 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                                     <div className="w-full bg-white/10 h-1 rounded-full overflow-hidden">
                                                                         <div 
                                                                             className="h-full bg-accent-cyan"
-                                                                            style={{ width: `${Math.min(weight * 500, 100)}%` }}
+                                                                            style={{ width: `${Math.min(weight / (flowData.stats.maxWeight || 1) * 100, 100)}%` }}
                                                                         ></div>
                                                                     </div>
                                                                 </div>
@@ -568,66 +554,20 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                     {flowData.arcs.filter(arc => arc.source === selectedCountry.isoCode || arc.target === selectedCountry.isoCode).length === 0 && (
                                                         <p className="text-xs text-text-muted">No strong connections detected for this country.</p>
                                                     )}
-                                                </div>
+                                            </div>
                                             </div>
                                         )}
                                     </>
                                 ) : (
                                     <>
                                         {/* Show all relationships and predictions */}
-                                        {directionPredictions && (
-                                            <>
-                                                <div>
-                                                    <h3 className="text-lg font-display text-white mb-2">Direction Predictions</h3>
-                                                    <p className="text-xs text-text-muted">All G20 economies with model predictions and confidence levels</p>
-                                                </div>
-
-                                                <div className="space-y-3 max-h-[250px] overflow-y-auto custom-scrollbar mb-6">
-                                                    {directionPredictions.countries.map((countryCode, idx) => {
-                                                        const direction = directionPredictions.directions[idx];
-                                                        const confidence = directionPredictions.confidences[idx];
-                                                        const normalizedConf = directionPredictions.normalizedConfidences[idx];
-                                                        const countryName = directionPredictions.countryNames[idx];
-                                                        
-                                                        return (
-                                                            <div key={countryCode} className="p-3 bg-white/5 rounded border border-white/5">
-                                                                <div className="flex items-center justify-between mb-2">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className={`text-lg ${direction === 'UP' ? 'text-green-400' : 'text-red-400'}`}>
-                                                                            {direction === 'UP' ? '🔼' : '🔽'}
-                                                                        </span>
-                                                                        <div>
-                                                                            <div className="text-xs font-bold text-white">{countryName}</div>
-                                                                            <div className="text-[10px] text-text-muted font-mono">{countryCode}</div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="text-right">
-                                                                        <div className={`text-sm font-mono font-bold ${direction === 'UP' ? 'text-green-400' : 'text-red-400'}`}>
-                                                                            {direction}
-                                                                        </div>
-                                                                        <div className="text-[10px] text-text-muted">{(confidence).toFixed(2)}</div>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                                                                    <div 
-                                                                        className={`h-full ${direction === 'UP' ? 'bg-green-500' : 'bg-red-500'}`}
-                                                                        style={{ width: `${normalizedConf * 100}%` }}
-                                                                    ></div>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </>
-                                        )}
-
                                         {/* Show all economic relationships */}
-                                        {flowData && (
+                                        {flowData && flowData.arcs && (
                                             <>
                                                 <div>
-                                                    <h3 className="text-lg font-display text-white mb-2">Economic Relationships</h3>
-                                                    <p className="text-xs text-text-muted">All discovered connections between countries</p>
-                                                </div>
+                                                    <h3 className="text-lg font-display text-white mb-2">All Connections</h3>
+                                                    <p className="text-xs text-text-muted">{flowData.arcs.length} relationships discovered</p>
+                                        </div>
 
                                                 <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
                                                     {flowData.arcs
@@ -645,26 +585,26 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                                 <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
                                                                     <div 
                                                                         className="h-full bg-accent-cyan"
-                                                                        style={{ width: `${Math.min((arc.weight / flowData.stats.maxWeight) * 100, 100)}%` }}
+                                                                        style={{ width: `${Math.min((arc.weight / (flowData.stats.maxWeight || 1)) * 100, 100)}%` }}
                                                                     ></div>
                                                                 </div>
                                                                 <div className="text-[10px] text-text-muted mt-1">
-                                                                    Strength: {arc.strength.toUpperCase()} | Deviation: {(arc.deviation * 100).toFixed(2)}%
+                                                                    Strength: {arc.strength.toUpperCase()} | Raw: {arc.raw.toFixed(2)}
                                                                 </div>
                                                             </div>
                                                         ))}
-                                                </div>
+                                            </div>
                                             </>
                                         )}
 
-                                        {!directionPredictions && !flowData && (
+                                        {!flowData && (
                                             <div className="h-full flex flex-col items-center justify-center text-center text-text-muted space-y-4 opacity-60">
                                                 <div className="w-16 h-16 rounded-full border border-dashed border-white/20 flex items-center justify-center animate-pulse-slow">
                                                     <span className="text-2xl">⊕</span>
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-mono text-white">NO DATA AVAILABLE</p>
-                                                    <p className="text-xs mt-1">Click a node on the globe or predictions will appear here once available.</p>
+                                                    <p className="text-sm font-mono text-white">NO DATA</p>
+                                                    <p className="text-xs mt-1">Click a country to see its connections.</p>
                                                 </div>
                                             </div>
                                         )}
@@ -673,108 +613,89 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                             </div>
                         )}
 
-                        {/* METRICS TAB - Statistical Validation Results */}
+                        {/* METRICS TAB - Model Info */}
                         {activeTab === 'metrics' && (
                             <div className="p-6 space-y-6 animate-fade-in">
                                 <div>
-                                    <h3 className="text-lg font-display text-white mb-2">Model Validation Metrics</h3>
-                                    <p className="text-xs text-text-muted">Statistical validation results for CARIA V12</p>
+                                    <h3 className="text-lg font-display text-white mb-2">Model Information</h3>
+                                    <p className="text-xs text-text-muted">Technical details about the relationship discovery model</p>
                                 </div>
 
-                                {/* Model Accuracy */}
-                                {directionPredictions && (
-                                    <div className="p-4 bg-gradient-to-r from-accent-cyan/10 to-transparent rounded border border-accent-cyan/20">
-                                        <div className="text-xs font-bold text-white mb-2">Direction Prediction Accuracy</div>
-                                        <div className="text-3xl font-mono font-bold text-accent-cyan mb-1">
-                                            {directionPredictions.modelAccuracy}
-                                        </div>
-                                        <p className="text-[10px] text-text-muted">
-                                            Model accuracy on test data. This is statistically significant (p &lt; 0.001) versus random guessing (50%).
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Statistical Tests */}
+                                {/* Model Stats */}
                                 <div className="space-y-4">
                                     <div className="p-3 bg-white/5 rounded border border-white/5">
-                                        <div className="text-xs font-bold text-white mb-2">Binomial Test</div>
-                                        <p className="text-[10px] text-text-muted leading-relaxed mb-2">
-                                            Tests whether the 64% accuracy is significantly better than random chance (50%).
-                                        </p>
+                                        <div className="text-xs font-bold text-white mb-2">Network Analysis</div>
                                         <div className="space-y-1 text-[10px]">
                                             <div className="flex justify-between">
-                                                <span className="text-text-secondary">Null Hypothesis:</span>
-                                                <span className="text-white">p = 0.5 (random)</span>
+                                                <span className="text-text-secondary">Countries Analyzed:</span>
+                                                <span className="text-white font-mono">{flowData?.stats.totalCountries || 22}</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-text-secondary">P-value:</span>
-                                                <span className="text-green-400 font-mono">&lt; 0.001</span>
+                                                <span className="text-text-secondary">Features per Country:</span>
+                                                <span className="text-white font-mono">79</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-text-secondary">Result:</span>
-                                                <span className="text-green-400 font-bold">REJECTED</span>
+                                                <span className="text-text-secondary">Time Series:</span>
+                                                <span className="text-white font-mono">2000-2024</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-text-secondary">Connections Found:</span>
+                                                <span className="text-white font-mono">{flowData?.stats.totalConnections || 0}</span>
                                             </div>
                                         </div>
-                                        <p className="text-[10px] text-text-muted mt-2">
-                                            Conclusion: The model performs significantly better than random guessing with less than 0.1% probability of being due to chance.
-                                        </p>
                                     </div>
 
                                     <div className="p-3 bg-white/5 rounded border border-white/5">
-                                        <div className="text-xs font-bold text-white mb-2">Confidence Intervals (95%)</div>
-                                        <p className="text-[10px] text-text-muted leading-relaxed mb-2">
-                                            Range of values where the true accuracy likely falls.
-                                        </p>
+                                        <div className="text-xs font-bold text-white mb-2">Data Sources</div>
                                         <div className="space-y-1 text-[10px]">
                                             <div className="flex justify-between">
-                                                <span className="text-text-secondary">Sample Size:</span>
-                                                <span className="text-white">200+ predictions</span>
+                                                <span className="text-text-secondary">Market Data:</span>
+                                                <span className="text-white">Yahoo Finance</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-text-secondary">CI Range:</span>
-                                                <span className="text-white font-mono">[57.1%, 70.3%]</span>
+                                                <span className="text-text-secondary">US Indicators:</span>
+                                                <span className="text-white">FRED</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-text-secondary">Lower Bound:</span>
-                                                <span className="text-green-400 font-bold">&gt; 50%</span>
+                                                <span className="text-text-secondary">Global Macro:</span>
+                                                <span className="text-white">Trading Economics</span>
                                             </div>
                                         </div>
-                                        <p className="text-[10px] text-text-muted mt-2">
-                                            With 95% confidence, the model's true accuracy is between 57% and 70%, consistently above random chance.
-                                        </p>
                                     </div>
 
                                     <div className="p-3 bg-white/5 rounded border border-white/5">
-                                        <div className="text-xs font-bold text-white mb-2">Statistical Power</div>
-                                        <p className="text-[10px] text-text-muted leading-relaxed mb-2">
-                                            The probability of correctly detecting a real effect (true accuracy above 50%).
-                                        </p>
+                                        <div className="text-xs font-bold text-white mb-2">Relationship Types</div>
                                         <div className="space-y-1 text-[10px]">
                                             <div className="flex justify-between">
-                                                <span className="text-text-secondary">Power:</span>
-                                                <span className="text-green-400 font-mono font-bold">&gt; 99%</span>
+                                                <span className="text-text-secondary">Asymmetric:</span>
+                                                <span className="text-accent-cyan">A → B ≠ B → A</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-text-secondary">Temporal Lead:</span>
+                                                <span className="text-white">Changes in A precede B</span>
                                             </div>
                                         </div>
-                                        <p className="text-[10px] text-text-muted mt-2">
-                                            Excellent statistical power means we have strong evidence that the model learned real patterns, not just noise.
-                                        </p>
                                     </div>
 
-                                    <div className="p-3 bg-white/5 rounded border border-white/5">
-                                        <div className="text-xs font-bold text-white mb-2">Effect Size (Cohen's h)</div>
-                                        <p className="text-[10px] text-text-muted leading-relaxed mb-2">
-                                            Measures the magnitude of the improvement over random chance.
-                                        </p>
-                                        <div className="space-y-1 text-[10px]">
-                                            <div className="flex justify-between">
-                                                <span className="text-text-secondary">h = 0.284</span>
-                                                <span className="text-white">(small to medium effect)</span>
+                                    {/* Direction Finding */}
+                                    {flowData?.directionAccuracy && (
+                                        <div className="p-3 bg-green-500/5 rounded border border-green-500/20">
+                                            <div className="text-xs font-bold text-green-400 mb-2">Auxiliary Finding</div>
+                                            <div className="space-y-1 text-[10px]">
+                                                <div className="flex justify-between">
+                                                    <span className="text-text-secondary">Direction Accuracy:</span>
+                                                    <span className="text-green-400 font-mono">{(flowData.directionAccuracy * 100).toFixed(1)}%</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-text-secondary">Edge over Random:</span>
+                                                    <span className="text-green-400 font-mono">+{((flowData.directionAccuracy - 0.5) * 100).toFixed(1)}pp</span>
+                                                </div>
                                             </div>
+                                            <p className="text-[9px] text-text-muted mt-2 italic">
+                                                Discovered as a byproduct of relationship learning
+                                            </p>
                                         </div>
-                                        <p className="text-[10px] text-text-muted mt-2">
-                                            While the effect size is moderate, in financial markets, consistent small advantages can generate significant returns over time.
-                                        </p>
-                                    </div>
+                                    )}
                                 </div>
 
                                 {/* Model Architecture */}
@@ -784,15 +705,19 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                         <div className="space-y-2 text-[10px]">
                                             <div className="flex justify-between">
                                                 <span className="text-text-secondary">Parameters:</span>
-                                                <span className="text-white font-mono">618,351</span>
+                                                <span className="text-white font-mono">881,431</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-text-secondary">Nodes (Countries):</span>
-                                                <span className="text-white font-mono">15</span>
+                                                <span className="text-white font-mono">{flowData.stats.totalCountries}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-text-secondary">Features per Node:</span>
-                                                <span className="text-white font-mono">77</span>
+                                                <span className="text-white font-mono">79</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-text-secondary">Version:</span>
+                                                <span className="text-accent-cyan font-mono">{flowData.modelVersion}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -800,7 +725,7 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                             </div>
                         )}
 
-                        {/* CARIA TAB - Keep as is */}
+                        {/* CARIA TAB */}
                         {activeTab === 'caria' && (
                             <div className="p-6 space-y-6 animate-fade-in">
                                 {flowData ? (
@@ -814,8 +739,15 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                             <h3 className="text-xl font-display text-white mt-1">Economic Influence Graph</h3>
                                             <p className="text-[11px] text-text-secondary mt-2 leading-relaxed">
                                                 Economic dependencies discovered through neural network analysis of macro indicators, 
-                                                market returns, and cross-border data.
+                                                market returns, and cross-border data across {flowData.stats.totalCountries} economies.
                                             </p>
+                                            {flowData.directionAccuracy && (
+                                                <p className="text-[11px] text-text-muted mt-2 leading-relaxed italic">
+                                                    Interestingly, we also found that focusing on relationships between economies 
+                                                    predicts direction with ~{(flowData.directionAccuracy * 100).toFixed(0)}% accuracy 
+                                                    (+{((flowData.directionAccuracy - 0.5) * 100).toFixed(0)}pp over random).
+                                                </p>
+                                            )}
                                         </div>
 
                                         {/* Explanation Box */}
@@ -871,41 +803,47 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
 
                                         {/* Stats Grid */}
                                         <div className="grid grid-cols-4 gap-2">
+                                            <div className="p-2 bg-white/5 rounded border border-white/10 text-center">
+                                                <div className="text-lg font-mono font-bold text-white">{flowData.stats.totalCountries}</div>
+                                                <div className="text-[8px] text-text-muted uppercase tracking-wider">Countries</div>
+                                            </div>
                                             <div className="p-2 bg-red-500/10 rounded border border-red-500/20 text-center">
-                                                <div className="text-lg font-mono font-bold text-red-400">{flowData.stats.strongConnections}</div>
+                                                <div className="text-lg font-mono font-bold text-red-400">{flowData.arcs?.filter(a => a.strength === 'strong').length || 0}</div>
                                                 <div className="text-[8px] text-red-400/70 uppercase tracking-wider">Strong</div>
                                             </div>
                                             <div className="p-2 bg-amber-500/10 rounded border border-amber-500/20 text-center">
-                                                <div className="text-lg font-mono font-bold text-amber-400">{flowData.stats.mediumConnections}</div>
+                                                <div className="text-lg font-mono font-bold text-amber-400">{flowData.arcs?.filter(a => a.strength === 'medium').length || 0}</div>
                                                 <div className="text-[8px] text-amber-400/70 uppercase tracking-wider">Medium</div>
                                             </div>
                                             <div className="p-2 bg-cyan-500/10 rounded border border-cyan-500/20 text-center">
-                                                <div className="text-lg font-mono font-bold text-cyan-400">{flowData.stats.weakConnections}</div>
+                                                <div className="text-lg font-mono font-bold text-cyan-400">{flowData.arcs?.filter(a => a.strength === 'weak').length || 0}</div>
                                                 <div className="text-[8px] text-cyan-400/70 uppercase tracking-wider">Weak</div>
-                                            </div>
-                                            <div className="p-2 bg-purple-500/10 rounded border border-purple-500/20 text-center">
-                                                <div className="text-lg font-mono font-bold text-purple-400">{flowData.stats.usaConnections || 0}</div>
-                                                <div className="text-[8px] text-purple-400/70 uppercase tracking-wider">🇺🇸 USA</div>
                                             </div>
                                         </div>
 
-                                        {/* Key Discoveries - Keep existing content */}
+                                        {/* Key Discoveries */}
                                         <div>
                                             <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                <span>🔬 Hidden Patterns Discovered</span>
+                                                <span>🔬 Top Connections Discovered</span>
                                             </h4>
                                             <div className="space-y-2 max-h-[320px] overflow-y-auto custom-scrollbar pr-2">
-                                                {/* Top connections list */}
-                                                {flowData.arcs
-                                                    .sort((a, b) => b.weight - a.weight)
-                                                    .slice(0, 10)
+                                                {flowData.arcs?.sort((a, b) => b.weight - a.weight)
+                                                    .slice(0, 12)
                                                     .map((arc, idx) => (
-                                                        <div key={idx} className="p-2.5 rounded bg-gradient-to-r from-red-500/10 to-transparent border-l-2 border-red-500">
+                                                        <div key={idx} className={`p-2.5 rounded bg-gradient-to-r ${
+                                                            arc.strength === 'strong' 
+                                                                ? 'from-red-500/10 to-transparent border-l-2 border-red-500' 
+                                                                : arc.strength === 'medium'
+                                                                    ? 'from-amber-500/10 to-transparent border-l-2 border-amber-500'
+                                                                    : 'from-cyan-500/10 to-transparent border-l-2 border-cyan-500'
+                                                        }`}>
                                                             <div className="flex items-center justify-between mb-1">
                                                                 <span className="text-xs font-bold text-white">{arc.sourceName} → {arc.targetName}</span>
-                                                                <span className="text-[10px] font-mono text-red-400">{(arc.weight * 100).toFixed(1)}%</span>
+                                                                <span className={`text-[10px] font-mono ${
+                                                                    arc.strength === 'strong' ? 'text-red-400' : arc.strength === 'medium' ? 'text-amber-400' : 'text-cyan-400'
+                                                                }`}>{(arc.weight * 100).toFixed(1)}%</span>
                                                             </div>
-                                                        </div>
+                                                </div>
                                                     ))}
                                             </div>
                                         </div>
@@ -946,7 +884,7 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
 
                                         {/* Updated timestamp */}
                                         <div className="text-[10px] text-text-muted font-mono text-center pt-2 border-t border-white/5">
-                                            Last updated: {flowData.date}
+                                            Generated: {flowData.generatedAt}
                                         </div>
                                     </>
                                 ) : (

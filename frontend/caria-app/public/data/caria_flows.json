@@ -1,878 +1,9 @@
 {
-  "date": "2025-12-03",
-  "generatedAt": "2025-12-03T17:36:22.009632",
-  "modelVersion": "CARIA V12",
-  "stats": {
-    "totalConnections": 57,
-    "maxWeight": 0.3154,
-    "minWeight": 0.0037,
-    "meanWeight": 0.042,
-    "threshold": 0.06,
-    "usaThreshold": 0.04,
-    "modelAccuracy": "64%",
-    "strongConnections": 4,
-    "mediumConnections": 10,
-    "weakConnections": 33,
-    "usaConnections": 13
-  },
-  "arcs": [
-    {
-      "source": "IND",
-      "target": "CHL",
-      "sourceName": "India",
-      "targetName": "Chile",
-      "startLat": 20.5937,
-      "startLng": 78.9629,
-      "endLat": -35.6751,
-      "endLng": -71.543,
-      "weight": 0.3154,
-      "deviation": 0.2487,
-      "strength": "strong",
-      "isUSA": false,
-      "label": "IND \u2192 CHL"
-    },
-    {
-      "source": "CHL",
-      "target": "IND",
-      "sourceName": "Chile",
-      "targetName": "India",
-      "startLat": -35.6751,
-      "startLng": -71.543,
-      "endLat": 20.5937,
-      "endLng": 78.9629,
-      "weight": 0.2244,
-      "deviation": 0.1578,
-      "strength": "strong",
-      "isUSA": false,
-      "label": "CHL \u2192 IND"
-    },
-    {
-      "source": "IDN",
-      "target": "MEX",
-      "sourceName": "Indonesia",
-      "targetName": "Mexico",
-      "startLat": -0.7893,
-      "startLng": 113.9213,
-      "endLat": 23.6345,
-      "endLng": -102.5528,
-      "weight": 0.1873,
-      "deviation": 0.1206,
-      "strength": "strong",
-      "isUSA": false,
-      "label": "IDN \u2192 MEX"
-    },
-    {
-      "source": "MEX",
-      "target": "IDN",
-      "sourceName": "Mexico",
-      "targetName": "Indonesia",
-      "startLat": 23.6345,
-      "startLng": -102.5528,
-      "endLat": -0.7893,
-      "endLng": 113.9213,
-      "weight": 0.1727,
-      "deviation": 0.106,
-      "strength": "strong",
-      "isUSA": false,
-      "label": "MEX \u2192 IDN"
-    },
-    {
-      "source": "DEU",
-      "target": "FRA",
-      "sourceName": "Germany",
-      "targetName": "France",
-      "startLat": 51.1657,
-      "startLng": 10.4515,
-      "endLat": 46.2276,
-      "endLng": 2.2137,
-      "weight": 0.1491,
-      "deviation": 0.0824,
-      "strength": "medium",
-      "isUSA": false,
-      "label": "DEU \u2192 FRA"
-    },
-    {
-      "source": "BRA",
-      "target": "KOR",
-      "sourceName": "Brazil",
-      "targetName": "South Korea",
-      "startLat": -14.235,
-      "startLng": -51.9253,
-      "endLat": 35.9078,
-      "endLng": 127.7669,
-      "weight": 0.141,
-      "deviation": 0.0743,
-      "strength": "medium",
-      "isUSA": false,
-      "label": "BRA \u2192 KOR"
-    },
-    {
-      "source": "FRA",
-      "target": "DEU",
-      "sourceName": "France",
-      "targetName": "Germany",
-      "startLat": 46.2276,
-      "startLng": 2.2137,
-      "endLat": 51.1657,
-      "endLng": 10.4515,
-      "weight": 0.1398,
-      "deviation": 0.0732,
-      "strength": "medium",
-      "isUSA": false,
-      "label": "FRA \u2192 DEU"
-    },
-    {
-      "source": "KOR",
-      "target": "BRA",
-      "sourceName": "South Korea",
-      "targetName": "Brazil",
-      "startLat": 35.9078,
-      "startLng": 127.7669,
-      "endLat": -14.235,
-      "endLng": -51.9253,
-      "weight": 0.1246,
-      "deviation": 0.0579,
-      "strength": "medium",
-      "isUSA": false,
-      "label": "KOR \u2192 BRA"
-    },
-    {
-      "source": "MEX",
-      "target": "KOR",
-      "sourceName": "Mexico",
-      "targetName": "South Korea",
-      "startLat": 23.6345,
-      "startLng": -102.5528,
-      "endLat": 35.9078,
-      "endLng": 127.7669,
-      "weight": 0.1238,
-      "deviation": 0.0571,
-      "strength": "medium",
-      "isUSA": false,
-      "label": "MEX \u2192 KOR"
-    },
-    {
-      "source": "CHN",
-      "target": "AUS",
-      "sourceName": "China",
-      "targetName": "Australia",
-      "startLat": 35.8617,
-      "startLng": 104.1954,
-      "endLat": -25.2744,
-      "endLng": 133.7751,
-      "weight": 0.1143,
-      "deviation": 0.0476,
-      "strength": "medium",
-      "isUSA": false,
-      "label": "CHN \u2192 AUS"
-    },
-    {
-      "source": "GBR",
-      "target": "FRA",
-      "sourceName": "United Kingdom",
-      "targetName": "France",
-      "startLat": 55.3781,
-      "startLng": -3.436,
-      "endLat": 46.2276,
-      "endLng": 2.2137,
-      "weight": 0.1077,
-      "deviation": 0.041,
-      "strength": "medium",
-      "isUSA": false,
-      "label": "GBR \u2192 FRA"
-    },
-    {
-      "source": "GBR",
-      "target": "DEU",
-      "sourceName": "United Kingdom",
-      "targetName": "Germany",
-      "startLat": 55.3781,
-      "startLng": -3.436,
-      "endLat": 51.1657,
-      "endLng": 10.4515,
-      "weight": 0.1065,
-      "deviation": 0.0398,
-      "strength": "medium",
-      "isUSA": false,
-      "label": "GBR \u2192 DEU"
-    },
-    {
-      "source": "IDN",
-      "target": "KOR",
-      "sourceName": "Indonesia",
-      "targetName": "South Korea",
-      "startLat": -0.7893,
-      "startLng": 113.9213,
-      "endLat": 35.9078,
-      "endLng": 127.7669,
-      "weight": 0.1028,
-      "deviation": 0.0362,
-      "strength": "medium",
-      "isUSA": false,
-      "label": "IDN \u2192 KOR"
-    },
-    {
-      "source": "MEX",
-      "target": "BRA",
-      "sourceName": "Mexico",
-      "targetName": "Brazil",
-      "startLat": 23.6345,
-      "startLng": -102.5528,
-      "endLat": -14.235,
-      "endLng": -51.9253,
-      "weight": 0.1002,
-      "deviation": 0.0335,
-      "strength": "medium",
-      "isUSA": false,
-      "label": "MEX \u2192 BRA"
-    },
-    {
-      "source": "BRA",
-      "target": "DEU",
-      "sourceName": "Brazil",
-      "targetName": "Germany",
-      "startLat": -14.235,
-      "startLng": -51.9253,
-      "endLat": 51.1657,
-      "endLng": 10.4515,
-      "weight": 0.0931,
-      "deviation": 0.0264,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "BRA \u2192 DEU"
-    },
-    {
-      "source": "MEX",
-      "target": "CAN",
-      "sourceName": "Mexico",
-      "targetName": "Canada",
-      "startLat": 23.6345,
-      "startLng": -102.5528,
-      "endLat": 56.1304,
-      "endLng": -106.3468,
-      "weight": 0.0924,
-      "deviation": 0.0257,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "MEX \u2192 CAN"
-    },
-    {
-      "source": "FRA",
-      "target": "ZAF",
-      "sourceName": "France",
-      "targetName": "South Africa",
-      "startLat": 46.2276,
-      "startLng": 2.2137,
-      "endLat": -30.5595,
-      "endLng": 22.9375,
-      "weight": 0.0913,
-      "deviation": 0.0246,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "FRA \u2192 ZAF"
-    },
-    {
-      "source": "CAN",
-      "target": "BRA",
-      "sourceName": "Canada",
-      "targetName": "Brazil",
-      "startLat": 56.1304,
-      "startLng": -106.3468,
-      "endLat": -14.235,
-      "endLng": -51.9253,
-      "weight": 0.0888,
-      "deviation": 0.0222,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "CAN \u2192 BRA"
-    },
-    {
-      "source": "IDN",
-      "target": "GBR",
-      "sourceName": "Indonesia",
-      "targetName": "United Kingdom",
-      "startLat": -0.7893,
-      "startLng": 113.9213,
-      "endLat": 55.3781,
-      "endLng": -3.436,
-      "weight": 0.0886,
-      "deviation": 0.0219,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "IDN \u2192 GBR"
-    },
-    {
-      "source": "CAN",
-      "target": "DEU",
-      "sourceName": "Canada",
-      "targetName": "Germany",
-      "startLat": 56.1304,
-      "startLng": -106.3468,
-      "endLat": 51.1657,
-      "endLng": 10.4515,
-      "weight": 0.0882,
-      "deviation": 0.0216,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "CAN \u2192 DEU"
-    },
-    {
-      "source": "BRA",
-      "target": "CAN",
-      "sourceName": "Brazil",
-      "targetName": "Canada",
-      "startLat": -14.235,
-      "startLng": -51.9253,
-      "endLat": 56.1304,
-      "endLng": -106.3468,
-      "weight": 0.0873,
-      "deviation": 0.0206,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "BRA \u2192 CAN"
-    },
-    {
-      "source": "BRA",
-      "target": "FRA",
-      "sourceName": "Brazil",
-      "targetName": "France",
-      "startLat": -14.235,
-      "startLng": -51.9253,
-      "endLat": 46.2276,
-      "endLng": 2.2137,
-      "weight": 0.0867,
-      "deviation": 0.0201,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "BRA \u2192 FRA"
-    },
-    {
-      "source": "BRA",
-      "target": "AUS",
-      "sourceName": "Brazil",
-      "targetName": "Australia",
-      "startLat": -14.235,
-      "startLng": -51.9253,
-      "endLat": -25.2744,
-      "endLng": 133.7751,
-      "weight": 0.0856,
-      "deviation": 0.0189,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "BRA \u2192 AUS"
-    },
-    {
-      "source": "GBR",
-      "target": "ZAF",
-      "sourceName": "United Kingdom",
-      "targetName": "South Africa",
-      "startLat": 55.3781,
-      "startLng": -3.436,
-      "endLat": -30.5595,
-      "endLng": 22.9375,
-      "weight": 0.0856,
-      "deviation": 0.0189,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "GBR \u2192 ZAF"
-    },
-    {
-      "source": "DEU",
-      "target": "GBR",
-      "sourceName": "Germany",
-      "targetName": "United Kingdom",
-      "startLat": 51.1657,
-      "startLng": 10.4515,
-      "endLat": 55.3781,
-      "endLng": -3.436,
-      "weight": 0.0848,
-      "deviation": 0.0181,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "DEU \u2192 GBR"
-    },
-    {
-      "source": "FRA",
-      "target": "GBR",
-      "sourceName": "France",
-      "targetName": "United Kingdom",
-      "startLat": 46.2276,
-      "startLng": 2.2137,
-      "endLat": 55.3781,
-      "endLng": -3.436,
-      "weight": 0.0804,
-      "deviation": 0.0137,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "FRA \u2192 GBR"
-    },
-    {
-      "source": "CHN",
-      "target": "KOR",
-      "sourceName": "China",
-      "targetName": "South Korea",
-      "startLat": 35.8617,
-      "startLng": 104.1954,
-      "endLat": 35.9078,
-      "endLng": 127.7669,
-      "weight": 0.0797,
-      "deviation": 0.013,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "CHN \u2192 KOR"
-    },
-    {
-      "source": "IDN",
-      "target": "CHN",
-      "sourceName": "Indonesia",
-      "targetName": "China",
-      "startLat": -0.7893,
-      "startLng": 113.9213,
-      "endLat": 35.8617,
-      "endLng": 104.1954,
-      "weight": 0.0784,
-      "deviation": 0.0117,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "IDN \u2192 CHN"
-    },
-    {
-      "source": "DEU",
-      "target": "BRA",
-      "sourceName": "Germany",
-      "targetName": "Brazil",
-      "startLat": 51.1657,
-      "startLng": 10.4515,
-      "endLat": -14.235,
-      "endLng": -51.9253,
-      "weight": 0.0765,
-      "deviation": 0.0098,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "DEU \u2192 BRA"
-    },
-    {
-      "source": "CAN",
-      "target": "AUS",
-      "sourceName": "Canada",
-      "targetName": "Australia",
-      "startLat": 56.1304,
-      "startLng": -106.3468,
-      "endLat": -25.2744,
-      "endLng": 133.7751,
-      "weight": 0.0751,
-      "deviation": 0.0085,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "CAN \u2192 AUS"
-    },
-    {
-      "source": "DEU",
-      "target": "CAN",
-      "sourceName": "Germany",
-      "targetName": "Canada",
-      "startLat": 51.1657,
-      "startLng": 10.4515,
-      "endLat": 56.1304,
-      "endLng": -106.3468,
-      "weight": 0.0713,
-      "deviation": 0.0046,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "DEU \u2192 CAN"
-    },
-    {
-      "source": "GBR",
-      "target": "CAN",
-      "sourceName": "United Kingdom",
-      "targetName": "Canada",
-      "startLat": 55.3781,
-      "startLng": -3.436,
-      "endLat": 56.1304,
-      "endLng": -106.3468,
-      "weight": 0.0712,
-      "deviation": 0.0045,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "GBR \u2192 CAN"
-    },
-    {
-      "source": "JPN",
-      "target": "FRA",
-      "sourceName": "Japan",
-      "targetName": "France",
-      "startLat": 36.2048,
-      "startLng": 138.2529,
-      "endLat": 46.2276,
-      "endLng": 2.2137,
-      "weight": 0.0707,
-      "deviation": 0.004,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "JPN \u2192 FRA"
-    },
-    {
-      "source": "CAN",
-      "target": "GBR",
-      "sourceName": "Canada",
-      "targetName": "United Kingdom",
-      "startLat": 56.1304,
-      "startLng": -106.3468,
-      "endLat": 55.3781,
-      "endLng": -3.436,
-      "weight": 0.0702,
-      "deviation": 0.0035,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "CAN \u2192 GBR"
-    },
-    {
-      "source": "CHN",
-      "target": "USA",
-      "sourceName": "China",
-      "targetName": "United States",
-      "startLat": 35.8617,
-      "startLng": 104.1954,
-      "endLat": 37.0902,
-      "endLng": -95.7129,
-      "weight": 0.0697,
-      "deviation": 0.003,
-      "strength": "weak",
-      "isUSA": true,
-      "label": "CHN \u2192 USA"
-    },
-    {
-      "source": "KOR",
-      "target": "AUS",
-      "sourceName": "South Korea",
-      "targetName": "Australia",
-      "startLat": 35.9078,
-      "startLng": 127.7669,
-      "endLat": -25.2744,
-      "endLng": 133.7751,
-      "weight": 0.0677,
-      "deviation": 0.001,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "KOR \u2192 AUS"
-    },
-    {
-      "source": "IDN",
-      "target": "USA",
-      "sourceName": "Indonesia",
-      "targetName": "United States",
-      "startLat": -0.7893,
-      "startLng": 113.9213,
-      "endLat": 37.0902,
-      "endLng": -95.7129,
-      "weight": 0.0676,
-      "deviation": 0.0009,
-      "strength": "weak",
-      "isUSA": true,
-      "label": "IDN \u2192 USA"
-    },
-    {
-      "source": "MEX",
-      "target": "GBR",
-      "sourceName": "Mexico",
-      "targetName": "United Kingdom",
-      "startLat": 23.6345,
-      "startLng": -102.5528,
-      "endLat": 55.3781,
-      "endLng": -3.436,
-      "weight": 0.0669,
-      "deviation": 0.0003,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "MEX \u2192 GBR"
-    },
-    {
-      "source": "FRA",
-      "target": "BRA",
-      "sourceName": "France",
-      "targetName": "Brazil",
-      "startLat": 46.2276,
-      "startLng": 2.2137,
-      "endLat": -14.235,
-      "endLng": -51.9253,
-      "weight": 0.0669,
-      "deviation": 0.0002,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "FRA \u2192 BRA"
-    },
-    {
-      "source": "GBR",
-      "target": "BRA",
-      "sourceName": "United Kingdom",
-      "targetName": "Brazil",
-      "startLat": 55.3781,
-      "startLng": -3.436,
-      "endLat": -14.235,
-      "endLng": -51.9253,
-      "weight": 0.0663,
-      "deviation": -0.0003,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "GBR \u2192 BRA"
-    },
-    {
-      "source": "ZAF",
-      "target": "FRA",
-      "sourceName": "South Africa",
-      "targetName": "France",
-      "startLat": -30.5595,
-      "startLng": 22.9375,
-      "endLat": 46.2276,
-      "endLng": 2.2137,
-      "weight": 0.0658,
-      "deviation": -0.0009,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "ZAF \u2192 FRA"
-    },
-    {
-      "source": "BRA",
-      "target": "GBR",
-      "sourceName": "Brazil",
-      "targetName": "United Kingdom",
-      "startLat": -14.235,
-      "startLng": -51.9253,
-      "endLat": 55.3781,
-      "endLng": -3.436,
-      "weight": 0.0643,
-      "deviation": -0.0024,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "BRA \u2192 GBR"
-    },
-    {
-      "source": "FRA",
-      "target": "AUS",
-      "sourceName": "France",
-      "targetName": "Australia",
-      "startLat": 46.2276,
-      "startLng": 2.2137,
-      "endLat": -25.2744,
-      "endLng": 133.7751,
-      "weight": 0.0638,
-      "deviation": -0.0029,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "FRA \u2192 AUS"
-    },
-    {
-      "source": "CAN",
-      "target": "FRA",
-      "sourceName": "Canada",
-      "targetName": "France",
-      "startLat": 56.1304,
-      "startLng": -106.3468,
-      "endLat": 46.2276,
-      "endLng": 2.2137,
-      "weight": 0.0637,
-      "deviation": -0.003,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "CAN \u2192 FRA"
-    },
-    {
-      "source": "DEU",
-      "target": "AUS",
-      "sourceName": "Germany",
-      "targetName": "Australia",
-      "startLat": 51.1657,
-      "startLng": 10.4515,
-      "endLat": -25.2744,
-      "endLng": 133.7751,
-      "weight": 0.0635,
-      "deviation": -0.0032,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "DEU \u2192 AUS"
-    },
-    {
-      "source": "CAN",
-      "target": "KOR",
-      "sourceName": "Canada",
-      "targetName": "South Korea",
-      "startLat": 56.1304,
-      "startLng": -106.3468,
-      "endLat": 35.9078,
-      "endLng": 127.7669,
-      "weight": 0.0627,
-      "deviation": -0.004,
-      "strength": "weak",
-      "isUSA": false,
-      "label": "CAN \u2192 KOR"
-    },
-    {
-      "source": "KOR",
-      "target": "USA",
-      "sourceName": "South Korea",
-      "targetName": "United States",
-      "startLat": 35.9078,
-      "startLng": 127.7669,
-      "endLat": 37.0902,
-      "endLng": -95.7129,
-      "weight": 0.0605,
-      "deviation": -0.0061,
-      "strength": "weak",
-      "isUSA": true,
-      "label": "KOR \u2192 USA"
-    },
-    {
-      "source": "GBR",
-      "target": "USA",
-      "sourceName": "United Kingdom",
-      "targetName": "United States",
-      "startLat": 55.3781,
-      "startLng": -3.436,
-      "endLat": 37.0902,
-      "endLng": -95.7129,
-      "weight": 0.058,
-      "deviation": -0.0086,
-      "strength": "usa-link",
-      "isUSA": true,
-      "label": "GBR \u2192 USA"
-    },
-    {
-      "source": "CHL",
-      "target": "USA",
-      "sourceName": "Chile",
-      "targetName": "United States",
-      "startLat": -35.6751,
-      "startLng": -71.543,
-      "endLat": 37.0902,
-      "endLng": -95.7129,
-      "weight": 0.054,
-      "deviation": -0.0127,
-      "strength": "usa-link",
-      "isUSA": true,
-      "label": "CHL \u2192 USA"
-    },
-    {
-      "source": "MEX",
-      "target": "USA",
-      "sourceName": "Mexico",
-      "targetName": "United States",
-      "startLat": 23.6345,
-      "startLng": -102.5528,
-      "endLat": 37.0902,
-      "endLng": -95.7129,
-      "weight": 0.0526,
-      "deviation": -0.0141,
-      "strength": "usa-link",
-      "isUSA": true,
-      "label": "MEX \u2192 USA"
-    },
-    {
-      "source": "AUS",
-      "target": "USA",
-      "sourceName": "Australia",
-      "targetName": "United States",
-      "startLat": -25.2744,
-      "startLng": 133.7751,
-      "endLat": 37.0902,
-      "endLng": -95.7129,
-      "weight": 0.0493,
-      "deviation": -0.0174,
-      "strength": "usa-link",
-      "isUSA": true,
-      "label": "AUS \u2192 USA"
-    },
-    {
-      "source": "USA",
-      "target": "AUS",
-      "sourceName": "United States",
-      "targetName": "Australia",
-      "startLat": 37.0902,
-      "startLng": -95.7129,
-      "endLat": -25.2744,
-      "endLng": 133.7751,
-      "weight": 0.0466,
-      "deviation": -0.0201,
-      "strength": "usa-link",
-      "isUSA": true,
-      "label": "USA \u2192 AUS"
-    },
-    {
-      "source": "USA",
-      "target": "ZAF",
-      "sourceName": "United States",
-      "targetName": "South Africa",
-      "startLat": 37.0902,
-      "startLng": -95.7129,
-      "endLat": -30.5595,
-      "endLng": 22.9375,
-      "weight": 0.0461,
-      "deviation": -0.0206,
-      "strength": "usa-link",
-      "isUSA": true,
-      "label": "USA \u2192 ZAF"
-    },
-    {
-      "source": "ZAF",
-      "target": "USA",
-      "sourceName": "South Africa",
-      "targetName": "United States",
-      "startLat": -30.5595,
-      "startLng": 22.9375,
-      "endLat": 37.0902,
-      "endLng": -95.7129,
-      "weight": 0.0435,
-      "deviation": -0.0232,
-      "strength": "usa-link",
-      "isUSA": true,
-      "label": "ZAF \u2192 USA"
-    },
-    {
-      "source": "CAN",
-      "target": "USA",
-      "sourceName": "Canada",
-      "targetName": "United States",
-      "startLat": 56.1304,
-      "startLng": -106.3468,
-      "endLat": 37.0902,
-      "endLng": -95.7129,
-      "weight": 0.0429,
-      "deviation": -0.0238,
-      "strength": "usa-link",
-      "isUSA": true,
-      "label": "CAN \u2192 USA"
-    },
-    {
-      "source": "BRA",
-      "target": "USA",
-      "sourceName": "Brazil",
-      "targetName": "United States",
-      "startLat": -14.235,
-      "startLng": -51.9253,
-      "endLat": 37.0902,
-      "endLng": -95.7129,
-      "weight": 0.0416,
-      "deviation": -0.0251,
-      "strength": "usa-link",
-      "isUSA": true,
-      "label": "BRA \u2192 USA"
-    },
-    {
-      "source": "USA",
-      "target": "KOR",
-      "sourceName": "United States",
-      "targetName": "South Korea",
-      "startLat": 37.0902,
-      "startLng": -95.7129,
-      "endLat": 35.9078,
-      "endLng": 127.7669,
-      "weight": 0.0404,
-      "deviation": -0.0263,
-      "strength": "usa-link",
-      "isUSA": true,
-      "label": "USA \u2192 KOR"
-    }
-  ],
-  "nodes": [
+  "modelVersion": "V22-Relationships",
+  "generatedAt": "2025-12-04 14:18:32",
+  "directionAccuracy": 0.596,
+  "directionNote": "Discovered as auxiliary signal from relationship learning",
+  "countries": [
     "USA",
     "CHN",
     "JPN",
@@ -887,229 +18,678 @@
     "MEX",
     "IDN",
     "ZAF",
-    "CHL"
+    "CHL",
+    "SGP",
+    "NLD",
+    "HKG",
+    "CHE",
+    "TWN",
+    "VNM",
+    "NOR"
   ],
   "coordinates": {
     "USA": {
-      "lat": 37.0902,
-      "lng": -95.7129,
-      "name": "United States"
+      "name": "United States",
+      "lat": 38.0,
+      "lon": -97.0
     },
     "CHN": {
-      "lat": 35.8617,
-      "lng": 104.1954,
-      "name": "China"
+      "name": "China",
+      "lat": 35.0,
+      "lon": 105.0
     },
     "JPN": {
-      "lat": 36.2048,
-      "lng": 138.2529,
-      "name": "Japan"
+      "name": "Japan",
+      "lat": 36.0,
+      "lon": 138.0
     },
     "DEU": {
-      "lat": 51.1657,
-      "lng": 10.4515,
-      "name": "Germany"
+      "name": "Germany",
+      "lat": 51.0,
+      "lon": 10.0
     },
     "GBR": {
-      "lat": 55.3781,
-      "lng": -3.436,
-      "name": "United Kingdom"
+      "name": "United Kingdom",
+      "lat": 54.0,
+      "lon": -2.0
     },
     "FRA": {
-      "lat": 46.2276,
-      "lng": 2.2137,
-      "name": "France"
+      "name": "France",
+      "lat": 46.0,
+      "lon": 2.0
     },
     "IND": {
-      "lat": 20.5937,
-      "lng": 78.9629,
-      "name": "India"
+      "name": "India",
+      "lat": 20.0,
+      "lon": 77.0
     },
     "BRA": {
-      "lat": -14.235,
-      "lng": -51.9253,
-      "name": "Brazil"
+      "name": "Brazil",
+      "lat": -10.0,
+      "lon": -55.0
     },
     "CAN": {
-      "lat": 56.1304,
-      "lng": -106.3468,
-      "name": "Canada"
+      "name": "Canada",
+      "lat": 56.0,
+      "lon": -106.0
     },
     "KOR": {
-      "lat": 35.9078,
-      "lng": 127.7669,
-      "name": "South Korea"
+      "name": "South Korea",
+      "lat": 36.0,
+      "lon": 128.0
     },
     "AUS": {
-      "lat": -25.2744,
-      "lng": 133.7751,
-      "name": "Australia"
+      "name": "Australia",
+      "lat": -25.0,
+      "lon": 133.0
     },
     "MEX": {
-      "lat": 23.6345,
-      "lng": -102.5528,
-      "name": "Mexico"
+      "name": "Mexico",
+      "lat": 23.0,
+      "lon": -102.0
     },
     "IDN": {
-      "lat": -0.7893,
-      "lng": 113.9213,
-      "name": "Indonesia"
+      "name": "Indonesia",
+      "lat": -5.0,
+      "lon": 120.0
     },
     "ZAF": {
-      "lat": -30.5595,
-      "lng": 22.9375,
-      "name": "South Africa"
+      "name": "South Africa",
+      "lat": -29.0,
+      "lon": 24.0
     },
     "CHL": {
-      "lat": -35.6751,
-      "lng": -71.543,
-      "name": "Chile"
+      "name": "Chile",
+      "lat": -35.0,
+      "lon": -71.0
+    },
+    "SGP": {
+      "name": "Singapore",
+      "lat": 1.35,
+      "lon": 103.82
+    },
+    "NLD": {
+      "name": "Netherlands",
+      "lat": 52.13,
+      "lon": 5.29
+    },
+    "HKG": {
+      "name": "Hong Kong",
+      "lat": 22.32,
+      "lon": 114.17
+    },
+    "CHE": {
+      "name": "Switzerland",
+      "lat": 46.82,
+      "lon": 8.23
+    },
+    "TWN": {
+      "name": "Taiwan",
+      "lat": 23.7,
+      "lon": 120.96
+    },
+    "VNM": {
+      "name": "Vietnam",
+      "lat": 14.06,
+      "lon": 108.28
+    },
+    "NOR": {
+      "name": "Norway",
+      "lat": 60.47,
+      "lon": 8.47
     }
   },
-  "usaAnalysis": {
-    "influencedBy": [
-      {
-        "country": "CHN",
-        "name": "China",
-        "weight": 0.0697
-      },
-      {
-        "country": "IDN",
-        "name": "Indonesia",
-        "weight": 0.0676
-      },
-      {
-        "country": "KOR",
-        "name": "South Korea",
-        "weight": 0.0605
-      },
-      {
-        "country": "GBR",
-        "name": "United Kingdom",
-        "weight": 0.058
-      },
-      {
-        "country": "CHL",
-        "name": "Chile",
-        "weight": 0.054
-      },
-      {
-        "country": "MEX",
-        "name": "Mexico",
-        "weight": 0.0526
-      },
-      {
-        "country": "AUS",
-        "name": "Australia",
-        "weight": 0.0493
-      },
-      {
-        "country": "ZAF",
-        "name": "South Africa",
-        "weight": 0.0435
-      },
-      {
-        "country": "CAN",
-        "name": "Canada",
-        "weight": 0.0429
-      },
-      {
-        "country": "BRA",
-        "name": "Brazil",
-        "weight": 0.0416
-      },
-      {
-        "country": "JPN",
-        "name": "Japan",
-        "weight": 0.0316
-      },
-      {
-        "country": "DEU",
-        "name": "Germany",
-        "weight": 0.028
-      },
-      {
-        "country": "IND",
-        "name": "India",
-        "weight": 0.0273
-      },
-      {
-        "country": "FRA",
-        "name": "France",
-        "weight": 0.0229
-      }
-    ],
-    "influences": [
-      {
-        "country": "AUS",
-        "name": "Australia",
-        "weight": 0.0466
-      },
-      {
-        "country": "ZAF",
-        "name": "South Africa",
-        "weight": 0.0461
-      },
-      {
-        "country": "KOR",
-        "name": "South Korea",
-        "weight": 0.0404
-      },
-      {
-        "country": "CHN",
-        "name": "China",
-        "weight": 0.0331
-      },
-      {
-        "country": "GBR",
-        "name": "United Kingdom",
-        "weight": 0.0331
-      },
-      {
-        "country": "CHL",
-        "name": "Chile",
-        "weight": 0.0281
-      },
-      {
-        "country": "CAN",
-        "name": "Canada",
-        "weight": 0.0248
-      },
-      {
-        "country": "BRA",
-        "name": "Brazil",
-        "weight": 0.0245
-      },
-      {
-        "country": "DEU",
-        "name": "Germany",
-        "weight": 0.0201
-      },
-      {
-        "country": "FRA",
-        "name": "France",
-        "weight": 0.0175
-      },
-      {
-        "country": "IDN",
-        "name": "Indonesia",
-        "weight": 0.016
-      },
-      {
-        "country": "MEX",
-        "name": "Mexico",
-        "weight": 0.0135
-      },
-      {
-        "country": "IND",
-        "name": "India",
-        "weight": 0.0101
-      },
-      {
-        "country": "JPN",
-        "name": "Japan",
-        "weight": 0.0097
-      }
-    ]
+  "connections": [
+    {
+      "from": "CHN",
+      "to": "NLD",
+      "weight": 0.6050336956977844,
+      "raw": 2.042274236679077,
+      "strength": "strong",
+      "label": "China \u2192 Netherlands"
+    },
+    {
+      "from": "NLD",
+      "to": "NOR",
+      "weight": 0.5990972518920898,
+      "raw": 2.072624921798706,
+      "strength": "strong",
+      "label": "Netherlands \u2192 Norway"
+    },
+    {
+      "from": "KOR",
+      "to": "CHL",
+      "weight": 0.515815794467926,
+      "raw": 2.128166437149048,
+      "strength": "strong",
+      "label": "South Korea \u2192 Chile"
+    },
+    {
+      "from": "JPN",
+      "to": "MEX",
+      "weight": 0.49530819058418274,
+      "raw": 2.0840866565704346,
+      "strength": "strong",
+      "label": "Japan \u2192 Mexico"
+    },
+    {
+      "from": "HKG",
+      "to": "CHN",
+      "weight": 0.48348987102508545,
+      "raw": 1.8221802711486816,
+      "strength": "strong",
+      "label": "Hong Kong \u2192 China"
+    },
+    {
+      "from": "AUS",
+      "to": "CAN",
+      "weight": 0.43949005007743835,
+      "raw": 1.7422858476638794,
+      "strength": "strong",
+      "label": "Australia \u2192 Canada"
+    },
+    {
+      "from": "CHE",
+      "to": "KOR",
+      "weight": 0.43828877806663513,
+      "raw": 1.7685306072235107,
+      "strength": "strong",
+      "label": "Switzerland \u2192 South Korea"
+    },
+    {
+      "from": "NOR",
+      "to": "AUS",
+      "weight": 0.4291253387928009,
+      "raw": 1.9686098098754883,
+      "strength": "strong",
+      "label": "Norway \u2192 Australia"
+    },
+    {
+      "from": "DEU",
+      "to": "AUS",
+      "weight": 0.37407344579696655,
+      "raw": 1.7992877960205078,
+      "strength": "medium",
+      "label": "Germany \u2192 Australia"
+    },
+    {
+      "from": "FRA",
+      "to": "GBR",
+      "weight": 0.3571573495864868,
+      "raw": 1.6484988927841187,
+      "strength": "medium",
+      "label": "France \u2192 United Kingdom"
+    },
+    {
+      "from": "TWN",
+      "to": "DEU",
+      "weight": 0.3484695255756378,
+      "raw": 1.676051139831543,
+      "strength": "medium",
+      "label": "Taiwan \u2192 Germany"
+    },
+    {
+      "from": "USA",
+      "to": "FRA",
+      "weight": 0.3322082459926605,
+      "raw": 1.6010066270828247,
+      "strength": "medium",
+      "label": "United States \u2192 France"
+    },
+    {
+      "from": "GBR",
+      "to": "HKG",
+      "weight": 0.3308420479297638,
+      "raw": 1.5660642385482788,
+      "strength": "medium",
+      "label": "United Kingdom \u2192 Hong Kong"
+    },
+    {
+      "from": "IND",
+      "to": "CHE",
+      "weight": 0.3138810396194458,
+      "raw": 1.8585634231567383,
+      "strength": "medium",
+      "label": "India \u2192 Switzerland"
+    },
+    {
+      "from": "BRA",
+      "to": "MEX",
+      "weight": 0.3110002875328064,
+      "raw": 1.8636932373046875,
+      "strength": "medium",
+      "label": "Brazil \u2192 Mexico"
+    },
+    {
+      "from": "VNM",
+      "to": "BRA",
+      "weight": 0.29612380266189575,
+      "raw": 1.6472091674804688,
+      "strength": "medium",
+      "label": "Vietnam \u2192 Brazil"
+    },
+    {
+      "from": "CAN",
+      "to": "CHL",
+      "weight": 0.26995769143104553,
+      "raw": 1.4945544004440308,
+      "strength": "medium",
+      "label": "Canada \u2192 Chile"
+    },
+    {
+      "from": "KOR",
+      "to": "DEU",
+      "weight": 0.26807835698127747,
+      "raw": 1.8009312152862549,
+      "strength": "medium",
+      "label": "South Korea \u2192 Germany"
+    },
+    {
+      "from": "CAN",
+      "to": "SGP",
+      "weight": 0.2678295969963074,
+      "raw": 1.4905972480773926,
+      "strength": "medium",
+      "label": "Canada \u2192 Singapore"
+    },
+    {
+      "from": "SGP",
+      "to": "GBR",
+      "weight": 0.2642509937286377,
+      "raw": 1.437679409980774,
+      "strength": "medium",
+      "label": "Singapore \u2192 United Kingdom"
+    },
+    {
+      "from": "IDN",
+      "to": "CHE",
+      "weight": 0.2623065710067749,
+      "raw": 1.6811555624008179,
+      "strength": "medium",
+      "label": "Indonesia \u2192 Switzerland"
+    },
+    {
+      "from": "IDN",
+      "to": "NOR",
+      "weight": 0.2540767192840576,
+      "raw": 1.6652166843414307,
+      "strength": "medium",
+      "label": "Indonesia \u2192 Norway"
+    },
+    {
+      "from": "MEX",
+      "to": "TWN",
+      "weight": 0.24752438068389893,
+      "raw": 1.4140287637710571,
+      "strength": "weak",
+      "label": "Mexico \u2192 Taiwan"
+    },
+    {
+      "from": "CHL",
+      "to": "IND",
+      "weight": 0.2447948455810547,
+      "raw": 1.362502932548523,
+      "strength": "weak",
+      "label": "Chile \u2192 India"
+    },
+    {
+      "from": "NOR",
+      "to": "VNM",
+      "weight": 0.2404562085866928,
+      "raw": 1.6790043115615845,
+      "strength": "weak",
+      "label": "Norway \u2192 Vietnam"
+    },
+    {
+      "from": "GBR",
+      "to": "BRA",
+      "weight": 0.21750690042972565,
+      "raw": 1.3563590049743652,
+      "strength": "weak",
+      "label": "United Kingdom \u2192 Brazil"
+    },
+    {
+      "from": "USA",
+      "to": "DEU",
+      "weight": 0.2087237685918808,
+      "raw": 1.3686314821243286,
+      "strength": "weak",
+      "label": "United States \u2192 Germany"
+    },
+    {
+      "from": "IND",
+      "to": "ZAF",
+      "weight": 0.20367009937763214,
+      "raw": 1.642307162284851,
+      "strength": "weak",
+      "label": "India \u2192 South Africa"
+    },
+    {
+      "from": "ZAF",
+      "to": "GBR",
+      "weight": 0.20290690660476685,
+      "raw": 1.4120662212371826,
+      "strength": "weak",
+      "label": "South Africa \u2192 United Kingdom"
+    },
+    {
+      "from": "USA",
+      "to": "CHN",
+      "weight": 0.20259247720241547,
+      "raw": 1.3537238836288452,
+      "strength": "weak",
+      "label": "United States \u2192 China"
+    },
+    {
+      "from": "CHE",
+      "to": "CAN",
+      "weight": 0.20101234316825867,
+      "raw": 1.3787747621536255,
+      "strength": "weak",
+      "label": "Switzerland \u2192 Canada"
+    },
+    {
+      "from": "CHL",
+      "to": "AUS",
+      "weight": 0.19391006231307983,
+      "raw": 1.2459899187088013,
+      "strength": "weak",
+      "label": "Chile \u2192 Australia"
+    },
+    {
+      "from": "SGP",
+      "to": "FRA",
+      "weight": 0.19390954077243805,
+      "raw": 1.2829256057739258,
+      "strength": "weak",
+      "label": "Singapore \u2192 France"
+    },
+    {
+      "from": "HKG",
+      "to": "FRA",
+      "weight": 0.1937190741300583,
+      "raw": 1.3648695945739746,
+      "strength": "weak",
+      "label": "Hong Kong \u2192 France"
+    },
+    {
+      "from": "MEX",
+      "to": "AUS",
+      "weight": 0.1861032396554947,
+      "raw": 1.2714250087738037,
+      "strength": "weak",
+      "label": "Mexico \u2192 Australia"
+    },
+    {
+      "from": "TWN",
+      "to": "GBR",
+      "weight": 0.1839565634727478,
+      "raw": 1.3566255569458008,
+      "strength": "weak",
+      "label": "Taiwan \u2192 United Kingdom"
+    },
+    {
+      "from": "IND",
+      "to": "SGP",
+      "weight": 0.1692933738231659,
+      "raw": 1.5498729944229126,
+      "strength": "weak",
+      "label": "India \u2192 Singapore"
+    },
+    {
+      "from": "CHL",
+      "to": "FRA",
+      "weight": 0.1639450490474701,
+      "raw": 1.1620583534240723,
+      "strength": "weak",
+      "label": "Chile \u2192 France"
+    },
+    {
+      "from": "BRA",
+      "to": "CHE",
+      "weight": 0.16134925186634064,
+      "raw": 1.5355819463729858,
+      "strength": "weak",
+      "label": "Brazil \u2192 Switzerland"
+    },
+    {
+      "from": "ZAF",
+      "to": "TWN",
+      "weight": 0.16013602912425995,
+      "raw": 1.2937043905258179,
+      "strength": "weak",
+      "label": "South Africa \u2192 Taiwan"
+    },
+    {
+      "from": "IDN",
+      "to": "NLD",
+      "weight": 0.15918484330177307,
+      "raw": 1.4314316511154175,
+      "strength": "weak",
+      "label": "Indonesia \u2192 Netherlands"
+    },
+    {
+      "from": "GBR",
+      "to": "IND",
+      "weight": 0.1535363793373108,
+      "raw": 1.182212471961975,
+      "strength": "weak",
+      "label": "United Kingdom \u2192 India"
+    },
+    {
+      "from": "CAN",
+      "to": "USA",
+      "weight": 0.152512788772583,
+      "raw": 1.2090460062026978,
+      "strength": "weak",
+      "label": "Canada \u2192 United States"
+    },
+    {
+      "from": "ZAF",
+      "to": "FRA",
+      "weight": 0.14834463596343994,
+      "raw": 1.2554616928100586,
+      "strength": "weak",
+      "label": "South Africa \u2192 France"
+    },
+    {
+      "from": "FRA",
+      "to": "VNM",
+      "weight": 0.14164228737354279,
+      "raw": 1.1860630512237549,
+      "strength": "weak",
+      "label": "France \u2192 Vietnam"
+    },
+    {
+      "from": "TWN",
+      "to": "HKG",
+      "weight": 0.14096416532993317,
+      "raw": 1.2235286235809326,
+      "strength": "weak",
+      "label": "Taiwan \u2192 Hong Kong"
+    },
+    {
+      "from": "VNM",
+      "to": "NLD",
+      "weight": 0.14043180644512177,
+      "raw": 1.2741813659667969,
+      "strength": "weak",
+      "label": "Vietnam \u2192 Netherlands"
+    },
+    {
+      "from": "DEU",
+      "to": "IND",
+      "weight": 0.13863635063171387,
+      "raw": 1.302988886833191,
+      "strength": "weak",
+      "label": "Germany \u2192 India"
+    },
+    {
+      "from": "VNM",
+      "to": "IND",
+      "weight": 0.1354823261499405,
+      "raw": 1.256240963935852,
+      "strength": "weak",
+      "label": "Vietnam \u2192 India"
+    },
+    {
+      "from": "NOR",
+      "to": "IND",
+      "weight": 0.13542231917381287,
+      "raw": 1.3919343948364258,
+      "strength": "weak",
+      "label": "Norway \u2192 India"
+    },
+    {
+      "from": "NLD",
+      "to": "MEX",
+      "weight": 0.13492025434970856,
+      "raw": 1.3272548913955688,
+      "strength": "weak",
+      "label": "Netherlands \u2192 Mexico"
+    },
+    {
+      "from": "SGP",
+      "to": "CHN",
+      "weight": 0.1344919353723526,
+      "raw": 1.0999817848205566,
+      "strength": "weak",
+      "label": "Singapore \u2192 China"
+    },
+    {
+      "from": "IDN",
+      "to": "MEX",
+      "weight": 0.13279077410697937,
+      "raw": 1.3407859802246094,
+      "strength": "weak",
+      "label": "Indonesia \u2192 Mexico"
+    },
+    {
+      "from": "AUS",
+      "to": "NLD",
+      "weight": 0.13108879327774048,
+      "raw": 1.1374157667160034,
+      "strength": "weak",
+      "label": "Australia \u2192 Netherlands"
+    },
+    {
+      "from": "VNM",
+      "to": "CAN",
+      "weight": 0.1265314519405365,
+      "raw": 1.222065806388855,
+      "strength": "weak",
+      "label": "Vietnam \u2192 Canada"
+    },
+    {
+      "from": "JPN",
+      "to": "NOR",
+      "weight": 0.12142222374677658,
+      "raw": 1.3811335563659668,
+      "strength": "weak",
+      "label": "Japan \u2192 Norway"
+    },
+    {
+      "from": "DEU",
+      "to": "VNM",
+      "weight": 0.11937832832336426,
+      "raw": 1.2282105684280396,
+      "strength": "weak",
+      "label": "Germany \u2192 Vietnam"
+    },
+    {
+      "from": "BRA",
+      "to": "ZAF",
+      "weight": 0.11700792610645294,
+      "raw": 1.3749171495437622,
+      "strength": "weak",
+      "label": "Brazil \u2192 South Africa"
+    },
+    {
+      "from": "MEX",
+      "to": "FRA",
+      "weight": 0.1154899001121521,
+      "raw": 1.0328657627105713,
+      "strength": "weak",
+      "label": "Mexico \u2192 France"
+    },
+    {
+      "from": "MEX",
+      "to": "IND",
+      "weight": 0.11363518983125687,
+      "raw": 1.0247708559036255,
+      "strength": "weak",
+      "label": "Mexico \u2192 India"
+    },
+    {
+      "from": "SGP",
+      "to": "AUS",
+      "weight": 0.1133086234331131,
+      "raw": 1.0142873525619507,
+      "strength": "weak",
+      "label": "Singapore \u2192 Australia"
+    },
+    {
+      "from": "DEU",
+      "to": "FRA",
+      "weight": 0.11066195368766785,
+      "raw": 1.190301775932312,
+      "strength": "weak",
+      "label": "Germany \u2192 France"
+    },
+    {
+      "from": "AUS",
+      "to": "IND",
+      "weight": 0.10692844539880753,
+      "raw": 1.0355582237243652,
+      "strength": "weak",
+      "label": "Australia \u2192 India"
+    },
+    {
+      "from": "ZAF",
+      "to": "VNM",
+      "weight": 0.10652544349431992,
+      "raw": 1.0898845195770264,
+      "strength": "weak",
+      "label": "South Africa \u2192 Vietnam"
+    },
+    {
+      "from": "BRA",
+      "to": "SGP",
+      "weight": 0.10571730136871338,
+      "raw": 1.3241806030273438,
+      "strength": "weak",
+      "label": "Brazil \u2192 Singapore"
+    },
+    {
+      "from": "VNM",
+      "to": "JPN",
+      "weight": 0.10471322387456894,
+      "raw": 1.1274330615997314,
+      "strength": "weak",
+      "label": "Vietnam \u2192 Japan"
+    },
+    {
+      "from": "DEU",
+      "to": "CHN",
+      "weight": 0.10337400436401367,
+      "raw": 1.1562384366989136,
+      "strength": "weak",
+      "label": "Germany \u2192 China"
+    },
+    {
+      "from": "TWN",
+      "to": "CHL",
+      "weight": 0.10227927565574646,
+      "raw": 1.0631293058395386,
+      "strength": "weak",
+      "label": "Taiwan \u2192 Chile"
+    }
+  ],
+  "stats": {
+    "totalCountries": 22,
+    "totalConnections": 68,
+    "avgWeight": 0.22614467220709605,
+    "maxWeight": 0.6050336956977844,
+    "threshold": 0.1
   }
 }

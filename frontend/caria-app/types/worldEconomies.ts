@@ -1,41 +1,54 @@
 export type CyclePhase = 'expansion' | 'slowdown' | 'recession' | 'recovery';
 
-// CARIA Economic Graph Types
+// CARIA V22 Economic Graph Types
+export interface EconomicConnection {
+    from: string;            // ISO code of influencer
+    to: string;              // ISO code of influenced
+    weight: number;          // 0 to 1 (connection strength)
+    raw: number;             // Raw adjacency score
+    strength: 'strong' | 'medium' | 'weak';
+    label: string;
+}
+
+// Transformed arc with coordinates for rendering
 export interface EconomicArc {
-    source: string;         // ISO code of influencer
-    target: string;         // ISO code of influenced
+    source: string;
+    target: string;
     sourceName: string;
     targetName: string;
     startLat: number;
     startLng: number;
     endLat: number;
     endLng: number;
-    weight: number;         // 0 to 1 (connection strength)
-    deviation: number;      // deviation from uniform
-    strength: 'strong' | 'medium' | 'weak' | 'usa-link';
-    isUSA?: boolean;        // true if connection involves USA
+    weight: number;
+    raw: number;
+    strength: 'strong' | 'medium' | 'weak';
     label: string;
 }
 
+export interface CountryCoordinate {
+    name: string;
+    lat: number;
+    lon: number;
+}
+
 export interface EconomicFlowData {
-    date: string;
-    generatedAt: string;
     modelVersion: string;
+    generatedAt: string;
+    directionAccuracy?: number;      // V22: ~59.6%
+    directionNote?: string;          // V22: "Discovered as auxiliary signal"
+    countries: string[];
+    coordinates: Record<string, CountryCoordinate>;
+    connections: EconomicConnection[];
     stats: {
+        totalCountries: number;
         totalConnections: number;
+        avgWeight: number;
         maxWeight: number;
-        minWeight: number;
-        meanWeight: number;
         threshold: number;
-        usaThreshold?: number;
-        modelAccuracy: string;
-        strongConnections: number;
-        mediumConnections: number;
-        weakConnections: number;
-        usaConnections?: number;
     };
-    arcs: EconomicArc[];
-    nodes: string[];
+    // Computed fields (added after loading)
+    arcs?: EconomicArc[];
     usaAnalysis?: {
         influencedBy: { country: string; name: string; weight: number }[];
         influences: { country: string; name: string; weight: number }[];
@@ -43,49 +56,49 @@ export interface EconomicFlowData {
 }
 
 export interface CountryState {
-    isoCode: string;          // ISO-2 or ISO-3
+    isoCode: string;
     name: string;
     lat: number;
     lon: number;
 
     // Core macro layer
-    cyclePhase: CyclePhase;   // expansion / slowdown / recession / recovery
-    cycleMomentum: number;    // -1 to +1 (decelerating → accelerating)
+    cyclePhase: CyclePhase;
+    cycleMomentum: number;
 
-    // Risk layers (0–100)
-    structuralRisk: number;        // debt, credit gap, twin deficits
-    externalVulnerability: number; // reserves, FX, terms of trade
-    stressLevel: number;           // combined “Global Stress” score
+    // Risk layers
+    structuralRisk: number;
+    externalVulnerability: number;
+    stressLevel: number;
 
     // Behavior / complexity
-    behavioralSignal: number;      // -1 (optimistic) to +1 (fearful)
-    instabilityRisk: number;       // 0–100 (probability of regime shift)
+    behavioralSignal: number;
+    instabilityRisk: number;
 
-    // Optional history for tail trails
+    // History
     history?: {
-        date: string;                // ISO date
+        date: string;
         cyclePhase: CyclePhase;
         cycleMomentum: number;
         stressLevel: number;
     }[];
 
-    // Raw metrics for display
+    // Metrics
     metrics?: {
         gdpGrowth?: number;
         inflation?: number;
         debtToGdp?: number;
         unemployment?: number;
-        currencyChange?: number; // % change vs USD 6m
+        currencyChange?: number;
     }
 }
 
 // Direction Prediction Types
 export interface DirectionPrediction {
-    country: string;           // ISO code
-    countryName: string;       // Full name
-    direction: 'UP' | 'DOWN';  // Predicted direction
-    confidence: number;        // Confidence score (magnitude)
-    prediction: number;        // Raw prediction value
+    country: string;
+    countryName: string;
+    direction: 'UP' | 'DOWN';
+    confidence: number;
+    prediction: number;
 }
 
 export interface DirectionPredictionsData {
@@ -94,9 +107,9 @@ export interface DirectionPredictionsData {
     modelAccuracy: string;
     countries: string[];
     countryNames: string[];
-    predictions: number[];     // Raw predictions
+    predictions: number[];
     directions: ('UP' | 'DOWN')[];
-    confidences: number[];     // Absolute values
+    confidences: number[];
     normalizedConfidences: number[];
     summary: {
         totalCountries: number;

@@ -34,6 +34,13 @@ jobs:
           pip install --upgrade pip
           pip install -r models/requirements-predictions.txt
       
+      - name: Download model from release
+        run: |
+          echo "📥 Downloading CARIA V22 model checkpoint..."
+          curl -L -o models/caria_v22_relationships.pth \
+            https://github.com/${{ github.repository }}/releases/download/v22.0/caria_v22_relationships.pth
+          ls -la models/*.pth
+      
       - name: Generate predictions
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}

@@ -159,72 +159,93 @@ class EconomicRelationshipDiscoverer(nn.Module):
 def fetch_yahoo_data(seq_len=60):
     """Fetch market data from Yahoo Finance (FREE - unlimited)"""
     import yfinance as yf
+    import warnings
+    warnings.filterwarnings('ignore')
     
     print("📊 Fetching from Yahoo Finance (FREE)...")
     end_date = datetime.now()
     start_date = end_date - timedelta(days=seq_len * 2)
     
-    all_data = {}
-    
-    def safe_download(ticker, name):
-        """Safely download and extract close prices"""
-        try:
-            df = yf.download(ticker, start=start_date, end=end_date, progress=False, auto_adjust=True)
-            if df is not None and len(df) > 0:
-                # Handle both single and multi-column returns
-                if 'Close' in df.columns:
-                    series = df['Close']
-                elif len(df.columns) == 1:
-                    series = df.iloc[:, 0]
-                else:
-                    # Multi-ticker download - get first column
-                    series = df.iloc[:, 0]
-                
-                # Ensure it's a Series with proper index
-                if isinstance(series, pd.Series) and len(series) > 0:
-                    return series.pct_change()
-        except Exception as e:
-            print(f"    ⚠ {ticker}: {e}")
-        return None
-    
-    # Fetch indices
-    print("  - Stock indices (22 countries)...")
+    # Collect all tickers
+    all_tickers = {}
     for country, ticker in INDEX_TICKERS.items():
-        result = safe_download(ticker, f'{country}_index')
-        if result is not None:
-            all_data[f'{country}_index'] = result
-    
-    # Fetch FX
-    print("  - FX rates...")
+        all_tickers[ticker] = f'{country}_index'
     for currency, ticker in FX_TICKERS.items():
-        result = safe_download(ticker, f'{currency}_fx')
-        if result is not None:
-            all_data[f'{currency}_fx'] = result
-    
-    # Fetch commodities
-    print("  - Commodities...")
+        all_tickers[ticker] = f'{currency}_fx'
     for name, ticker in COMMODITY_TICKERS.items():
-        result = safe_download(ticker, name)
-        if result is not None:
-            all_data[name] = result
-    
-    # Fetch global indicators
-    print("  - Global indicators (VIX, DXY, yields)...")
+        all_tickers[ticker] = name
     for name, ticker in GLOBAL_TICKERS.items():
-        result = safe_download(ticker, name)
-        if result is not None:
-            all_data[name] = result
+        all_tickers[ticker] = name
     
-    # Check if we got any data
+    print(f"  - Downloading {len(all_tickers)} tickers in batch...")
+    
+    try:
+        # Batch download all tickers at once
+        tickers_list = list(all_tickers.keys())
+        df = yf.download(
+            tickers_list, 
+            start=start_date, 
+            end=end_date, 
+            progress=False,
+            auto_adjust=True,
+            threads=True
+        )
+        
+        print(f"  - Downloaded shape: {df.shape}")
+        
+        # Extract Close prices
+        all_data = {}
+        
+        if len(tickers_list) == 1:
+            # Single ticker - df is already the data
+            if 'Close' in df.columns:
+                series = df['Close'].pct_change().dropna()
+                if len(series) > 0:
+                    all_data[all_tickers[tickers_list[0]]] = series
+        else:
+            # Multiple tickers - df has multi-level columns
+            if 'Close' in df.columns.get_level_values(0):
+                close_df = df['Close']
+                for ticker in tickers_list:
+                    if ticker in close_df.columns:
+                        series = close_df[ticker].pct_change().dropna()
+                        if len(series) > 0:
+                            all_data[all_tickers[ticker]] = series
+            elif len(df.columns) > 0:
+                # Flat columns - iterate
+                for col in df.columns:
+                    ticker = col if isinstance(col, str) else col[0]
+                    if ticker in all_tickers:
+                        series = df[col].pct_change().dropna()
+                        if len(series) > 0:
+                            all_data[all_tickers[ticker]] = series
+        
+        print(f"  - Extracted {len(all_data)} series")
+        
+    except Exception as e:
+        print(f"  ⚠ Batch download failed: {e}")
+        all_data = {}
+    
+    # Fallback if no data
     if not all_data:
-        print("  ⚠ No data fetched from Yahoo Finance, using fallback")
-        # Create minimal fallback data
-        dates = pd.date_range(end=end_date, periods=seq_len, freq='D')
-        all_data = {f'{c}_index': pd.Series(np.random.randn(seq_len) * 0.01, index=dates) 
-                    for c in COUNTRIES[:5]}
+        print("  ⚠ No data fetched, using synthetic fallback")
+        dates = pd.date_range(end=end_date, periods=seq_len, freq='B')  # Business days
+        np.random.seed(42)
+        for country in COUNTRIES:
+            all_data[f'{country}_index'] = pd.Series(
+                np.random.randn(seq_len) * 0.02, 
+                index=dates
+            )
+        for name in ['Oil', 'Gold', 'VIX']:
+            all_data[name] = pd.Series(
+                np.random.randn(seq_len) * 0.02,
+                index=dates
+            )
     
+    # Build DataFrame
     combined = pd.DataFrame(all_data)
     combined = combined.dropna(how='all').fillna(0)
+    
     print(f"  ✓ Yahoo: {len(combined.columns)} series, {len(combined)} days")
     return combined
 

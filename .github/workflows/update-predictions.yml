@@ -9,12 +9,15 @@ on:
 jobs:
   update-predictions:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
       
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -37,9 +40,15 @@ jobs:
       - name: Download model from release
         run: |
           echo "📥 Downloading CARIA V22 model checkpoint..."
-          curl -L -o models/caria_v22_relationships.pth \
-            https://github.com/${{ github.repository }}/releases/download/v22.0/caria_v22_relationships.pth
+          MODEL_URL="https://github.com/${{ github.repository }}/releases/latest/download/caria_v22_relationships.pth"
+          echo "URL: $MODEL_URL"
+          curl -L -f -o models/caria_v22_relationships.pth "$MODEL_URL" || {
+            echo "❌ Failed to download from latest release, trying v22.0..."
+            curl -L -f -o models/caria_v22_relationships.pth \
+              "https://github.com/${{ github.repository }}/releases/download/v22.0/caria_v22_relationships.pth"
+          }
           ls -la models/*.pth
+          echo "✅ Model downloaded successfully"
       
       - name: Generate predictions
         env:

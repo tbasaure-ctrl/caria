@@ -541,10 +541,8 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                             </div>
                                             <h3 className="text-xl font-display text-white mt-1">Economic Influence Graph</h3>
                                             <p className="text-[11px] text-text-secondary mt-2 leading-relaxed">
-                                                Hidden connections discovered by neural network analysis of 
-                                                <span className="text-accent-cyan"> macro indicators</span>, 
-                                                <span className="text-amber-400"> market returns</span>, and 
-                                                <span className="text-purple-400"> cross-border spillovers</span>.
+                                                Economic dependencies discovered through neural network analysis of macro indicators, 
+                                                market returns, and cross-border data.
                                             </p>
                                         </div>
 
@@ -553,18 +551,50 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                             <div className="flex items-start gap-2">
                                                 <span className="text-lg">🧠</span>
                                                 <div>
-                                                    <h4 className="text-xs font-bold text-white mb-1">What am I seeing?</h4>
+                                                    <h4 className="text-xs font-bold text-white mb-1">How to read the connections</h4>
+                                                    <p className="text-[10px] text-text-muted leading-relaxed mb-2">
+                                                        Each line represents a <span className="text-white">predictive relationship</span> between two economies. 
+                                                        The direction (Country A → Country B) means changes in Country A's markets tend to 
+                                                        <span className="text-accent-cyan"> precede</span> changes in Country B's markets. 
+                                                        Line thickness indicates the strength of this predictive signal.
+                                                    </p>
                                                     <p className="text-[10px] text-text-muted leading-relaxed">
-                                                        A <span className="text-white">Graph Neural Network</span> analyzed macro indicators, 
-                                                        market returns, and cross-border data to discover <span className="text-accent-cyan">hidden interdependencies</span> that 
-                                                        traditional econometric models (VAR, VECM) miss. These connections are 
-                                                        <span className="text-amber-400"> non-linear</span>, 
-                                                        <span className="text-red-400"> asymmetric</span>, and 
-                                                        <span className="text-purple-400"> time-varying</span>.
-                                                        Thicker lines = stronger predictive power between economies.
+                                                        Connections can reveal two types of dynamics:
                                                     </p>
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        {/* Demand Pull Explanation */}
+                                        <div className="p-3 bg-green-500/5 rounded-lg border border-green-500/20">
+                                            <h4 className="text-xs font-bold text-white mb-2 flex items-center gap-2">
+                                                <span>📈</span>
+                                                <span>Demand Pull Signals</span>
+                                            </h4>
+                                            <p className="text-[10px] text-text-muted leading-relaxed">
+                                                When <span className="text-white">Country X → Country Y</span> appears, it often means 
+                                                <span className="text-green-300"> Country X (the Leader)</span> is a major consumer, and 
+                                                <span className="text-green-300"> Country Y (the Lagger)</span> is a supplier. 
+                                                Here's why: When a large economy accelerates, its financial markets react immediately, 
+                                                anticipating future commodity needs. The supplier's markets react later, when capital flows 
+                                                in to secure that supply. This creates a <span className="text-white">lead-lag relationship</span> 
+                                                where demand-side movements predict supply-side responses.
+                                            </p>
+                                        </div>
+
+                                        {/* Supply Shock Explanation */}
+                                        <div className="p-3 bg-red-500/5 rounded-lg border border-red-500/20">
+                                            <h4 className="text-xs font-bold text-white mb-2 flex items-center gap-2">
+                                                <span>⚡</span>
+                                                <span>Supply Shock Signals</span>
+                                            </h4>
+                                            <p className="text-[10px] text-text-muted leading-relaxed">
+                                                If the connection were reversed (<span className="text-white">Country Y → Country X</span>), 
+                                                it would indicate <span className="text-red-300">supply-side dynamics</span> — disruptions in 
+                                                production or export capacity affecting downstream consumers. Natural disasters, strikes, or 
+                                                policy changes in supplier nations would create this pattern. The model learns which type 
+                                                of dynamic is currently dominant based on historical market behavior.
+                                            </p>
                                         </div>
 
                                         {/* Stats Grid */}
@@ -600,11 +630,13 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                         <span className="text-[10px] font-mono text-red-400">31.5% / 22.4%</span>
                                                     </div>
                                                     <p className="text-[10px] text-text-muted leading-relaxed">
-                                                        <span className="text-red-300">NOT noise — real pattern.</span> Chile = commodity-driven 
-                                                        (copper, lithium). India = net importer + growing manufacturing + inflation sensitive 
-                                                        to metal prices. Both respond to the <span className="text-white">global commodity supercycle</span>. 
-                                                        The GNN captures: <span className="text-red-200">Commodity cycle → EM Asia demand → LATAM mining revenues</span>. 
-                                                        Traditional VAR models miss this completely.
+                                                        <span className="text-red-300">Strongest bidirectional connection.</span> This represents a 
+                                                        <span className="text-white"> demand pull dynamic</span>: Chile is commodity-driven (copper, lithium), 
+                                                        while India is a major importer with growing manufacturing. Both economies respond to the 
+                                                        global commodity supercycle, but India's demand signals precede Chile's supply responses. 
+                                                        The connection reveals: <span className="text-red-200">commodity cycle → emerging market demand → 
+                                                        resource exporter revenues</span>. This type of non-linear, asymmetric relationship is typically 
+                                                        missed by traditional econometric models.
                                                     </p>
                                                 </div>
 
@@ -615,10 +647,11 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                         <span className="text-[10px] font-mono text-red-400">18.7% / 17.3%</span>
                                                     </div>
                                                     <p className="text-[10px] text-text-muted leading-relaxed">
-                                                        <span className="text-red-300">Global Risk-On/Risk-Off twins.</span> Both share: 
-                                                        exposure to pro-risk capital flows, USD/Fed rate sensitivity, manufacturing 
-                                                        integrated into global chains. Pattern reflects: 
-                                                        <span className="text-red-200">Financial shock → USD ↑ → EM FX ↓ → synchronized movement</span>.
+                                                        Both economies share exposure to global risk sentiment, USD/Fed rate sensitivity, 
+                                                        and manufacturing integration into global supply chains. The bidirectional connection 
+                                                        reflects synchronized responses to capital flow shifts: 
+                                                        <span className="text-red-200">financial shocks → USD strength → emerging market FX pressure → 
+                                                        correlated movements</span>.
                                                     </p>
                                                 </div>
 
@@ -629,9 +662,9 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                         <span className="text-[10px] font-mono text-amber-400">14.9% / 14.0%</span>
                                                     </div>
                                                     <p className="text-[10px] text-text-muted leading-relaxed">
-                                                        <span className="text-amber-300">Expected but important.</span> High economic integration, 
-                                                        industrial synchronization, shared ECB monetary policy. 
-                                                        <span className="text-amber-200">Validates Europe acts as a cohesive subgraph</span> in the global network.
+                                                        High economic integration through shared currency, integrated supply chains, and 
+                                                        synchronized industrial cycles. The connection demonstrates that Europe functions 
+                                                        as a cohesive economic region within the global network.
                                                     </p>
                                                 </div>
 
@@ -642,10 +675,10 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                         <span className="text-[10px] font-mono text-amber-400">14.1% / 12.5%</span>
                                                     </div>
                                                     <p className="text-[10px] text-text-muted leading-relaxed">
-                                                        <span className="text-amber-300">This is gold.</span> Brazil = commodity exporter. 
-                                                        Korea = industrial commodity importer. Synchronized to <span className="text-white">global manufacturing cycle</span> 
-                                                        from opposite sides. Korea needs input prices, Brazil needs output prices. 
-                                                        <span className="text-amber-200">Proves model understands global value chains</span>.
+                                                        Illustrates a complementary relationship: Brazil as commodity exporter and Korea 
+                                                        as industrial importer. Both are synchronized to the global manufacturing cycle, 
+                                                        but from opposite positions in the value chain. This demonstrates the model's ability 
+                                                        to capture relationships across different stages of global production networks.
                                                     </p>
                                                 </div>
 
@@ -656,11 +689,10 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                         <span className="text-[10px] font-mono text-amber-400">12.4% / 10.0%</span>
                                                     </div>
                                                     <p className="text-[10px] text-text-muted leading-relaxed">
-                                                        <span className="text-amber-300">Triple driver hub.</span> Mexico has: 
-                                                        <span className="text-white">①</span> USA cycle (strongest, but dispersed), 
-                                                        <span className="text-white">②</span> Global manufacturing chain, 
-                                                        <span className="text-white">③</span> EM capital flow sensitivity. 
-                                                        Links to KOR (manufacturing) and BRA (commodities) confirm this.
+                                                        Mexico's economy is influenced by multiple factors: proximity to the US business cycle, 
+                                                        integration into global manufacturing chains, and sensitivity to emerging market capital flows. 
+                                                        The connections to Korea (manufacturing) and Brazil (commodities) reflect these different 
+                                                        transmission channels.
                                                     </p>
                                                 </div>
 
@@ -671,9 +703,9 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                         <span className="text-[10px] font-mono text-cyan-400">11.4%</span>
                                                     </div>
                                                     <p className="text-[10px] text-text-muted leading-relaxed">
-                                                        <span className="text-cyan-300">Obvious but validated.</span> Australia = pure proxy 
-                                                        for Chinese mineral demand. China drives 30-40% of global industrial commodity consumption. 
-                                                        <span className="text-cyan-200">Model learned the mining-industry global cycle</span>.
+                                                        Represents a clear demand pull dynamic: China's industrial demand drives Australia's 
+                                                        mineral exports. As China accounts for 30-40% of global industrial commodity consumption, 
+                                                        changes in Chinese economic activity predict movements in resource-dependent economies.
                                                     </p>
                                                 </div>
 
@@ -684,9 +716,9 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                         <span className="text-[10px] font-mono text-cyan-400">~10.7%</span>
                                                     </div>
                                                     <p className="text-[10px] text-text-muted leading-relaxed">
-                                                        <span className="text-cyan-300">Post-Brexit persistence.</span> Trade flows + financial 
-                                                        correlation maintain the connection despite political separation. 
-                                                        <span className="text-cyan-200">Economic gravity &gt; political boundaries</span>.
+                                                        Despite political separation, trade flows and financial market correlations maintain 
+                                                        economic connections. This demonstrates that economic integration can persist even 
+                                                        when political relationships change.
                                                     </p>
                                                 </div>
                                             </div>
@@ -727,14 +759,14 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                 {/* USA Insight */}
                                                 <div className="mt-3 p-2.5 bg-purple-500/10 rounded border border-purple-500/20">
                                                     <p className="text-[10px] text-purple-200/80 leading-relaxed">
-                                                        <span className="text-purple-300 font-bold">💡 Why USA connections are weaker?</span><br/>
-                                                        USA doesn't appear as a dominant edge because its influence is 
-                                                        <span className="text-white"> too pervasive</span> — it's baked into 
-                                                        <span className="text-purple-300"> all</span> global features (USD, rates, VIX, commodities). 
-                                                        The GNN sees USA as the <span className="text-white">baseline</span>, not a differentiator. 
-                                                        Mexico's USA link is strongest but dispersed across many channels. 
-                                                        <span className="text-purple-200">This is actually correct behavior</span> — 
-                                                        USA moves <em>with</em> global risk, not <em>before</em> it.
+                                                        <span className="text-purple-300 font-bold">💡 Interpreting USA's role:</span><br/>
+                                                        The USA's influence appears distributed rather than concentrated in strong 
+                                                        directional connections. This occurs because US factors (currency, interest rates, 
+                                                        volatility indices, commodity markets) are embedded in global financial conditions. 
+                                                        The model treats US conditions as part of the baseline environment rather than 
+                                                        a differentiating signal. This reflects that the US economy moves 
+                                                        <span className="text-white"> with</span> global risk cycles rather than 
+                                                        consistently <span className="text-white">before</span> them.
                                                     </p>
                                                 </div>
                                             </div>

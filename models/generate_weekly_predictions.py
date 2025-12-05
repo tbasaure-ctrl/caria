@@ -452,8 +452,9 @@ def save_predictions(predictions, directions, confidences, normalized_confidence
 
 def main():
     print("=" * 60)
-    print("CARIA V22 WEEKLY PREDICTION GENERATOR")
+    print("CARIA V22 MONTHLY PREDICTION GENERATOR")
     print("=" * 60)
+    print(f"Script Version: 2024-12-04-v3")
     print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print()
     

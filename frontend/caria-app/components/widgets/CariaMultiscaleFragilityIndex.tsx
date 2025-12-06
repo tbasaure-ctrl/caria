@@ -39,25 +39,25 @@ interface MSFIData {
 }
 
 const DEMO_DATA: MSFIData = {
-    version: 'Great Caria v2.1 (Physics-First)',
+    version: 'Great Caria v2.2 (Physics-First Final)',
     lastUpdated: '2024-12-06',
-    msfi: 0.020,
+    msfi: 0.310,  // Warning level - above 0.256 threshold
     resonance: 0.410,
     clockSync: 0.519,
     bifurcationRisk: 0.221,
-    scaleEntropy: 0.75,
-    status: 'STABLE',
+    scaleEntropy: 0.875,
+    status: 'WARNING',
     thresholds: {
-        warning: 0.40,
-        critical: 0.80,
-        bifurcation: 0.30
+        warning: 0.256,  // 75th percentile
+        critical: 0.492, // 95th percentile
+        bifurcation: 0.298
     },
     physicsWeights: {
         ultra_fast: 0.05,
         short: 0.10,
-        medium: 0.30,
+        medium: 0.35,  // Critical resonance zone - increased from 30%
         long: 0.25,
-        ultra_long: 0.30
+        ultra_long: 0.25
     },
     temporalSpectra: {
         slow: Array.from({ length: 50 }, (_, i) => Math.sin(i * 0.1) * 0.3 + 0.5),
@@ -404,7 +404,7 @@ export default function CariaMultiscaleFragilityIndex() {
                                             {band.toUpperCase()}
                                         </span>
                                         <span className="text-gray-500">
-                                            {band === 'medium' ? '30%' : band === 'slow' ? '55%' : '15%'}
+                                            {band === 'medium' ? '35%' : band === 'slow' ? '50%' : '15%'}
                                         </span>
                                     </div>
                                     <div className="h-8 bg-gray-900 rounded relative overflow-hidden">
@@ -428,7 +428,7 @@ export default function CariaMultiscaleFragilityIndex() {
                             <div className="uppercase tracking-wider mb-2">Physics-First Weights</div>
                             <div className="flex justify-between">
                                 <span>Medium (Resonance):</span>
-                                <span className="text-yellow-400 font-bold">30%</span>
+                                <span className="text-yellow-400 font-bold">35%</span>
                             </div>
                         </div>
                     </div>
@@ -480,7 +480,7 @@ export default function CariaMultiscaleFragilityIndex() {
                                 Multi-Scale Systemic Fragility Detection
                             </h1>
                             <p className="text-gray-400">
-                                Research Report v2.1 | December 2024
+                                Research Report v2.2 (Final) | December 2024
                             </p>
 
                             <h2 className="text-cyan-300 mt-6">Executive Summary</h2>
@@ -505,7 +505,7 @@ export default function CariaMultiscaleFragilityIndex() {
                                         </tr>
                                         <tr>
                                             <td className="py-2 text-gray-400">Current System Status</td>
-                                            <td className="py-2 text-right font-bold text-green-400">STABLE</td>
+                                            <td className="py-2 text-right font-bold text-yellow-400">WARNING</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -540,7 +540,7 @@ export default function CariaMultiscaleFragilityIndex() {
                                     <tr className="border-t border-gray-700 bg-yellow-900/20">
                                         <td className="p-2 font-bold">Hedge Funds</td>
                                         <td className="p-2">10-60 days</td>
-                                        <td className="p-2 text-yellow-400 font-bold">Medium (30%)</td>
+                                        <td className="p-2 text-yellow-400 font-bold">Medium (35%)</td>
                                     </tr>
                                     <tr className="border-t border-gray-700">
                                         <td className="p-2">Institutions</td>
@@ -559,7 +559,7 @@ export default function CariaMultiscaleFragilityIndex() {
                             <div className="flex items-center gap-2 bg-yellow-900/20 border border-yellow-500/30 p-3 rounded-lg my-4">
                                 <AlertTriangle className="w-5 h-5 text-yellow-400" />
                                 <p className="text-yellow-300 text-sm">
-                                    Medium band (resonance): <strong>4.5% → 30%</strong><br />
+                                    Medium band (resonance): <strong>4.5% → 35%</strong><br />
                                     This is the "fuse" that connects triggers to collapse.
                                 </p>
                             </div>
@@ -588,7 +588,7 @@ export default function CariaMultiscaleFragilityIndex() {
                                     <div key={item.label} className="bg-gray-900 p-3 rounded-lg">
                                         <div className="text-[10px] text-gray-500 uppercase">{item.label}</div>
                                         <div className={`text-xl font-bold ${item.status === 'low' ? 'text-green-400' :
-                                                item.status === 'moderate' ? 'text-yellow-400' : 'text-red-400'
+                                            item.status === 'moderate' ? 'text-yellow-400' : 'text-red-400'
                                             }`}>
                                             {item.value}
                                         </div>
@@ -596,8 +596,8 @@ export default function CariaMultiscaleFragilityIndex() {
                                 ))}
                             </div>
 
-                            <p className="text-green-400 mt-4 font-semibold">
-                                → System is stable. No structural fragility buildup detected.
+                            <p className="text-yellow-400 mt-4 font-semibold">
+                                → System shows elevated fragility (WARNING). Bifurcation conditions NOT met. Monitor closely.
                             </p>
 
                             <div className="mt-8 pt-4 border-t border-gray-700 text-center text-gray-500 text-xs">

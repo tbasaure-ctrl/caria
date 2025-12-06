@@ -1,0 +1,26 @@
+{
+  "version": "Great Caria v2.1 (Physics-First)",
+  "generated": "2025-12-06T20:16:50.614667",
+  "key_fix": "Medium band (resonance) weight increased from 4.5% to 30%",
+  "physics_weights": {
+    "ultra_fast": 0.05,
+    "short": 0.1,
+    "medium": 0.35,
+    "long": 0.25,
+    "ultra_long": 0.25
+  },
+  "bifurcation_method": "Speed + Sync (geometric mean)",
+  "thresholds": {
+    "msfi_warning": 0.25641040245987123,
+    "msfi_critical": 0.4918524766208369,
+    "bifurcation": 0.29774074397572636
+  },
+  "current": {
+    "msfi": 0.3101877705665488,
+    "resonance": 0.4104630115355046,
+    "bifurcation_risk": 0.22125430793135692,
+    "clock_sync": 0.5186034753641173,
+    "scale_entropy": 0.8751371615161027
+  },
+  "crises_validated": 8
+}

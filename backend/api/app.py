@@ -95,6 +95,7 @@ from api.routes.screener import router as screener_router
 from api.routes.simulation import router as simulation_router
 from api.routes.tsmom import router as tsmom_router
 from api.routes.league import router as league_router
+from api.routes.fragility import router as fragility_router  # Meta-Fragility Index
 
 
 # WebSocket support per audit document
@@ -375,6 +376,7 @@ app.include_router(weekly_screening_router)
 app.include_router(simulation_router)  # Crisis Simulator and Macro Multiverse
 app.include_router(tsmom_router)  # Time Series Momentum (TSMOM) analysis
 app.include_router(league_router)  # Global Portfolio League rankings
+app.include_router(fragility_router)  # Meta-Fragility Index (Great Caria)
 
 # Screening semanal con CariaScoreEngine
 from api.routes.screening_semanal import router as screening_semanal_router

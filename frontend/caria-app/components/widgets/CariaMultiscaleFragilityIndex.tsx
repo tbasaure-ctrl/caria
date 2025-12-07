@@ -266,10 +266,10 @@ export default function CariaMultiscaleFragilityIndex() {
 
                 {/* 3. The "Smart Action" Signal */}
                 <div className={`p-3 rounded-xl border backdrop-blur-md flex flex-col justify-center min-w-[100px] ${data.metrics.clock_sync > 0.8 && data.metrics.trend_signal < 0
-                        ? 'bg-red-500/20 border-red-500/50 text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.3)]'
-                        : data.metrics.clock_sync > 0.8
-                            ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-100 shadow-[0_0_20px_rgba(234,179,8,0.3)]'
-                            : 'bg-green-500/10 border-green-500/30 text-green-100'
+                    ? 'bg-red-500/20 border-red-500/50 text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.3)]'
+                    : data.metrics.clock_sync > 0.8
+                        ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-100 shadow-[0_0_20px_rgba(234,179,8,0.3)]'
+                        : 'bg-green-500/10 border-green-500/30 text-green-100'
                     }`}>
                     <div className="text-[9px] uppercase tracking-widest opacity-80 mb-1 text-center">Protocol Action</div>
                     <div className="text-xl font-bold text-center tracking-wider">
@@ -348,24 +348,23 @@ export default function CariaMultiscaleFragilityIndex() {
                                     <div className="bg-white/5 p-6 rounded-xl border border-white/10">
                                         <h4 className="text-purple-300 m-0 text-sm uppercase tracking-widest mb-2">The Metric</h4>
                                         <p className="text-sm text-gray-400">
-                                            <p className="text-sm text-gray-400">
-                                                We use the <strong>Kuramoto Order Parameter ($r$)</strong> to measure Consensus.
-                                                <br />
-                                                $$ r(t) = | \frac{1}{N} \sum e^{i\phi_k(t)} | $$
-                                            </p>
-                                            <div className="mt-4 p-3 bg-black/40 rounded border border-white/10">
-                                                <h5 className="text-xs text-cyan-400 uppercase tracking-widest mb-2">The Algorithm</h5>
-                                                <ul className="text-[10px] text-gray-400 space-y-1">
-                                                    <li className="flex justify-between"><span>Condition 1:</span> <span className="text-white">Is Sync {'>'} 80%?</span></li>
-                                                    <li className="flex justify-between"><span>Condition 2:</span> <span className="text-white">Is Trend Negative?</span></li>
-                                                    <li className="flex justify-between border-t border-white/10 pt-1 mt-1 font-bold">
-                                                        <span>Action:</span>
-                                                        <span className={data.metrics.trend_signal < 0 && data.metrics.clock_sync > 0.8 ? "text-red-400" : "text-green-400"}>
-                                                            {data.metrics.trend_signal < 0 && data.metrics.clock_sync > 0.8 ? "EXIT" : "HOLD"}
-                                                        </span>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                            We use the <strong>Kuramoto Order Parameter ($r$)</strong> to measure Consensus.
+                                            <br />
+                                            {'$$ r(t) = | \\frac{1}{N} \\sum e^{i\\phi_k(t)} | $$'}
+                                        </p>
+                                        <div className="mt-4 p-3 bg-black/40 rounded border border-white/10">
+                                            <h5 className="text-xs text-cyan-400 uppercase tracking-widest mb-2">The Algorithm</h5>
+                                            <ul className="text-[10px] text-gray-400 space-y-1">
+                                                <li className="flex justify-between"><span>Condition 1:</span> <span className="text-white">Is Sync {'>'} 80%?</span></li>
+                                                <li className="flex justify-between"><span>Condition 2:</span> <span className="text-white">Is Trend Negative?</span></li>
+                                                <li className="flex justify-between border-t border-white/10 pt-1 mt-1 font-bold">
+                                                    <span>Action:</span>
+                                                    <span className={data.metrics.trend_signal < 0 && data.metrics.clock_sync > 0.8 ? "text-red-400" : "text-green-400"}>
+                                                        {data.metrics.trend_signal < 0 && data.metrics.clock_sync > 0.8 ? "EXIT" : "HOLD"}
+                                                    </span>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </div>
                                     <div className="bg-white/5 p-6 rounded-xl border border-white/10">
                                         <h4 className="text-yellow-300 m-0 text-sm uppercase tracking-widest mb-2">The Dynamics</h4>

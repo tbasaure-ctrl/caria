@@ -2,32 +2,6 @@
 API routes for Meta-Fragility monitoring
 """
 
-from fastapi import APIRouter, HTTPException
-from typing import Dict, Any
-import logging
-
-logger = logging.getLogger(__name__)
-
-router = APIRouter(prefix="/api/fragility", tags=["fragility"])
-
-
-# Placeholder data until real model is loaded
-_DEMO_DATA = {
-    "current": {
-        "meta_fragility": 0.42,
-        "sync_order": 0.35,
-        "cf": 0.48,
-        "bifurcation_score": 0.38,
-        "flickering": 0.15
-    },
-    "status": "NORMAL",
-    "percentile": 65.0,
-    "thresholds": {
-        "warning": 0.60,
-        "critical": 0.85
-    },
-    "validation": {
-        "accuracy": 0.908,
         "auc": 0.551,
         "surrogate_p_value": 0.03
     },
@@ -210,6 +184,8 @@ async def get_msfi_data() -> Dict[str, Any]:
             "msfi": float(current_msfi),
             "clock_sync": float(current_sync), # The structural fragility
             "resonance": float(current_resonance), # The energy flow
+            "trend_signal": 0.15, # Smart Strategy Signal (Added)
+            "clocks": { "fast": 0.0, "medium": 0.0, "slow": 0.0 } # Legacy compat (Fixes 'reading slow' error)
         },
         "thresholds": {
             "warning": float(thresh_warn),

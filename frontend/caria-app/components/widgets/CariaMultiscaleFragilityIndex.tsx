@@ -2,9 +2,9 @@
  * CARIA: COGNITIVE ANALYSIS AND RISK INVESTMENT ASSISTANT
  * 
  * "Einstein's Universe" Visualization.
- * - Fragility is visualized as the Curvature of Spacetime (Gravity Well).
- * - High Synchronization = Deep Gravity Well (Event Horizon).
- * - Low Synchronization = Flat Space.
+ * - Fragility is visualized as the Topology of Social Consensus.
+ * - High Synchronization = Deep Well (Total Consensus).
+ * - Low Synchronization = Flat Field (Healthy Disagreement).
  */
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
@@ -14,9 +14,10 @@ import { API_BASE_URL } from '../../services/apiService';
 interface MSFIData {
     version: string;
     metrics: {
-        msfi: number;     // "Mass" -> Depth of Well
-        clock_sync: number; // "Curvature" -> Distortion
+        msfi: number;     // "Depth" -> Strength of Consensus
+        clock_sync: number; // "Distortion" -> Uniformity of Opinion
         resonance: number;  // "Energy" -> Glow intensity
+        trend_signal: number; // "Momentum" -> Direction (-1 to 1)
     };
     status: 'STABLE' | 'WARNING' | 'CRITICAL';
     auc_score: number;
@@ -25,7 +26,7 @@ interface MSFIData {
 const DEMO_DATA: MSFIData = {
     version: 'CARIA 1.0',
     status: 'WARNING',
-    metrics: { msfi: 2.1, clock_sync: 0.85, resonance: 0.75 },
+    metrics: { msfi: 2.1, clock_sync: 0.85, resonance: 0.75, trend_signal: 0.15 },
     auc_score: 0.72
 };
 
@@ -214,26 +215,72 @@ export default function CariaMultiscaleFragilityIndex() {
             {/* --- CANVAS --- */}
             <canvas ref={canvasRef} width={800} height={450} className="w-full h-full object-cover opacity-80" />
 
-            {/* --- HUD METRICS --- */}
-            <div className="absolute bottom-6 left-6 z-10 flex gap-8">
-                <div>
-                    <div className="text-[10px] text-cyan-500/70 uppercase mb-1 tracking-widest">Spacetime Curvature</div>
-                    <div className="text-xl text-cyan-400 font-light">
-                        {(data.metrics.clock_sync * 100).toFixed(1)}% <span className="text-[10px] text-gray-500">SYNC</span>
+            {/* --- SMART STRATEGY HUD --- */}
+            <div className="absolute bottom-6 left-6 z-20 flex gap-6">
+
+                {/* 1. Sync Gauge (The Structure) */}
+                <div className="bg-black/40 backdrop-blur-md p-3 rounded-xl border border-white/10">
+                    <div className="text-[9px] text-gray-400 uppercase tracking-widest mb-1">Structure (Consensus)</div>
+                    <div className="flex items-end gap-2">
+                        <div className={`text-2xl font-light ${data.metrics.clock_sync > 0.8 ? 'text-red-400' : 'text-cyan-400'}`}>
+                            {(data.metrics.clock_sync * 100).toFixed(0)}%
+                        </div>
+                        <div className="text-[9px] text-gray-500 mb-1">
+                            {data.metrics.clock_sync > 0.8 ? 'FRAGILE' : 'STABLE'}
+                        </div>
                     </div>
-                    <div className="w-24 h-0.5 bg-gray-800 mt-1">
-                        <div className="h-full bg-cyan-500 shadow-[0_0_10px_cyan]" style={{ width: `${data.metrics.clock_sync * 100}%` }} />
+                    <div className="w-24 h-1 bg-gray-800 mt-1 rounded-full overflow-hidden">
+                        <div
+                            className={`h-full ${data.metrics.clock_sync > 0.8 ? 'bg-red-500 shadow-[0_0_10px_red]' : 'bg-cyan-500'}`}
+                            style={{ width: `${data.metrics.clock_sync * 100}%` }}
+                        />
                     </div>
                 </div>
-                <div>
-                    <div className="text-[10px] text-yellow-500/70 uppercase mb-1 tracking-widest">System Energy</div>
-                    <div className="text-xl text-yellow-400 font-light">
-                        {data.metrics.resonance.toFixed(2)} <span className="text-[10px] text-gray-500">GeV</span>
+
+                {/* 2. Trend Gauge (The Trigger) */}
+                <div className="bg-black/40 backdrop-blur-md p-3 rounded-xl border border-white/10">
+                    <div className="text-[9px] text-gray-400 uppercase tracking-widest mb-1">Momentum (Trend)</div>
+                    <div className="flex items-end gap-2">
+                        <div className={`text-2xl font-light ${data.metrics.trend_signal > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {data.metrics.trend_signal > 0 ? '↗' : '↘'}
+                        </div>
+                        <div className="text-[9px] text-gray-500 mb-1">
+                            {data.metrics.trend_signal > 0 ? 'POSITIVE' : 'BREAKING'}
+                        </div>
                     </div>
-                    <div className="w-24 h-0.5 bg-gray-800 mt-1">
-                        <div className="h-full bg-yellow-500 shadow-[0_0_10px_yellow]" style={{ width: `${Math.min(data.metrics.resonance * 100, 100)}%` }} />
+                    <div className="w-24 h-1 bg-gray-800 mt-1 rounded-full overflow-hidden flex">
+                        <div className="w-1/2 h-full border-r border-black/50 relative">
+                            {/* Negative Bar */}
+                            {data.metrics.trend_signal < 0 && (
+                                <div className="absolute right-0 h-full bg-red-500" style={{ width: `${Math.min(Math.abs(data.metrics.trend_signal) * 100, 100)}%` }} />
+                            )}
+                        </div>
+                        <div className="w-1/2 h-full relative">
+                            {/* Positive Bar */}
+                            {data.metrics.trend_signal > 0 && (
+                                <div className="absolute left-0 h-full bg-green-500" style={{ width: `${Math.min(data.metrics.trend_signal * 100, 100)}%` }} />
+                            )}
+                        </div>
                     </div>
                 </div>
+
+                {/* 3. The "Smart Action" Signal */}
+                <div className={`p-3 rounded-xl border backdrop-blur-md flex flex-col justify-center min-w-[100px] ${data.metrics.clock_sync > 0.8 && data.metrics.trend_signal < 0
+                        ? 'bg-red-500/20 border-red-500/50 text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.3)]'
+                        : data.metrics.clock_sync > 0.8
+                            ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-100 shadow-[0_0_20px_rgba(234,179,8,0.3)]'
+                            : 'bg-green-500/10 border-green-500/30 text-green-100'
+                    }`}>
+                    <div className="text-[9px] uppercase tracking-widest opacity-80 mb-1 text-center">Protocol Action</div>
+                    <div className="text-xl font-bold text-center tracking-wider">
+                        {data.metrics.clock_sync > 0.8 && data.metrics.trend_signal < 0
+                            ? 'EXIT NOW'
+                            : data.metrics.clock_sync > 0.8
+                                ? 'RIDE BUBBLE'
+                                : 'HOLD'}
+                    </div>
+                </div>
+
             </div>
 
             {/* --- EXPLAIN BUTTON --- */}
@@ -269,7 +316,7 @@ export default function CariaMultiscaleFragilityIndex() {
                     {/* Content */}
                     <div className="flex-1 p-8 overflow-y-auto">
                         <h3 className="text-3xl font-thin text-white mb-6">
-                            {explanationMode === 'SIMPLE' ? 'The Traffic Jam Analogy' : 'Manifold Synchronization Theory'}
+                            {explanationMode === 'SIMPLE' ? 'The Traffic Jam Analogy' : 'Structural Dynamics & Entropy'}
                         </h3>
 
                         {explanationMode === 'SIMPLE' ? (
@@ -295,25 +342,37 @@ export default function CariaMultiscaleFragilityIndex() {
                         ) : (
                             <div className="prose prose-invert prose-lg max-w-none">
                                 <p className="text-gray-300 leading-relaxed">
-                                    We model the Global Market as a <strong>Coupled Oscillator System</strong> on a 4D Spacetime Manifold.
+                                    We model the Global Market as a <strong>Complex Social System</strong> of interacting time horizons.
                                 </p>
                                 <div className="grid grid-cols-2 gap-8 my-6">
                                     <div className="bg-white/5 p-6 rounded-xl border border-white/10">
                                         <h4 className="text-purple-300 m-0 text-sm uppercase tracking-widest mb-2">The Metric</h4>
                                         <p className="text-sm text-gray-400">
-                                            We use the <strong>Kuramoto Order Parameter ($r$)</strong>:
-                                            <br />
-                                            $$ r(t) = | \frac{1}{N} \sum e^{i\phi_k(t)} | $$
-                                            <br />
-                                            Where $\phi_k$ represents the phase of different market agents (frequencies).
-                                        </p>
+                                            <p className="text-sm text-gray-400">
+                                                We use the <strong>Kuramoto Order Parameter ($r$)</strong> to measure Consensus.
+                                                <br />
+                                                $$ r(t) = | \frac{1}{N} \sum e^{i\phi_k(t)} | $$
+                                            </p>
+                                            <div className="mt-4 p-3 bg-black/40 rounded border border-white/10">
+                                                <h5 className="text-xs text-cyan-400 uppercase tracking-widest mb-2">The Algorithm</h5>
+                                                <ul className="text-[10px] text-gray-400 space-y-1">
+                                                    <li className="flex justify-between"><span>Condition 1:</span> <span className="text-white">Is Sync {'>'} 80%?</span></li>
+                                                    <li className="flex justify-between"><span>Condition 2:</span> <span className="text-white">Is Trend Negative?</span></li>
+                                                    <li className="flex justify-between border-t border-white/10 pt-1 mt-1 font-bold">
+                                                        <span>Action:</span>
+                                                        <span className={data.metrics.trend_signal < 0 && data.metrics.clock_sync > 0.8 ? "text-red-400" : "text-green-400"}>
+                                                            {data.metrics.trend_signal < 0 && data.metrics.clock_sync > 0.8 ? "EXIT" : "HOLD"}
+                                                        </span>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                     </div>
                                     <div className="bg-white/5 p-6 rounded-xl border border-white/10">
-                                        <h4 className="text-yellow-300 m-0 text-sm uppercase tracking-widest mb-2">The Physics</h4>
+                                        <h4 className="text-yellow-300 m-0 text-sm uppercase tracking-widest mb-2">The Dynamics</h4>
                                         <p className="text-sm text-gray-400">
-                                            As $r \to 1$, the entropy of the system collapses. The "spacetime" of the market warps, creating a <strong>Gravity Well</strong> (The Liquidity Trap).
+                                            As $r \to 1$, the <strong>Entropy</strong> of the system collapses. The diversity of opinion vanishes, creating a "Gravity Well" of Total Consensus.
                                             <br />
-                                            The grid you see visualizes this curvature. Deeper wells mean it requires more energy (money) to escape the trend.
+                                            The grid helps visualize this topological collapse. A deep well represents a market that is structurally fragile because everyone is doing the same thing.
                                         </p>
                                     </div>
                                 </div>

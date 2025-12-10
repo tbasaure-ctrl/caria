@@ -1,6 +1,11 @@
 
 import os
 import sys
+
+# Force English locale to prevent Windows UnicodeDecodeError in psycopg2
+os.environ["LC_ALL"] = "C"
+os.environ["LANG"] = "C"
+
 import psycopg2
 import pandas as pd
 import logging

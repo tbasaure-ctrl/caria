@@ -6,11 +6,26 @@ import pandas as pd
 import logging
 from datetime import date
 from urllib.parse import urlparse
+from pathlib import Path
+from dotenv import load_dotenv
+import codecs
 
 # Add parent directory to path to import caria_sr
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from caria_sr import download_credit_series, compute_sr_for_ticker
+
+# Load env vars from backend/api/.env
+env_path = Path(__file__).resolve().parent.parent / 'api' / '.env'
+load_dotenv(dotenv_path=env_path)
+
+# Force UTF-8 output
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+    except Exception:
+        pass
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -32,6 +47,7 @@ def get_db_connection():
                     user=parsed.username,
                     password=parsed.password,
                     database=parsed.path.lstrip('/'),
+                    client_encoding='utf-8'
                 )
         except Exception as e:
             logger.warning(f"Error using DATABASE_URL: {e}")
@@ -41,8 +57,9 @@ def get_db_connection():
         host=os.getenv("POSTGRES_HOST", "localhost"),
         port=int(os.getenv("POSTGRES_PORT", "5432")),
         user=os.getenv("POSTGRES_USER", "caria_user"),
-        password=os.getenv("POSTGRES_PASSWORD", "caria_password"),
+        password=os.getenv("POSTGRES_PASSWORD", "aria_password"), # Warning: Using fallback if env fails
         database=os.getenv("POSTGRES_DB", "caria"),
+        client_encoding='utf-8'
     )
 
 def main():
@@ -55,8 +72,12 @@ def main():
         logger.error("Failed to download Credit Series (HYG). Aborting.")
         return
 
-    conn = get_db_connection()
-    cur = conn.cursor()
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+    except Exception as e:
+        logger.error(f"Failed to connect to DB: {repr(e)}")
+        return
 
     for ticker in ASSETS:
         logger.info(f"Processing {ticker}...")
@@ -80,11 +101,6 @@ def main():
             """, (ticker, stats["auc"], stats["mean_normal"], stats["mean_fragile"]))
 
             # Upsert Daily Series
-            # Only insert recent data to save time? Or all? 
-            # Strategy: Insert last 90 days if exists, or all if we want full history. 
-            # Given "ON CONFLICT UPDATE", safe to insert all, but might be slow.
-            # Let's insert all for now.
-            
             data_tuples = []
             for idx, row in df.iterrows():
                  # Handle NaN future_ret
@@ -101,10 +117,6 @@ def main():
                     int(row["regime"]),
                     fut
                 ))
-            
-            # Batch insert using executemany is better, but ON CONFLICT is tricky with standard executemany in some drivers
-            # We will use simple loop with transaction for safety, or we could construct a big query.
-            # For simplicity and robustness with small asset list:
             
             for dt in data_tuples:
                 cur.execute("""

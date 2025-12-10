@@ -32,26 +32,75 @@ def compute_caria_sr_for_asset(ticker, ret_asset, vol_credit, state_q=0.90, fwd_
 
     Devuelve: df, auc_state, future_normal, future_fragile, delta
     """
-    # Vols equity
-    vol_5  = ret_asset.rolling(5).std() * np.sqrt(252)
-    vol_21 = ret_asset.rolling(21).std() * np.sqrt(252)
-    vol_63 = ret_asset.rolling(63).std() * np.sqrt(252)
+    # Asegurar que ret_asset es una Series
+    if isinstance(ret_asset, pd.DataFrame):
+        ret_asset = ret_asset.iloc[:, 0] if len(ret_asset.columns) > 0 else ret_asset.squeeze()
+    if not isinstance(ret_asset, pd.Series):
+        ret_asset = pd.Series(ret_asset).squeeze()
+    
+    # Asegurar que vol_credit es una Series
+    if isinstance(vol_credit, pd.DataFrame):
+        vol_credit = vol_credit.iloc[:, 0] if len(vol_credit.columns) > 0 else vol_credit.squeeze()
+    if not isinstance(vol_credit, pd.Series):
+        vol_credit = pd.Series(vol_credit).squeeze()
+    
+    # Alinear vol_credit con ret_asset
+    common_idx = ret_asset.index.intersection(vol_credit.index)
+    if len(common_idx) == 0:
+        return None, np.nan, np.nan, np.nan, np.nan
+    
+    ret_asset = ret_asset.reindex(common_idx).dropna()
+    vol_credit = vol_credit.reindex(common_idx).dropna()
+    
+    # Re-alinear después de dropna
+    common_idx = ret_asset.index.intersection(vol_credit.index)
+    ret_asset = ret_asset.reindex(common_idx)
+    vol_credit = vol_credit.reindex(common_idx)
+    
+    # Vols equity - asegurar que son Series
+    vol_5  = pd.Series(ret_asset.rolling(5).std() * np.sqrt(252), index=ret_asset.index)
+    vol_21 = pd.Series(ret_asset.rolling(21).std() * np.sqrt(252), index=ret_asset.index)
+    vol_63 = pd.Series(ret_asset.rolling(63).std() * np.sqrt(252), index=ret_asset.index)
 
-    # 4-Scale Energy (basado en HAR + crédito)
-    E4 = (0.20 * vol_5 +
-          0.30 * vol_21 +
-          0.25 * vol_63 +
-          0.25 * vol_credit)
+    # 4-Scale Energy (basado en HAR + crédito) - alinear todas las series
+    # Asegurar que vol_credit está alineado con las otras vols
+    vol_credit_aligned = vol_credit.reindex(vol_5.index)
+    E4 = pd.Series(0.20 * vol_5 + 0.30 * vol_21 + 0.25 * vol_63 + 0.25 * vol_credit_aligned, index=vol_5.index)
 
     # Sincronía proxy: correlación vol_21 vs vol_63
-    sync = (vol_21.rolling(21).corr(vol_63) + 1) / 2
+    # Asegurar que ambas Series están alineadas
+    common_vol_idx = vol_21.index.intersection(vol_63.index)
+    vol_21_aligned = vol_21.reindex(common_vol_idx)
+    vol_63_aligned = vol_63.reindex(common_vol_idx)
+    
+    # Calcular correlación rolling manualmente
+    sync_raw = pd.Series(index=vol_21_aligned.index, dtype=float)
+    for i in range(20, len(vol_21_aligned)):
+        window_21 = vol_21_aligned.iloc[i-20:i+1]
+        window_63 = vol_63_aligned.iloc[i-20:i+1]
+        if len(window_21) == 21 and len(window_63) == 21:
+            corr_val = window_21.corr(window_63)
+            if not np.isnan(corr_val):
+                sync_raw.iloc[i] = corr_val
+    
+    sync = (sync_raw + 1) / 2
 
-    # Filtrar NaN tempranos
+    # Asegurar que todas las Series son 1D y están alineadas
+    # Encontrar el índice común de todas las series
+    all_idx = ret_asset.index.intersection(E4.index).intersection(sync.index)
+    
+    # Convertir a Series 1D si es necesario y reindexar
+    ret_asset_clean = pd.Series(ret_asset.reindex(all_idx), index=all_idx) if isinstance(ret_asset, pd.Series) else pd.Series(ret_asset.reindex(all_idx).squeeze(), index=all_idx)
+    E4_clean = pd.Series(E4.reindex(all_idx), index=all_idx) if isinstance(E4, pd.Series) else pd.Series(E4.reindex(all_idx).squeeze(), index=all_idx)
+    sync_clean = pd.Series(sync.reindex(all_idx), index=all_idx) if isinstance(sync, pd.Series) else pd.Series(sync.reindex(all_idx).squeeze(), index=all_idx)
+    
+    # Filtrar NaN tempranos - construir DataFrame con Series alineadas
     df = pd.DataFrame({
-        "ret": ret_asset,
-        "E4": E4,
-        "sync": sync
-    }).dropna()
+        "ret": ret_asset_clean,
+        "E4": E4_clean,
+        "sync": sync_clean
+    })
+    df = df.dropna()
 
     if len(df) < 500:
         # muy pocos datos, salimos

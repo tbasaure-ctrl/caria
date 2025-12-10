@@ -2,17 +2,7 @@
 API routes for Meta-Fragility monitoring
 """
 
-        "auc": 0.551,
-        "surrogate_p_value": 0.03
-    },
-    "signal_weights": {
-        "sync_order": 0.59,
-        "cf": 0.34,
-        "skewness": 0.05,
-        "acf1": 0.01,
-        "variance": 0.01
-    }
-}
+
 
 
 @router.get("/current")

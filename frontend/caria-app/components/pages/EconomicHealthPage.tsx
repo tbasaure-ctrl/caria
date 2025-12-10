@@ -12,9 +12,6 @@ export const EconomicHealthPage: React.FC = () => {
         <div className="animate-fade-in space-y-6 pb-20">
             <div className="max-w-4xl">
                 <h1 className="text-3xl sm:text-4xl font-display text-white mb-2">World Economies Health</h1>
-                <p className="text-sm text-text-secondary leading-relaxed max-w-2xl">
-                    Global macroeconomic surveillance system. Monitor aggregated health scores, expansionary/contractionary regimes, and systemic fragility indicators across major jurisdictions.
-                </p>
             </div>
 
             {/* Sub-panel Navigation */}
@@ -39,7 +36,7 @@ export const EconomicHealthPage: React.FC = () => {
                     <Activity className="w-4 h-4" />
                     <span className="flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-                        CARIA SR (Systemic Risk)
+                        CARIA-SR
                     </span>
                 </button>
             </div>
@@ -48,14 +45,7 @@ export const EconomicHealthPage: React.FC = () => {
             <div className="min-h-[600px]">
                 {activePanel === 'map' && <WorldEconomiesHealth />}
                 {activePanel === 'msfi' && (
-                    <div className="max-w-4xl mx-auto">
-                        <div className="mb-6">
-                            <h2 className="text-xl font-bold text-white mb-2">Systemic Risk Monitor</h2>
-                            <p className="text-sm text-text-secondary">
-                                Tracking structural fragility in the US Market (SPY) and Credit Markets (HYG).
-                                Uses Volatility-Credit Correlation (Sync) and E4 Risk Mix to detect regime shifts.
-                            </p>
-                        </div>
+                    <div className="max-w-4xl mx-auto mt-6">
                         <StructuralFragilityCard ticker="SPY" />
                     </div>
                 )}

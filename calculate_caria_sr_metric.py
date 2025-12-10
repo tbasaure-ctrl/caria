@@ -14,7 +14,7 @@ START_DATE = "1990-01-01"   # Muestra ampliada (se recorta sola por HYG)
 ASSETS = ["SPY", "QQQ", "IWM", "DIA", "XLF", "XLE", "XLK", "EFA", "EEM", "GLD"]
 CREDIT_TICKER = "HYG"       # Proxy de crédito (común a todos)
 ROLL_RANK_WINDOW = 252      # Ventana para rank percentil
-FRAG_Q = 0.90               # Umbral percentil para Sync y E4
+FRAG_Q = 0.80               # Umbral percentil para Sync y E4
 FWD_HORIZON = 10            # Retorno futuro a 10 días
 SEED = 42
 
@@ -49,7 +49,10 @@ def build_caria_sr_for_asset(price, vol_credit,
     vol_cred = vol_credit.reindex(common)
 
     if len(price) < 400:
+        print(f"    Debug: precio tiene solo {len(price)} datos después de alinear")
         return None, np.nan, np.nan, np.nan  # muy poca data
+    
+    print(f"    Debug: precio={len(price)}, vol_cred={len(vol_cred.dropna())}")
 
     # Retornos
     ret = price.pct_change().dropna()
@@ -77,51 +80,82 @@ def build_caria_sr_for_asset(price, vol_credit,
     m21 = zscore(roc_21)
     m63 = zscore(roc_63)
 
-    # Sincronía multiescala: correlaciones entre escalas de momentum
-    # Usamos ventana móvil para correlaciones
-    corr_5_21 = m5.rolling(21).corr(m21)
-    corr_21_63 = m21.rolling(21).corr(m63)
-    corr_5_63 = m5.rolling(21).corr(m63)
+    # Sincronía: correlación entre momentum normalizado y volatilidad de crédito
+    # Usamos la versión más simple y robusta (como en otros archivos)
+    roc_21 = ret.rolling(21).sum()
+    mom_norm = (roc_21 - roc_21.rolling(roll_rank_window).mean()) / (roc_21.rolling(roll_rank_window).std() + 1e-12)
     
-    # También correlación con crédito (proxy de sincronía sistémica)
-    corr_credit = m21.rolling(21).corr(vol_cred)
+    # Alinear mom_norm y vol_cred antes de correlación
+    common_sync = mom_norm.index.intersection(vol_cred.index)
+    mom_norm_aligned = mom_norm.reindex(common_sync)
+    vol_cred_aligned = vol_cred.reindex(common_sync)
     
-    # Sincronía combinada: promedio de correlaciones normalizado a [0,1]
-    sync_raw = (corr_5_21 + corr_21_63 + corr_5_63 + corr_credit) / 4.0
+    # Crear DataFrame temporal para calcular correlación móvil
+    temp_df = pd.DataFrame({
+        'mom': mom_norm_aligned,
+        'vol': vol_cred_aligned
+    }).dropna()
+    
+    # Correlación móvil usando el método correcto
+    sync_raw = temp_df['mom'].rolling(21).corr(temp_df['vol'])
     sync = (sync_raw + 1) / 2.0  # Normalizar de [-1,1] a [0,1]
-    
-    # Alternativa más simple: usar solo correlación momentum-credito (como en otros archivos)
-    # Descomentar si prefieres esta versión:
-    # roc_21 = ret.rolling(21).sum()
-    # mom_norm = (roc_21 - roc_21.rolling(roll_rank_window).mean()) / (roc_21.rolling(roll_rank_window).std() + 1e-12)
-    # sync = (mom_norm.rolling(21).corr(vol_cred) + 1) / 2.0
+    sync = sync.reindex(common_sync)  # Reindexar al índice común
 
+    # Alinear E4 y sync antes de calcular SR
+    common_sr = E4.index.intersection(sync.index)
+    E4_aligned = E4.reindex(common_sr)
+    sync_aligned = sync.reindex(common_sr)
+    
+    if len(E4_aligned.dropna()) < 100 or len(sync_aligned.dropna()) < 100:
+        return None, np.nan, np.nan, np.nan
+    
     # CARIA-SR: E4 rank × (1 + sync) luego rank percentil
-    SR_raw = E4 * (1 + sync)
+    SR_raw = E4_aligned * (1 + sync_aligned)
     SR = SR_raw.rolling(roll_rank_window).rank(pct=True)
 
     # Estado estructural frágil: High Sync & High E4 (percentil FRAG_Q)
-    q_sync = sync.quantile(FRAG_Q)
-    q_E4 = E4.quantile(FRAG_Q)
-    state = ((sync > q_sync) & (E4 > q_E4)).fillna(False).astype(int)
+    # Calcular quantiles solo en datos válidos
+    valid_sync = sync_aligned.dropna()
+    valid_E4 = E4_aligned.dropna()
+    
+    if len(valid_sync) < 100 or len(valid_E4) < 100:
+        return None, np.nan, np.nan, np.nan
+    
+    q_sync = valid_sync.quantile(FRAG_Q)
+    q_E4 = valid_E4.quantile(FRAG_Q)
+    state = ((sync_aligned > q_sync) & (E4_aligned > q_E4)).fillna(False).astype(int)
 
-    # Retorno futuro a FWD_HORIZON días
+    # Retorno futuro a FWD_HORIZON días - alinear con ret
     future_loss = ret.rolling(FWD_HORIZON).sum().shift(-FWD_HORIZON)
 
-    # Construir DataFrame
+    # Encontrar índice común de todas las series necesarias
+    common_idx = common_sr.intersection(ret.index).intersection(price.index).intersection(future_loss.index)
+    
+    if len(common_idx) < 100:
+        return None, np.nan, np.nan, np.nan
+    
+    # Debug: verificar tamaños antes de crear DataFrame
+    print(f"    Debug: common_idx={len(common_idx)}, E4={len(E4_aligned)}, sync={len(sync_aligned)}, ret={len(ret)}, price={len(price)}")
+    
+    # Construir DataFrame con índices alineados
     df = pd.DataFrame({
-        'Close': price,
-        'ret': ret,
-        'SR': SR,
-        'E4': E4,
-        'Sync': sync,
-        'state': state,
-        'future_loss': future_loss
+        'Close': price.reindex(common_idx),
+        'ret': ret.reindex(common_idx),
+        'SR': SR.reindex(common_idx),
+        'E4': E4_aligned.reindex(common_idx),
+        'Sync': sync_aligned.reindex(common_idx),
+        'state': state.reindex(common_idx),
+        'future_loss': future_loss.reindex(common_idx)
     }).dropna()
 
     # Verificar que hay suficientes eventos frágiles
-    if df['state'].sum() < 5:
+    n_fragile = df['state'].sum()
+    if n_fragile < 5:
         return None, np.nan, np.nan, np.nan
+    
+    # Debug: mostrar algunos estadísticos
+    if len(df) > 0:
+        print(f"    Datos válidos: {len(df)}, Fragiles: {n_fragile}, Sync range: [{df['Sync'].min():.3f}, {df['Sync'].max():.3f}], E4 range: [{df['E4'].min():.3f}, {df['E4'].max():.3f}]")
 
     # AUC: qué tan bien SR separa Normal vs Frágil
     try:

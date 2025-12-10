@@ -2,8 +2,38 @@
 API routes for Meta-Fragility monitoring
 """
 
+from typing import Dict, Any, List
+from fastapi import APIRouter
 
+router = APIRouter()
 
+_DEMO_DATA = {
+    "current": {
+        "meta_fragility": 0.42,
+        "sync_order": 0.35,
+        "cf": 0.15,
+        "bifurcation_score": 0.22,
+        "flickering": 0.18,
+        "date": "2024-03-20"
+    },
+    "thresholds": {
+        "warning": 0.65,
+        "critical": 0.85
+    },
+    "percentile": 68,
+    "validation": {
+        "accuracy": 0.89,
+        "auc": 0.551,
+        "surrogate_p_value": 0.03
+    },
+    "signal_weights": {
+        "sync_order": 0.59,
+        "cf": 0.34,
+        "skewness": 0.05,
+        "acf1": 0.01,
+        "variance": 0.01
+    }
+}
 
 @router.get("/current")
 async def get_current_fragility() -> Dict[str, Any]:

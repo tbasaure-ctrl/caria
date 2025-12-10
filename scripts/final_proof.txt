@@ -1,0 +1,34 @@
+
+>>> DIAGNOSTICS FOR S&P 500 <<<
+Sync Mean: 0.5270, Max: 0.7278
+[Thermodynamics] Mutual Information (1/r vs H): 0.0000
+Momentum Threshold (80th pc): 0.1016
+
+--- Model: Volatility Only ---
+MCC Score: 0.0541
+Precision: 10.38%
+Recall:    27.61%
+False Pos: 19.40%
+
+--- Model: Smart CARIA (Momentum) ---
+MCC Score: 0.0674
+Precision: 13.08%
+Recall:    16.16%
+False Pos: 8.74%
+
+>>> DIAGNOSTICS FOR Bitcoin <<<
+Sync Mean: 0.5207, Max: 0.7568
+[Thermodynamics] Mutual Information (1/r vs H): 0.0024
+Momentum Threshold (80th pc): 0.3506
+
+--- Model: Volatility Only ---
+MCC Score: 0.0404
+Precision: 31.31%
+Recall:    22.61%
+False Pos: 19.00%
+
+--- Model: Smart CARIA (Momentum) ---
+MCC Score: 0.0621
+Precision: 37.22%
+Recall:    10.55%
+False Pos: 6.81%

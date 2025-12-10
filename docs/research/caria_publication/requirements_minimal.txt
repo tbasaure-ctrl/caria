@@ -1,0 +1,28 @@
+# Caria Risk Engine - MINIMAL Requirements
+# Use this if you have dependency conflicts with the main requirements.txt
+#
+# These packages should work with most existing Python environments
+# including OpenBB, quantstats, etc.
+
+# Core (likely already installed)
+numpy
+pandas
+scipy
+scikit-learn
+matplotlib
+seaborn
+
+# Data
+yfinance
+
+# For SHAP analysis (optional)
+shap
+
+# Statistical testing
+statsmodels
+
+# Utilities
+tqdm
+
+# Note: arch package may conflict with openbb-econometrics
+# If so, the GARCH benchmark will use a simple fallback implementation

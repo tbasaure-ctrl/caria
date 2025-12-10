@@ -42,6 +42,7 @@ export const JoinLeague: React.FC<JoinLeagueProps> = ({ onJoinSuccess }) => {
             }
         } catch (error) {
             console.error('Error joining league:', error);
+            alert("Error joining league. Please try again. If the issue persists, the league database might need migration.");
         } finally {
             setIsSubmitting(false);
         }

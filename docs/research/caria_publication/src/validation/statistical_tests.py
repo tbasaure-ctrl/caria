@@ -37,6 +37,7 @@ from scipy import stats
 from typing import Union, Tuple, Optional, Dict, List, Callable
 from dataclasses import dataclass
 import warnings
+import statsmodels.api as sm
 
 
 # ==============================================================================
@@ -341,6 +342,83 @@ def diebold_mariano_test(
             'loss_function': loss_func
         }
     )
+
+def ols_newey_west(
+    y: Union[pd.Series, np.ndarray],
+    x: Union[pd.Series, np.ndarray, pd.DataFrame],
+    lags: int,
+    add_const: bool = True,
+) -> Dict[str, float]:
+    """
+    OLS regression with HAC (Newey–West) standard errors.
+
+    This is the minimum-correct inference when the dependent variable is built
+    from *overlapping* forward returns (e.g., 22d forward returns on daily data),
+    which induces mechanical autocorrelation in residuals.
+
+    Parameters
+    ----------
+    y:
+        Dependent variable.
+    x:
+        Regressors. If Series/array, treated as a single regressor.
+    lags:
+        HAC maxlags. For h-day overlapping returns on daily data, a standard
+        choice is maxlags = h-1.
+    add_const:
+        If True, include an intercept.
+
+    Returns
+    -------
+    Dict with:
+      - beta (coefficient on the first regressor)
+      - t (HAC t-stat for beta)
+      - p (two-sided HAC p-value for beta)
+      - n (observations used)
+    """
+    y_ser = pd.Series(y).astype(float)
+    if isinstance(x, pd.DataFrame):
+        X = x.copy()
+    else:
+        X = pd.DataFrame({"x": pd.Series(x)})
+
+    df = pd.concat([y_ser.rename("y"), X], axis=1).dropna()
+    if len(df) < 30:
+        return {"beta": np.nan, "t": np.nan, "p": np.nan, "n": float(len(df))}
+
+    yv = df["y"].values
+    Xv = df.drop(columns=["y"]).values
+    if add_const:
+        Xv = sm.add_constant(Xv, has_constant="add")
+
+    model = sm.OLS(yv, Xv).fit(cov_type="HAC", cov_kwds={"maxlags": int(lags)})
+    # coefficient on first regressor (after constant if present)
+    beta_idx = 1 if add_const else 0
+    beta = float(model.params[beta_idx])
+    t = float(model.tvalues[beta_idx])
+    p = float(model.pvalues[beta_idx])
+    return {"beta": beta, "t": t, "p": p, "n": float(len(df))}
+
+
+def holm_bonferroni(p_values: Union[pd.Series, List[float], np.ndarray]) -> np.ndarray:
+    """
+    Holm–Bonferroni adjustment for multiple hypothesis testing.
+
+    Use this when scanning many windows/thresholds and reporting best results.
+    """
+    p = np.asarray(p_values, dtype=float)
+    m = len(p)
+    order = np.argsort(p)
+    adj = np.empty_like(p)
+    prev = 0.0
+    for rank, idx in enumerate(order):
+        factor = m - rank
+        val = min(1.0, p[idx] * factor)
+        # enforce monotonicity
+        val = max(val, prev)
+        adj[idx] = val
+        prev = val
+    return adj
 
 
 # ==============================================================================

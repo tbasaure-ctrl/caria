@@ -39,6 +39,76 @@ Where $\phi_k(t)$ represents the instantaneous phase of the fast, medium, and sl
 
 ---
 
+## 2.2 CARIA-SR (Spectral) — Definition (Reproducible)
+
+This section fixes a key reproducibility gap: **CARIA-SR must be defined with explicit equations**.
+The spectral CARIA-SR is a *cross-sectional* fragility score computed from the eigen-structure of the rolling correlation matrix of constituents.
+
+### Data objects
+
+Let \( r_{i,t} \) be (log) return of asset \(i\) at day \(t\). For each day \(t\), define a rolling window \(W_t = \{t-L+1,\ldots,t\}\) with length \(L\) (e.g., \(L=252\)).
+Let \(R_t\) be the \(L \times N_t\) return matrix in that window (missing values allowed; **no forward-fill**).
+
+Compute a pairwise-complete correlation matrix \(\Sigma_t \in \mathbb{R}^{N_t\times N_t}\) using overlapping observations only.
+Let \(\lambda_{1,t} \ge \cdots \ge \lambda_{N_t,t} \ge 0\) be eigenvalues of \(\Sigma_t\).
+
+### Absorption Ratio (top-K eigenvalues)
+
+For \(K_t = \lceil \kappa N_t \rceil\) (e.g. \(\kappa=0.2\)), define:
+
+\\[
+AR_t = \\frac{\\sum_{j=1}^{K_t} \\lambda_{j,t}}{\\sum_{j=1}^{N_t} \\lambda_{j,t}}
+\\]
+
+### Spectral entropy (comparable across time)
+
+Define eigenvalue weights \(p_{j,t} = \\lambda_{j,t}/\\sum_{k} \\lambda_{k,t}\).
+Shannon entropy:
+
+\\[
+H_t = -\\sum_{j=1}^{N_t} p_{j,t}\\,\\log(p_{j,t})
+\\]
+
+Because \(H_t\\) scales like \\(\\log(N_t)\\), make it comparable across time using:
+
+\\[
+H^{\\mathrm{norm}}_t = \\frac{H_t}{\\log(N_t)} \\in [0,1]
+\\]
+
+Effective rank (dimension proxy):
+
+\\[
+eRank_t = \\exp(H_t)
+\\]
+
+### CARIA-SR raw score + standardization
+
+We define a transparent raw score (higher = more fragile):
+
+\\[
+CARIA^{\\mathrm{raw}}_t = \\frac{AR_t}{H^{\\mathrm{norm}}_t + \\varepsilon}
+\\]
+
+Then we standardize point-in-time with a rolling robust z-score (median/MAD) over a lookback \(B\) (e.g. \(B=252\)):
+
+\\[
+Z_t = \\frac{CARIA^{\\mathrm{raw}}_t - \\mathrm{median}(CARIA^{\\mathrm{raw}}_{t-B:t})}{1.4826\\,\\mathrm{MAD}(CARIA^{\\mathrm{raw}}_{t-B:t})}
+\\]
+
+### Hysteresis (memory state)
+
+We model persistence via EWMA memory (half-life \(h\), e.g. \(h=63\)):
+
+\\[
+M_t = \\mathrm{EWMA}(Z_t;\\,h)
+\\]
+
+In code this is implemented as `caria_memory` and is strictly point-in-time.
+
+**Reference implementation:** `docs/research/caria_publication/src/features/caria_sr_spectral.py` and `spectral.py`.
+
+---
+
 ## 3. Empirical Evidence: The Bitcoin Paradox (Vector Physics)
 
 To validate this theory of "Social Dynamics," we tested the framework across assets with radically different psychologies: the **S&P 500** (Institutional), **Bitcoin** (Speculative), and **TLT Bonds** (Policy-driven).
@@ -116,3 +186,34 @@ We have presented a validated **Unified Theory of Social Dynamics**.
 The market is not a random walk; it is a collection of clocks. When those clocks tick together, the market gains a terrifying "Mass" that amplifies every movement. 
 
 Great Caria is not merely a tool for profit; it is a **diagnostic instrument** for this social pathology. It tells us that the market is safe when it is a debate, and deadly when it becomes a chant. By listening for the silence of synchronization, we have found a way to measure the weight of the crowd before it falls.
+
+---
+
+## Appendix A — Reproducibility & Bias Controls (Minimum Publication Bar)
+
+This appendix states the minimum controls required to make the empirical results evaluable.
+
+### A.1 Survivorship and index composition
+
+If the universe is “S&P 500”, it must be built with **historical constituents** (no ex-post ticker list).
+Using today’s constituents and downloading history backwards introduces survivorship/composition bias and contaminates historical correlation structure.
+
+### A.2 Missing data (no forward-fill)
+
+Forward-filling prices in a panel creates artificial zero returns and biases correlation/eigenvalues.
+For spectral estimators, use either:
+- pairwise overlap with minimum overlap constraints (as in `pairwise_correlation()`), and/or
+- estimators designed for missingness (EM / shrinkage with explicit assumptions).
+
+### A.3 Out-of-sample protocol and multiple testing
+
+Any grid search over windows/thresholds must be evaluated with strict temporal splits and multiple-testing corrections.
+At minimum, report:
+- a fixed train/validation/test split or walk-forward OOS,
+- a holdout period never touched during tuning,
+- p-value adjustments (e.g., Holm) or a deflated Sharpe style correction if optimizing trading rules.
+
+### A.4 Overlapping forward returns
+
+If targets are \(h\)-day forward returns on daily data, observations are mechanically overlapping.
+Inference must use HAC (Newey–West with \(h-1\) lags) or block bootstrap, otherwise t-stats are inflated.

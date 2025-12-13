@@ -10,6 +10,8 @@ Modules:
 - entropy: Shannon entropy and alternative entropy measures
 - synchronization: Kuramoto order parameter and temporal sync metrics
 - volatility: Realized volatility and crisis detection methods
+- spectral: cross-sectional spectral structure measures (AR, eigen-entropy, eRank)
+- caria_sr_spectral: CARIA-SR built from spectral structure + hysteresis
 
 Usage:
 ------
@@ -58,6 +60,21 @@ from .volatility import (
     VolatilityMetrics
 )
 
+from .spectral import (
+    SpectralStats,
+    pairwise_correlation,
+    eigenvalues_of_correlation,
+    absorption_ratio,
+    spectral_shannon_entropy,
+    effective_rank,
+    spectral_stats_from_returns,
+)
+
+from .caria_sr_spectral import (
+    CariaSRSpectralConfig,
+    compute_caria_sr_spectral,
+)
+
 __all__ = [
     # Entropy
     'shannon_entropy',
@@ -93,4 +110,17 @@ __all__ = [
     'caria_risk_signal',
     'CrisisLabel',
     'VolatilityMetrics',
+
+    # Spectral (cross-sectional)
+    'SpectralStats',
+    'pairwise_correlation',
+    'eigenvalues_of_correlation',
+    'absorption_ratio',
+    'spectral_shannon_entropy',
+    'effective_rank',
+    'spectral_stats_from_returns',
+
+    # CARIA-SR spectral
+    'CariaSRSpectralConfig',
+    'compute_caria_sr_spectral',
 ]

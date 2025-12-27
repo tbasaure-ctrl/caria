@@ -1,0 +1,22 @@
+{
+  "date": "2025-12-26T02:44:24.152749",
+  "data_date": "2025-12-23",
+  "signals": {
+    "entropy": 0.639962853935744,
+    "connectivity": 0.22938752086915132,
+    "asf": 0.38125532165588705,
+    "regime": "coordination",
+    "asf_bucket": "low"
+  },
+  "kelly_allocation": {
+    "bonds": 0,
+    "commodities": 0,
+    "cash": 1.0
+  },
+  "methodology": {
+    "kelly_fraction": 0.5,
+    "max_leverage": 1.0,
+    "risk_free_rate": 0.04,
+    "description": "Half-Kelly based on regime-conditional expected returns and volatility"
+  }
+}

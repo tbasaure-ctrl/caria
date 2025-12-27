@@ -1,0 +1,53 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: manuscript_unified.aux
+Reallocating 'name_of_file' (item size: 1) to 8 items.
+The style file: chicago.bst
+Reallocating 'name_of_file' (item size: 1) to 19 items.
+Database file #1: references_unified.bib
+Warning--no number and no volume in danielsson2012
+Warning--page numbers missing in danielsson2012
+Warning--no volume for minsky1992
+Warning--page numbers missing in minsky1992
+You've used 11 entries,
+            2861 wiz_defined-function locations,
+            682 strings with 6655 characters,
+and the built_in function-call counts, 8530 in all, are:
+= -- 683
+> -- 727
+< -- 0
++ -- 226
+- -- 242
+* -- 857
+:= -- 1561
+add.period$ -- 33
+call.type$ -- 11
+change.case$ -- 90
+chr.to.int$ -- 11
+cite$ -- 15
+duplicate$ -- 194
+empty$ -- 465
+format.name$ -- 278
+if$ -- 1564
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 11
+newline$ -- 58
+num.names$ -- 110
+pop$ -- 57
+preamble$ -- 1
+purify$ -- 156
+quote$ -- 0
+skip$ -- 203
+stack$ -- 0
+substring$ -- 441
+swap$ -- 64
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 220
+warning$ -- 4
+while$ -- 102
+width$ -- 0
+write$ -- 145
+(There were 4 warnings)

@@ -1,0 +1,27 @@
+% IMPORTANTE: \setcounter{table}{2} debe estar DENTRO de \begin{document}...\end{document}
+% Si solo copias esta tabla, pon el contador justo antes de \begin{table} dentro de tu documento
+\setcounter{table}{2}  % Esto hace que la siguiente tabla sea la número 3
+
+\begin{table}[htbp]
+  \centering
+  \caption{\textbf{Bootstrap Robustness Analysis (1,000 Iterations)}}
+  \label{tab:bootstrap_results}
+  \small
+  \begin{minipage}{0.9\textwidth}
+    \textit{Note: To test the stability of the structural signal, we performed a bootstrap analysis with 1,000 resamples (with replacement) from the 1987--2025 dataset. The table reports the distribution of the relative improvement in Pseudo-$R^2$ for tail-risk prediction in low-volatility regimes.}
+  \end{minipage}
+  \vspace{0.3cm}
+  
+  \begin{tabular}{lc}
+    \toprule
+    \textbf{Statistic} & \textbf{Value} \\
+    \midrule
+    Iterations & 1,000 \\
+    Positive Improvement Probability & \textbf{100.0\%} \\
+    \addlinespace
+    Mean Improvement ($\Delta R^2$) & \textbf{+22.6\%} \\
+    95\% Confidence Interval & \textbf{[9.4\%, 43.9\%]} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+

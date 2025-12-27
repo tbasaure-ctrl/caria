@@ -1,0 +1,27 @@
+\documentclass[12pt]{article}
+
+% Required packages
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\begin{document}
+\setcounter{table}{2}  % Esto hace que la siguiente tabla sea la número 2
+\begin{table}
+\caption{Desempeño fuera de muestra (2015--2025 aprox.). MAR = CAGR/|MaxDD|.}
+\label{tab:perf_oos}
+\begin{tabular}{lrrrr}
+\toprule
+Estrategia & CAGR & MaxDD & MAR & Exposición media \\
+\midrule
+Benchmark (SPY) & 12.74 & -33.72 & 0.38 & 100.00 \\
+Timing (q fijo, 0.875) & 10.05 & -24.49 & 0.41 & 90.71 \\
+Timing (WFO: q por fold) & 11.52 & -19.97 & 0.58 & 93.29 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\end{document}

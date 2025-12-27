@@ -1,0 +1,4 @@
+Low C Signals: 0
+High C Signals: 0
+Total Regime Signals: 0
+VIX Signals: 2121

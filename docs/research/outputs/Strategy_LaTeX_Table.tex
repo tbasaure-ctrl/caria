@@ -1,0 +1,23 @@
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Strategy Backtest: ASF Signals vs Benchmarks}}
+\label{tab:strategy}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Strategy} & \textbf{CAGR} & \textbf{Volatility} & \textbf{Sharpe} & \textbf{Max DD} & \textbf{Calmar} \\
+\midrule
+Buy & Hold SPX & 33.5\% & 40.7\% & 0.82 & -56.3\% & 0.60 \\
+60/40 Portfolio & 44.5\% & 23.9\% & 1.86 & -30.6\% & 1.46 \\
+ASF Strategy & 32.9\% & 36.7\% & 0.90 & -54.9\% & 0.60 \\
+VIX Strategy & 19.9\% & 24.0\% & 0.83 & -30.7\% & 0.65 \\
+
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Backtest period 2000--2024. CAGR = Compound Annual Growth Rate. Max DD = Maximum Drawdown. Transaction costs of 10 bps per trade included. ASF Strategy adjusts equity exposure based on structural fragility signals; VIX Strategy uses volatility-based timing.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

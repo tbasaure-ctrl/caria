@@ -1,0 +1,50 @@
+\documentclass[12pt]{article}
+
+% Required packages
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\begin{document}
+
+% El contador debe estar DENTRO de \begin{document}
+\setcounter{table}{2}  % Esto hace que la siguiente tabla sea la número 4
+
+\begin{table}[htbp]
+  \centering
+  \caption{\textbf{Performance Metrics Comparison (2000--2025)}}
+  \label{tab:performance_metrics}
+  \small
+  \begin{minipage}{0.9\textwidth}
+    \textit{Performance metrics computed from daily returns over the 2000--2025 sample. CAGR (Compound Annual Growth Rate) measures the annualized return. Max Drawdown represents the maximum peak-to-trough decline. Calmar Ratio is the ratio of CAGR to absolute Max Drawdown, measuring risk-adjusted returns.}
+  \end{minipage}
+  \vspace{0.3cm}
+  
+  \begin{tabular}{lccc}
+    \toprule
+    \textbf{Metric} & \textbf{S\&P 500} & \textbf{Minsky Hedge} & \textbf{Minsky Levered} \\
+                    & (Benchmark)       & (Bond Switch)         & (1.5x) \\
+    \midrule
+    CAGR            & 7.7\%             & 6.9\%                 & 7.6\% \\
+    Max Drawdown    & -56.8\%           & \textbf{-26.0\%}      & -39.6\% \\
+    Calmar Ratio    & 0.13              & \textbf{0.26}         & 0.19 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

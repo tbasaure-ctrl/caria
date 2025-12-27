@@ -1,0 +1,31 @@
+\documentclass[12pt]{article}
+
+% Required packages
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\begin{document}
+
+\begin{table}
+\centering
+\caption{Sensibilidad al umbral $q$ (estrategia; OOS).}
+\label{tab:q_sensitivity_small}
+\begin{tabular}{rrrrr}
+\toprule
+q & CAGR\_strat & MaxDD\_strat & MAR\_strat & avg\_expo \\
+\midrule
+0.750 & 10.80 & -16.05 & 0.673 & 78.25 \\
+0.775 & 10.09 & -17.73 & 0.569 & 80.48 \\
+0.800 & 11.39 & -15.20 & 0.749 & 82.74 \\
+0.825 & 11.82 & -17.47 & 0.677 & 85.48 \\
+0.850 & 10.57 & -22.53 & 0.469 & 87.30 \\
+0.875 & 10.05 & -24.49 & 0.411 & 90.71 \\
+0.900 & 11.57 & -19.97 & 0.579 & 93.85 \\
+0.925 & 11.86 & -20.47 & 0.579 & 96.11 \\
+0.950 & 11.98 & -24.50 & 0.489 & 97.38 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{document}

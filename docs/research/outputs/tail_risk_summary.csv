@@ -1,0 +1,4 @@
+Test,Result,Significant
+CVaR Reduction,-0.33%,True
+Extreme Days Reduction,0%,False
+Left Tail Distribution,p=1.0000,False

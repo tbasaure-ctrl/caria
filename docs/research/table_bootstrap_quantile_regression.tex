@@ -1,0 +1,38 @@
+\setcounter{table}{4}  % Ajusta según la numeración que necesites
+
+\begin{table}[htbp]
+  \centering
+  \caption{\textbf{Bootstrap Robustness Analysis: Quantile Regression (1,000 Iterations)}}
+  \label{tab:bootstrap_quantile_regression}
+  \small
+  \begin{minipage}{0.9\textwidth}
+    \textit{Note: To test the stability of the structural signal in quantile regression, we performed a bootstrap analysis with 1,000 resamples (with replacement) from the 2000--2025 dataset. The table reports the distribution of the relative improvement in Pseudo-$R^2$ for tail-risk prediction when adding the $CARIA\_Peak$ signal to the baseline volatility model.}
+  \end{minipage}
+  \vspace{0.3cm}
+  
+  \begin{tabular}{lc}
+    \toprule
+    \textbf{Statistic} & \textbf{Value} \\
+    \midrule
+    Iterations & 1,000 \\
+    Positive Improvement Probability & \textbf{100.0\%} \\
+    \addlinespace
+    Mean Improvement ($\Delta R^2$) & \textbf{+26.3\%} \\
+    95\% Confidence Interval & \textbf{[12.2\%, 45.7\%]} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

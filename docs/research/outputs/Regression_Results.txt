@@ -1,0 +1,86 @@
+MODEL 1: REGIME INTERACTION (Time Dummy)
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:          Future_DD_Mag   R-squared:                       0.071
+Model:                            OLS   Adj. R-squared:                  0.069
+Method:                 Least Squares   F-statistic:                     41.56
+Date:                Sat, 20 Dec 2025   Prob (F-statistic):           7.03e-26
+Time:                        22:38:45   Log-Likelihood:                 2072.9
+No. Observations:                1638   AIC:                            -4138.
+Df Residuals:                    1634   BIC:                            -4116.
+Df Model:                           3                                         
+Covariance Type:            nonrobust                                         
+===============================================================================
+                  coef    std err          t      P>|t|      [0.025      0.975]
+-------------------------------------------------------------------------------
+const           0.0069      0.009      0.753      0.451      -0.011       0.025
+ASF             0.2133      0.089      2.391      0.017       0.038       0.388
+Era_Dummy       0.0918      0.011      8.572      0.000       0.071       0.113
+Interaction    -0.4429      0.094     -4.697      0.000      -0.628      -0.258
+==============================================================================
+Omnibus:                      751.333   Durbin-Watson:                   0.102
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):             3921.640
+Skew:                           2.148   Prob(JB):                         0.00
+Kurtosis:                       9.245   Cond. No.                         100.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+MODEL 2: STRUCTURAL INTERACTION (Basal Correlation)
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:          Future_DD_Mag   R-squared:                       0.048
+Model:                            OLS   Adj. R-squared:                  0.047
+Method:                 Least Squares   F-statistic:                     27.62
+Date:                Sat, 20 Dec 2025   Prob (F-statistic):           2.01e-17
+Time:                        22:38:45   Log-Likelihood:                 2053.2
+No. Observations:                1638   AIC:                            -4098.
+Df Residuals:                    1634   BIC:                            -4077.
+Df Model:                           3                                         
+Covariance Type:            nonrobust                                         
+======================================================================================
+                         coef    std err          t      P>|t|      [0.025      0.975]
+--------------------------------------------------------------------------------------
+const                  0.0196      0.011      1.732      0.083      -0.003       0.042
+ASF                    0.3843      0.061      6.275      0.000       0.264       0.504
+Basal_Corr            -0.0666      0.057     -1.171      0.242      -0.178       0.045
+Interaction_Struct    -1.5614      0.267     -5.851      0.000      -2.085      -1.038
+==============================================================================
+Omnibus:                      678.228   Durbin-Watson:                   0.099
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):             2809.825
+Skew:                           2.003   Prob(JB):                         0.00
+Kurtosis:                       8.012   Cond. No.                         165.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+MODEL 3: QUADRATIC (U-Shape?)
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:          Future_DD_Mag   R-squared:                       0.023
+Model:                            OLS   Adj. R-squared:                  0.022
+Method:                 Least Squares   F-statistic:                     19.63
+Date:                Sat, 20 Dec 2025   Prob (F-statistic):           3.78e-09
+Time:                        22:38:45   Log-Likelihood:                 2032.1
+No. Observations:                1638   AIC:                            -4058.
+Df Residuals:                    1635   BIC:                            -4042.
+Df Model:                           2                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+const          0.0089      0.010      0.938      0.349      -0.010       0.028
+ASF            0.6891      0.125      5.507      0.000       0.444       0.935
+ASF_Sq        -2.2233      0.370     -6.010      0.000      -2.949      -1.498
+==============================================================================
+Omnibus:                      740.714   Durbin-Watson:                   0.097
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):             3454.187
+Skew:                           2.166   Prob(JB):                         0.00
+Kurtosis:                       8.643   Cond. No.                         228.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+

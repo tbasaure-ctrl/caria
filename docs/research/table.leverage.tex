@@ -1,0 +1,33 @@
+\documentclass[12pt]{article}
+
+% Required packages
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\begin{document}
+\setcounter{table}{1}  % Esto hace que la siguiente tabla sea la número 2
+\begin{table}[htbp]
+\caption{Resultados fuera de muestra con reglas ``Minsky'' y costos de financiamiento. 
+La estrategia permite apalancamiento condicional (1.5$\times$) cuando el riesgo de cola estimado es bajo y la volatilidad realizada es baja, y reduce exposición a 0$\times$ cuando el riesgo de cola excede un umbral alto. 
+Los retornos de la estrategia se reportan netos de un costo anual de financiamiento del 5\% aplicado únicamente sobre la porción prestada.}
+\label{tab:minksy_net_5pct}
+\begin{tabular}{lrrrr}
+\toprule
+ & CAGR & MaxDD & MAR & Costo prom. anual (deuda) \\
+\midrule
+Estrategia (neta, 5\% deuda) & 14.55 & -22.34 & 0.65 & 1.36 \\
+Benchmark (SPY)             & 12.74 & -33.72 & 0.38 & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{flushleft}
+\footnotesize
+\textit{Notas.} (i) La volatilidad realizada se estima como desviación estándar móvil de 22 días del retorno diario, anualizada por $\sqrt{252}$. 
+(ii) La exposición toma valores en \{0.0, 1.0, 1.5\}. Se permite 1.5$\times$ solo si la probabilidad estimada de evento de cola satisface $p_t \leq \text{cut}_{low}$ y la volatilidad realizada cumple $RV_t < 0.15$. 
+(iii) Se fuerza salida a 0$\times$ si $p_t > \text{cut}_{high}$, donde $\text{cut}_{high}$ se determina por walk-forward optimization (selección de cuantíl $q$) usando únicamente el conjunto de entrenamiento. 
+(iv) El costo de financiamiento se aplica únicamente sobre la porción prestada: $\max(0, \text{expo}_t - 1)$, con costo diario $(r_b/252)\cdot \max(0, \text{expo}_t - 1)$ y $r_b = 0.05$ anual.
+\end{flushleft}
+
+\end{document}

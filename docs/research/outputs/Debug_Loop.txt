@@ -1,0 +1,9 @@
+Std Ret Shape: (9060, 20)
+Indices: [126, 147, 168, 189, 210]...[8967, 8988, 9009, 9030, 9051]
+Idx 126: Window Clean Shape (126, 0)
+Idx 147: Window Clean Shape (126, 0)
+Idx 168: Window Clean Shape (126, 20)
+Idx 189: Window Clean Shape (126, 20)
+Idx 210: Window Clean Shape (126, 20)
+Idx 231: Window Clean Shape (126, 20)
+Idx 252: Window Clean Shape (126, 20)

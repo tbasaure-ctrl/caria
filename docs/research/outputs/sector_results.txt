@@ -1,0 +1,23 @@
+
+Analyzing Sector: FixedIncome
+Loading data for FixedIncome...
+Loaded 4603 rows, 10 assets.
+Computing Rolling Correlation and ASF (this may take a moment)...
+Regressing ASF vs FixedIncome Crash Risk...
+  Beta: 0.0091
+  T-Stat: 3.2903
+  R2: 0.0073
+
+Analyzing Sector: Commodities
+Loading data for Commodities...
+Loaded 4015 rows, 9 assets.
+Computing Rolling Correlation and ASF (this may take a moment)...
+Regressing ASF vs Commodities Crash Risk...
+  Beta: 0.0352
+  T-Stat: 1.8755
+  R2: 0.0071
+
+--- Final Universality Results ---
+        Sector  ASF_T_Stat
+0  FixedIncome    3.290271
+1  Commodities    1.875482

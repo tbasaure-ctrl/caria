@@ -524,8 +524,8 @@ if __name__ == "__main__":
     returns = np.random.randn(n) * 0.01
     
     # Inject crises at known dates
-    gfc_idx = dates.get_loc(pd.Timestamp('2008-09-15'), method='nearest')
-    covid_idx = dates.get_loc(pd.Timestamp('2020-03-11'), method='nearest')
+    gfc_idx = dates.get_indexer([pd.Timestamp('2008-09-15')], method='nearest')[0]
+    covid_idx = dates.get_indexer([pd.Timestamp('2020-03-11')], method='nearest')[0]
     
     returns[gfc_idx:gfc_idx+30] = np.random.randn(30) * 0.03 - 0.02
     returns[covid_idx:covid_idx+15] = np.random.randn(15) * 0.05 - 0.03
@@ -577,3 +577,7 @@ if __name__ == "__main__":
     
     print("\n" + "=" * 60)
     print("Economic analysis tests completed!")
+
+
+
+

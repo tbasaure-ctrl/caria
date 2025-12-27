@@ -76,7 +76,9 @@ def shannon_entropy(
     bins: Union[BinMethod, int] = 'fd',
     normalize: bool = False,
     base: float = 2.0,
-    min_samples: int = 30
+    min_samples: int = 30,
+    volatility_normalize: bool = False,
+    rolling_window: int = 30
 ) -> EntropyResult:
     """
     Calculate Shannon Entropy of a continuous signal via histogram discretization.
@@ -86,6 +88,15 @@ def shannon_entropy(
     H(X) = -Σᵢ p(xᵢ) log_b(p(xᵢ))
     
     Where p(xᵢ) is estimated from histogram bin frequencies.
+    
+    CRITICAL: Volatility Normalization
+    ===================================
+    If volatility_normalize=True, entropy is calculated on standardized returns:
+        z_t = (r_t - μ_t) / σ_t
+    
+    This removes the confounding effect of volatility amplitude, ensuring entropy
+    measures true information content (shape of distribution) rather than volatility
+    magnitude. This is ESSENTIAL for validating Super-Criticality hypothesis.
     
     Parameters:
     ===========
@@ -105,6 +116,12 @@ def shannon_entropy(
         Logarithm base (2 for bits, e for nats, 10 for dits)
     min_samples : int
         Minimum samples required for reliable estimation
+    volatility_normalize : bool
+        CRITICAL: If True, normalize returns by rolling volatility before entropy.
+        This ensures entropy measures information content, not volatility magnitude.
+        Default: False (for backward compatibility)
+    rolling_window : int
+        Window for rolling volatility calculation (if volatility_normalize=True)
         
     Returns:
     ========
@@ -116,12 +133,17 @@ def shannon_entropy(
     >>> result = shannon_entropy(returns, bins='fd')
     >>> print(f"Entropy: {result.value:.4f} bits")
     
+    >>> # Volatility-normalized (RECOMMENDED for Super-Criticality validation)
+    >>> result_norm = shannon_entropy(returns, bins='fd', volatility_normalize=True)
+    
     Notes:
     ======
     - For financial returns, 'fd' (Freedman-Diaconis) is recommended as it is
       robust to outliers and heavy tails common in financial data.
     - Normalized entropy allows comparison across different sample sizes.
     - Entropy increases with disorder/complexity; decreases with predictability.
+    - **CRITICAL**: Use volatility_normalize=True to test Super-Criticality hypothesis,
+      as it ensures entropy measures distribution shape, not volatility amplitude.
     
     References:
     ===========
@@ -130,6 +152,27 @@ def shannon_entropy(
     # Input validation
     data = np.asarray(data).flatten()
     data = data[~np.isnan(data)]
+    
+    # CRITICAL: Volatility normalization (removes amplitude confounding)
+    if volatility_normalize:
+        data_series = pd.Series(data)
+        # Calculate rolling mean and std
+        rolling_mean = data_series.rolling(window=rolling_window, min_periods=min(rolling_window, len(data)//4)).mean()
+        rolling_std = data_series.rolling(window=rolling_window, min_periods=min(rolling_window, len(data)//4)).std()
+        
+        # Standardize: z_t = (r_t - μ_t) / σ_t
+        # Use forward-fill for initial NaN values
+        rolling_mean = rolling_mean.fillna(method='bfill').fillna(data_series.mean())
+        rolling_std = rolling_std.fillna(method='bfill').fillna(data_series.std())
+        
+        # Avoid division by zero
+        rolling_std = rolling_std.replace(0, np.nan).fillna(data_series.std())
+        
+        data = ((data_series - rolling_mean) / rolling_std).values
+        data = data[~np.isnan(data)]  # Remove any remaining NaN
+        
+        if len(data) < min_samples:
+            raise ValueError(f"Insufficient samples after volatility normalization: {len(data)} < {min_samples}")
     
     if len(data) < min_samples:
         raise ValueError(f"Insufficient samples: {len(data)} < {min_samples}")
@@ -166,7 +209,8 @@ def rolling_shannon_entropy(
     window: int = 30,
     bins: Union[BinMethod, int] = 'fd',
     normalize: bool = True,
-    min_periods: Optional[int] = None
+    min_periods: Optional[int] = None,
+    volatility_normalize: bool = False
 ) -> pd.Series:
     """
     Calculate rolling Shannon Entropy over a sliding window.
@@ -207,7 +251,13 @@ def rolling_shannon_entropy(
         window_data = data.iloc[max(0, i - window + 1):i + 1]
         if len(window_data) >= min_periods:
             try:
-                ent = shannon_entropy(window_data.values, bins=bins, normalize=normalize)
+                ent = shannon_entropy(
+                    window_data.values, 
+                    bins=bins, 
+                    normalize=normalize,
+                    volatility_normalize=volatility_normalize,
+                    rolling_window=window
+                )
                 result.iloc[i] = ent.value
             except (ValueError, RuntimeError):
                 result.iloc[i] = np.nan
@@ -548,3 +598,7 @@ if __name__ == "__main__":
     
     print("\n" + "=" * 60)
     print("All tests passed!")
+
+
+
+

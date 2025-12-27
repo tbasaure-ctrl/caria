@@ -1,0 +1,7 @@
+Crisis,Date,Type,SR 30d,SR 60d,SR Max 90d,Lead Time,Alert Days,Drawdown
+Global Financial Crisis,2009-08-05,systemic,,,,N/A,0,-2.4%
+Flash Crash,2010-05-06,technical,0.478,0.343,0.948,91,9,-8.6%
+European Debt Crisis,2011-08-05,systemic,0.911,0.858,1.000,52,34,-6.7%
+China Stock Crash,2015-08-24,emerging,0.389,0.388,0.925,165,6,-5.3%
+COVID-19 Crash,2020-03-11,exogenous,0.831,0.651,1.000,40,17,-22.2%
+SVB Collapse,2023-03-10,financial,0.033,0.033,0.226,119,4,-1.6%

@@ -1,22 +1,18 @@
-import React, { useState } from 'react';
-import Plot from 'react-plotly.js';
+import React, { useState, useEffect } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Line } from 'recharts';
 import { WidgetCard } from './WidgetCard';
 import { fetchWithAuth, API_BASE_URL } from '../../services/apiService';
-import { AlertTriangle, Activity, Calendar, TrendingDown } from 'lucide-react';
+import { AlertTriangle, Activity, Calendar, TrendingDown, Clock, ShieldAlert, ChevronDown, MousePointer2 } from 'lucide-react';
 
 const CRISES = [
-    { id: '1929_depression', name: 'Great Depression', year: '1929', type: 'Recession', duration: 48, pre_context: 6 },
-    { id: '1939_wwii', name: 'WWII Start', year: '1939', type: 'Geopolitical', duration: 24, pre_context: 3 },
-    { id: '1962_cuban_missile', name: 'Cuban Missile Crisis', year: '1962', type: 'Geopolitical', duration: 6, pre_context: 2 },
-    { id: '1963_jfk', name: 'Kennedy Assassination', year: '1963', type: 'Shock', duration: 6, pre_context: 1 },
-    { id: '1987_black_monday', name: 'Black Monday', year: '1987', type: 'Crash', duration: 12, pre_context: 2 },
-    { id: '2000_dot_com', name: 'Dot Com Bubble', year: '2000', type: 'Bubble', duration: 36, pre_context: 6 },
-    { id: '2001_911', name: '9/11 Attacks', year: '2001', type: 'Shock', duration: 12, pre_context: 2 },
-    { id: '2008_gfc', name: 'Global Financial Crisis', year: '2008', type: 'Recession', duration: 36, pre_context: 6 },
-    { id: '2011_euro_debt', name: 'European Debt Crisis', year: '2011', type: 'Debt', duration: 24, pre_context: 4 },
-    { id: '2018_trade_war', name: 'Trade War', year: '2018', type: 'Geopolitical', duration: 18, pre_context: 3 },
-    { id: '2020_covid', name: 'COVID-19 Crash', year: '2020', type: 'Pandemic', duration: 12, pre_context: 2 },
-    { id: '2022_inflation', name: 'Inflation Bear Market', year: '2022', type: 'Inflation', duration: 24, pre_context: 6 },
+    { id: '1987_black_monday', name: 'Black Monday', year: '1987', type: 'Acute' },
+    { id: '1929_depression', name: '1929 Great Depression', year: '1929', type: 'Recession' },
+    { id: '1939_wwii', name: 'WWII', year: '1939', type: 'Geopolitical' },
+    { id: '1962_cuban_missile', name: 'Cuban Missile Crisis', year: '1962', type: 'Geopolitical' },
+    { id: '1963_jfk', name: 'JFK Assassination', year: '1963', type: 'Shock' },
+    { id: '2001_911', name: '9/11', year: '2001', type: 'Shock' },
+    { id: '2008_gfc', name: '2008 GFC', year: '2008', type: 'Recession' },
+    { id: '2020_covid', name: 'COVID-19 Crash', year: '2020', type: 'Pandemic' },
 ];
 
 interface SimulationResult {
@@ -28,84 +24,26 @@ interface SimulationResult {
         max_drawdown: number;
         total_return: number;
         benchmark_return: number;
+        recovery_time: string | number;
+        volatility: string;
     };
 }
 
 export const CrisisSimulator: React.FC = () => {
-    const [selectedCrisis, setSelectedCrisis] = useState(CRISES[7].id); // Default to GFC
+    const [selectedCrisis, setSelectedCrisis] = useState(CRISES[0].id); // Default to Black Monday
     const [result, setResult] = useState<SimulationResult | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [isMock, setIsMock] = useState(false);
 
-    const generateMockSimulation = (crisisId: string): SimulationResult => {
-        const crisis = CRISES.find(c => c.id === crisisId) || CRISES[7];
-        const totalMonths = crisis.duration + crisis.pre_context;
-        const dates: string[] = [];
-        const portfolioValues: number[] = [];
-        const benchmarkValues: number[] = [];
-        
-        let currentValue = 10000;
-        let benchmarkValue = 10000;
-
-        for (let i = -crisis.pre_context; i < crisis.duration; i++) {
-            dates.push(`Month ${i}`);
-            
-            // Simulation Logic based on Type
-            let shock = 0;
-            if (i < 0) {
-                // Pre-event: Flat or slight growth
-                shock = (Math.random() - 0.3) * 0.02;
-            } else if (i === 0) {
-                // Event Start
-                shock = crisis.type === 'Shock' || crisis.type === 'Crash' ? -0.15 : -0.05;
-            } else if (i < crisis.duration / 3) {
-                // Decline phase
-                shock = (Math.random() - 0.8) * 0.05;
-            } else {
-                // Recovery phase
-                shock = (Math.random() - 0.2) * 0.04;
-            }
-
-            // Portfolio is slightly less volatile than benchmark (simulated diversification)
-            benchmarkValue = benchmarkValue * (1 + shock);
-            currentValue = currentValue * (1 + (shock * 0.85)); // 0.85 beta
-
-            portfolioValues.push(currentValue);
-            benchmarkValues.push(benchmarkValue);
-        }
-
-        const maxVal = Math.max(...portfolioValues);
-        const minVal = Math.min(...portfolioValues);
-        const drawdown = (minVal - maxVal) / maxVal;
-
-        return {
-            crisis_name: crisis.name,
-            dates,
-            portfolio_values: portfolioValues,
-            benchmark_values: benchmarkValues,
-            metrics: {
-                max_drawdown: drawdown,
-                total_return: (currentValue - 10000) / 10000,
-                benchmark_return: (benchmarkValue - 10000) / 10000
-            }
-        };
-    };
-
-    const handleSimulate = async () => {
+    const handleSimulate = async (crisisId: string) => {
+        setSelectedCrisis(crisisId);
         setLoading(true);
         setError(null);
-        setIsMock(false);
         try {
-            const portfolio = [
-                { ticker: 'AAPL', quantity: 10, weight: 0.5 },
-                { ticker: 'MSFT', quantity: 5, weight: 0.5 },
-            ];
-
             const response = await fetchWithAuth(`${API_BASE_URL}/api/simulation/crisis`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ portfolio, crisis_id: selectedCrisis }),
+                body: JSON.stringify({ portfolio: [], crisis_id: crisisId }),
             });
 
             if (!response.ok) throw new Error('Simulation failed');
@@ -113,196 +51,221 @@ export const CrisisSimulator: React.FC = () => {
             const data = await response.json();
             setResult(data);
         } catch (err: any) {
-            // Fallback to mock simulation
-            console.warn("API failed, running client-side simulation");
-            setIsMock(true);
-            const mockData = generateMockSimulation(selectedCrisis);
-            // Simulate delay for realism
-            setTimeout(() => {
-                setResult(mockData);
-                setLoading(false);
-            }, 1000);
-            return; // Don't set loading false immediately
+            setError(err.message || 'Failed to run simulation');
         } finally {
-             if (!isMock) setLoading(false); // Only clear if not mocking (mock clears in timeout)
+            setLoading(false);
         }
     };
 
-    const selectedCrisisData = CRISES.find(c => c.id === selectedCrisis);
+    useEffect(() => {
+        handleSimulate(selectedCrisis);
+    }, []);
+
+    const chartData = result ? result.dates.map((date, i) => ({
+        date,
+        portfolio: result.portfolio_values[i],
+        benchmark: result.benchmark_values[i],
+    })) : [];
+
+    const CustomTooltip = ({ active, payload, label }: any) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-[#0B1221]/95 backdrop-blur-xl border border-accent-cyan/40 p-3 rounded-lg shadow-2xl flex flex-col gap-1">
+                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-1">{label}</p>
+                    {payload.map((entry: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between gap-4">
+                            <span className="flex items-center gap-1.5">
+                                <div className={`w-1.5 h-1.5 rounded-full ${entry.dataKey === 'portfolio' ? 'bg-accent-cyan' : 'bg-gray-500'}`} />
+                                <span className="text-[10px] text-text-secondary uppercase">{entry.name}:</span>
+                            </span>
+                            <span className={`text-[11px] font-mono font-bold ${entry.value >= 0 ? 'text-positive' : 'text-negative'}`}>
+                                {entry.value >= 0 ? '+' : ''}{entry.value.toFixed(1)}%
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+        return null;
+    };
 
     return (
-        <WidgetCard
-            title="CRISIS SIMULATOR"
-            tooltip="Stress test your portfolio against major historical market crashes. Visualize how your holdings would perform across different recovery timeframes."
-            className="h-full"
-        >
-            <div className="flex flex-col h-full gap-6">
-                {/* Header / Controls */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="w-full sm:w-64">
-                        <div className="relative">
-                            <select
-                                value={selectedCrisis}
-                                onChange={(e) => setSelectedCrisis(e.target.value)}
-                                className="w-full pl-4 pr-10 py-2.5 bg-[#0B1221] border border-cyan-900/30 rounded-lg text-cyan-100 text-sm focus:outline-none focus:border-cyan-500/50 appearance-none shadow-[0_0_10px_rgba(6,182,212,0.1)]"
-                            >
-                                {CRISES.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.year} - {c.name} ({c.type})
-                                    </option>
-                                ))}
-                            </select>
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-cyan-500">
-                                <Calendar className="w-4 h-4" />
-                            </div>
+        <div className="w-full h-full bg-[#0A0C14] border border-white/5 rounded-3xl overflow-hidden flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.5)] font-sans">
+            {/* Header Area */}
+            <div className="p-8 pb-4 flex justify-between items-start">
+                <div className="space-y-1">
+                    <h2 className="text-3xl font-black text-white tracking-tight">
+                        CRISIS SIMULATOR
+                    </h2>
+                    <p className="text-xs text-white/40 font-medium">Simulate historical market events on your current portfolio.</p>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-6 text-[10px] uppercase tracking-widest font-black">
+                        <div className="flex items-center gap-2 text-accent-cyan">
+                            <span className="w-2 h-2 rounded-full bg-accent-cyan shadow-[0_0_8px_rgba(34,211,238,0.8)]"></span>
+                            Your Portfolio
+                        </div>
+                        <div className="flex items-center gap-2 text-white/30">
+                            <span className="w-2 h-2 rounded-full bg-white/20"></span>
+                            S&P 500
                         </div>
                     </div>
-
-                    <button
-                        onClick={handleSimulate}
-                        disabled={loading}
-                        className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-sm font-bold rounded-lg shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                        {loading ? (
-                            <>
-                                <Activity className="w-4 h-4 animate-spin" />
-                                SIMULATING...
-                            </>
-                        ) : (
-                            <>
-                                <AlertTriangle className="w-4 h-4" />
-                                RUN STRESS TEST
-                            </>
-                        )}
-                    </button>
-                </div>
-
-                {/* Main Content Area */}
-                <div className="flex-1 min-h-[300px] relative rounded-xl overflow-hidden border border-white/5 bg-[#050912]">
-                    {/* Background Grid */}
-                    <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:20px_20px]" />
-
-                    {error && !isMock && (
-                        <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50 backdrop-blur-sm">
-                            <div className="bg-red-900/20 border border-red-500/50 text-red-400 px-6 py-4 rounded-lg flex items-center gap-3">
-                                <AlertTriangle className="w-5 h-5" />
-                                {error}
-                            </div>
-                        </div>
-                    )}
-
-                    {!result && !loading && !error && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-cyan-900/40 z-10">
-                            <Activity className="w-24 h-24 mb-4 opacity-20" />
-                            <p className="text-sm font-mono uppercase tracking-widest">Select a crisis to begin simulation</p>
-                        </div>
-                    )}
-
-                    {result && (
-                        <div className="absolute inset-0 p-4 flex flex-col animate-fade-in">
-                            {isMock && (
-                                <div className="absolute top-2 right-2 z-30 px-2 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded text-[10px] text-yellow-500 font-mono uppercase">
-                                    Simulation Mode
-                                </div>
-                            )}
-                            
-                            {/* Chart */}
-                            <div className="flex-1 w-full min-h-0">
-                                <Plot
-                                    data={[
-                                        {
-                                            x: result.dates,
-                                            y: result.portfolio_values,
-                                            type: 'scatter',
-                                            mode: 'lines',
-                                            name: 'Your Portfolio',
-                                            line: { color: '#06b6d4', width: 3, shape: 'spline' }, // Cyan-500
-                                            fill: 'tozeroy',
-                                            fillcolor: 'rgba(6, 182, 212, 0.1)'
-                                        },
-                                        {
-                                            x: result.dates,
-                                            y: result.benchmark_values,
-                                            type: 'scatter',
-                                            mode: 'lines',
-                                            name: 'S&P 500',
-                                            line: { color: '#64748b', width: 2, dash: 'dot' }, // Slate-500
-                                        }
-                                    ]}
-                                    layout={{
-                                        autosize: true,
-                                        margin: { l: 40, r: 20, t: 20, b: 40 },
-                                        paper_bgcolor: 'transparent',
-                                        plot_bgcolor: 'transparent',
-                                        xaxis: {
-                                            gridcolor: 'rgba(255,255,255,0.05)',
-                                            tickfont: { color: '#94a3b8', size: 10 },
-                                            showgrid: true,
-                                            zeroline: false,
-                                            // Annotate the event start (Month 0)
-                                            shapes: [
-                                                {
-                                                    type: 'line',
-                                                    x0: 'Month 0',
-                                                    y0: 0,
-                                                    x1: 'Month 0',
-                                                    y1: 1,
-                                                    yref: 'paper',
-                                                    line: {
-                                                        color: 'rgba(239, 68, 68, 0.5)',
-                                                        width: 1,
-                                                        dash: 'dashdot'
-                                                    }
-                                                }
-                                            ]
-                                        },
-                                        yaxis: {
-                                            gridcolor: 'rgba(255,255,255,0.05)',
-                                            tickfont: { color: '#94a3b8', size: 10 },
-                                            showgrid: true,
-                                            zeroline: false,
-                                        },
-                                        legend: {
-                                            orientation: 'h',
-                                            y: 1,
-                                            x: 0,
-                                            font: { color: '#e2e8f0' },
-                                            bgcolor: 'rgba(0,0,0,0.5)'
-                                        },
-                                        hovermode: 'x unified',
-                                        dragmode: false,
-                                    }}
-                                    useResizeHandler
-                                    style={{ width: '100%', height: '100%' }}
-                                    config={{ displayModeBar: false }}
-                                />
-                            </div>
-
-                            {/* Metrics Footer */}
-                            <div className="mt-4 grid grid-cols-3 gap-4 border-t border-white/10 pt-4">
-                                <div className="text-center">
-                                    <div className="text-[10px] text-cyan-500/70 uppercase tracking-wider mb-1">Max Drawdown</div>
-                                    <div className="text-2xl font-bold text-red-500 font-mono">
-                                        {(result.metrics.max_drawdown * 100).toFixed(1)}%
-                                    </div>
-                                </div>
-                                <div className="text-center border-l border-white/10">
-                                    <div className="text-[10px] text-cyan-500/70 uppercase tracking-wider mb-1">Recovery Time</div>
-                                    <div className="text-2xl font-bold text-white font-mono">
-                                        {selectedCrisisData ? selectedCrisisData.duration : '--'} M
-                                    </div>
-                                </div>
-                                <div className="text-center border-l border-white/10">
-                                    <div className="text-[10px] text-cyan-500/70 uppercase tracking-wider mb-1">Volatility</div>
-                                    <div className="text-2xl font-bold text-yellow-500 font-mono">
-                                        HIGH
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    <div className="bg-white/5 border border-green-500/40 rounded-xl px-4 py-2 text-xs font-bold text-white flex items-center gap-3 cursor-pointer hover:bg-white/10 transition-all">
+                        {CRISES.find(c => c.id === selectedCrisis)?.name.toUpperCase()}
+                        <ChevronDown className="w-4 h-4 text-green-500" />
+                    </div>
                 </div>
             </div>
-        </WidgetCard>
+
+            <div className="flex flex-1 min-h-0">
+                {/* Chart Visualization */}
+                <div className="flex-1 p-8 pt-2 flex flex-col">
+                    <div className="flex-1 w-full min-h-[350px]">
+                        {loading ? (
+                            <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+                                <div className="w-16 h-16 border-4 border-accent-cyan/20 border-t-accent-cyan rounded-full animate-spin"></div>
+                                <span className="text-[10px] text-accent-cyan animate-pulse uppercase tracking-[0.2em] font-black">Processing Data Points...</span>
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <ComposedChart data={chartData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorPortfolio" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#22D3EE" stopOpacity={0.2}/>
+                                            <stop offset="95%" stopColor="#22D3EE" stopOpacity={0}/>
+                                        </linearGradient>
+                                        <filter id="glow">
+                                            <feGaussianBlur stdDeviation="3" result="blur" />
+                                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                        </filter>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="0" stroke="rgba(255,255,255,0.03)" vertical={true} horizontal={true} />
+                                    <XAxis 
+                                        dataKey="date" 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{fill: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: 600}}
+                                        dy={15}
+                                        minTickGap={60}
+                                    />
+                                    <YAxis 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{fill: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: 600}}
+                                        tickFormatter={(val) => `${val > 0 ? '+' : ''}${val}%`}
+                                        dx={-10}
+                                    />
+                                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
+                                    
+                                    <Area 
+                                        name="S&P 500"
+                                        type="monotone" 
+                                        dataKey="benchmark" 
+                                        stroke="rgba(255,255,255,0.2)" 
+                                        strokeWidth={2}
+                                        fill="transparent"
+                                        dot={false}
+                                        activeDot={{ r: 4, fill: '#64748B' }}
+                                    />
+                                    
+                                    <Area 
+                                        name="Your Portfolio"
+                                        type="monotone" 
+                                        dataKey="portfolio" 
+                                        stroke="#22D3EE" 
+                                        strokeWidth={3}
+                                        fill="url(#colorPortfolio)"
+                                        dot={false}
+                                        activeDot={{ r: 6, fill: '#22D3EE', stroke: '#fff', strokeWidth: 2 }}
+                                        style={{ filter: 'url(#glow)' }}
+                                    />
+                                </ComposedChart>
+                            </ResponsiveContainer>
+                        )}
+                    </div>
+                </div>
+
+                {/* Sidebar Navigation */}
+                <div className="w-72 border-l border-white/5 bg-black/20 flex flex-col p-6 gap-3">
+                    <h3 className="text-[10px] text-white/30 font-black uppercase tracking-[0.2em] mb-3">Select Crisis</h3>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2">
+                        {CRISES.map((c) => (
+                            <button
+                                key={c.id}
+                                onClick={() => handleSimulate(c.id)}
+                                className={`w-full text-left px-4 py-3 rounded-2xl border transition-all duration-300 group ${
+                                    selectedCrisis === c.id 
+                                    ? 'bg-white/5 border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.1)]' 
+                                    : 'bg-transparent border-white/5 hover:border-white/20'
+                                }`}
+                            >
+                                <div className="flex flex-col gap-0.5">
+                                    <span className={`text-[11px] font-black leading-tight ${selectedCrisis === c.id ? 'text-white' : 'text-white/60 group-hover:text-white'}`}>
+                                        {c.name.toUpperCase()}
+                                    </span>
+                                    <span className="text-[9px] text-white/20 font-bold group-hover:text-white/40">{c.year}</span>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                    
+                    <button className="w-full mt-4 py-3 bg-transparent border border-accent-cyan/30 rounded-2xl text-[10px] font-black text-accent-cyan uppercase tracking-widest hover:bg-accent-cyan hover:text-black transition-all duration-500 shadow-[0_0_15px_rgba(34,211,238,0.1)]">
+                        Custom Simulation
+                    </button>
+                </div>
+            </div>
+
+            {/* Metrics Panel Footer */}
+            <div className="p-8 pt-0 mt-2">
+                <div className="bg-[#11141D] border border-white/5 rounded-[2rem] p-8 shadow-inner relative overflow-hidden">
+                    <div className="relative z-10">
+                        <h3 className="text-[10px] text-white/30 font-black uppercase tracking-[0.2em] mb-6">Metrics Panel</h3>
+                        <div className="grid grid-cols-3 gap-12">
+                            <div className="space-y-2">
+                                <div className="text-[10px] text-white/40 font-bold uppercase tracking-widest flex items-center gap-2">
+                                    Max Drawdown <TrendingDown className="w-3 h-3 text-red-500" />
+                                </div>
+                                <div className="text-5xl font-black text-[#FF4D4D] tracking-tighter tabular-nums flex items-baseline gap-1">
+                                    {result ? (result.metrics.max_drawdown * 100).toFixed(1) : '--'}
+                                    <span className="text-2xl font-bold opacity-60">%</span>
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-2 border-l border-white/5 pl-12">
+                                <div className="text-[10px] text-white/40 font-bold uppercase tracking-widest flex items-center gap-2">
+                                    Recovery Time <Clock className="w-3 h-3 text-accent-cyan" />
+                                </div>
+                                <div className="text-5xl font-black text-white tracking-tighter tabular-nums flex items-baseline gap-2">
+                                    {result?.metrics.recovery_time || '--'} 
+                                    <span className="text-xl font-black text-white/30 uppercase tracking-widest">Months</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 border-l border-white/5 pl-12">
+                                <div className="text-[10px] text-white/40 font-bold uppercase tracking-widest flex items-center gap-2">
+                                    Volatility <Activity className="w-3 h-3 text-green-400" />
+                                </div>
+                                <div className="text-5xl font-black text-[#4DFFB4] tracking-tight drop-shadow-[0_0_15px_rgba(77,255,180,0.4)]">
+                                    {result?.metrics.volatility || 'MEDIUM'}
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[10px] text-white/20 mt-8 font-medium italic">
+                            High volatility indicates significant price fluctuations compared to the market.
+                        </p>
+                    </div>
+                    
+                    {/* Inner decorative glow */}
+                    <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-accent-cyan/5 blur-[100px] rounded-full"></div>
+                </div>
+            </div>
+
+            {/* Global background effects */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl opacity-20">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent-cyan/10 blur-[150px] -translate-y-1/2 translate-x-1/2 rounded-full"></div>
+                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/5 blur-[150px] translate-y-1/2 -translate-x-1/2 rounded-full"></div>
+            </div>
+        </div>
     );
 };

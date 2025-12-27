@@ -1,0 +1,222 @@
+﻿================================================================================
+python : Traceback 
+(most recent call 
+last):
+En línea: 1 
+Carácter: 1
++ python asf_trading
+_strategy.py 2>&1 | 
+Out-File -FilePath 
+kelly_strate ...
++ ~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo  
+            : NotS  
+  pecified: (Trac   
+ eback (most rec    
+ent call last):    
+:String) [], Re    
+moteException
+    + FullyQualifie 
+   dErrorId : Nati  
+  veCommandError
+ 
+ASF TRADING STRATEGY v2 - EVIDENCE-BASED KELLY ALLOCATION
+Date: 2025-12-26 02:39
+================================================================================
+
+[1] Loading price data...
+    Loaded 21 assets
+
+[2] Computing signals...
+    Connectivity: 0.2294
+    ASF:          0.3813
+    Regime:       COORDINATION
+
+[3] Estimating regime-conditional parameters...
+
+================================================================================
+EMPIRICAL EVIDENCE BY REGIME
+================================================================================
+
+CONTAGION REGIME:
+------------------------------------------------------------
+
+  ASF Bucket: low
+  Asset Class        N Obs    Ann.Ret        Vol   Sharpe     Fwd21d
+  ------------------------------------------------------------
+  bonds                290       4.2%       4.3%     0.98       6.6%
+  commodities          290       3.7%      17.3%     0.21      20.8%
+
+COORDINATION REGIME:
+------------------------------------------------------------
+
+  ASF Bucket: low
+  Asset Class        N Obs    Ann.Ret        Vol   Sharpe     Fwd21d
+  ------------------------------------------------------------
+  bonds               3403       2.9%       5.1%     0.57       2.5%
+  commodities         3403       1.9%      16.0%     0.12       0.3%
+
+  ASF Bucket: medium
+  Asset Class        N Obs    Ann.Ret        Vol   Sharpe     Fwd21d
+  ------------------------------------------------------------
+  bonds                258       3.0%       5.5%     0.54       4.5%
+  commodities          258      17.5%      15.1%     1.16      21.4%
+
+================================================================================
+KELLY-OPTIMAL ALLOCATION
+================================================================================
+
+Current State:
+  Regime: COORDINATION
+  ASF: 0.3813 (bucket: low)
+
+Kelly-Optimal Weights (using 50% Kelly):
+  Asset Class         Weight
+  -------------------------
+  cash                100.0%
+  bonds                 0.0%
+  commodities           0.0%
+
+Rationale (from empirical data):
+  bonds: Expected excess return = -1.1%, Vol = 5.1%
+           Kelly = (-0.011) / (0.051)^2 = -4.40
+  commodities: Expected excess return = -2.1%, Vol = 16.0%
+           Kelly = (-0.021) / (0.160)^2 = -0.82
+
+================================================================================
+BACKTEST: KELLY STRATEGY vs STATIC 60/40
+================================================================================
+  File "C:\Users\tom
+as\AppData\Local\Pro
+grams\Python\Python3
+11\Lib\site-packages
+\pandas\core\indexes
+\base.py", line 
+3653, in get_loc
+    return self._eng
+ine.get_loc(casted_k
+ey)
+           ^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^
+  File "pandas\_libs
+\index.pyx", line 
+147, in pandas._libs
+.index.IndexEngine.g
+et_loc
+  File "pandas\_libs
+\index.pyx", line 
+176, in pandas._libs
+.index.IndexEngine.g
+et_loc
+  File "pandas\_libs
+\hashtable_class_hel
+per.pxi", line 
+7080, in pandas._lib
+s.hashtable.PyObject
+HashTable.get_item
+  File "pandas\_libs
+\hashtable_class_hel
+per.pxi", line 
+7088, in pandas._lib
+s.hashtable.PyObject
+HashTable.get_item
+KeyError: 'equity'
+
+The above exception 
+was the direct 
+cause of the 
+following exception:
+
+Traceback (most 
+recent call last):
+  File "C:\key\wise_
+adviser_cursor_conte
+xt\Caria_repo\caria\
+docs\research\output
+s\asf_trading_strate
+gy.py", line 527, 
+in <module>
+    state = 
+run_kelly_strategy()
+            
+^^^^^^^^^^^^^^^^^^^^
+  File "C:\key\wise_
+adviser_cursor_conte
+xt\Caria_repo\caria\
+docs\research\output
+s\asf_trading_strate
+gy.py", line 416, 
+in 
+run_kelly_strategy
+    backtest_kelly_s
+trategy(prices, 
+signals, 
+regime_params, 
+asset_categories)
+  File "C:\key\wise_
+adviser_cursor_conte
+xt\Caria_repo\caria\
+docs\research\output
+s\asf_trading_strate
+gy.py", line 477, 
+in backtest_kelly_st
+rategy
+    bench_ret = 0.6 
+* class_returns_df.l
+oc[date, 'equity'] 
++ 0.4 * class_return
+s_df.loc[date, 
+'bonds']
+                    
+  ~~~~~~~~~~~~~~~~~~
+~~^^^^^^^^^^^^^^^^
+  File "C:\Users\tom
+as\AppData\Local\Pro
+grams\Python\Python3
+11\Lib\site-packages
+\pandas\core\indexin
+g.py", line 1096, 
+in __getitem__
+    return self.obj.
+_get_value(*key, tak
+eable=self._takeable
+)
+           ^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^
+  File "C:\Users\tom
+as\AppData\Local\Pro
+grams\Python\Python3
+11\Lib\site-packages
+\pandas\core\frame.p
+y", line 3870, in 
+_get_value
+    series = self._g
+et_item_cache(col)
+             ^^^^^^^
+^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tom
+as\AppData\Local\Pro
+grams\Python\Python3
+11\Lib\site-packages
+\pandas\core\frame.p
+y", line 4255, in 
+_get_item_cache
+    loc = self.colum
+ns.get_loc(item)
+          ^^^^^^^^^^
+^^^^^^^^^^^^^^^^
+  File "C:\Users\tom
+as\AppData\Local\Pro
+grams\Python\Python3
+11\Lib\site-packages
+\pandas\core\indexes
+\base.py", line 
+3655, in get_loc
+    raise 
+KeyError(key) from 
+err
+KeyError: 'equity'

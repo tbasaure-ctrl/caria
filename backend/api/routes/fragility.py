@@ -5,7 +5,7 @@ API routes for Meta-Fragility monitoring
 from typing import Dict, Any, List
 from fastapi import APIRouter
 
-router = APIRouter()
+router = APIRouter(prefix="/api/fragility", tags=["fragility"])
 
 _DEMO_DATA = {
     "current": {

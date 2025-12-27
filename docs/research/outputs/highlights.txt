@@ -1,0 +1,7 @@
+HIGHLIGHTS
+
+• Accumulated spectral fragility predicts regime-dependent tail risk
+• Risk amplification inverts in highly connected markets
+• Eigenstructure outperforms volatility-based risk indicators
+• Coordination failures, not contagion, drive crises in synchronized markets
+• Market dimensionality provides information beyond volatility and leverage

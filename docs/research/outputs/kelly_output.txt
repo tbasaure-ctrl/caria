@@ -1,0 +1,92 @@
+﻿================================================================================
+ASF TRADING STRATEGY v2 - EVIDENCE-BASED KELLY ALLOCATION
+Date: 2025-12-26 02:44
+================================================================================
+
+[1] Loading price data...
+    Loaded 21 assets
+
+[2] Computing signals...
+    Connectivity: 0.2294
+    ASF:          0.3813
+    Regime:       COORDINATION
+
+[3] Estimating regime-conditional parameters...
+
+================================================================================
+EMPIRICAL EVIDENCE BY REGIME
+================================================================================
+
+CONTAGION REGIME:
+------------------------------------------------------------
+
+  ASF Bucket: low
+  Asset Class        N Obs    Ann.Ret        Vol   Sharpe     Fwd21d
+  ------------------------------------------------------------
+  bonds                290       4.2%       4.3%     0.98       6.6%
+  commodities          290       3.7%      17.3%     0.21      20.8%
+
+COORDINATION REGIME:
+------------------------------------------------------------
+
+  ASF Bucket: low
+  Asset Class        N Obs    Ann.Ret        Vol   Sharpe     Fwd21d
+  ------------------------------------------------------------
+  bonds               3403       2.9%       5.1%     0.57       2.5%
+  commodities         3403       1.9%      16.0%     0.12       0.3%
+
+  ASF Bucket: medium
+  Asset Class        N Obs    Ann.Ret        Vol   Sharpe     Fwd21d
+  ------------------------------------------------------------
+  bonds                258       3.0%       5.5%     0.54       4.5%
+  commodities          258      17.5%      15.1%     1.16      21.4%
+
+================================================================================
+KELLY-OPTIMAL ALLOCATION
+================================================================================
+
+Current State:
+  Regime: COORDINATION
+  ASF: 0.3813 (bucket: low)
+
+Kelly-Optimal Weights (using 50% Kelly):
+  Asset Class         Weight
+  -------------------------
+  cash                100.0%
+  bonds                 0.0%
+  commodities           0.0%
+
+Rationale (from empirical data):
+  bonds: Expected excess return = -1.1%, Vol = 5.1%
+           Kelly = (-0.011) / (0.051)^2 = -4.40
+  commodities: Expected excess return = -2.1%, Vol = 16.0%
+           Kelly = (-0.021) / (0.160)^2 = -0.82
+
+================================================================================
+BACKTEST: KELLY STRATEGY vs STATIC 60/40
+================================================================================
+
+Period: 2010-04-13 to 2025-12-23 (3951 days)
+
+                        Kelly Strategy    60/40 Benchmark
+                        --------------    ---------------
+Total Return:                 21.2%             20.2%
+Annualized Return:             1.2%              1.2%
+Volatility:                    3.9%              2.0%
+Sharpe Ratio:                -0.71             -1.40
+Max Drawdown:                 12.4%              7.6%
+
+>>> KELLY STRATEGY HAS HIGHER SHARPE RATIO <<<
+
+================================================================================
+EVIDENCE-BASED ALLOCATION COMPLETE
+================================================================================
+
+The allocations above are computed using:
+1. Historical returns BY REGIME (contagion vs coordination)
+2. Historical returns BY ASF LEVEL (very_low to very_high)
+3. Kelly Criterion: f* = (expected excess return) / variance
+4. Half-Kelly for safety (50% of optimal)
+
+This is not heuristic - it's based on measured edge in each state.
+

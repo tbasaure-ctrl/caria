@@ -1,0 +1,37 @@
+ticker,name,asset_class,region,inception,justification
+SPY,SPDR S&P 500 ETF Trust,US Large Cap Equity,USA,1993-01,Primary US equity benchmark; most liquid ETF globally
+QQQ,Invesco QQQ Trust,US Tech/Growth,USA,1999-03,Technology sector exposure; captures growth/momentum dynamics
+IWM,iShares Russell 2000 ETF,US Small Cap Equity,USA,2000-05,Small cap exposure; sensitive to domestic economic conditions
+DIA,SPDR Dow Jones Industrial Average ETF,US Blue Chip Equity,USA,1998-01,Blue chip industrials; alternative large cap benchmark
+EFA,iShares MSCI EAFE ETF,Developed International Equity,Global ex-US,2001-08,Broad developed markets; captures international correlation dynamics
+EWJ,iShares MSCI Japan ETF,Developed International Equity,Japan,1996-03,Japan exposure; third largest equity market
+EWG,iShares MSCI Germany ETF,Developed International Equity,Germany,1996-03,German exposure; largest European economy
+EWU,iShares MSCI United Kingdom ETF,Developed International Equity,UK,1996-03,UK exposure; major financial center
+EWC,iShares MSCI Canada ETF,Developed International Equity,Canada,1996-03,Canada exposure; commodity-sensitive developed market
+EWA,iShares MSCI Australia ETF,Developed International Equity,Australia,1996-03,Australia exposure; Asia-Pacific developed market
+EWH,iShares MSCI Hong Kong ETF,Developed International Equity,Hong Kong,1996-03,Hong Kong exposure; Asian financial hub
+EWK,iShares MSCI Belgium ETF,Developed International Equity,Belgium,1996-03,Belgium exposure; EU headquarters
+EWT,iShares MSCI Taiwan ETF,Developed International Equity,Taiwan,2000-06,Taiwan exposure; semiconductor industry concentration
+EWS,iShares MSCI Singapore ETF,Developed International Equity,Singapore,1996-03,Singapore exposure; Asian financial hub
+EWL,iShares MSCI Switzerland ETF,Developed International Equity,Switzerland,1996-03,Switzerland exposure; defensive quality stocks
+EEM,iShares MSCI Emerging Markets ETF,Emerging Markets Equity,Global EM,2003-04,Broad EM exposure; captures EM-specific risk dynamics
+EWZ,iShares MSCI Brazil ETF,Emerging Markets Equity,Brazil,2000-07,Brazil exposure; largest Latin American economy
+EWW,iShares MSCI Mexico ETF,Emerging Markets Equity,Mexico,1996-03,Mexico exposure; US manufacturing linkage
+EPU,iShares MSCI Peru ETF,Emerging Markets Equity,Peru,2009-06,Peru exposure; commodity-driven frontier market
+ECH,iShares MSCI Chile ETF,Emerging Markets Equity,Chile,2007-11,Chile exposure; copper sensitivity
+ARGT,Global X MSCI Argentina ETF,Emerging Markets Equity,Argentina,2011-03,Argentina exposure; high volatility frontier market
+EWI,iShares MSCI Italy ETF,Developed International Equity,Italy,1996-03,Italy exposure; European peripheral risk
+TUR,iShares MSCI Turkey ETF,Emerging Markets Equity,Turkey,2008-03,Turkey exposure; geopolitical risk factor
+EZA,iShares MSCI South Africa ETF,Emerging Markets Equity,South Africa,2003-02,South Africa exposure; African commodity exposure
+THD,iShares MSCI Thailand ETF,Emerging Markets Equity,Thailand,2008-03,Thailand exposure; ASEAN manufacturing
+IDX,VanEck Indonesia Index ETF,Emerging Markets Equity,Indonesia,2009-01,Indonesia exposure; largest ASEAN economy
+EPHE,iShares MSCI Philippines ETF,Emerging Markets Equity,Philippines,2010-09,Philippines exposure; ASEAN remittance economy
+VNM,VanEck Vietnam ETF,Emerging Markets Equity,Vietnam,2009-08,Vietnam exposure; manufacturing relocation beneficiary
+EIDO,iShares MSCI Indonesia ETF,Emerging Markets Equity,Indonesia,2010-05,Indonesia exposure; alternative Indonesia vehicle
+INDA,iShares MSCI India ETF,Emerging Markets Equity,India,2012-02,India exposure; largest EM growth story
+EWY,iShares MSCI South Korea ETF,Emerging Markets Equity,South Korea,2000-05,South Korea exposure; tech/semiconductor heavy
+FXI,iShares China Large-Cap ETF,Emerging Markets Equity,China,2004-10,China exposure; second largest economy
+EIS,iShares MSCI Israel ETF,Developed International Equity,Israel,2008-03,Israel exposure; tech startup nation
+KSA,iShares MSCI Saudi Arabia ETF,Emerging Markets Equity,Saudi Arabia,2015-09,Saudi Arabia exposure; oil price sensitivity
+QAT,iShares MSCI Qatar ETF,Emerging Markets Equity,Qatar,2014-04,Qatar exposure; LNG exporter
+UAE,iShares MSCI UAE ETF,Emerging Markets Equity,UAE,2014-04,UAE exposure; Gulf financial hub

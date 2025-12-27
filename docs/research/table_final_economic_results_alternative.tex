@@ -1,0 +1,44 @@
+\documentclass[12pt]{article}
+
+% Required packages
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\begin{document}
+
+% El contador debe estar DENTRO de \begin{document}
+\setcounter{table}{2}  % Ajusta según la numeración que necesites
+
+
+\begin{table}[htbp]
+  \centering
+  \caption{\textbf{Final Economic Results: Minsky Hedge Strategies}}
+  \label{tab:final_economic_results}
+  \small
+  \begin{minipage}{0.9\textwidth}
+    \textit{Performance comparison across different investment strategies. Benchmark and Minsky strategies (Smart/Bond and Levered) cover the 1990--2025 period. Benchmark represents a passive investment in the S\&P 500. Minsky Hedge strategies switch to defensive assets when structural fragility is detected. The Levered strategy applies 1.5x leverage during structurally safe regimes. Max Drawdown represents the maximum peak-to-trough decline. CAGR (Compound Annual Growth Rate) measures annualized returns.}
+  \end{minipage}
+  \vspace{0.3cm}
+  
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Strategy} & \textbf{Max Drawdown} & \textbf{CAGR} \\
+    \midrule
+    Benchmark (S\&P 500) & -56.8\% & 8.7\% \\
+    \addlinespace
+    Minsky (Cash Hedge)$^{*}$ & \textbf{-27.2\%} & 6.8\% \\
+    Minsky (Smart/Bond) & \textbf{-24.4\%} & \textbf{8.2\%} \\
+    Minsky (1.5x Levered) & -37.9\% & \textbf{9.3\%} \\
+    \midrule
+    \textbf{Risk Reduction vs Benchmark} & \textbf{-29.6\%} & — \\
+    \bottomrule
+  \end{tabular}
+  
+  \vspace{0.2cm}
+  \footnotesize
+  $^{*}$Cash Hedge strategy covers 2000--2025 period; all other strategies cover 1990--2025 period.
+\end{table}
+\end{document}
+

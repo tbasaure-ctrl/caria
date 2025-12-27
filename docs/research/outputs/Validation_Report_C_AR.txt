@@ -1,0 +1,27 @@
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:          Future_DD_Mag   R-squared:                       0.038
+Model:                            OLS   Adj. R-squared:                  0.036
+Method:                 Least Squares   F-statistic:                     23.16
+Date:                Sat, 20 Dec 2025   Prob (F-statistic):           1.06e-14
+Time:                        23:01:29   Log-Likelihood:                 2247.7
+No. Observations:                1763   AIC:                            -4487.
+Df Residuals:                    1759   BIC:                            -4465.
+Df Model:                           3                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept     -0.2146      0.036     -5.917      0.000      -0.286      -0.143
+ASF           -0.1775      0.357     -0.497      0.619      -0.878       0.523
+C_AR           0.7365      0.110      6.725      0.000       0.522       0.951
+ASF:C_AR      -1.0211      0.432     -2.363      0.018      -1.868      -0.174
+==============================================================================
+Omnibus:                      843.315   Durbin-Watson:                   0.101
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):             4528.229
+Skew:                           2.255   Prob(JB):                         0.00
+Kurtosis:                       9.426   Cond. No.                         392.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.

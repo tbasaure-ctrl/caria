@@ -1,0 +1,39 @@
+\setcounter{table}{1}  % Esto hace que la siguiente tabla sea la número 2
+
+\begin{table}[htbp]
+  \centering
+  \caption{\textbf{Economic Performance (Risk-Adjusted) (2000--2025)}}
+  \label{tab:economic_performance_risk_adjusted}
+  \small
+  \begin{minipage}{0.9\textwidth}
+    \textit{Performance statistics computed from daily returns over the 2000--2025 sample. The Unlevered strategy switches to 10-Year Treasuries when structural fragility is detected. The Levered strategy applies 1.5x leverage during structurally safe regimes. Sharpe Ratio measures excess return per unit of volatility. Sortino Ratio measures excess return per unit of downside volatility.}
+  \end{minipage}
+  \vspace{0.3cm}
+  
+  \begin{tabular}{lccc}
+    \toprule
+    \textbf{Metric} & \textbf{S\&P 500} & \textbf{Minsky Hedge} & \textbf{Minsky Levered} \\
+                    & (Benchmark)       & (Bond Switch)         & (1.5x) \\
+    \midrule
+    Ann. Return     & 10.1\%            & 8.6\%                 & 10.6\% \\
+    Ann. Volatility & 18.2\%            & \textbf{12.4\%}       & 18.5\% \\
+    \addlinespace
+    Sharpe Ratio    & 0.34              & \textbf{0.38}         & 0.36 \\
+    Sortino Ratio   & 0.03              & 0.03                  & 0.03 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

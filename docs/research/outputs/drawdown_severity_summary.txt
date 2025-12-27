@@ -1,0 +1,25 @@
+
+HALLAZGO CLAVE - LA PARADOJA DEL ATH:
+
+1. MAX DRAWDOWN PROMEDIO:
+   - Después de ATH: -11.9% (peor)
+   - Otros períodos: -9.5%
+   
+2. PERO EN LOS EXTREMOS:
+   - Prob. de crash >20%: ATH=0.0% vs Other=6.2% (ratio=0.00x)
+   - Prob. de crash >25%: ATH=0.0% vs Other=3.7% (ratio=0.00x)
+
+3. INTERPRETACIÓN:
+   - ATH simultáneo NO protege de correcciones normales (10-15%)
+   - De hecho, las correcciones son MÁS probables/profundas
+   - PERO los crashes catastróficos (>25%) son MENOS frecuentes después de ATH
+
+4. ¿POR QUÉ?
+   - ATH simultáneo = mercado "topping" = corrección probable
+   - PERO: la presencia de oro en ATH = cobertura activa = los crashes NO escalan
+   - Es como un mercado que "se enfría" en lugar de "colapsar"
+
+5. IMPLICACIÓN PRÁCTICA:
+   - ATH simultáneo NO significa "vender todo"
+   - Significa: "espera corrección moderada pero no pánico"
+   - El oro actuando como contrapeso LIMITA el downside extremo

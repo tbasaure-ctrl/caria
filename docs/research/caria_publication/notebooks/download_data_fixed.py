@@ -173,3 +173,19 @@ if __name__ == "__main__":
         with open('../data/prices_daily.pkl', 'wb') as f:
             pickle.dump(data_daily, f)
         print("\nData saved to: ../data/prices_daily.pkl")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

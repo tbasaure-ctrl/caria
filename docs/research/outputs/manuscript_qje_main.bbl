@@ -1,0 +1,213 @@
+\begin{thebibliography}{25}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\href}[2]{#2}
+\providecommand{\path}[1]{#1}
+\providecommand{\DOIprefix}{doi:}
+\providecommand{\ArXivprefix}{arXiv:}
+\providecommand{\URLprefix}{URL: }
+\providecommand{\Pubmedprefix}{pmid:}
+\providecommand{\doi}[1]{\href{http://dx.doi.org/#1}{\path{#1}}}
+\providecommand{\Pubmed}[1]{\href{pmid:#1}{\path{#1}}}
+\providecommand{\bibinfo}[2]{#2}
+\ifx\xfnm\relax \def\xfnm[#1]{\unskip,\space#1}\fi
+%Type = Article
+\bibitem[{Acemoglu et~al.(2015)Acemoglu, Ozdaglar and
+  Tahbaz-Salehi}]{acemoglu2015}
+\bibinfo{author}{Acemoglu, D.}, \bibinfo{author}{Ozdaglar, A.},
+  \bibinfo{author}{Tahbaz-Salehi, A.}, \bibinfo{year}{2015}.
+\newblock \bibinfo{title}{Systemic risk and stability in financial networks}.
+\newblock \bibinfo{journal}{American Economic Review} \bibinfo{volume}{105},
+  \bibinfo{pages}{564--608}.
+%Type = Article
+\bibitem[{Acharya et~al.(2017)Acharya, Pedersen, Philippon and
+  Richardson}]{acharya2017}
+\bibinfo{author}{Acharya, V.V.}, \bibinfo{author}{Pedersen, L.H.},
+  \bibinfo{author}{Philippon, T.}, \bibinfo{author}{Richardson, M.},
+  \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{Measuring systemic risk}.
+\newblock \bibinfo{journal}{Review of Financial Studies} \bibinfo{volume}{30},
+  \bibinfo{pages}{2--47}.
+%Type = Article
+\bibitem[{Adrian and Brunnermeier(2016)}]{adrian2016}
+\bibinfo{author}{Adrian, T.}, \bibinfo{author}{Brunnermeier, M.K.},
+  \bibinfo{year}{2016}.
+\newblock \bibinfo{title}{{CoVaR}}.
+\newblock \bibinfo{journal}{American Economic Review} \bibinfo{volume}{106},
+  \bibinfo{pages}{1705--1741}.
+%Type = Article
+\bibitem[{Allen and Gale(2000)}]{allen2000}
+\bibinfo{author}{Allen, F.}, \bibinfo{author}{Gale, D.}, \bibinfo{year}{2000}.
+\newblock \bibinfo{title}{Financial contagion}.
+\newblock \bibinfo{journal}{Journal of Political Economy}
+  \bibinfo{volume}{108}, \bibinfo{pages}{1--33}.
+%Type = Article
+\bibitem[{Billio et~al.(2012)Billio, Getmansky, Lo and Pelizzon}]{billio2012}
+\bibinfo{author}{Billio, M.}, \bibinfo{author}{Getmansky, M.},
+  \bibinfo{author}{Lo, A.W.}, \bibinfo{author}{Pelizzon, L.},
+  \bibinfo{year}{2012}.
+\newblock \bibinfo{title}{Econometric measures of connectedness and systemic
+  risk in the finance and insurance sectors}.
+\newblock \bibinfo{journal}{Journal of Financial Economics}
+  \bibinfo{volume}{104}, \bibinfo{pages}{535--559}.
+%Type = Article
+\bibitem[{Brownlees and Engle(2017)}]{brownlees2017}
+\bibinfo{author}{Brownlees, C.}, \bibinfo{author}{Engle, R.F.},
+  \bibinfo{year}{2017}.
+\newblock \bibinfo{title}{{SRISK}: A conditional capital shortfall measure of
+  systemic risk}.
+\newblock \bibinfo{journal}{Review of Financial Studies} \bibinfo{volume}{30},
+  \bibinfo{pages}{48--79}.
+%Type = Article
+\bibitem[{Brunnermeier and Sannikov(2014)}]{brunnermeier2014}
+\bibinfo{author}{Brunnermeier, M.K.}, \bibinfo{author}{Sannikov, Y.},
+  \bibinfo{year}{2014}.
+\newblock \bibinfo{title}{A macroeconomic model with a financial sector}.
+\newblock \bibinfo{journal}{American Economic Review} \bibinfo{volume}{104},
+  \bibinfo{pages}{379--421}.
+%Type = Incollection
+\bibitem[{Danielsson et~al.(2012)Danielsson, Shin and Zigrand}]{danielsson2012}
+\bibinfo{author}{Danielsson, J.}, \bibinfo{author}{Shin, H.S.},
+  \bibinfo{author}{Zigrand, J.P.}, \bibinfo{year}{2012}.
+\newblock \bibinfo{title}{Endogenous and systemic risk}, in:
+  \bibinfo{editor}{Haubrich, J.G.}, \bibinfo{editor}{Lo, A.W.} (Eds.),
+  \bibinfo{booktitle}{Quantifying Systemic Risk}.
+  \bibinfo{publisher}{University of Chicago Press}, pp.
+  \bibinfo{pages}{73--94}.
+%Type = Article
+\bibitem[{Danielsson et~al.(2018)Danielsson, Valenzuela and
+  Zer}]{danielsson2018}
+\bibinfo{author}{Danielsson, J.}, \bibinfo{author}{Valenzuela, M.},
+  \bibinfo{author}{Zer, I.}, \bibinfo{year}{2018}.
+\newblock \bibinfo{title}{Learning from history: Volatility and financial
+  crises}.
+\newblock \bibinfo{journal}{Review of Financial Studies} \bibinfo{volume}{31},
+  \bibinfo{pages}{2774--2805}.
+%Type = Article
+\bibitem[{Diebold and Yilmaz(2014)}]{diebold2014}
+\bibinfo{author}{Diebold, F.X.}, \bibinfo{author}{Yilmaz, K.},
+  \bibinfo{year}{2014}.
+\newblock \bibinfo{title}{On the network topology of variance decompositions:
+  Measuring the connectedness of financial firms}.
+\newblock \bibinfo{journal}{Journal of Econometrics} \bibinfo{volume}{182},
+  \bibinfo{pages}{119--134}.
+%Type = Incollection
+\bibitem[{Geanakoplos(2010)}]{geanakoplos2010}
+\bibinfo{author}{Geanakoplos, J.}, \bibinfo{year}{2010}.
+\newblock \bibinfo{title}{The leverage cycle}, in: \bibinfo{editor}{Acemoglu,
+  D.}, \bibinfo{editor}{Rogoff, K.}, \bibinfo{editor}{Woodford, M.} (Eds.),
+  \bibinfo{booktitle}{{NBER} Macroeconomics Annual 2009}.
+  \bibinfo{publisher}{University of Chicago Press}.
+  volume~\bibinfo{volume}{24}, pp. \bibinfo{pages}{1--65}.
+%Type = Article
+\bibitem[{Haldane and May(2011)}]{haldane2011}
+\bibinfo{author}{Haldane, A.G.}, \bibinfo{author}{May, R.M.},
+  \bibinfo{year}{2011}.
+\newblock \bibinfo{title}{Systemic risk in banking ecosystems}.
+\newblock \bibinfo{journal}{Nature} \bibinfo{volume}{469},
+  \bibinfo{pages}{351--355}.
+%Type = Article
+\bibitem[{Hansen(2000)}]{hansen2000}
+\bibinfo{author}{Hansen, B.E.}, \bibinfo{year}{2000}.
+\newblock \bibinfo{title}{Sample splitting and threshold estimation}.
+\newblock \bibinfo{journal}{Econometrica} \bibinfo{volume}{68},
+  \bibinfo{pages}{575--603}.
+%Type = Article
+\bibitem[{He and Krishnamurthy(2013)}]{he2013}
+\bibinfo{author}{He, Z.}, \bibinfo{author}{Krishnamurthy, A.},
+  \bibinfo{year}{2013}.
+\newblock \bibinfo{title}{Intermediary asset pricing}.
+\newblock \bibinfo{journal}{American Economic Review} \bibinfo{volume}{103},
+  \bibinfo{pages}{732--770}.
+%Type = Article
+\bibitem[{Kenett et~al.(2011)Kenett, Shapira, Madi, Bransburg-Zabary,
+  Gur-Gershgoren and Ben-Jacob}]{kenett2012}
+\bibinfo{author}{Kenett, D.Y.}, \bibinfo{author}{Shapira, Y.},
+  \bibinfo{author}{Madi, A.}, \bibinfo{author}{Bransburg-Zabary, S.},
+  \bibinfo{author}{Gur-Gershgoren, G.}, \bibinfo{author}{Ben-Jacob, E.},
+  \bibinfo{year}{2011}.
+\newblock \bibinfo{title}{Index cohesive force analysis reveals that the {US}
+  market became prone to systemic collapses since 2002}.
+\newblock \bibinfo{journal}{{PLoS ONE}} \bibinfo{volume}{6},
+  \bibinfo{pages}{e19378}.
+%Type = Article
+\bibitem[{Kritzman et~al.(2011)Kritzman, Li, Page and Rigobon}]{kritzman2011}
+\bibinfo{author}{Kritzman, M.}, \bibinfo{author}{Li, Y.},
+  \bibinfo{author}{Page, S.}, \bibinfo{author}{Rigobon, R.},
+  \bibinfo{year}{2011}.
+\newblock \bibinfo{title}{Principal components as a measure of systemic risk}.
+\newblock \bibinfo{journal}{Journal of Portfolio Management}
+  \bibinfo{volume}{37}, \bibinfo{pages}{112--126}.
+%Type = Article
+\bibitem[{Laloux et~al.(1999)Laloux, Cizeau, Bouchaud and Potters}]{laloux1999}
+\bibinfo{author}{Laloux, L.}, \bibinfo{author}{Cizeau, P.},
+  \bibinfo{author}{Bouchaud, J.P.}, \bibinfo{author}{Potters, M.},
+  \bibinfo{year}{1999}.
+\newblock \bibinfo{title}{Noise dressing of financial correlation matrices}.
+\newblock \bibinfo{journal}{Physical Review Letters} \bibinfo{volume}{83},
+  \bibinfo{pages}{1467--1470}.
+%Type = Article
+\bibitem[{Ledoit and Wolf(2004)}]{ledoit2004}
+\bibinfo{author}{Ledoit, O.}, \bibinfo{author}{Wolf, M.}, \bibinfo{year}{2004}.
+\newblock \bibinfo{title}{A well-conditioned estimator for large-dimensional
+  covariance matrices}.
+\newblock \bibinfo{journal}{Journal of Multivariate Analysis}
+  \bibinfo{volume}{88}, \bibinfo{pages}{365--411}.
+%Type = Article
+\bibitem[{Ledoit and Wolf(2012)}]{ledoit2012}
+\bibinfo{author}{Ledoit, O.}, \bibinfo{author}{Wolf, M.}, \bibinfo{year}{2012}.
+\newblock \bibinfo{title}{Nonlinear shrinkage estimation of large-dimensional
+  covariance matrices}.
+\newblock \bibinfo{journal}{Annals of Statistics} \bibinfo{volume}{40},
+  \bibinfo{pages}{1024--1060}.
+%Type = Article
+\bibitem[{May et~al.(2008)May, Levin and Sugihara}]{may2008}
+\bibinfo{author}{May, R.M.}, \bibinfo{author}{Levin, S.A.},
+  \bibinfo{author}{Sugihara, G.}, \bibinfo{year}{2008}.
+\newblock \bibinfo{title}{Complex systems: Ecology for bankers}.
+\newblock \bibinfo{journal}{Nature} \bibinfo{volume}{451},
+  \bibinfo{pages}{893--895}.
+%Type = Techreport
+\bibitem[{Minsky(1992)}]{minsky1992}
+\bibinfo{author}{Minsky, H.P.}, \bibinfo{year}{1992}.
+\newblock \bibinfo{title}{The Financial Instability Hypothesis}.
+\newblock \bibinfo{type}{Working Paper} \bibinfo{number}{74}. Levy Economics
+  Institute of Bard College.
+%Type = Article
+\bibitem[{Newey and West(1987)}]{newey1987}
+\bibinfo{author}{Newey, W.K.}, \bibinfo{author}{West, K.D.},
+  \bibinfo{year}{1987}.
+\newblock \bibinfo{title}{A simple, positive semi-definite, heteroskedasticity
+  and autocorrelation consistent covariance matrix}.
+\newblock \bibinfo{journal}{Econometrica} \bibinfo{volume}{55},
+  \bibinfo{pages}{703--708}.
+%Type = Article
+\bibitem[{Plerou et~al.(2002)Plerou, Gopikrishnan, Rosenow, Amaral, Guhr and
+  Stanley}]{plerou2002}
+\bibinfo{author}{Plerou, V.}, \bibinfo{author}{Gopikrishnan, P.},
+  \bibinfo{author}{Rosenow, B.}, \bibinfo{author}{Amaral, L.A.N.},
+  \bibinfo{author}{Guhr, T.}, \bibinfo{author}{Stanley, H.E.},
+  \bibinfo{year}{2002}.
+\newblock \bibinfo{title}{Random matrix approach to cross correlations in
+  financial data}.
+\newblock \bibinfo{journal}{Physical Review E} \bibinfo{volume}{65},
+  \bibinfo{pages}{066126}.
+%Type = Article
+\bibitem[{Reinhart and Rogoff(2009)}]{reinhart2009}
+\bibinfo{author}{Reinhart, C.M.}, \bibinfo{author}{Rogoff, K.S.},
+  \bibinfo{year}{2009}.
+\newblock \bibinfo{title}{The aftermath of financial crises}.
+\newblock \bibinfo{journal}{American Economic Review} \bibinfo{volume}{99},
+  \bibinfo{pages}{466--472}.
+%Type = Article
+\bibitem[{Theiler et~al.(1992)Theiler, Eubank, Longtin, Galdrikian and
+  Farmer}]{theiler1992}
+\bibinfo{author}{Theiler, J.}, \bibinfo{author}{Eubank, S.},
+  \bibinfo{author}{Longtin, A.}, \bibinfo{author}{Galdrikian, B.},
+  \bibinfo{author}{Farmer, J.D.}, \bibinfo{year}{1992}.
+\newblock \bibinfo{title}{Testing for nonlinearity in time series: The method
+  of surrogate data}.
+\newblock \bibinfo{journal}{Physica D: Nonlinear Phenomena}
+  \bibinfo{volume}{58}, \bibinfo{pages}{77--94}.
+
+\end{thebibliography}

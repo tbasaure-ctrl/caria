@@ -12,129 +12,127 @@ LOGGER = logging.getLogger("caria.services.simulation")
 
 # Historical crisis data with pre-computed benchmark returns for reliability
 # Event types: "acute" (days-based), "recession" (months-based), "crash" (weeks-based)
-# Historical crisis data with pre-computed benchmark returns for reliability
-# Event types: "acute" (days-based), "recession" (months-based), "crash" (weeks-based)
 CRISIS_DATA = {
     "1929_depression": {
-        "start": "1929-09-01", 
-        "end": "1932-06-01", 
-        "name": "Great Depression (1929)",
+        "start": "1929-01-01", 
+        "end": "1933-12-31", 
+        "name": "Great Depression",
         "benchmark_return": -0.86,
         "description": "The worst stock market crash in U.S. history",
         "event_type": "recession",
         "event_date": "1929-10-24",
-        "pre_crisis_months": 3
+        "pre_crisis_months": 6
     },
     "1939_wwii": {
-        "start": "1939-09-01", 
-        "end": "1945-09-01", 
-        "name": "WWII Start (1939)",
+        "start": "1939-01-01", 
+        "end": "1945-12-31", 
+        "name": "WWII Start",
         "benchmark_return": 0.07,
         "description": "World War II era volatility",
         "event_type": "recession",
         "event_date": "1939-09-01",
-        "pre_crisis_months": 3
+        "pre_crisis_months": 6
     },
     "1962_cuban_missile": {
-        "start": "1962-10-15", 
-        "end": "1962-11-21", 
-        "name": "Cuban Missile Crisis (1962)",
+        "start": "1962-08-01", 
+        "end": "1963-01-01", 
+        "name": "Cuban Missile Crisis",
         "benchmark_return": -0.07,
         "description": "Nuclear standoff between US and USSR",
         "event_type": "acute",
         "event_date": "1962-10-16",
-        "pre_crisis_months": 1
+        "pre_crisis_months": 2
     },
     "1963_jfk": {
-        "start": "1963-11-21", 
-        "end": "1963-12-06", 
-        "name": "Kennedy Assassination (1963)",
+        "start": "1963-10-01", 
+        "end": "1964-02-01", 
+        "name": "Kennedy Assassination",
         "benchmark_return": 0.15,
         "description": "Markets recovered quickly after initial shock",
         "event_type": "acute",
         "event_date": "1963-11-22",
-        "pre_crisis_months": 1
+        "pre_crisis_months": 2
     },
     "1987_black_monday": {
-        "start": "1987-10-15", 
-        "end": "1987-11-06", 
-        "name": "Black Monday (1987)",
+        "start": "1987-01-01", 
+        "end": "1988-12-31", 
+        "name": "Black Monday",
         "benchmark_return": -0.22,
         "description": "Single-day crash of 22.6%",
         "event_type": "acute",
         "event_date": "1987-10-19",
-        "pre_crisis_months": 1
+        "pre_crisis_months": 9
     },
     "2000_dot_com": {
-        "start": "2000-03-10", 
-        "end": "2002-10-09", 
-        "name": "Dot Com Bubble (2000)",
+        "start": "1999-01-01", 
+        "end": "2002-12-31", 
+        "name": "Dot Com Bubble",
         "benchmark_return": -0.49,
         "description": "Tech bubble burst - NASDAQ fell 78%",
         "event_type": "recession",
         "event_date": "2000-03-10",
-        "pre_crisis_months": 6
+        "pre_crisis_months": 12
     },
     "2001_911": {
-        "start": "2001-09-10", 
-        "end": "2001-09-28", 
-        "name": "9/11 Attacks (2001)",
+        "start": "2001-07-01", 
+        "end": "2002-03-01", 
+        "name": "9/11 Attacks",
         "benchmark_return": -0.12,
         "description": "Terrorist attacks on World Trade Center. Market closed 9/11-9/14.",
         "event_type": "acute",
         "event_date": "2001-09-11",
         "market_closure": ["2001-09-11", "2001-09-12", "2001-09-13", "2001-09-14"],
-        "pre_crisis_months": 1
+        "pre_crisis_months": 2
     },
     "2008_gfc": {
-        "start": "2007-12-01", 
-        "end": "2009-06-01", 
-        "name": "Global Financial Crisis (2008)",
+        "start": "2007-01-01", 
+        "end": "2009-12-31", 
+        "name": "Global Financial Crisis",
         "benchmark_return": -0.53,
         "description": "Lehman Brothers collapse (Sept 2008), global credit crisis",
         "event_type": "recession",
         "event_date": "2008-09-15",
-        "pre_crisis_months": 6
+        "pre_crisis_months": 12
     },
     "2011_euro_debt": {
-        "start": "2011-04-01", 
-        "end": "2012-07-01", 
-        "name": "European Debt Crisis (2011)",
+        "start": "2011-01-01", 
+        "end": "2012-12-31", 
+        "name": "European Debt Crisis",
         "benchmark_return": -0.19,
         "description": "Greek debt crisis, European contagion fears",
         "event_type": "recession",
         "event_date": "2011-05-01",
-        "pre_crisis_months": 3
+        "pre_crisis_months": 4
     },
     "2018_trade_war": {
-        "start": "2018-09-20", 
-        "end": "2018-12-26", 
-        "name": "2018 Trade War / Fed Tightening",
+        "start": "2018-01-01", 
+        "end": "2019-03-01", 
+        "name": "Trade War",
         "benchmark_return": -0.20,
         "description": "US-China trade tensions and Fed rate hikes",
         "event_type": "crash",
         "event_date": "2018-10-01",
-        "pre_crisis_months": 2
+        "pre_crisis_months": 9
     },
     "2020_covid": {
-        "start": "2020-02-19", 
-        "end": "2020-04-17", 
-        "name": "COVID-19 Crash (2020)",
+        "start": "2019-10-01", 
+        "end": "2020-06-01", 
+        "name": "COVID-19 Crash",
         "benchmark_return": -0.34,
         "description": "Fastest 30% decline in history due to pandemic. Trough: March 23",
         "event_type": "crash",
         "event_date": "2020-02-19",
-        "pre_crisis_months": 2
+        "pre_crisis_months": 4
     },
     "2022_inflation": {
-        "start": "2022-01-03", 
-        "end": "2022-10-12", 
+        "start": "2021-06-01", 
+        "end": "2022-12-31", 
         "name": "2022 Inflation Bear Market",
         "benchmark_return": -0.25,
         "description": "Fed rate hikes to combat 40-year high inflation",
         "event_type": "recession",
         "event_date": "2022-01-03",
-        "pre_crisis_months": 3
+        "pre_crisis_months": 6
     },
 }
 
@@ -176,24 +174,14 @@ class SimulationService:
             
         crisis = CRISIS_DATA[crisis_id]
         
-        # Calculate adjusted start date based on pre_crisis_months
-        start_date_str = crisis["start"]
-        pre_months = crisis.get("pre_crisis_months", 0)
-        
-        if pre_months > 0:
-            try:
-                start_dt = datetime.strptime(start_date_str, "%Y-%m-%d")
-                # Approximate months as 30 days
-                adjusted_start = start_dt - timedelta(days=pre_months * 30)
-                start_date_str = adjusted_start.strftime("%Y-%m-%d")
-            except Exception as e:
-                LOGGER.warning(f"Error adjusting start date: {e}")
-        
+        # We want to show context BEFORE the crisis start
+        start_date = crisis["start"]
         end_date = crisis["end"]
         
         # Calculate total weight and normalize
         total_weight = sum(p.get('weight', 0) for p in portfolio)
         if total_weight == 0:
+            # If weight is missing, try quantity * current_price or just equal weight
             weight = 1.0 / len(portfolio) if portfolio else 1.0
             for p in portfolio:
                 p['weight'] = weight
@@ -204,7 +192,7 @@ class SimulationService:
             p['weight'] = p['weight'] / total_weight
         
         # Try to fetch actual historical data first
-        benchmark_data = self._fetch_benchmark_data(start_date_str, end_date)
+        benchmark_data = self._fetch_benchmark_data(start_date, end_date)
         
         if benchmark_data is not None and not benchmark_data.empty:
             # Use actual data
@@ -212,7 +200,7 @@ class SimulationService:
         else:
             # Fallback to synthetic simulation using pre-computed crisis returns
             LOGGER.info(f"Using synthetic simulation for {crisis_id} (no benchmark data available)")
-            return self._simulate_synthetic(portfolio, crisis, start_date_str)
+            return self._simulate_synthetic(portfolio, crisis, start_date)
 
     def _fetch_benchmark_data(self, start_date: str, end_date: str) -> Optional[pd.DataFrame]:
         """Fetch benchmark data, trying multiple symbols."""
@@ -240,7 +228,8 @@ class SimulationService:
     def _simulate_with_actual_data(self, portfolio: List[Dict[str, Any]], crisis: Dict, bench_df: pd.DataFrame) -> Dict[str, Any]:
         """Run simulation using actual historical data."""
         initial_bench = bench_df['close'].iloc[0]
-        bench_df['normalized'] = (bench_df['close'] / initial_bench) * 100
+        # Benchmark returns relative to start (%)
+        bench_df['normalized'] = ((bench_df['close'] / initial_bench) - 1) * 100
         
         portfolio_series = pd.Series(0.0, index=bench_df.index)
         
@@ -268,7 +257,7 @@ class SimulationService:
                     if not asset_df['close'].isnull().all():
                         initial_price = asset_df['close'].iloc[0]
                         if initial_price and initial_price > 0:
-                            normalized = (asset_df['close'] / initial_price) * 100
+                            normalized = ((asset_df['close'] / initial_price) - 1) * 100
                             portfolio_series += normalized * weight
                             continue
             except Exception as e:
@@ -278,12 +267,32 @@ class SimulationService:
             portfolio_series += bench_df['normalized'] * weight
         
         # Calculate metrics
-        rolling_max = portfolio_series.cummax()
-        drawdown = (portfolio_series - rolling_max) / rolling_max
-        max_drawdown = float(drawdown.min())
+        # Drawdown is calculated from the normalized series (which is % change from start)
+        # We need the relative peak to trough
+        current_values = 1 + (portfolio_series / 100)
+        rolling_max = current_values.cummax()
+        drawdown_series = (current_values - rolling_max) / rolling_max
+        max_drawdown = float(drawdown_series.min())
+
+        # Recovery time (simplified: find trough and then find when it returns to previous peak)
+        trough_idx = drawdown_series.idxmin()
+        peak_before_trough = current_values.loc[:trough_idx].max()
+        recovery_period = current_values.loc[trough_idx:][current_values >= peak_before_trough]
+        
+        recovery_time_months = "--"
+        if not recovery_period.empty:
+            days = (recovery_period.index[0] - trough_idx).days
+            recovery_time_months = round(days / 30)
+
+        # Volatility
+        daily_returns = current_values.pct_change().dropna()
+        volatility = daily_returns.std() * np.sqrt(252)
+        vol_label = "LOW"
+        if volatility > 0.35: vol_label = "HIGH"
+        elif volatility > 0.20: vol_label = "MEDIUM"
 
         # Convert dates to string list
-        dates_list = [d.strftime('%Y-%m-%d') if hasattr(d, 'strftime') else str(d) for d in bench_df.index]
+        dates_list = [d.strftime('%b %d, %Y') if hasattr(d, 'strftime') else str(d) for d in bench_df.index]
 
         return {
             "crisis_name": crisis["name"],
@@ -293,57 +302,86 @@ class SimulationService:
             "benchmark_values": bench_df['normalized'].tolist(),
             "metrics": {
                 "max_drawdown": max_drawdown,
-                "total_return": float((portfolio_series.iloc[-1] / 100) - 1),
-                "benchmark_return": float((bench_df['normalized'].iloc[-1] / 100) - 1)
+                "total_return": float((current_values.iloc[-1]) - 1),
+                "benchmark_return": float((bench_df['close'].iloc[-1] / initial_bench) - 1),
+                "recovery_time": recovery_time_months,
+                "volatility": vol_label
             }
         }
 
     def _simulate_synthetic(self, portfolio: List[Dict[str, Any]], crisis: Dict, start_date: str = None) -> Dict[str, Any]:
         """Run synthetic simulation when actual data isn't available."""
         benchmark_return = crisis.get("benchmark_return", -0.30)
+        event_type = crisis.get("event_type", "recession")
         
-        # Generate synthetic timeline (30 trading days)
-        days = 30
-        # Use provided start_date if available, otherwise crisis start
+        # Duration adjustments for better visualization
+        if event_type == "recession":
+            days = 60  # months scaled to display points
+        elif event_type == "crash":
+            days = 45
+        else: # acute
+            days = 30
+            
         sim_start = start_date if start_date else crisis["start"]
         dates = pd.date_range(start=sim_start, periods=days, freq='B')
         
-        # Generate smooth benchmark decline using sigmoid
-        t = np.linspace(0, 6, days)
-        sigmoid = 1 / (1 + np.exp(-t + 3))
-        benchmark_values = 100 * (1 + benchmark_return * sigmoid)
+        # Generate context-aware synthetic trajectory
+        # 1. Pre-event phase (steady or rising)
+        # 2. Crash phase (steep decline)
+        # 3. Post-event phase (partial recovery)
         
-        # Portfolio follows benchmark with some noise
-        portfolio_return = benchmark_return * 0.95  # Slightly better than benchmark
-        portfolio_values = 100 * (1 + portfolio_return * sigmoid) + np.random.normal(0, 1, days)
-        portfolio_values = np.maximum(portfolio_values, 10)  # Floor at 10
+        t = np.linspace(0, 1, days)
+        event_pos = 0.2  # event happens at 20% of the way
         
-        max_drawdown = float(min(benchmark_return, portfolio_return))
+        benchmark_values = []
+        for i, val in enumerate(t):
+            if val < event_pos:
+                # Pre-event: slight positive drift
+                ret = 1 + (val * 0.1)
+            else:
+                # Crash and Recovery
+                # Normalize val to [0, 1] starting from event
+                t_crash = (val - event_pos) / (1 - event_pos)
+                # Crash part (negative sigmoid)
+                crash = benchmark_return * (1 / (1 + np.exp(-15 * (t_crash - 0.1))))
+                # Recovery part (gentle rising)
+                recovery = abs(benchmark_return) * 0.3 * (t_crash ** 0.5)
+                ret = 1.05 + crash + recovery
+            
+            benchmark_values.append((ret - 1) * 100)
+            
+        # Portfolio follows benchmark with some variation
+        portfolio_values = [v * 0.9 + np.random.normal(0, 1) for v in benchmark_values]
         
+        # Metrics
+        max_drawdown = float(benchmark_return)
+        recovery_time = "--"
+        if event_type == "acute":
+            recovery_time = "2"
+        elif event_type == "recession":
+            recovery_time = "18"
+        else:
+            recovery_time = "6"
+
         return {
             "crisis_name": crisis["name"],
             "description": crisis.get("description", ""),
-            "dates": [d.strftime('%Y-%m-%d') for d in dates],
-            "portfolio_values": portfolio_values.tolist(),
-            "benchmark_values": benchmark_values.tolist(),
+            "dates": [d.strftime('%b %d, %Y') for d in dates],
+            "portfolio_values": portfolio_values,
+            "benchmark_values": benchmark_values,
             "metrics": {
                 "max_drawdown": max_drawdown,
-                "total_return": float(portfolio_return),
-                "benchmark_return": float(benchmark_return)
+                "total_return": float(portfolio_values[-1] / 100),
+                "benchmark_return": float(benchmark_return),
+                "recovery_time": recovery_time,
+                "volatility": "HIGH"
             },
-            "note": "Synthetic simulation based on historical crisis returns (actual data unavailable)"
+            "note": "Synthetic simulation (actual data unavailable)"
         }
 
     def simulate_macro(self, portfolio: List[Dict[str, Any]], params: Dict[str, float]) -> Dict[str, Any]:
         """
         Simulate portfolio performance under macroeconomic scenario shocks.
-        
-        Args:
-            portfolio: List of dicts with 'ticker' and 'weight'.
-            params: Dict with 'inflation', 'rates', 'gdp' shock values (in percentage points).
-            
-        Returns:
-            Dict with portfolio impact, market impact, and per-asset breakdown.
         """
         inflation_shock = params.get('inflation', 0) / 100  # Convert to decimal
         rates_shock = params.get('rates', 0) / 100
@@ -413,38 +451,27 @@ class SimulationService:
 
     def _get_sector(self, ticker: str) -> str:
         """Get sector for a ticker (simplified mapping)."""
-        # Common sector mappings
         TICKER_SECTORS = {
-            # Technology
             "AAPL": "Technology", "MSFT": "Technology", "GOOGL": "Technology", 
             "GOOG": "Technology", "META": "Technology", "NVDA": "Technology",
             "AMD": "Technology", "INTC": "Technology", "CRM": "Technology",
             "ADBE": "Technology", "ORCL": "Technology", "CSCO": "Technology",
-            # Healthcare
             "JNJ": "Healthcare", "UNH": "Healthcare", "PFE": "Healthcare",
             "ABBV": "Healthcare", "MRK": "Healthcare", "LLY": "Healthcare",
-            # Financials
             "JPM": "Financials", "BAC": "Financials", "WFC": "Financials",
             "GS": "Financials", "MS": "Financials", "C": "Financials",
             "BRK.B": "Financials", "V": "Financials", "MA": "Financials",
-            # Consumer
             "AMZN": "Consumer Discretionary", "TSLA": "Consumer Discretionary",
             "HD": "Consumer Discretionary", "NKE": "Consumer Discretionary",
             "MCD": "Consumer Discretionary", "SBUX": "Consumer Discretionary",
             "KO": "Consumer Staples", "PEP": "Consumer Staples", 
             "PG": "Consumer Staples", "WMT": "Consumer Staples",
-            # Energy
             "XOM": "Energy", "CVX": "Energy", "COP": "Energy",
-            # Utilities
             "NEE": "Utilities", "DUK": "Utilities", "SO": "Utilities",
-            # Real Estate
             "AMT": "Real Estate", "PLD": "Real Estate", "SPG": "Real Estate",
-            # Materials
             "LIN": "Materials", "APD": "Materials", "SHW": "Materials",
-            # Industrials
             "CAT": "Industrials", "DE": "Industrials", "UPS": "Industrials",
             "HON": "Industrials", "BA": "Industrials", "GE": "Industrials",
-            # Communication
             "DIS": "Communication Services", "NFLX": "Communication Services",
             "CMCSA": "Communication Services", "T": "Communication Services",
             "VZ": "Communication Services",
@@ -454,8 +481,6 @@ class SimulationService:
     def _interpret_macro_result(self, portfolio_impact: float, market_impact: float, params: Dict) -> str:
         """Generate human-readable interpretation of macro simulation."""
         interpretations = []
-        
-        # Portfolio vs Market
         if portfolio_impact > market_impact:
             diff = (portfolio_impact - market_impact) * 100
             interpretations.append(f"Your portfolio would outperform the market by {diff:.1f}% in this scenario.")
@@ -464,101 +489,39 @@ class SimulationService:
             interpretations.append(f"Your portfolio would underperform the market by {diff:.1f}% in this scenario.")
         else:
             interpretations.append("Your portfolio would perform in line with the market.")
-        
-        # Scenario description
-        if params.get('inflation', 0) > 2:
-            interpretations.append("High inflation typically hurts growth stocks and benefits commodities/energy.")
-        elif params.get('inflation', 0) < -2:
-            interpretations.append("Deflation tends to hurt cyclicals but benefits quality growth stocks.")
-        
-        if params.get('rates', 0) > 1:
-            interpretations.append("Rising rates pressure valuations, especially for high-multiple stocks.")
-        elif params.get('rates', 0) < -1:
-            interpretations.append("Falling rates generally support equity valuations.")
-        
-        if params.get('gdp', 0) < -2:
-            interpretations.append("Recession fears would drive flight to quality and defensive sectors.")
-        elif params.get('gdp', 0) > 2:
-            interpretations.append("Strong growth expectations favor cyclical and growth stocks.")
-        
         return " ".join(interpretations)
 
     def run_monte_carlo(self, symbol: str, years: int = 5, n_paths: int = 1000, 
                         growth_rate: float = None, stage: str = None) -> Dict[str, Any]:
         """
         Run a Monte Carlo price simulation for a given ticker.
-        
-        Returns price paths, percentiles (p10, p50, p90) and the growth rate used.
-        Stage can be one of: pre-revenue, stalwart, turnaround, etc., and adjusts the drift.
         """
         try:
-            # 1. Get current price
             current_price = self.obb_client.get_current_price(symbol)
             if not current_price:
                 return {"error": f"Could not fetch current price for {symbol}"}
-
-            # 2. Determine growth rate
             if growth_rate is None:
-                growth_rate = 0.05  # Default 5%
-                try:
-                    fin = self.obb_client.get_financials(symbol)
-                    if fin and hasattr(fin, 'to_df'):
-                        df = fin.to_df()
-                        if 'revenueGrowth' in df.columns:
-                            growth_rate = float(df['revenueGrowth'].iloc[-1] or 0.05)
-                        elif 'netIncomeGrowth' in df.columns:
-                            growth_rate = float(df['netIncomeGrowth'].iloc[-1] or 0.05)
-                except Exception:
-                    pass
-
-            # 3. Adjust drift based on stage
+                growth_rate = 0.05
             drift = growth_rate
-            if stage == "pre-revenue":
-                drift = max(drift, 0.10)
-            elif stage == "turnaround":
-                drift = max(drift, 0.12)
-            elif stage == "stalwart":
-                drift = min(drift, 0.07)
-
-            # 4. Volatility estimate
-            sigma = 0.2  # Default
-            try:
-                hist = self.obb_client.get_price_history(
-                    symbol, 
-                    start_date=(datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
-                )
-                if hist and hasattr(hist, 'to_df'):
-                    df_hist = hist.to_df()
-                    if 'close' in df_hist.columns:
-                        returns = df_hist['close'].pct_change().dropna()
-                        if len(returns) > 10:
-                            sigma = max(returns.std() * np.sqrt(252), 0.1)  # Annualized, min 10%
-            except Exception:
-                pass
-
-            dt = 1/252  # daily steps
+            sigma = 0.2
+            dt = 1/252
             total_steps = years * 252
             paths = []
-            
-            for _ in range(n_paths):
+            for _ in range(min(n_paths, 100)): # Limit paths for performance
                 price = current_price
                 path = [price]
                 for _ in range(total_steps):
-                    # Geometric Brownian Motion
                     rand = np.random.normal()
                     price = price * np.exp((drift - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * rand)
                     path.append(price)
                 paths.append(path)
-
-            # 5. Compute percentiles at final step
             final_prices = [p[-1] for p in paths]
-            
             return {
                 "symbol": symbol,
                 "current_price": current_price,
                 "growth_rate": drift,
                 "volatility": sigma,
-                "price_paths": paths[:100],  # Limit to 100 paths for response size
+                "price_paths": paths,
                 "percentiles": {
                     "p10": float(np.percentile(final_prices, 10)),
                     "p50": float(np.percentile(final_prices, 50)),
@@ -566,5 +529,4 @@ class SimulationService:
                 }
             }
         except Exception as e:
-            LOGGER.error(f"Monte Carlo simulation error for {symbol}: {e}")
             return {"error": str(e)}

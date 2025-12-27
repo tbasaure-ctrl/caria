@@ -1,0 +1,32 @@
+GLOBAL MACRO PHASE TRANSITION TEST
+Universe: 38 Global Assets (Equities, Rates, Credit, Commodities)
+Optimal Threshold: 0.2809
+
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:        Future_Drawdown   R-squared:                       0.014
+Model:                            OLS   Adj. R-squared:                  0.010
+Method:                 Least Squares   F-statistic:                       nan
+Date:                Sun, 21 Dec 2025   Prob (F-statistic):                nan
+Time:                        00:04:22   Log-Likelihood:                 1936.9
+No. Observations:                 904   AIC:                            -3864.
+Df Residuals:                     899   BIC:                            -3840.
+Df Model:                           4                                         
+Covariance Type:                  HAC                                         
+================================================================================
+                   coef    std err          z      P>|z|      [0.025      0.975]
+--------------------------------------------------------------------------------
+Low_Const        0.0193      0.013      1.491      0.136      -0.006       0.045
+High_Const       0.0534      0.027      2.007      0.045       0.001       0.106
+Low_Slope        0.0356      0.038      0.940      0.347      -0.039       0.110
+High_Slope      -0.0338      0.065     -0.519      0.604      -0.161       0.094
+Connectivity    -0.0592      0.039     -1.513      0.130      -0.136       0.017
+==============================================================================
+Omnibus:                      670.686   Durbin-Watson:                   0.472
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):            12524.934
+Skew:                           3.227   Prob(JB):                         0.00
+Kurtosis:                      20.055   Cond. No.                         50.3
+==============================================================================
+
+Notes:
+[1] Standard Errors are heteroscedasticity and autocorrelation robust (HAC) using 5 lags and without small sample correction

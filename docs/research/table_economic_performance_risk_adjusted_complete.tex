@@ -1,0 +1,53 @@
+\documentclass[12pt]{article}
+
+% Required packages
+\usepackage{graphicx}
+
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\begin{document}
+
+% El contador debe estar DENTRO de \begin{document}
+\setcounter{figure}{2}  % Esto hace que la siguiente tabla sea la número 2
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig_returns_sharpe.png}
+  \caption[Distribución de retornos y Sharpe móvil]{Distribución de retornos diarios (izquierda) y estabilidad del Sharpe móvil a 2 años (derecha) para la estrategia y el benchmark.}
+  \label{fig:dist_sharpe}
+\end{figure}
+
+\begin{center}\footnotesize
+\textbf{Resumen cuantitativo asociado a la Figura~\ref{fig:dist_sharpe}.}\\[0.3em]
+\begin{tabular}{lrrrrr}
+\toprule
+ & Media (anual) & Vol (anual) & Skewness & Kurtosis & Sharpe \\
+\midrule
+Mercado & 0.0941 & 0.1933 & -0.0262 & 11.7035 & 0.4868 \\
+Estrategia & 0.2373 & 0.1600 & 0.5569 & 21.3386 & 1.4837 \\
+\bottomrule
+\end{tabular}\\[0.4em]
+\textit{Bootstrap:} $\Delta$Sharpe=0.9969; $p<0.001$ (H$_0$: Sharpe$_{\text{strat}}\le$ Sharpe$_{\text{mkt}}$). \quad
+\textit{Drawdown:} MaxDD -55.19\% vs -33.72\%; UW 91.2\% vs 62.2\%; Calmar 0.17 vs 0.70.
+\end{center}
+
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,49 @@
+\begin{table}[htbp]
+  \centering
+  \caption{\textbf{Quantile Regression Results (Tail Risk $\tau = 0.05$) in Low-Volatility Regimes}}
+  \label{tab:quantile_regression}
+  \small
+  \begin{minipage}{0.9\textwidth}
+    \textit{Note: This table reports the results of quantile regressions estimating the 5th percentile of future 22-day cumulative returns ($R_{t+22}$). The sample is restricted to low-volatility regimes where $VIX_t < 20$. Model (1) serves as the kinetic baseline. Model (2) introduces the potential energy signal ($CARIA\_Peak60d$). T-statistics are reported in parentheses.}
+  \end{minipage}
+  \vspace{0.3cm}
+  
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Dependent Variable:} & \multicolumn{2}{c}{Future 5th Percentile Return ($R_{t+22}$)} \\
+    \midrule
+    & \textbf{(1) Baseline} & \textbf{(2) Structural Model} \\
+    \midrule
+    Intercept & 0.0478$^{***}$ & 0.0534$^{***}$ \\
+              & (5.88) & (5.35) \\
+    \addlinespace
+    Volatility ($VIX_t$) & -0.0066$^{***}$ & -0.0055$^{***}$ \\
+                          & (-12.39) & (-10.05) \\
+    \addlinespace
+    Structure ($CARIA\_Peak60d$) & — & -0.0057$^{***}$ \\
+                                  & & (-9.17) \\
+    \midrule
+    Observations & 3,928 & 3,928 \\
+    Pseudo $R^2$ & 0.063 & \textbf{0.078} \\
+    Relative Improvement & — & \textbf{+23.8\%} \\
+    \bottomrule
+  \end{tabular}
+  
+  \vspace{0.2cm}
+  \footnotesize
+  $^{***}p<0.001$, $^{**}p<0.01$, $^{*}p<0.05$
+\end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

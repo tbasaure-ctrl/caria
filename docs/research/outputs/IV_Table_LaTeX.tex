@@ -1,0 +1,26 @@
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Instrumental Variables Regression}}
+\label{tab:iv}
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{\textbf{OLS}} & \multicolumn{2}{c}{\textbf{2SLS IV}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+\textbf{Variable} & Coefficient & $t$-stat & Coefficient & $t$-stat \\
+\midrule
+ASF & -0.206 & -2.09 & -0.201 & -2.06 \\
+Connectivity & -0.093 & -2.53 & -0.090 & -2.52 \\
+\midrule
+\multicolumn{5}{l}{\textit{Diagnostic Tests}} \\
+First-Stage Partial $F$ & \multicolumn{4}{c}{4913.6} \\
+Hausman Test & \multicolumn{4}{c}{0.10 (p = 0.748)} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Dependent variable is forward 21-day maximum drawdown. Instruments are lagged connectivity (4, 8, and 12 weeks). First-Stage $F > 10$ indicates strong instruments. Hausman test evaluates exogeneity; rejection supports IV.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

@@ -1,0 +1,27 @@
+Loading data...
+Merged Data: 1638 records from 1993-01-21 to 2025-07-29
+
+--- Running Horse Race Regression ---
+              Model        R2          AIC  VIX_beta     VIX_t  ASF_beta     ASF_t  Interaction_beta  Interaction_t
+0           (1) VIX  0.000291 -2115.255292 -0.014543 -0.262306       NaN       NaN               NaN            NaN
+1     (2) VIX + ASF  0.040623 -2144.099461  0.006681  0.126625 -0.202614 -2.526321               NaN            NaN
+2  (3) Full + Inter  0.040903 -2142.318032  0.056216  0.300005 -0.151345 -0.785407         -0.285881       -0.32933
+
+--- Running Kelly Strategy Backtest (SPX) ---
+
+--- Threshold Optimization ---
+Optimal Threshold: 0.170 (Sharpe: 0.57)
+Benchmark (SPX): Sharpe=0.50, MaxDD=-31.68%
+Strategy (Kelly): Sharpe=0.56, MaxDD=-23.43%
+
+--- Running Stock-Bond Correlation Universality Test ---
+Regression: Fwd Stock-Bond Corr on ASF
+Beta: -3.6709
+T-Stat: -12.3161
+R2: 0.4130
+
+--- Running Credit Spread (Priced Risk) Test ---
+Regression: Fwd Credit Excess Return (HYG-LQD) on ASF
+Beta: 0.1022
+T-Stat: 2.0116
+R2: 0.0242

@@ -1,0 +1,52 @@
+\setcounter{table}{3}  % Ajusta según la numeración que necesites
+
+\begin{table}[htbp]
+  \centering
+  \caption{\textbf{Quantile Regression Results (Tail Risk $\tau = 0.05$): Hidden Risks}}
+  \label{tab:quantile_regression_hidden_risks}
+  \small
+  \begin{minipage}{0.9\textwidth}
+    \textit{Note: This table reports the results of quantile regressions estimating the 5th percentile of future 22-day cumulative returns ($R_{t+22}$). The sample includes all observations from 2000--2025. Model (1) serves as the baseline with volatility only. Model (2) introduces the structural signal ($CARIA\_Peak$). T-statistics are reported in parentheses.}
+  \end{minipage}
+  \vspace{0.3cm}
+  
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Dependent Variable:} & \multicolumn{2}{c}{Future 5th Percentile Return ($R_{t+22}$)} \\
+    \midrule
+    & \textbf{(1) Base Model} & \textbf{(2) Structural Model} \\
+    & (VIX Only) & (+ CARIA Peak) \\
+    \midrule
+    Intercept & 0.0399$^{***}$ & 0.0399$^{***}$ \\
+              & (5.48) & (5.48) \\
+    \addlinespace
+    Volatility ($VIX_t$) & -0.0058$^{***}$ & -0.0058$^{***}$ \\
+                          & (-12.17) & (-12.17) \\
+    \addlinespace
+    Structure ($CARIA\_Peak$) & — & -0.0063$^{***}$ \\
+                               & & (-10.51) \\
+    \midrule
+    Observations & 5,532 & 5,532 \\
+    Pseudo $R^2$ & 0.0538 & \textbf{0.0679} \\
+    Relative Improvement & — & \textbf{+26.2\%} \\
+    \bottomrule
+  \end{tabular}
+  
+  \vspace{0.2cm}
+  \footnotesize
+  $^{***}p<0.001$, $^{**}p<0.01$, $^{*}p<0.05$
+\end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

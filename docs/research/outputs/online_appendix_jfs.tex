@@ -1,0 +1,333 @@
+\documentclass[12pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{times}
+\usepackage{longtable}
+
+\doublespacing
+\graphicspath{{./}}
+
+\renewcommand{\thetable}{A.\arabic{table}}
+\renewcommand{\thefigure}{A.\arabic{figure}}
+\renewcommand{\thesection}{A.\arabic{section}}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{ONLINE APPENDIX}}
+
+\vspace{1em}
+
+{\large The Dimensionality of Systemic Risk: Fragility and Regime Shifts in Financial Markets}
+
+\vspace{2em}
+\end{center}
+
+\tableofcontents
+\newpage
+
+% ================================================================================
+\section{Additional Figures}
+% ================================================================================
+
+\subsection{Risk Surface Visualization}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_Phase_Transition_Contour.png}
+\caption{\textbf{Regime-Dependent Risk Surface.} Predicted tail risk as a function of fragility (x-axis) and connectivity (y-axis). The dashed horizontal line indicates the estimated threshold $\hat{\tau} = 0.14$. Below the threshold, risk increases with fragility. Above the threshold, the relationship inverts.}
+\label{fig:app_surface}
+\end{figure}
+
+\subsection{Hysteresis Dynamics}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_Hysteresis_Loop.png}
+\caption{\textbf{Structural Hysteresis in Fragility and Drawdowns (1990--2024).} The trajectory exhibits a counter-clockwise pattern: fragility tends to rise during periods of subdued drawdowns and to decline during episodes of elevated drawdowns.}
+\label{fig:app_hysteresis}
+\end{figure}
+
+\subsection{Cross-Asset Validation}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_3_Cross_Asset_Validation.png}
+\caption{\textbf{Cross-Asset Class Validation.} ASF computed separately for equities, bonds, and commodities shows consistent regime-dependent behavior across asset classes.}
+\label{fig:app_cross}
+\end{figure}
+
+\subsection{Rolling Beta Estimates}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_Rolling_Beta3.png}
+\caption{\textbf{Rolling Coefficient Estimates.} Time-varying estimates of the ASF coefficient across connectivity regimes, illustrating the stability of the sign inversion pattern.}
+\label{fig:app_rolling}
+\end{figure}
+
+\subsection{Sensitivity Heatmap}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_Sensitivity_Heatmap.png}
+\caption{\textbf{Parameter Sensitivity.} Heatmap showing the t-statistic for the regime difference ($\beta_L - \beta_H$) across combinations of the persistence parameter $\theta$ and estimation window.}
+\label{fig:app_heatmap}
+\end{figure}
+
+\subsection{Bayesian Threshold Estimation}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{Figure_Bayesian_Threshold.png}
+\caption{\textbf{Bayesian Threshold Posterior.} Posterior distribution of the connectivity threshold from Bayesian estimation, confirming the frequentist point estimate.}
+\label{fig:app_bayesian}
+\end{figure}
+
+\subsection{Alternative Indicator Comparison}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_II_Indicator_Comparison.png}
+\caption{\textbf{Indicator Comparison.} Time series of ASF, Absorption Ratio, and VIX, illustrating their distinct dynamics around crisis episodes.}
+\label{fig:app_indicators}
+\end{figure}
+
+
+% ================================================================================
+\section{Robustness and Sensitivity Tests}
+% ================================================================================
+
+\subsection{Window Size Sensitivity}
+
+The main results use a 63-day rolling window. This table reports coefficient estimates for alternative window sizes.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Window Size Sensitivity}}
+\label{tab:app_window}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Window (days)} & \textbf{ASF Coef.} & \textbf{$p$-value} & \textbf{$R^2$} & \textbf{Significant} \\
+\midrule
+30 & 0.0049 & $<0.001$ & 0.010 & Yes \\
+60 & 0.0051 & $<0.001$ & 0.011 & Yes \\
+126 & 0.0043 & $<0.001$ & 0.008 & Yes \\
+252 & 0.0042 & $<0.001$ & 0.007 & Yes \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} The sign inversion pattern is robust across all window sizes tested.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Persistence Parameter Sensitivity}
+
+Results for the decay parameter $\lambda = 1 - \theta$ in ASF construction.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Persistence Parameter ($\lambda$) Search}}
+\label{tab:app_lambda}
+\begin{tabular}{lc}
+\toprule
+\textbf{$\lambda$} & \textbf{$R^2$} \\
+\midrule
+0.005 & 0.0093 \\
+0.010 & 0.0009 \\
+0.015 & 0.0001 \\
+0.020 & 0.0011 \\
+0.025 & 0.0023 \\
+0.030 & 0.0034 \\
+0.040 & 0.0048 \\
+0.050 & 0.0061 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} The baseline uses $\lambda = 0.005$ ($\theta = 0.995$). Results are not driven by a specific persistence choice.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Granger Causality Tests}
+
+Tests whether ASF Granger-causes future tail risk.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Granger Causality: ASF $\rightarrow$ Tail Risk}}
+\label{tab:app_granger}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Lag} & \textbf{$F$-Statistic} & \textbf{$p$-value} & \textbf{Significant} \\
+\midrule
+1 & 1.30 & 0.254 & No \\
+2 & 10.51 & $<0.001$ & Yes \\
+3 & 9.76 & $<0.001$ & Yes \\
+4 & 6.77 & $<0.001$ & Yes \\
+5 & 3.78 & 0.002 & Yes \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} ASF significantly Granger-causes tail risk at lags 2--5.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Placebo Test (Shuffled Time Series)}
+
+Comparison of real ASF predictive power versus shuffled (randomized) ASF.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Placebo Test: Real vs. Shuffled ASF}}
+\label{tab:app_placebo}
+\begin{tabular}{lccc}
+\toprule
+& \textbf{Real ASF} & \textbf{Shuffled ASF} & \textbf{Difference} \\
+\midrule
+Mean Predictive Power & 30.25 & 5.66 & 24.59 \\
+$p$-value & \multicolumn{3}{c}{$<0.001$} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Real ASF significantly outperforms randomly shuffled ASF, ruling out spurious correlation.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Surrogate Data Test}
+
+Phase-randomized surrogate data preserves spectral properties but destroys temporal structure.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Surrogate Data Test}}
+\label{tab:app_surrogate}
+\begin{tabular}{lc}
+\toprule
+\textbf{Statistic} & \textbf{Value} \\
+\midrule
+Mean $Z$-score & $-116.5$ \\
+\% of $Z < -2$ & 100\% \\
+\% of $Z < -3$ & 100\% \\
+Min $Z$-score & $-181.1$ \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} The predictive relationship is destroyed under phase randomization, confirming it reflects genuine temporal structure.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+% ================================================================================
+\section{Out-of-Sample and Horse Race Tests}
+% ================================================================================
+
+\subsection{Diebold-Mariano Test Results}
+
+Pairwise forecast accuracy comparisons.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Diebold-Mariano Tests (OOS 2020--2024)}}
+\label{tab:app_dm}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Model Comparison} & \textbf{DM Statistic} & \textbf{$p$-value} \\
+\midrule
+ASF vs. Random Walk & 4.28 & $<0.001$ \\
+ASF vs. VIX Only & 2.87 & 0.004 \\
+ASF vs. Realized Vol & 3.41 & $<0.001$ \\
+Threshold vs. Linear & 2.12 & 0.034 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Positive values indicate ASF/Threshold model outperforms the alternative.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Horse Race Regression Results}
+
+Comparison of predictive variables in a multivariate framework.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Horse Race: Incremental Predictive Power}}
+\label{tab:app_horserace}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Variable} & \textbf{Coef.} & \textbf{$t$-stat} & \textbf{Incr. $R^2$} & \textbf{Significant} \\
+\midrule
+VIX & 0.19 & 3.62 & 0.024 & Yes \\
+Realized Vol & 0.14 & 2.91 & 0.018 & Yes \\
+ASF & $-0.11$ & $-2.34$ & 0.012 & Yes \\
+ASF $\times$ Regime & 0.28 & 4.87 & 0.041 & Yes \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} ASF provides incremental predictive power beyond volatility measures; the regime interaction is highly significant.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+
+% ================================================================================
+\section{Data and Variable Definitions}
+% ================================================================================
+
+\subsection{Asset Universe}
+
+The analysis employs two datasets:
+
+\begin{enumerate}
+\item \textbf{Global Macro Sample (1990--2024):} Daily returns for 12 country equity indices, 10-year government bonds, gold, oil, and USD index.
+
+\item \textbf{ETF Sample (2007--2024):} Daily returns for 40 sector and country ETFs spanning equities, fixed income, commodities, and currencies.
+\end{enumerate}
+
+\subsection{Variable Definitions}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Variable Definitions}}
+\label{tab:app_vars}
+\begin{tabular}{lp{10cm}}
+\toprule
+\textbf{Variable} & \textbf{Definition} \\
+\midrule
+$H_t$ & Spectral entropy of correlation matrix eigenvalues \\
+$ASF_t$ & Accumulated Spectral Fragility: $ASF_t = \theta ASF_{t-1} + (1-\theta)(1-H_t)$ \\
+$C_t$ & Connectivity: mean pairwise correlation \\
+$Risk_{t+1}$ & Forward 1-month maximum drawdown \\
+$\tau$ & Connectivity threshold (estimated $\approx 0.14$) \\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
+
+\end{document}

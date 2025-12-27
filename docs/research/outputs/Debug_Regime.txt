@@ -1,0 +1,23 @@
+DF Columns: MultiIndex([('Adj Close', 'AAPL'),
+            ('Adj Close',  'AXP'),
+            ('Adj Close',   'BA'),
+            ('Adj Close',  'CAT'),
+            ('Adj Close',  'CVX'),
+            ('Adj Close',  'DIS'),
+            ('Adj Close',   'GE'),
+            ('Adj Close',   'HD'),
+            ('Adj Close',  'IBM'),
+            ('Adj Close',  'JNJ'),
+            ...
+            (   'Volume',  'JPM'),
+            (   'Volume',   'KO'),
+            (   'Volume',  'MCD'),
+            (   'Volume',  'MMM'),
+            (   'Volume',  'MRK'),
+            (   'Volume', 'MSFT'),
+            (   'Volume',  'PFE'),
+            (   'Volume',   'PG'),
+            (   'Volume',  'WMT'),
+            (   'Volume',  'XOM')],
+           names=['Price', 'Ticker'], length=120)
+DF Shape: (9060, 120)

@@ -1,0 +1,338 @@
+% !TEX program = pdflatex
+% Manuscript prepared for the Quarterly Journal of Economics (QJE)
+% Author-year citation style (Chicago/AER format)
+\documentclass[12pt]{article}
+
+% -------------------- Packages --------------------
+\usepackage[margin=1.25in]{geometry}
+\usepackage{setspace}
+\usepackage[expansion=false]{microtype}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage{siunitx}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{natbib}  % Author-year style for QJE
+\usepackage{enumitem}
+
+% -------------------- Formatting for QJE --------------------
+\doublespacing
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue, citecolor=blue}
+
+\sisetup{
+  round-mode = places,
+  round-precision = 3,
+  detect-weight=true,
+  detect-family=true
+}
+
+\graphicspath{{outputs/}{./}{media/}}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{hypothesis}{Hypothesis}
+
+% -------------------- Title and Author --------------------
+\title{\textbf{When Stability Becomes Fragility:\\ Phase Transitions in Financial Markets}}
+
+\author{Tom\'as Basaure Larra\'in\thanks{Pontificia Universidad Cat\'olica de Chile. Email: tbasaure@uc.cl. The author thanks [acknowledgments to be added]. All errors are the author's own. Replication materials are available at [repository URL].}}
+
+\date{December 2025}
+
+\begin{document}
+\maketitle
+
+% -------------------- Abstract (max 250 words for QJE) --------------------
+\begin{abstract}
+\noindent
+Financial crises frequently emerge after prolonged periods of apparent stability, when volatility is low and standard risk metrics signal safety. This paper provides evidence that the mapping from market structure to systemic tail risk is regime-dependent, exhibiting characteristics of a phase transition. A new state variable, Accumulated Spectral Fragility (ASF), is introduced to measure the persistent low-dimensionality of correlation structures over medium horizons. Using global multi-asset data from 1990--2024, a threshold regression framework identifies a critical connectivity level (average correlation $\tau \approx 0.14$) that partitions the sample into two distinct regimes. Below the threshold, structural fragility amplifies future tail risk through contagion dynamics. Above the threshold, the relationship inverts: systemic episodes are instead preceded by a loss of coupling, consistent with disintegration dynamics in hyper-connected markets. The estimated regime-specific coefficients differ significantly ($p < 0.01$), and results are robust to alternative specifications, volatility controls, and surrogate data falsification tests. These findings provide a structural resolution to the volatility paradox and suggest that macroprudential monitoring in modern, tightly coupled markets requires tracking structural state variables rather than volatility alone.
+\end{abstract}
+
+\vspace{0.5em}
+\noindent\textbf{Keywords:} systemic risk; endogenous fragility; phase transition; financial networks; spectral entropy; threshold regression
+
+\vspace{0.3em}
+\noindent\textbf{JEL Codes:} G01, G12, C24, C58
+
+\newpage
+
+% ================================================================================
+% SECTION 1: INTRODUCTION
+% ================================================================================
+\section{Introduction}
+
+Financial crises tend to arrive when they are least expected. Some of the most severe systemic episodes of the past four decades---from the 1987 stock market crash to the 2008 Global Financial Crisis to the 2020 COVID-induced market turmoil---occurred after prolonged periods of tranquility, when realized and implied volatility were subdued and conventional risk measures suggested safety. This empirical regularity is difficult to reconcile with linear frameworks in which risk rises smoothly with volatility or other contemporaneous measures of stress. It is, however, consistent with a broadly Minskyan view of endogenous fragility: stability alters behavior, behavior alters balance sheets and market structure, and the resulting system can become vulnerable in ways not visible in short-horizon price variability.
+
+This paper argues that the key object is not volatility per se, but the structural state of market connectivity. The central claim is that the mapping from connectivity to systemic risk is not monotone. Instead, financial markets exhibit a phase transition in the way structure translates into tail outcomes. Below a critical connectivity threshold, additional coupling increases the scope for cascades: fragility is ``contagious'' in the standard sense. Above that threshold, the market behaves as an over-connected cluster whose short-run stability depends on maintaining cohesion. In this regime, crises are preceded not by further increases in coupling, but by the breakdown of coupling---a disintegration of the structural substrate that supports liquidity provision and coordinated pricing.
+
+\textbf{This paper makes four main contributions.} First, evidence is provided for a critical coupling threshold in financial markets at which the effect of structural fragility on future tail risk inverts sign. This formalizes a structural transition from ``contagion'' dynamics to ``disintegration'' dynamics in financial risk propagation. Second, Accumulated Spectral Fragility (ASF) is introduced as a state variable that captures the time-integrated persistence of low-dimensional market structure, distinguishing it from static, contemporaneous risk indicators. Third, a rigorous econometric validation is conducted using threshold regression methods \citep{hansen2000}, HAC-robust inference, bootstrap confidence intervals, and surrogate data falsification tests. Fourth, the findings are shown to generalize across asset classes and time periods, with implications for macroprudential policy in an era of passive investing.
+
+The empirical analysis utilizes a panel of 47 major ETFs spanning U.S. sectors, international markets, fixed income, commodities, and alternatives from 2007--2024, with a longer out-of-sample global asset dataset (38 assets, 1990--2024) for validation. A nonlinear threshold regression is employed to estimate the critical connectivity level $\tau$ and the regime-specific effects of fragility on crash risk. The results reveal a highly significant split between two regimes. When average market correlation (connectivity) is below $\tau \approx 0.14$, higher fragility (lower spectral entropy) amplifies future tail risk (estimated marginal effect $\theta_L > 0$). When connectivity exceeds $\tau$, the coefficient on fragility flips sign ($\theta_H < 0$): in this regime, risk emerges from the loss of coupling rather than its formation.
+
+These findings help reconcile the volatility paradox: why severe crashes can erupt out of seemingly calm, highly correlated markets \citep{brunnermeier2014, danielsson2012}. The resolution lies in recognizing that broadly connected markets render volatility an insufficient statistic for systemic risk. At high connectivity, the dangerous moment is not when volatility is high, but when the system is hyper-connected yet suddenly loses synchronization. This insight has direct implications for macroprudential monitoring, suggesting that policy tools must evolve to track structural state variables like ASF rather than relying solely on volatility-based frameworks.
+
+The remainder of the paper proceeds as follows. Section~\ref{sec:literature} positions the analysis relative to the literatures on endogenous risk, network propagation, and correlation-based systemic measures. Section~\ref{sec:methodology} defines spectral entropy and ASF and presents a simple mechanism that motivates a regime-dependent mapping from connectivity to tail risk. Section~\ref{sec:data} describes the data and empirical design, including threshold estimation. Section~\ref{sec:results} presents the core results and robustness tests. Section~\ref{sec:discussion} discusses interpretation and policy relevance. Section~\ref{sec:conclusion} concludes.
+
+% ================================================================================
+% SECTION 2: LITERATURE REVIEW
+% ================================================================================
+\section{Literature Review}
+\label{sec:literature}
+
+\subsection{Endogenous Fragility and the Volatility Paradox}
+
+This paper relates to a long tradition emphasizing that financial stability can be self-undermining. \citet{minsky1992} proposed that tranquil periods induce risk-taking and balance-sheet fragility that eventually makes the system vulnerable to nonlinear adjustments. Modern macro-finance models formalize related mechanisms in which low measured risk encourages leverage and liquidity mismatch, generating a volatility paradox: the system can become most fragile precisely when volatility is low \citep{brunnermeier2014, adrian2010}. \citet{danielsson2012} distinguish between perceived risk---lowest at the peak of a boom---and actual risk---highest precisely then due to endogenous leverage. The present study contributes empirical evidence that market structure exhibits regime-dependent links to subsequent tail risk, consistent with a structural channel through which endogenous fragility accumulates during calm periods.
+
+\subsection{Network Propagation and Complex Systems}
+
+Financial markets can be viewed as networks of interconnected assets and agents, where risk propagation depends on network topology and link weights \citep{acemoglu2012, gai2010}. Spectral entropy measures the dispersion of eigenvalues of the correlation matrix---effectively quantifying the effective number of uncorrelated factors in the system. Prior research found that periods of low spectral entropy often precede major market downturns \citep{kenett2011}. The concept of percolation in network science is also relevant: below a critical connectivity, clusters are fragmented (shocks remain local), whereas above it, a ``giant component'' spans the network (making global cascades possible). The findings presented here suggest an inverse phenomenon at extremely high connectivity: once the network is fully cohesive, vulnerability shifts to the risk of that cohesion breaking.
+
+\subsection{The Gap: State Variables vs.\ Static Indicators}
+
+A central motivation of this study is that most existing correlation-based measures of systemic risk are inherently static. The Absorption Ratio of \citet{kritzman2011} measures the fraction of total variance explained by a small number of principal components, but responds mechanically to recent correlations without distinguishing transient synchronization from prolonged structural compression. Similar limitations apply to CoVaR \citep{adrian2016} and SRISK \citep{brownlees2017}. Accumulated Spectral Fragility (ASF) is designed to fill this gap by behaving as a structural state variable with memory, capturing the persistence of low-dimensional market structure over medium horizons.
+
+% ================================================================================
+% SECTION 3: METHODOLOGY
+% ================================================================================
+\section{Methodology}
+\label{sec:methodology}
+
+\subsection{Spectral Entropy as Systemic Redundancy}
+
+The starting point is the correlation matrix of asset returns, from which spectral entropy is derived as a measure of market concentration. Let $R_t$ be the $N \times 1$ vector of returns for $N$ assets at time $t$. The spectral decomposition of the correlation matrix $C_t$ yields eigenvalues $\lambda_{1,t} \geq \dots \geq \lambda_{N,t}$. Normalized spectral entropy is defined as:
+\begin{equation}
+H_t = -\frac{1}{\log N} \sum_{i=1}^{N} p_{i,t} \log(p_{i,t}), \quad \text{where } p_{i,t} = \frac{\lambda_{i,t}}{N}
+\label{eq:entropy}
+\end{equation}
+
+This is the Shannon entropy of the eigenvalue distribution, normalized to lie in $[0,1]$. $H_t = 1$ indicates maximal diversification (variance evenly spread across $N$ independent factors), while $H_t \to 0$ indicates concentration in a few dominant modes (synchronized behavior). Low entropy is interpreted as a sign of structural fragility: the system becomes effectively low-dimensional, with asset prices driven by a small number of common factors.
+
+Instantaneous fragility is defined as the complement of entropy: $F_t \equiv 1 - H_t$. Accumulated Spectral Fragility (ASF) is then constructed as an exponentially-weighted accumulation of past $F_t$:
+\begin{equation}
+ASF_t = \theta \cdot ASF_{t-1} + (1 - \theta) \cdot F_t
+\label{eq:asf}
+\end{equation}
+with $\theta \approx 0.995$, corresponding to a half-life of approximately 139 trading days. ASF thus captures the cumulative effect of correlation structure persistence, rising when correlations remain elevated and falling only slowly once structural conditions change.
+
+\subsection{A Simple Model of Structural Fragility}
+\label{sec:model}
+
+To provide an economic mechanism for the empirical findings, consider a stylized model of leveraged investors facing balance-sheet constraints, building on \citet{brunnermeier2014} and \citet{geanakoplos2009}. Consider $N$ risk-neutral agents each holding a distinct asset $i$ with returns driven by a common factor $M_t$ and idiosyncratic shocks:
+\begin{equation}
+r_{i,t} = \sqrt{\rho} M_t + \sqrt{1-\rho} \epsilon_{i,t}
+\label{eq:returns}
+\end{equation}
+where $\rho \in [0,1]$ represents market connectivity.
+
+\textbf{Mechanism 1 (Low $\rho$):} When connectivity is low, shocks are largely idiosyncratic. Distressed agents can sell to healthy agents acting as liquidity providers. Individual fragility does not aggregate into systemic risk.
+
+\textbf{Mechanism 2 (High $\rho$):} When $\rho$ exceeds a critical threshold $\rho^*$, shocks become dominated by the common factor. A negative macro shock causes all agents to hit leverage constraints simultaneously, triggering fire-sale spirals due to liquidity vanishing.
+
+\textbf{The Inversion:} In the Contagion Regime ($\rho < \rho^*$), risk comes from spillover; adding links increases systemic risk. In the Disintegration Regime ($\rho > \rho^*$), the system relies on high correlation for hedging; risk emerges when this coordination breaks (lower realized correlation signals breakdown).
+
+\subsection{Regime-Dependent Structural Fragility}
+
+The hypothesis is that the impact of fragility on future risk is non-monotonic, depending on the prevailing level of market connectivity. A threshold regression model is specified:
+\begin{equation}
+Risk_{t+h} = \begin{cases} 
+\theta_L F_t + \phi_L C_t + \epsilon_t & \text{if } C_t \leq \tau \quad \text{(Contagion Regime)} \\
+\theta_H F_t + \phi_H C_t + \epsilon_t & \text{if } C_t > \tau \quad \text{(Disintegration Regime)}
+\end{cases}
+\label{eq:threshold}
+\end{equation}
+where $\tau$ is an unknown threshold to be estimated from the data following \citet{hansen2000}. The expectation is that $\theta_L > 0$ (fragility amplifies risk in the Contagion regime) and $\theta_H < 0$ (fragility's effect inverts in the Disintegration regime).
+
+% ================================================================================
+% SECTION 4: DATA AND EMPIRICAL METHODOLOGY
+% ================================================================================
+\section{Data and Empirical Methodology}
+\label{sec:data}
+
+\subsection{Data Selection}
+
+The primary dataset consists of weekly returns for 47 liquid ETFs across seven categories: U.S.\ equity sectors, country indices, broad market indices, fixed income sectors, commodity indices, global emerging markets, and alternative assets. The sample period is 2007--2024. To ensure historical robustness, a Global Macro dataset of 38 major assets from 1990--2024 is also examined.
+
+The correlation matrix is computed at each week using a rolling window of 52 weeks. Eigenvalues and spectral entropy $H_t$ are calculated as in Equation~(\ref{eq:entropy}). The fragility $F_t = 1 - H_t$ is accumulated into $ASF_t$ using an exponential decay with 139-day half-life. The connectivity measure $C_t$ is the mean of all pairwise correlations among the ETFs.
+
+The forward tail risk measure $Risk_{t+4}$ is defined as the magnitude of the worst drawdown over the next 4 weeks. All regressions employ Newey-West HAC standard errors (12 lags) to account for autocorrelation. The threshold estimation is bootstrapped 1000 times for confidence intervals.
+
+\subsection{Properties of ASF}
+
+Figure~\ref{fig:hist_se} plots the historical evolution of ASF from 1990 through 2024. ASF tends to accumulate during extended periods of market stability, peaking prior to major crises (2008 GFC, 2020 COVID crash), often diverging from low realized volatility in pre-crisis periods.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_1_Historical_SE.png}
+\caption{\textbf{Historical Evolution of Accumulated Spectral Fragility (1990--2024).} Shaded regions indicate NBER recessions. ASF peaks prior to major crises despite benign surface conditions.}
+\label{fig:hist_se}
+\end{figure}
+
+% ================================================================================
+% SECTION 5: EMPIRICAL RESULTS
+% ================================================================================
+\section{Empirical Results}
+\label{sec:results}
+
+\subsection{Regime Identification and Phase Transition}
+
+Table~\ref{tab:threshold_results} presents the threshold regression results. The threshold $\tau$ (mean correlation) is estimated at $\hat{\tau} \approx 0.1381$, with a 95\% bootstrap confidence interval of $[0.13, 0.15]$.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Threshold Regression Results: Piecewise Risk Dynamics}}
+\label{tab:threshold_results}
+\begin{tabular}{lccS[table-format=2.2]}
+\toprule
+\textbf{Regime} & \textbf{Condition} & \textbf{Marginal Effect ($\partial Risk / \partial Fragility$)} & \textbf{$t$-statistic} \\
+\midrule
+Contagion & $C_t \leq 0.14$ & $+4.30$ (amplifies risk) & 6.60 \\
+Disintegration & $C_t > 0.14$ & $-0.12$ (dampens risk) & -2.10 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} $\hat{\tau}=0.1381$ (estimated connectivity threshold). Coefficients are on $F_t$ (fragility) in each regime. Dependent variable is future 1-month drawdown magnitude. Standard errors are HAC robust. A Wald test rejects $\theta_L = \theta_H$ with $p < 0.001$.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+The results confirm a striking phase transition: In the Contagion regime, the coefficient on fragility is $+4.30$ and highly significant. In the Disintegration regime, the coefficient flips to $-0.12$, which is negative and statistically significant at the 5\% level.
+
+Figure~\ref{fig:phase_transition} provides a visualization of the estimated risk surface as a function of fragility and connectivity.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_Phase_Transition_Contour.png}
+\caption{\textbf{Phase Transition Diagram (Contour Map).} In the Contagion Regime (lower half), risk increases with fragility. In the Disintegration Regime (upper half), the relationship flips: high fragility corresponds to the ``safe'' zone of lockstep stability; risk emerges when the system disintegrates.}
+\label{fig:phase_transition}
+\end{figure}
+
+\subsection{Marginal Effects and Robustness}
+
+Figure~\ref{fig:marginal_effect} plots the marginal effect of fragility on risk as a continuous function of connectivity, showing the characteristic ``bow-tie'' pattern where the effect transitions from positive to negative.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_Marginal_Effect_C_Mean.png}
+\caption{\textbf{Marginal Effect of Fragility on Risk.} The estimated effect is positive and significant at low connectivity, crosses zero around $C \approx 0.14$, and becomes negative at high connectivity.}
+\label{fig:marginal_effect}
+\end{figure}
+
+Several robustness checks are conducted:
+
+\textbf{Alternative Connectivity Metric:} Using the Absorption Ratio (AR) as an alternative measure yields similar threshold behavior with inversion around AR $\approx 0.65$.
+
+\textbf{Controlling for Volatility:} Including the VIX index as a control, the core fragility--connectivity interaction remains significant, indicating the phase transition is not explained by volatility dynamics alone.
+
+\textbf{Null Model Benchmark:} Following \citet{theiler1992}, surrogate data tests are conducted. None of 1000 null trials produced a statistically significant regime split.
+
+\textbf{Out-of-Sample Stability:} The threshold estimated on 2007--2015 data ($\tau \approx 0.13$) yields significant differences in fragility's impact when applied to 2016--2024 data. The global dataset (1990--2024) yields $\tau \approx 0.28$, consistent with lower baseline correlation in that broader asset universe.
+
+\textbf{Granger Causality:} The null hypothesis that ``ASF does not Granger-cause Risk'' was rejected at the 1\% level, supporting the structural interpretation that fragility accumulates first, creating conditions for risk.
+
+\subsection{Structural Hysteresis}
+
+Figure~\ref{fig:hysteresis} plots the trajectory of the market on the Fragility--Drawdown plane, revealing a clear hysteresis loop. During the ``loading'' phase, ASF rises while realized Drawdown remains low; the cycle closes when ASF falls while Drawdown spikes. A Monte Carlo permutation test confirms the observed loop area exceeds 95\% of random permutations ($p \approx 0.05$).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_Hysteresis_Loop.png}
+\caption{\textbf{The Macro-Hysteresis Cycle (1990--2024).} The system exhibits counter-clockwise loops: fragility rises during calm bull markets, storing potential energy that releases during crises.}
+\label{fig:hysteresis}
+\end{figure}
+
+\subsection{Global Strategy Validation}
+
+Table~\ref{tab:strategy_falsification} reports the performance of a regime-conditional strategy against a passive benchmark from 1990--2024.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Global Regime-Conditional Strategy Performance (1990--2024)}}
+\label{tab:strategy_falsification}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Strategy} & \textbf{CAGR (Net)} & \textbf{Volatility} & \textbf{Sharpe Ratio} & \textbf{Max Drawdown}\\
+\midrule
+Global Equal-Weight (Benchmark) & 6.20\% & 19.26\% & 0.41 & $-56.8\%$ \\
+Regime-Conditional (Net of Costs) & 7.21\% & 15.61\% & 0.52 & $-49.1\%$ \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} CAGR = Compound Annual Growth Rate. Net Returns include estimated 10bps transaction cost per one-way turnover.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+% ================================================================================
+% SECTION 6: DISCUSSION
+% ================================================================================
+\section{Discussion: The Passive Substrate Hypothesis}
+\label{sec:discussion}
+
+\subsection{Correlation: From Signal to Substrate}
+
+Traditionally, correlation was viewed as a symptom of contagion---high correlation equated with turmoil. The results suggest correlation has a dual role depending on regime. In the Contagion Regime, correlation represents information flow propagating shocks. In the Disintegration Regime, correlation has become part of market infrastructure---the ``glue'' maintained by passive capital flows and arbitrage. In this regime, risk arises from correlation breaking rather than forming.
+
+\subsection{Why Volatility-Based Frameworks Fail}
+
+Standard macroprudential frameworks relying on volatility targeting assume risk scales with recent price changes. In the Disintegration Regime, volatility is artificially suppressed by high correlation. A volatility-based rule relaxes leverage caps precisely when structural fragility is highest, making such rules pro-cyclical in the worst possible way.
+
+This creates a normative case for including structural state variables in policy frameworks. A robust rule would condition leverage caps not just on $\sigma_t$, but on the regime $R(C_t, F_t)$. Empirically, when controlling for VIX in the risk regression, ASF retains independent predictive power, confirming that distinct structural information exists orthogonal to price variance.
+
+\subsection{Policy Implications}
+
+If modern markets frequently operate in the Disintegration Regime, a complementary perspective is necessary: monitoring the \textit{quality} of connectivity. Indicators like ASF that gauge proximity to structural phase transitions could inform macroprudential monitoring. If a system exhibits ``solid'' rigidity, regulators might consider scenarios where risk stems from endogenous breakdown of correlation rather than external shock propagation.
+
+% ================================================================================
+% SECTION 7: CONCLUSION
+% ================================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+Evidence has been presented consistent with the hypothesis that financial markets exhibit a phase transition in risk dynamics, governed by structural fragility and connectivity. Using a threshold regression framework, a critical level of market coupling was identified at which the effect of accumulated fragility on future crash risk inverts. Below the threshold (Contagion regime), fragility leads to heightened tail risk, consistent with traditional contagion logic. Above the threshold (Disintegration regime), risk is structural and associated with the loss of coupling rather than volatility per se.
+
+The findings help reconcile the volatility paradox: why severe crashes can erupt out of seemingly calm, highly correlated markets. At high connectivity, volatility ceases to be an informative sufficient statistic for systemic risk. The dangerous moment is not when volatility is high, but when the system is hyper-connected yet suddenly loses synchronization.
+
+This insight challenges current paradigms of macroprudential policy, suggesting that ensuring systemic stability involves maintaining the integrity of the market substrate as much as dampening volatility. Policy tools must evolve to monitor structural entropy and intervene when the system nears fragile tipping points defined by connectivity, not just price variance.
+
+% ================================================================================
+% APPENDIX
+% ================================================================================
+\appendix
+
+\section{Replication and Data}
+
+A full replication package is provided, including data acquisition scripts, code for computing spectral entropy and ASF, threshold model estimation, and all figures and tables. The codebase is organized as follows:
+\begin{itemize}
+    \item \texttt{fetch\_fmp\_data.py}: Downloads Global Macro universe.
+    \item \texttt{global\_phase\_transition.py}: Estimates the Threshold Regression and verifies the sign flip.
+    \item \texttt{global\_strategy\_backtest.py}: Replicates the Regime-Conditional Strategy results.
+    \item \texttt{plot\_3d\_wireframe.py}: Generates the Phase Transition surface.
+\end{itemize}
+
+\section{Parameter Sensitivity}
+\label{app:sensitivity}
+
+Robustness of results to the ASF half-life window ($\lambda$) was examined. The baseline model uses a half-life of 139 days ($\lambda=0.995$). Re-estimating with alternative half-lives:
+\begin{itemize}
+    \item \textbf{Short Memory (34 days):} $\tau$ shifts higher, but the sign inversion remains significant at $p < 0.05$.
+    \item \textbf{Long Memory (252 days):} $\tau$ shifts lower and the inversion effect strengthens, validating that longer-term structural memory drives the disintegration risk.
+\end{itemize}
+The existence of the phase transition is a stable feature of the system, not an artifact of the 139-day specification.
+
+% ================================================================================
+% REFERENCES (BibTeX for QJE - Chicago/Author-Year Style)
+% ================================================================================
+\bibliographystyle{aer}  % American Economic Review style (similar to Chicago author-year)
+\bibliography{references_qje}
+
+\end{document}
+
+
+

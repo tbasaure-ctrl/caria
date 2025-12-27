@@ -1,0 +1,74 @@
+A. IDENTIFICATION & INFERENCE
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:          Future_DD_Mag   R-squared:                       0.035
+Model:                            OLS   Adj. R-squared:                  0.034
+Method:                 Least Squares   F-statistic:                     3.590
+Date:                Sat, 20 Dec 2025   Prob (F-statistic):             0.0132
+Time:                        23:14:43   Log-Likelihood:                 2245.3
+No. Observations:                1763   AIC:                            -4483.
+Df Residuals:                    1759   BIC:                            -4461.
+Df Model:                           3                                         
+Covariance Type:                  HAC                                         
+===============================================================================
+                  coef    std err          z      P>|z|      [0.025      0.975]
+-------------------------------------------------------------------------------
+const           0.0263      0.030      0.870      0.384      -0.033       0.085
+ASF             1.5833      0.684      2.316      0.021       0.244       2.923
+C              -0.5094      0.412     -1.236      0.217      -1.317       0.299
+Interaction    -1.8420      0.658     -2.798      0.005      -3.132      -0.552
+==============================================================================
+Omnibus:                      865.400   Durbin-Watson:                   0.100
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):             4925.238
+Skew:                           2.301   Prob(JB):                         0.00
+Kurtosis:                       9.772   Cond. No.                         216.
+==============================================================================
+
+Notes:
+[1] Standard Errors are heteroscedasticity and autocorrelation robust (HAC) using 12 lags and without small sample correction
+
+Estimate C_crit: 0.8596
+Bootstrap 95% CI for C_crit: [0.6692, 1.0771]
+Inside Support? False (Range: 0.09-0.47)
+
+B. THRESHOLD VALIDATION
+Optimal Threshold (Tau): 0.1381
+Theta_L (Low Conn): 4.2994
+Theta_H (High Conn): -0.1215
+Matches Signs (L>0, H<0)? True
+Tau vs C_crit diff: 0.7214
+
+D. ALTERNATIVE EXPLANATIONS (ROBUSTNESS)
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:          Future_DD_Mag   R-squared:                       0.075
+Model:                            OLS   Adj. R-squared:                  0.073
+Method:                 Least Squares   F-statistic:                     3.898
+Date:                Sat, 20 Dec 2025   Prob (F-statistic):            0.00162
+Time:                        23:14:43   Log-Likelihood:                 2282.5
+No. Observations:                1763   AIC:                            -4553.
+Df Residuals:                    1757   BIC:                            -4520.
+Df Model:                           5                                         
+Covariance Type:                  HAC                                         
+===============================================================================
+                  coef    std err          z      P>|z|      [0.025      0.975]
+-------------------------------------------------------------------------------
+const          -0.0128      0.032     -0.404      0.686      -0.075       0.049
+ASF             1.0809      0.673      1.607      0.108      -0.237       2.399
+C              -0.2953      0.403     -0.732      0.464      -1.086       0.495
+Interaction    -1.3396      0.673     -1.991      0.046      -2.658      -0.021
+VIX             0.0028      0.002      1.672      0.095      -0.000       0.006
+Inter_VIX      -0.0054      0.010     -0.546      0.585      -0.025       0.014
+==============================================================================
+Omnibus:                      845.391   Durbin-Watson:                   0.151
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):             4955.293
+Skew:                           2.220   Prob(JB):                         0.00
+Kurtosis:                       9.909   Cond. No.                     4.54e+03
+==============================================================================
+
+Notes:
+[1] Standard Errors are heteroscedasticity and autocorrelation robust (HAC) using 12 lags and without small sample correction
+[2] The condition number is large, 4.54e+03. This might indicate that there are
+strong multicollinearity or other numerical problems.
+
+Does Interaction Survive? P-val = 0.0464

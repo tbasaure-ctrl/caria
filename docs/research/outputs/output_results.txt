@@ -1,0 +1,101 @@
+﻿
+######################################################################
+# REVIEWER RESPONSE ANALYSIS
+# Addresses key concerns from peer review
+######################################################################
+
+======================================================================
+ECONOMIC JUSTIFICATION FOR theta = 0.995
+======================================================================
+
+Persistence parameter: theta = 0.995
+Half-life: 138 trading days (approx 6.6 months)
+
+
+Economic Rationale:
+--------------------------------------------------
+
+1. INSTITUTIONAL REPORTING CYCLES
+   - Quarterly reports (13F filings): 3 months
+   - Semi-annual rebalancing: 6 months
+   - Annual performance reviews: 12 months
+   -> 6-month half-life captures semi-annual adjustment cycle
+
+2. BALANCE SHEET ADJUSTMENT SPEED
+   - He & Krishnamurthy (2013) document that intermediary 
+     balance-sheet constraints adjust over months, not days
+   - Adrian & Shin (2010) show leverage targeting with 
+     similar adjustment horizons
+   -> theta = 0.995 consistent with intermediary dynamics
+
+3. POSITION BUILDUP DYNAMICS
+   - Crowded trades develop over quarters as momentum 
+     investors accumulate positions
+   - Leverage constraints bind gradually as VaR limits 
+     are approached
+   -> Slow memory appropriate for "stored fragility"
+
+4. EMPIRICAL ROBUSTNESS
+   - From sensitivity analysis (Appendix Figure A.6):
+     Sign inversion robust for theta in [0.90, 0.999]
+   - Optimal theta depends on forecast horizon
+   -> theta = 0.995 is central tendency, not knife-edge
+
+
+======================================================================
+PRACTICAL IMPLICATIONS: COORDINATION REGIME
+======================================================================
+
+REVIEWER CONCERN:
+"Does high ASF mean investors should avoid diversifying?"
+
+CLARIFICATION:
+The finding is NOT that diversification is bad, but that:
+
+1. DIVERSIFICATION BENEFITS ARE REGIME-DEPENDENT
+   - In low-connectivity regimes: Traditional diversification works
+   - In high-connectivity regimes: Correlations are already high,
+     so "diversification" provides less marginal benefit
+
+2. THE RISK IS COORDINATION BREAKDOWN, NOT DIVERSIFICATION
+   - High ASF indicates synchronized markets
+   - The danger is when synchronization breaks down
+   - Diversification doesn't protect against this specific risk
+
+3. PRACTICAL IMPLICATION
+   NOT: "Avoid diversifying when ASF is high"
+   BUT: "Recognize that standard diversification metrics may 
+        overstate protection when ASF is high"
+
+4. MONITORING RECOMMENDATION
+   - Track ASF alongside VaR/volatility
+   - When ASF is elevated, consider:
+     a) Stress-testing for correlation breakdown
+     b) Reducing leverage (not diversification)
+     c) Maintaining liquidity buffers
+
+5. WHAT INVESTORS SHOULD DO
+   - Continue diversifying (it's never harmful)
+   - But adjust risk models to account for regime
+   - Consider structural indicators in addition to volatility
+
+
+======================================================================
+QUANTITATIVE ANALYSES (require data)
+======================================================================
+
+To run the quantitative analyses, load your price data and call:
+
+1. Rolling Threshold:
+   results = rolling_threshold_analysis(returns_df, estimation_window_years=5)
+
+2. Data Splicing:
+   comparison = data_splicing_analysis(global_macro_returns, etf_returns)
+
+3. Hysteresis Test:
+   hysteresis_significance_test(asf_series, drawdown_series)
+
+
+######################################################################
+# END OF ANALYSIS
+######################################################################

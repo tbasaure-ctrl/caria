@@ -1,0 +1,163 @@
+﻿======================================================================
+FULL QUANTITATIVE ANALYSIS - REVIEWER RESPONSE
+Using 29 assets from coordination_data
+======================================================================
+
+Found 29 data files
+
+Final dataset: 5738 days, 1 assets
+Date range: 2010-01-01 to 2025-12-23
+Assets: ['BTC USD']
+
+Returns: 5737 observations
+
+======================================================================
+SPECTRAL ENTROPY AND ASF COMPUTATION
+======================================================================
+Entropy computed: 5674 observations
+Mean: nan, Std: nan
+
+ASF (theta=0.995): Mean=nan, Current=nan
+
+======================================================================
+CONNECTIVITY
+======================================================================
+Connectivity: Mean=nan, Std=nan
+
+======================================================================
+THRESHOLD ESTIMATION (Hansen Grid Search)
+======================================================================
+Aligned observations: 0
+python : Traceback 
+(most recent call 
+last):
+En línea: 1 
+Carácter: 1
++ python full_review
+er_analysis.py 2>&1 
+| Out-File 
+-FilePath 
+full_analy ...
++ ~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo  
+            : NotS  
+  pecified: (Trac   
+ eback (most rec    
+ent call last):    
+:String) [], Re    
+moteException
+    + FullyQualifie 
+   dErrorId : Nati  
+  veCommandError
+ 
+  File "C:\key\wise_
+adviser_cursor_conte
+xt\Caria_repo\caria\
+docs\research\output
+s\full_reviewer_anal
+ysis.py", line 144, 
+in <module>
+    c_grid = np.perc
+entile(df['connectiv
+ity'].values, 
+np.linspace(15, 85, 
+50))
+             ^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
+  File "<__array_fun
+ction__ 
+internals>", line 
+200, in percentile
+  File "C:\Users\tom
+as\AppData\Local\Pro
+grams\Python\Python3
+11\Lib\site-packages
+\numpy\lib\function_
+base.py", line 
+4205, in percentile
+    return 
+_quantile_unchecked(
+           
+^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tom
+as\AppData\Local\Pro
+grams\Python\Python3
+11\Lib\site-packages
+\numpy\lib\function_
+base.py", line 
+4473, in 
+_quantile_unchecked
+    return 
+_ureduce(a,
+           
+^^^^^^^^^^^
+  File "C:\Users\tom
+as\AppData\Local\Pro
+grams\Python\Python3
+11\Lib\site-packages
+\numpy\lib\function_
+base.py", line 
+3752, in _ureduce
+    r = func(a, 
+**kwargs)
+        
+^^^^^^^^^^^^^^^^^
+  File "C:\Users\tom
+as\AppData\Local\Pro
+grams\Python\Python3
+11\Lib\site-packages
+\numpy\lib\function_
+base.py", line 
+4639, in _quantile_u
+reduce_func
+    result = 
+_quantile(arr,
+             
+^^^^^^^^^^^^^^
+  File "C:\Users\tom
+as\AppData\Local\Pro
+grams\Python\Python3
+11\Lib\site-packages
+\numpy\lib\function_
+base.py", line 
+4745, in _quantile
+    take(arr, 
+indices=-1, 
+axis=DATA_AXIS)
+  File "<__array_fun
+ction__ 
+internals>", line 
+200, in take
+  File "C:\Users\tom
+as\AppData\Local\Pro
+grams\Python\Python3
+11\Lib\site-packages
+\numpy\core\fromnume
+ric.py", line 190, 
+in take
+    return 
+_wrapfunc(a, 
+'take', indices, 
+axis=axis, out=out, 
+mode=mode)
+           ^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
+  File "C:\Users\tom
+as\AppData\Local\Pro
+grams\Python\Python3
+11\Lib\site-packages
+\numpy\core\fromnume
+ric.py", line 57, 
+in _wrapfunc
+    return 
+bound(*args, **kwds)
+           
+^^^^^^^^^^^^^^^^^^^^
+IndexError: cannot 
+do a non-empty take 
+from an empty axes.

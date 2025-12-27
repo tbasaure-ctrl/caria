@@ -1,0 +1,16 @@
+\begin{table}[H]
+\centering
+\caption{GAMLSS vs Baseline Models Comparison}
+\begin{tabular}{lcccccccccccc}
+\toprule
+\textbf{Model} & \textbf{AIC} (IS) & \textbf{BIC} (IS) & \textbf{RMSE} (IS) & \textbf{MAE} (IS) & \textbf{R2} (IS) & \textbf{Tail_RMSE} (IS) & \textbf{AIC} (OOS) & \textbf{BIC} (OOS) & \textbf{RMSE} (OOS) & \textbf{MAE} (OOS) & \textbf{R2} (OOS) & \textbf{Tail_RMSE} (OOS) \\
+\midrule
+GAMLSS_Linear_Interaction & -18698.7131 & -18698.7131 & -18655.4744 & -18655.4744 & 0.0246 & 0.0506 & 0.0178 & 0.0331 & 0.0354 & -0.3253 & 0.0790 & 0.1602 \\
+GAMLSS_Threshold_Like & -18595.7287 & -18595.7287 & -18552.4900 & -18552.4900 & 0.0249 & 0.0538 & 0.0180 & 0.0357 & 0.0055 & -0.4962 & 0.0803 & 0.1651 \\
+GAMLSS_Simple & -18588.5424 & -18588.5424 & -18551.4807 & -18551.4807 & 0.0248 & 0.0520 & 0.0180 & 0.0340 & 0.0136 & -0.4007 & 0.0794 & 0.1631 \\
+Threshold_Regression & -16261.5174 & -16261.5174 & -16224.4557 & -16224.4557 & 0.0246 & 0.0505 & 0.0178 & 0.0334 & 0.0332 & -0.3179 & 0.0783 & 0.1574 \\
+Linear_OLS & -16202.5464 & -16202.5464 & -16184.0155 & -16184.0155 & 0.0248 & 0.0510 & 0.0181 & 0.0332 & 0.0154 & -0.3483 & 0.0784 & 0.1616 \\
+Linear_Interaction & -16269.5070 & -16269.5070 & -16244.7992 & -16244.7992 & 0.0246 & 0.0500 & 0.0178 & 0.0325 & 0.0343 & -0.2937 & 0.0783 & 0.1596 \\
+\bottomrule
+\end{tabular}
+\end{table}

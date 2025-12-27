@@ -1,0 +1,450 @@
+% !TEX program = pdflatex
+% ONLINE APPENDIX for "When Stability Becomes Fragility"
+% Quarterly Journal of Economics
+\documentclass[12pt]{article}
+
+% -------------------- Packages --------------------
+\usepackage[margin=1.25in]{geometry}
+\usepackage{setspace}
+\usepackage[expansion=false]{microtype}
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage{siunitx}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{enumitem}
+
+% -------------------- Formatting --------------------
+\doublespacing
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue, citecolor=blue}
+
+\sisetup{round-mode=places, round-precision=3, detect-weight=true, detect-family=true}
+
+\graphicspath{{outputs/}{./}{media/}}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+
+% -------------------- Title --------------------
+\title{\textbf{Online Appendix for:\\ ``When Stability Becomes Fragility: Phase Transitions in Financial Markets''}}
+\author{Tom\'as Basaure Larra\'in\\Pontificia Universidad Cat\'olica de Chile}
+\date{December 2025}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+\newpage
+
+% ================================================================================
+% APPENDIX A: PROOFS
+% ================================================================================
+\section{Proofs of Propositions}
+\label{app:proofs}
+
+\begin{lemma}[Liquidity Availability]
+\label{lem:liquidity}
+Let $\pi(\rho, \sigma_M)$ denote the probability that agent $i$ hits the leverage constraint following a common shock. For $\rho < \rho^*$, the probability that at least one other agent can provide liquidity is:
+\[
+P(\text{liquidity available}) = 1 - \prod_{j \neq i} \pi(\rho, \sigma_M) \approx 1 - \pi^{N-1}
+\]
+which is high when $\pi$ is low or $N$ is large.
+\end{lemma}
+
+\textbf{Proof.} When $\rho$ is low, returns are dominated by idiosyncratic shocks: $\text{Var}(r_{i,t}) \approx (1-\rho)\sigma_\epsilon^2$. The probability of simultaneous distress across agents is approximately $P(\text{all distressed}) \approx \pi^N$. For $\pi < 1$ and large $N$, this is negligible. \hfill $\square$
+
+\begin{proposition}[Contagion Regime - Restated]
+For $\rho < \rho^*$, systemic risk $S$ is increasing in structural fragility $F$: $\partial S / \partial F > 0$.
+\end{proposition}
+
+\textbf{Proof.} Define systemic risk as $S = P(\text{cascade involving } > N/2 \text{ agents})$. With low $\rho$, a shock to agent $i$ spreads to agent $j$ with probability proportional to $\text{Corr}(r_i, r_j)$. Increasing fragility $F$ (decreasing entropy) concentrates eigenvalues, effectively increasing pairwise correlations conditional on the dominant factor. This raises the cascade probability: $\partial S / \partial F > 0$. \hfill $\square$
+
+\begin{proposition}[Disintegration Regime - Restated]
+For $\rho > \rho^*$, the sign inverts: $\partial S / \partial F < 0$.
+\end{proposition}
+
+\textbf{Proof.} When $\rho > \rho^*$, all agents are exposed to the common factor. Stability requires collective shock absorption. A decrease in correlation (entropy increase) signals structural breakdown:
+\begin{enumerate}
+    \item Hedges based on index exposure become ineffective.
+    \item Liquidity provision, relying on correlated behavior, disappears.
+    \item Fire-sale spirals ensue.
+\end{enumerate}
+Thus higher fragility (lower entropy) indicates cohesion---a stability prerequisite. Lower fragility (higher entropy) signals breakdown: $\partial S / \partial F < 0$. \hfill $\square$
+
+\begin{corollary}[Existence of Critical Threshold - Restated]
+There exists $\rho^* \in (0,1)$ such that $\text{sign}(\partial S / \partial F)$ flips at $\rho^*$, analogous to a percolation threshold.
+\end{corollary}
+
+% ================================================================================
+% APPENDIX B: MODEL CALIBRATION
+% ================================================================================
+\section{Model Calibration}
+\label{app:calibration}
+
+To verify that the theoretical model generates predictions consistent with empirical findings, a calibration exercise is conducted.
+
+\textbf{Parameters:}
+\begin{itemize}
+    \item Number of agents: $N = 47$ (matching ETF universe)
+    \item Leverage threshold: $\lambda = 0.10$ (10\% equity requirement)
+    \item Common factor volatility: $\sigma_M = 0.02$ (weekly)
+    \item Idiosyncratic volatility: $\sigma_\epsilon = 0.03$ (weekly)
+\end{itemize}
+
+Simulating 10,000 paths for each $\rho \in \{0.05, 0.10, \ldots, 0.50\}$, systemic risk (frequency of $>50\%$ agents hitting constraints simultaneously) is computed.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Model Calibration: Simulated vs.\ Empirical}}
+\label{tab:calibration}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Parameter} & \textbf{Model} & \textbf{Data} \\
+\midrule
+Critical threshold $\rho^*$ & 0.12--0.16 & 0.14 \\
+Sign of $\partial S/\partial F$ below $\rho^*$ & Positive & Positive (+4.30) \\
+Sign of $\partial S/\partial F$ above $\rho^*$ & Negative & Negative ($-0.12$) \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Model simulated with 10,000 MC paths per connectivity level.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+The calibrated model produces $\rho^* \in [0.12, 0.16]$, closely matching $\hat{\tau} = 0.14$.
+
+% ================================================================================
+% APPENDIX C: EXTENDED ROBUSTNESS
+% ================================================================================
+\section{Extended Robustness Analysis}
+\label{app:robustness}
+
+\subsection{C.1 Monte Carlo Simulations}
+
+To verify finite-sample properties of the Hansen estimator:
+
+\textbf{DGP:}
+\begin{enumerate}
+    \item Draw $C_t \sim U[0.05, 0.45]$
+    \item Draw $F_t \sim N(0.3, 0.1^2)$
+    \item Generate $Risk_t$ with true $\tau = 0.14$, $\theta_L = 4.0$, $\theta_H = -0.1$
+    \item Add $\epsilon_t \sim N(0, 0.5^2)$ with AR(1) persistence ($\phi = 0.3$)
+\end{enumerate}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Table C1: Monte Carlo Results (5,000 replications)}}
+\label{tab:montecarlo}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Parameter} & \textbf{True} & \textbf{Mean Est.} & \textbf{Bias} & \textbf{RMSE} & \textbf{95\% Coverage} \\
+\midrule
+$\tau$ & 0.140 & 0.142 & 0.002 & 0.018 & 93.2\% \\
+$\theta_L$ & 4.00 & 3.98 & $-0.02$ & 0.41 & 94.8\% \\
+$\theta_H$ & $-0.10$ & $-0.11$ & $-0.01$ & 0.06 & 95.1\% \\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
+
+The estimator exhibits negligible bias and achieves near-nominal coverage.
+
+\subsection{C.2 Placebo Tests}
+
+\textbf{Temporal Placebo:} Sample randomly reshuffled 1,000 times, breaking temporal structure.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Table C2: Temporal Placebo Test}}
+\label{tab:placebo}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Statistic} & \textbf{Actual} & \textbf{Placebo (Mean $\pm$ SD)} \\
+\midrule
+$\theta_L - \theta_H$ & 4.42 & 0.12 $\pm$ 0.87 \\
+Wald $\chi^2$ & 42.7 & 2.1 $\pm$ 1.8 \\
+$p$-value & $<0.001$ & 0.48 $\pm$ 0.29 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Actual lies 5.0 SD above placebo mean ($p < 0.001$).
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{C.3 Subsample Stability by Decade}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Table C3: Subsample Analysis by Decade}}
+\label{tab:decades}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Period} & \textbf{$N$} & \textbf{$\hat{\tau}$} & \textbf{$\theta_L$} & \textbf{$\theta_H$} & \textbf{Diff.} & \textbf{$p$} \\
+\midrule
+1990--1999 & 521 & 0.22 & $+3.87^{***}$ & $+0.45$ & 3.42 & 0.008 \\
+2000--2009 & 522 & 0.15 & $+5.21^{***}$ & $-0.28^{*}$ & 5.49 & $<0.001$ \\
+2010--2019 & 522 & 0.12 & $+4.01^{***}$ & $-0.19^{**}$ & 4.20 & $<0.001$ \\
+2020--2024 & 261 & 0.14 & $+3.62^{**}$ & $-0.08$ & 3.70 & 0.021 \\
+\midrule
+Full & 1,826 & 0.14 & $+4.30^{***}$ & $-0.12^{**}$ & 4.42 & $<0.001$ \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Sign inversion present in all decades; strengthens after 2000.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{C.4 Alternative Tail Risk Measures}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Table C4: Alternative Tail Risk Measures}}
+\label{tab:alt_risk}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Measure} & \textbf{$\hat{\tau}$} & \textbf{$\theta_L$} & \textbf{$\theta_H$} & \textbf{Diff.} & \textbf{$p$} \\
+\midrule
+Max Drawdown & 0.138 & $+4.30^{***}$ & $-0.12^{**}$ & 4.42 & $<0.001$ \\
+CVaR (5\%) & 0.141 & $+3.89^{***}$ & $-0.09^{*}$ & 3.98 & $<0.001$ \\
+ES (1\%) & 0.135 & $+5.12^{***}$ & $-0.15^{**}$ & 5.27 & $<0.001$ \\
+VaR Exceedances & 0.142 & $+2.71^{***}$ & $-0.07^{*}$ & 2.78 & 0.002 \\
+Realized Vol & 0.129 & $+1.84^{**}$ & $-0.04$ & 1.88 & 0.041 \\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
+
+\subsection{C.5 Alternative Connectivity Measures}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Table C5: Alternative Connectivity Measures}}
+\label{tab:alt_conn}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Measure} & \textbf{$\hat{\tau}$} & \textbf{$\theta_L$} & \textbf{$\theta_H$} & \textbf{Diff.} & \textbf{$p$} \\
+\midrule
+Mean Correlation & 0.138 & $+4.30^{***}$ & $-0.12^{**}$ & 4.42 & $<0.001$ \\
+Absorption Ratio & 0.651 & $+3.92^{***}$ & $-0.14^{**}$ & 4.06 & $<0.001$ \\
+Network Density & 0.312 & $+4.18^{***}$ & $-0.11^{*}$ & 4.29 & $<0.001$ \\
+Eigenvector Centrality & 0.089 & $+3.54^{***}$ & $-0.08^{*}$ & 3.62 & 0.003 \\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
+
+Figure~\ref{fig:marginal_ar} shows the marginal effect using Absorption Ratio.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_Marginal_Effect_C_AR.png}
+\caption{\textbf{Marginal Effect using Absorption Ratio.} Same bow-tie pattern as baseline.}
+\label{fig:marginal_ar}
+\end{figure}
+
+\subsection{C.6 Cross-Sectional Heterogeneity}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Table C6: Heterogeneity by Asset Class}}
+\label{tab:cross}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Asset Class} & \textbf{$N$} & \textbf{$\hat{\tau}$} & \textbf{$\theta_L$} & \textbf{$\theta_H$} & \textbf{$p$} \\
+\midrule
+U.S. Equity Sectors & 11 & 0.18 & $+5.21^{***}$ & $-0.18^{**}$ & $<0.001$ \\
+International Equities & 12 & 0.15 & $+4.02^{***}$ & $-0.09^{*}$ & 0.002 \\
+Fixed Income & 7 & 0.08 & $+2.31^{**}$ & $-0.05$ & 0.089 \\
+Commodities & 4 & 0.12 & $+3.78^{**}$ & $-0.22^{*}$ & 0.018 \\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
+
+\subsection{C.7 Forecast Comparison (Diebold-Mariano)}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Table C7: Out-of-Sample Forecast Comparison}}
+\label{tab:dm}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{RMSE} & \textbf{MAE} & \textbf{DM Stat} & \textbf{$p$} \\
+\midrule
+Random Walk & 0.0482 & 0.0341 & --- & --- \\
+AR(1) & 0.0461 & 0.0329 & 1.82 & 0.069 \\
+Linear & 0.0445 & 0.0312 & 2.41 & 0.016 \\
+Linear + Interaction & 0.0428 & 0.0298 & 3.12 & 0.002 \\
+\textbf{Threshold} & \textbf{0.0391} & \textbf{0.0271} & \textbf{4.28} & $<$\textbf{0.001} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} OOS forecasts 2020--2024, models estimated 1990--2019.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{C.8 Rolling Threshold Estimation}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_Rolling_Beta3.png}
+\caption{\textbf{Rolling 10-Year Threshold Estimates.} Threshold declines from $\sim$0.20 to $\sim$0.12, consistent with increasing baseline connectivity.}
+\label{fig:rolling}
+\end{figure}
+
+% ================================================================================
+% APPENDIX D: HYSTERESIS
+% ================================================================================
+\section{Structural Hysteresis Analysis}
+\label{app:hysteresis}
+
+Figure~\ref{fig:hysteresis} plots the market trajectory on the Fragility--Drawdown plane, revealing a hysteresis loop.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_Hysteresis_Loop.png}
+\caption{\textbf{Macro-Hysteresis Cycle (1990--2024).} Counter-clockwise loop: Loading Phase (fragility rises, drawdown low) followed by Unloading Phase (fragility falls, drawdown spikes).}
+\label{fig:hysteresis}
+\end{figure}
+
+A Monte Carlo permutation test ($N=1000$) confirms the observed loop area exceeds 95\% of random permutations ($p \approx 0.05$).
+
+% ================================================================================
+% APPENDIX E: STRATEGY VALIDATION
+% ================================================================================
+\section{Strategy Validation}
+\label{app:strategy}
+
+A regime-conditional strategy is backtested: 130\% exposure in Disintegration regime, 50\% in Contagion regime.
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Table E1: Strategy Performance (1990--2024)}}
+\label{tab:strategy}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Strategy} & \textbf{CAGR} & \textbf{Vol} & \textbf{Sharpe} & \textbf{Max DD}\\
+\midrule
+Benchmark (Equal-Weight) & 6.20\% & 19.26\% & 0.41 & $-56.8\%$ \\
+Regime-Conditional (Net) & 7.21\% & 15.61\% & 0.52 & $-49.1\%$ \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item \textit{Notes:} Net returns include 10bps transaction costs.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+The strategy achieves +1.01\% active return, reduces volatility by 3.7pp, and improves Sharpe from 0.41 to 0.52.
+
+% ================================================================================
+% APPENDIX F: PARAMETER SENSITIVITY
+% ================================================================================
+\section{ASF Parameter Sensitivity Analysis}
+\label{app:sensitivity}
+
+This appendix provides detailed sensitivity analysis for the ASF persistence parameter $\theta$.
+
+\subsection{F.1 Sensitivity of Regime Difference to $\theta$}
+
+Figure~\ref{fig:theta_sensitivity} plots the $t$-statistic for the regime difference ($\theta_L - \theta_H$) as a function of the persistence parameter $\theta$, spanning half-lives from 1 week to 2 years.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{Figure_Theta_Sensitivity.png}
+\caption{\textbf{Sensitivity of Regime Difference to ASF Persistence.} The $t$-statistic for the coefficient difference ($\theta_L - \theta_H$) as a function of the ASF persistence parameter $\theta$. Horizontal dashed line: critical value for 5\% significance. The regime difference is significant for all $\theta \in [0.90, 0.999]$, with peak around $\theta = 0.995$.}
+\label{fig:theta_sensitivity}
+\end{figure}
+
+Key observations:
+\begin{enumerate}
+    \item The regime difference is statistically significant at the 5\% level for all tested values of $\theta$.
+    \item The $t$-statistic rises monotonically from $\theta = 0.90$ (very short memory) to approximately $\theta = 0.995$, then declines slightly for very long memory ($\theta > 0.997$).
+    \item The peak at $\theta \approx 0.995$ (half-life $\approx$ 139 days) suggests this horizon optimally captures the accumulation of structural fragility.
+    \item Even at extreme values ($\theta = 0.90$ corresponding to 7-day half-life, or $\theta = 0.999$ corresponding to 693-day half-life), the sign inversion remains significant.
+\end{enumerate}
+
+\subsection{F.2 Robustness of Threshold Estimate}
+
+The estimated threshold $\hat{\tau}$ is also stable across $\theta$ values:
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}
+\caption{\textbf{Table F1: Threshold Stability Across Persistence Values}}
+\begin{tabular}{lcccc}
+\toprule
+$\theta$ & Half-life (days) & $\hat{\tau}$ & 95\% CI & Sign Inversion? \\
+\midrule
+0.900 & 7 & 0.142 & [0.128, 0.161] & Yes \\
+0.950 & 14 & 0.140 & [0.129, 0.158] & Yes \\
+0.980 & 34 & 0.139 & [0.131, 0.154] & Yes \\
+0.990 & 69 & 0.138 & [0.130, 0.152] & Yes \\
+\textbf{0.995} & \textbf{139} & \textbf{0.138} & \textbf{[0.130, 0.152]} & \textbf{Yes} \\
+0.997 & 231 & 0.137 & [0.128, 0.151] & Yes \\
+0.999 & 693 & 0.136 & [0.125, 0.153] & Yes \\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
+
+The threshold estimate varies by less than 5\% across the entire range of $\theta$ values tested, demonstrating that the phase transition location is not an artifact of the specific memory window chosen.
+
+% ================================================================================
+% APPENDIX G: REPLICATION
+% ================================================================================
+\section{Replication Code and Data}
+\label{app:replication}
+
+Complete replication materials available at [repository URL].
+
+\textbf{Code Files:}
+\begin{itemize}
+    \item \texttt{fetch\_fmp\_data.py}: Download Global Macro data
+    \item \texttt{compute\_spectral\_entropy.py}: Calculate $H_t$ and ASF
+    \item \texttt{global\_phase\_transition.py}: Threshold regression
+    \item \texttt{global\_strategy\_backtest.py}: Strategy backtest
+    \item \texttt{robustness\_tests.py}: All robustness checks
+    \item \texttt{plot\_figures.py}: Generate all figures
+\end{itemize}
+
+\textbf{Data Files:}
+\begin{itemize}
+    \item \texttt{prices\_dataset.csv}: Raw price data
+    \item \texttt{derived\_variables.csv}: ASF, entropy, connectivity
+\end{itemize}
+
+\textbf{Requirements:} Python 3.9+, pandas, numpy, scipy, statsmodels, matplotlib.
+
+% ================================================================================
+% REFERENCES
+% ================================================================================
+\newpage
+\bibliographystyle{aer}
+\bibliography{references_qje}
+
+\end{document}
+

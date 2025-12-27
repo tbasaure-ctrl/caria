@@ -1,0 +1,39 @@
+\setcounter{table}{3}  % Esto hace que la siguiente tabla sea la número 4
+
+\begin{table}[htbp]
+  \centering
+  \caption{\textbf{Economic Performance of the Minsky Hedge (1987--2025)}}
+  \label{tab:economic_performance}
+  \small
+  \begin{minipage}{0.9\textwidth}
+    \textit{Note: Performance statistics computed from daily returns over the 1987--2025 sample. The Unlevered strategy switches to 10-Year Treasuries when structural fragility is detected ($Z > 1.5$). The Levered strategy applies 1.5x leverage during structurally safe regimes. The Minsky Hedge demonstrates superior risk-adjusted returns (Sharpe Ratio) and drastically reduced volatility compared to the benchmark.}
+  \end{minipage}
+  \vspace{0.3cm}
+  
+  \begin{tabular}{lccc}
+    \toprule
+    \textbf{Metric} & \textbf{S\&P 500} & \textbf{Minsky Hedge} & \textbf{Minsky Levered} \\
+                    & (Benchmark)       & (Unlevered)           & (1.5x Target) \\
+    \midrule
+    Annualized Return & 8.9\%            & 7.4\%                 & \textbf{8.9\%} \\
+    Annualized Volatility & 19.2\%       & \textbf{11.9\%}       & 17.8\% \\
+    \addlinespace
+    \textbf{Sharpe Ratio} & 0.26             & \textbf{0.29}         & \textbf{0.28} \\
+    Max Drawdown      & -56.8\%          & \textbf{-26.0\%}      & -39.6\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

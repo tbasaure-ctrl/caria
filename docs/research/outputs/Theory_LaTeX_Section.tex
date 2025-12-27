@@ -1,0 +1,23 @@
+
+% =============================================================================
+% FORMAL THEORETICAL MODEL
+% =============================================================================
+\subsection{A Model of Endogenous Fragility}
+
+To formalize the mechanism underlying the phase transition, consider a stylized model of $N$ leveraged agents investing in a market with $K$ risky assets.
+
+\paragraph{Setup.} Each agent $i$ has wealth $W_i$ and faces a leverage constraint: equity must satisfy $E_i \geq \lambda \cdot |Position_i|$ for margin parameter $\lambda > 0$. Returns follow a factor structure:
+\begin{equation}
+r_{k,t} = \sqrt{\rho} M_t + \sqrt{1-\rho} \epsilon_{k,t}
+\end{equation}
+where $M_t \sim N(0, \sigma_M^2)$ is a common factor, $\epsilon_{k,t}$ are idiosyncratic shocks, and $\rho \in [0,1]$ is market connectivity. Agents optimally choose positions to maximize expected utility subject to leverage constraints.
+
+\paragraph{Crowding Dynamics.} As $\rho$ increases, optimal portfolios converge: with high correlation, all assets load on the common factor, reducing effective diversification. Define \textit{spectral fragility} as $F = 1 - H$, where $H$ is the normalized entropy of the return covariance eigenvalues. High fragility indicates that variance is concentrated in few factors---the market has become low-dimensional.
+
+\paragraph{Phase Transition.} There exists a critical connectivity $\rho^* \approx 0.14$ at which the equilibrium bifurcates:
+\begin{enumerate}
+    \item \textbf{Contagion Regime} ($\rho < \rho^*$): Shocks propagate through network links. Higher fragility increases cascade probability: $\partial Risk / \partial F > 0$.
+    \item \textbf{Coordination Regime} ($\rho > \rho^*$): The market operates as a unified block. Stability depends on maintaining synchronization. Risk emerges from \textit{breakdown} of coordination: $\partial Risk / \partial F < 0$.
+\end{enumerate}
+
+\paragraph{Monte Carlo Validation.} Simulations with $N=100$ agents over 1,000 periods confirm the sign inversion at the predicted threshold. The model generates endogenous crises: fragility accumulates during tranquil periods (Minsky dynamics), then releases abruptly when coordination fails.

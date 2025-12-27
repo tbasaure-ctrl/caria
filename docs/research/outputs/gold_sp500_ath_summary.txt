@@ -1,0 +1,20 @@
+
+FENÓMENO: Metales preciosos y S&P 500 en ATH simultáneos
+
+DATOS CLAVE:
+- Días con Gold Y S&P cerca de ATH: 686 (17.1% del total)
+- Correlación actual (252d rolling): 0.019
+- Correlación histórica promedio: 0.006
+
+INTERPRETACIÓN:
+Este fenómeno típicamente indica:
+1. Exceso de liquidez global (todo sube)
+2. Debilidad del dólar (impulsa commodities y acciones)
+3. Incertidumbre sobre inflación vs crecimiento
+4. Mercados compran "seguros" junto con "riesgo"
+
+IMPLICACIONES:
+- La correlación positiva es ANÓMALA históricamente
+- Sugiere mercado impulsado por liquidez, no fundamentos
+- Históricamente, períodos similares han precedido volatilidad
+- No es necesariamente bearish inmediato, pero sí una señal de fragilidad

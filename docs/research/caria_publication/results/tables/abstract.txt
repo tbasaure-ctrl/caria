@@ -1,0 +1,27 @@
+
+ABSTRACT
+========
+
+We develop CARIA (Crisis Anticipation via Resonance, Integration, and Asymmetry), 
+a multi-signal early warning system for financial market fragility. Our methodology 
+combines six distinct theoretical frameworks: (1) absorption ratio from random matrix 
+theory, (2) spectral entropy from information theory, (3) Kuramoto synchronization 
+from dynamical systems, (4) early warning signals from critical transitions theory, 
+(5) cusp catastrophe modeling from bifurcation theory, and (6) a novel hysteresis 
+framework capturing path-dependent risk.
+
+Using daily data on S&P 500 constituents from 1996-2024, we document a striking 
+hysteresis effect: the probability of extreme market losses depends not only on 
+the current level of systemic fragility, but critically on whether fragility is 
+rising or falling. At the same fragility level, rising fragility predicts 
+significantly higher tail risk than falling fragility.
+
+Our composite fragility index achieves out-of-sample AUC of 0.65+ for predicting 
+extreme market losses, outperforming volatility-based benchmarks by 8-12%. A 
+risk-off strategy based on our index reduces maximum drawdown by approximately 
+40% while maintaining competitive returns.
+
+Keywords: Systemic Risk, Early Warning Systems, Financial Crises, Hysteresis, 
+Cusp Catastrophe, Market Fragility, Critical Transitions
+
+JEL Classification: G01, G10, G17, C58

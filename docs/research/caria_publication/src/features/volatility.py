@@ -168,10 +168,12 @@ def bipower_variation(
 def calculate_volatility_metrics(
     prices: Union[np.ndarray, pd.Series],
     window: int = 30,
-    historical_window: int = 252
+    historical_window: int = 252,
+    compression_percentile: float = 10.0,
+    use_dynamic_threshold: bool = True
 ) -> VolatilityMetrics:
     """
-    Calculate comprehensive volatility metrics.
+    Calculate comprehensive volatility metrics with dynamic compression detection.
     
     Parameters:
     ===========
@@ -181,10 +183,21 @@ def calculate_volatility_metrics(
         Short-term window for current vol
     historical_window : int
         Long-term window for historical comparison
+    compression_percentile : float
+        Percentile threshold for compression detection (default: 10th percentile)
+        If use_dynamic_threshold=True, compression detected when ratio < this percentile
+    use_dynamic_threshold : bool
+        If True, use percentile-based dynamic threshold instead of fixed 0.5/0.7
         
     Returns:
     ========
     VolatilityMetrics : Container with all metrics
+    
+    Notes:
+    ======
+    Dynamic thresholding adapts to market regime. In high-volatility periods,
+    a compression ratio of 0.7 might be normal, while in low-volatility periods
+    it would be extreme. Using percentiles makes the detection regime-adaptive.
     """
     prices = pd.Series(prices).dropna()
     returns = prices.pct_change().dropna()
@@ -195,17 +208,41 @@ def calculate_volatility_metrics(
     # Current realized volatility
     current_vol = rolling_vol.iloc[-1] if len(rolling_vol) > 0 else np.nan
     
-    # Historical volatility
+    # Historical volatility (mean)
     historical_vol = returns.iloc[-historical_window:].std() * np.sqrt(252) if len(returns) >= historical_window else returns.std() * np.sqrt(252)
     
     # Volatility of volatility
     vol_of_vol = rolling_vol.std() if len(rolling_vol) > 20 else np.nan
     
-    # Compression ratio
+    # Compression ratio (current / historical mean)
     compression_ratio = current_vol / historical_vol if historical_vol > 0 else 1.0
     
-    # Is volatility compressed? (below 50% of historical)
-    is_compressed = compression_ratio < 0.5
+    # Dynamic compression detection
+    if use_dynamic_threshold and len(rolling_vol) >= historical_window:
+        # Calculate rolling compression ratios over historical window
+        historical_vol_rolling = realized_volatility(returns.iloc[-historical_window:], window=window, annualize=True)
+        if len(historical_vol_rolling) > 0:
+            # Calculate compression ratios for historical period
+            historical_compression_ratios = []
+            for i in range(window, len(returns.iloc[-historical_window:])):
+                short_vol = returns.iloc[-historical_window+i-window:-historical_window+i].std() * np.sqrt(252)
+                long_vol = returns.iloc[-historical_window:-historical_window+i].std() * np.sqrt(252) if i > window else historical_vol
+                if long_vol > 0:
+                    historical_compression_ratios.append(short_vol / long_vol)
+            
+            if len(historical_compression_ratios) > 0:
+                # Dynamic threshold: compression detected if below percentile
+                compression_threshold = np.percentile(historical_compression_ratios, compression_percentile)
+                is_compressed = compression_ratio < compression_threshold
+            else:
+                # Fallback to fixed threshold
+                is_compressed = compression_ratio < 0.7
+        else:
+            # Fallback to fixed threshold
+            is_compressed = compression_ratio < 0.7
+    else:
+        # Fixed threshold (original method)
+        is_compressed = compression_ratio < 0.7
     
     return VolatilityMetrics(
         realized_vol=current_vol,
@@ -607,16 +644,24 @@ def detect_volatility_compression(
     prices: Union[np.ndarray, pd.Series],
     short_window: int = 20,
     long_window: int = 60,
-    compression_threshold: float = 0.5
+    compression_threshold: float = 0.5,
+    use_dynamic_threshold: bool = True,
+    compression_percentile: float = 10.0
 ) -> pd.Series:
     """
-    Detect volatility compression (the "Silence Paradox").
+    Detect volatility compression (the "Silence Paradox") with dynamic thresholding.
     
     Key Research Finding:
     =====================
     Crises are preceded NOT by high volatility, but by LOW volatility
     (compression) combined with high synchronization. This is the
     "Calm Before the Storm" effect.
+    
+    Dynamic Thresholding:
+    =====================
+    Instead of fixed threshold (e.g., 0.5), uses percentile-based threshold
+    that adapts to market regime. Compression detected when ratio < p10
+    of historical compression ratios.
     
     Parameters:
     ===========
@@ -627,7 +672,11 @@ def detect_volatility_compression(
     long_window : int
         Window for historical volatility
     compression_threshold : float
-        Ratio below which vol is "compressed"
+        Fixed ratio threshold (used if use_dynamic_threshold=False)
+    use_dynamic_threshold : bool
+        If True, use percentile-based dynamic threshold
+    compression_percentile : float
+        Percentile for dynamic threshold (default: 10th percentile)
         
     Returns:
     ========
@@ -645,8 +694,20 @@ def detect_volatility_compression(
     # Compression ratio
     compression = short_vol / long_vol
     
-    # Is compressed?
-    is_compressed = compression < compression_threshold
+    # Dynamic threshold detection
+    if use_dynamic_threshold and len(compression.dropna()) > long_window:
+        # Calculate historical compression ratios
+        historical_compression = compression.iloc[:-short_window].dropna()
+        if len(historical_compression) > 0:
+            # Dynamic threshold: compression detected if below percentile
+            dynamic_threshold = np.percentile(historical_compression, compression_percentile)
+            is_compressed = compression < dynamic_threshold
+        else:
+            # Fallback to fixed threshold
+            is_compressed = compression < compression_threshold
+    else:
+        # Fixed threshold (original method)
+        is_compressed = compression < compression_threshold
     
     return is_compressed
 
@@ -799,3 +860,7 @@ if __name__ == "__main__":
     
     print("\n" + "=" * 60)
     print("All volatility tests completed!")
+
+
+
+

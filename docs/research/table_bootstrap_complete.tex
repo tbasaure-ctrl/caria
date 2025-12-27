@@ -1,0 +1,35 @@
+\documentclass[12pt]{article}
+
+% Required packages
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\begin{document}
+
+% El contador debe estar DENTRO de \begin{document}
+\setcounter{table}{2}  % Esto hace que la siguiente tabla sea la número 3
+
+\begin{table}[htbp]
+  \centering
+  \caption{\textbf{Bootstrap Robustness Analysis (1,000 Iterations)}}
+  \label{tab:bootstrap_results}
+  \small
+  \vspace{0.3cm}
+  
+  \begin{tabular}{lc}
+    \toprule
+    \textbf{Statistic} & \textbf{Value} \\
+    \midrule
+    Iterations & 1,000 \\
+    Positive Improvement Probability & \textbf{100.0\%} \\
+    \addlinespace
+    Mean Improvement ($\Delta R^2$) & \textbf{+22.6\%} \\
+    95\% Confidence Interval & \textbf{[9.4\%, 43.9\%]} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\end{document}
+

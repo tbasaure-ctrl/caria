@@ -1,0 +1,5 @@
+Test,Result,Significant
+Bootstrap CI (Sharpe),"0.0362 [-0.0594, 0.1281]",False
+Bootstrap CI (CAGR),"1.41% [-0.50%, 3.29%]",False
+Walk-Forward OOS,OOS Sharpe: 0.456 vs Bench: 0.515,False
+Placebo,p-value: 0.1000,False

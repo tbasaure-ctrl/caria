@@ -25,7 +25,29 @@ Primary source for price data. Automatically downloaded by the replication noteb
 
 **Frequency:** Daily (close prices)
 
-### 2. Manual Download (Optional)
+### 2. S&P 500 Constituents Data (Alpha Vantage API)
+
+For comprehensive S&P 500 analysis, download individual stock data:
+
+```bash
+# Set API key (get from https://www.alphavantage.co/)
+export ALPHA_VANTAGE_KEY="3KHQX7KNMNT7H7MZ"
+
+# Run the downloader
+python download_sp500_prices_alpha.py
+```
+
+**Requirements:**
+- Alpha Vantage API key (free tier: 25 calls/day, premium for more)
+- pandas, requests libraries
+
+**Output:**
+- `sp500_prices_alpha/` directory with individual CSV files
+- `sp500_prices_alpha/failures.csv` for download errors
+
+**Note:** Alpha Vantage has rate limits (5 calls/minute), so downloads take time for large datasets.
+
+### 3. Manual Download (Yahoo Finance - Optional)
 
 For users without internet access or for archival purposes:
 
@@ -34,7 +56,7 @@ import yfinance as yf
 import pandas as pd
 
 # Download all assets
-tickers = ['SPY', 'QQQ', 'IWM', 'TLT', 'IEF', 'HYG', 
+tickers = ['SPY', 'QQQ', 'IWM', 'TLT', 'IEF', 'HYG',
            'GLD', 'USO', 'DBC', 'BTC-USD', 'ETH-USD',
            'EFA', 'EEM', 'FXI']
 
@@ -69,12 +91,17 @@ After running the replication notebook:
 
 ```
 data/
-├── README.md              # This file
-├── prices_daily.csv       # Downloaded price data (optional save)
+├── README.md                        # This file
+├── prices_daily.csv                 # Downloaded price data (optional save)
+├── sp500_prices_alpha/              # S&P 500 individual stocks (Alpha Vantage)
+│   ├── AAPL.csv                     # Individual stock data (date, open, high, low, close, adjClose, volume)
+│   ├── MSFT.csv
+│   └── ...                          # All S&P 500 constituents (503+ files)
+├── data_fmp_1990/                   # Index data (GSPC, SPY, VIX) - FMP
 ├── features/
-│   └── computed_features.parquet  # Pre-computed features (optional)
+│   └── computed_features.parquet    # Pre-computed features (optional)
 └── labels/
-    └── crisis_labels.parquet      # Generated crisis labels (optional)
+    └── crisis_labels.parquet        # Generated crisis labels (optional)
 ```
 
 ## Data Availability Statement
@@ -90,3 +117,19 @@ For replication:
 ## Contact
 
 For data-related questions, please open an issue on the project repository.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

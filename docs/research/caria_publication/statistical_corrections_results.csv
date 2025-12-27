@@ -1,0 +1,4 @@
+metric,value,ci_lower,ci_upper
+AUC_mean,0.41257462057724253,0.33982571726901434,0.48697592258800304
+Permutation_pvalue,0.885,,
+Hysteresis_area,0.6273367387099918,,0.15

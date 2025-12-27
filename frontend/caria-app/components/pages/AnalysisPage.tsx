@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { MessageSquare, Activity, Target, ChevronDown, ChevronRight, Terminal, Search } from 'lucide-react';
 import { fetchWithAuth, API_BASE_URL, getToken } from '../../services/apiService';
 import { ProjectionValuation } from '../widgets/ProjectionValuation';
+import { MonteCarloSimulation } from '../widgets/MonteCarloSimulation';
 import { RiskRewardWidget } from '../widgets/RiskRewardWidget';
 import { ChatWindow } from '../ChatWindow';
 import { HiddenGemsScreener } from '../widgets/HiddenGemsScreener';
@@ -11,12 +12,11 @@ import { ProtectedWidget } from '../ProtectedWidget';
 import { AlphaStockPicker } from '../widgets/AlphaStockPicker';
 import { ValuationTool } from '../widgets/ValuationTool';
 import { ValuationWorkshop } from '../widgets/ValuationWorkshop';
-import { RedditSentiment } from '../widgets/RedditSentiment';
 
 // Components for "Progressive Disclosure" UI
 
 const SectionHeader: React.FC<{ title: string; isOpen: boolean; onToggle: () => void }> = ({ title, isOpen, onToggle }) => (
-    <button
+    <button 
         onClick={onToggle}
         className="w-full flex items-center justify-between p-4 bg-bg-secondary border-b border-white/5 hover:bg-white/5 transition-colors"
     >
@@ -47,17 +47,16 @@ export const AnalysisPage: React.FC = () => {
     const [showLogs, setShowLogs] = useState(false);
     const [searchInput, setSearchInput] = useState('');
     const [activeSidebarSection, setActiveSection] = useState<'main' | 'valuation' | 'screener'>('main');
-    const [tickerMetrics, setTickerMetrics] = useState<{pe?: number; evEbitda?: number; fcfYield?: number} | null>(null);
 
     useEffect(() => {
-        if (!ticker) return;
+        if (!ticker) return; 
 
         const fetchTsmom = async () => {
             try {
                 const token = getToken();
                 const headers: HeadersInit = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = `Bearer ${token}`;
-
+                
                 const response = await fetch(`${API_BASE_URL}/api/analysis/tsmom/${ticker}`, { headers });
                 if (response.ok) {
                     const data = await response.json();
@@ -67,59 +66,7 @@ export const AnalysisPage: React.FC = () => {
                 console.error(e);
             }
         };
-        
-        const fetchMetrics = async () => {
-            try {
-                const token = getToken();
-                const headers: HeadersInit = { 'Content-Type': 'application/json' };
-                if (token) headers['Authorization'] = `Bearer ${token}`;
-
-                // Get current price first
-                const priceResp = await fetch(`${API_BASE_URL}/api/prices/realtime/${ticker}`, { headers });
-                if (!priceResp.ok) return;
-                const priceData = await priceResp.json();
-                const currentPrice = priceData.price ?? priceData.current_price;
-                if (!currentPrice) return;
-
-                // Get valuation which includes metrics
-                const valResp = await fetch(`${API_BASE_URL}/api/valuation/${ticker}`, {
-                    method: 'POST',
-                    headers: { ...headers, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ current_price: currentPrice }),
-                });
-                if (valResp.ok) {
-                    const valData = await valResp.json();
-                    // Extract metrics from valuation response
-                    const metrics: any = {};
-                    
-                    // Get P/E and EV/EBITDA from multiples
-                    if (valData.multiples?.multiples) {
-                        metrics.pe = valData.multiples.multiples.pe || 
-                                   valData.multiples.multiples.pe_ratio || 
-                                   valData.multiples.multiples.priceEarningsRatio;
-                        metrics.evEbitda = valData.multiples.multiples.ev_ebitda || 
-                                        valData.multiples.multiples.evEbitda ||
-                                        valData.multiples.multiples.enterpriseValueMultiple;
-                    }
-                    
-                    // Get FCF Yield from DCF assumptions or calculate from multiples
-                    if (valData.dcf?.assumptions?.fcf_yield_start) {
-                        metrics.fcfYield = valData.dcf.assumptions.fcf_yield_start * 100;
-                    } else if (valData.multiples?.multiples?.fcf_yield) {
-                        metrics.fcfYield = valData.multiples.multiples.fcf_yield * 100;
-                    } else if (valData.multiples?.multiples?.freeCashFlowYield) {
-                        metrics.fcfYield = valData.multiples.multiples.freeCashFlowYield * 100;
-                    }
-                    
-                    setTickerMetrics(metrics);
-                }
-            } catch (e) {
-                console.error('Error fetching metrics:', e);
-            }
-        };
-
         fetchTsmom();
-        fetchMetrics();
     }, [ticker]);
 
     const handleSearchSubmit = (e: React.FormEvent) => {
@@ -138,25 +85,28 @@ export const AnalysisPage: React.FC = () => {
                     <div className="space-y-6">
                         <div>
                             <h3 className="text-lg font-display text-white mb-2">Analysis Center</h3>
+                            <p className="text-xs text-text-secondary leading-relaxed">
+                                Want a starter position? Looking for a deep dive? Here you can find all the tools you need to make a well-informed decision. We'll show you all the components involved in your future investment and, using our skeptical and critical point of view (that made us so popular in high school), challenge your conviction so we arrive together at a solid, second-order thinking-like investment thesis you will be proud of.
+                            </p>
                         </div>
                         <div className="space-y-1">
-                            <button
+                            <button 
                                 onClick={() => setActiveSection('main')}
                                 className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSidebarSection === 'main' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                             >
                                 Overview
                             </button>
-                            <button
+                            <button 
                                 onClick={() => setActiveSection('valuation')}
                                 className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSidebarSection === 'valuation' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                             >
                                 Valuation Tools
                             </button>
-                            <button
+                            <button 
                                 onClick={() => setActiveSection('screener')}
                                 className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeSidebarSection === 'screener' ? 'bg-white/10 text-white' : 'text-text-muted hover:text-white hover:bg-white/5'}`}
                             >
-                                Idea Generation
+                                Screener Tools
                             </button>
                         </div>
                     </div>
@@ -164,28 +114,6 @@ export const AnalysisPage: React.FC = () => {
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20">
-                    {/* Mobile Navigation Tabs */}
-                    <div className="md:hidden flex overflow-x-auto gap-2 mb-6 pb-2 border-b border-white/10 hide-scrollbar">
-                        <button
-                            onClick={() => setActiveSection('main')}
-                            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeSidebarSection === 'main' ? 'bg-white text-black' : 'bg-white/5 text-text-muted'}`}
-                        >
-                            Overview
-                        </button>
-                        <button
-                            onClick={() => setActiveSection('valuation')}
-                            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeSidebarSection === 'valuation' ? 'bg-white text-black' : 'bg-white/5 text-text-muted'}`}
-                        >
-                            Valuation
-                        </button>
-                        <button
-                            onClick={() => setActiveSection('screener')}
-                            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeSidebarSection === 'screener' ? 'bg-white text-black' : 'bg-white/5 text-text-muted'}`}
-                        >
-                            Screener
-                        </button>
-                    </div>
-
                     {activeSidebarSection === 'main' && (
                         <div className="space-y-8">
                             {/* Search Banner */}
@@ -228,26 +156,26 @@ export const AnalysisPage: React.FC = () => {
                                         <Target className="w-4 h-4 text-accent-gold" />
                                         <span className="text-xs font-bold text-white">Starter Position Scorecard</span>
                                     </div>
-
+                                    
                                     {/* Pillars */}
                                     <div className="flex border-b border-white/10">
-                                        <ScorecardPillar
-                                            label="Value"
-                                            value="--"
+                                        <ScorecardPillar 
+                                            label="Value" 
+                                            value="--" 
                                             subtext="Enter ticker to analyze"
-                                            status="neutral"
+                                            status="neutral" 
                                         />
-                                        <ScorecardPillar
-                                            label="Risk"
-                                            value="--"
+                                        <ScorecardPillar 
+                                            label="Risk" 
+                                            value="--" 
                                             subtext="Enter ticker to analyze"
-                                            status="neutral"
+                                            status="neutral" 
                                         />
-                                        <ScorecardPillar
-                                            label="Momentum (TSMOM)"
-                                            value="--"
+                                        <ScorecardPillar 
+                                            label="Momentum (TSMOM)" 
+                                            value="--" 
                                             subtext="Enter ticker to analyze"
-                                            status="neutral"
+                                            status="neutral" 
                                         />
                                     </div>
 
@@ -261,16 +189,16 @@ export const AnalysisPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* ZONE 2: The Evidence (Scroll for Details) - Added Monte Carlo from ValuationTool */}
+                            {/* ZONE 2: The Evidence (Scroll for Details) */}
                             <div className="space-y-6">
                                 <h4 className="text-sm font-display text-white border-b border-white/10 pb-2">Deep Dive Evidence</h4>
-
+                                
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <div className="h-[400px]">
                                         <RiskRewardWidget />
                                     </div>
                                     <div className="h-[400px]">
-                                        <ValuationTool />
+                                        <MonteCarloSimulation />
                                     </div>
                                 </div>
 
@@ -288,12 +216,12 @@ export const AnalysisPage: React.FC = () => {
 
                             {/* ZONE 3: The Engine Room (System Logs) */}
                             <div className="border border-white/10 rounded-lg bg-[#050912] overflow-hidden">
-                                <SectionHeader
-                                    title="System Logs (Engine Room)"
-                                    isOpen={showLogs}
-                                    onToggle={() => setShowLogs(!showLogs)}
+                                <SectionHeader 
+                                    title="System Logs (Engine Room)" 
+                                    isOpen={showLogs} 
+                                    onToggle={() => setShowLogs(!showLogs)} 
                                 />
-
+                                
                                 {showLogs && (
                                     <div className="p-4 font-mono text-xs text-text-muted space-y-2">
                                         <div className="flex items-center gap-2 text-accent-primary mb-2">
@@ -318,8 +246,13 @@ export const AnalysisPage: React.FC = () => {
                                     <ValuationTool />
                                 </div>
                             </div>
-                            <div className="h-[400px]">
-                                <RiskRewardWidget />
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="h-[400px]">
+                                    <RiskRewardWidget />
+                                </div>
+                                <div className="h-[400px]">
+                                    <MonteCarloSimulation />
+                                </div>
                             </div>
                         </div>
                     )}
@@ -327,43 +260,26 @@ export const AnalysisPage: React.FC = () => {
                     {activeSidebarSection === 'screener' && (
                         <div className="space-y-8">
                             <h2 className="text-lg font-display text-white border-b border-white/10 pb-2">Idea Generation</h2>
-
-                            <div className="space-y-6">
-                                <div className="min-h-[500px]">
-                                    <ProtectedWidget featureName="Alpha Stock Picker">
-                                        <AlphaStockPicker />
-                                    </ProtectedWidget>
-                                </div>
-                                
-                                {/* C-Score Explanation - Fixed positioning to avoid overlap */}
-                                <div className="p-4 bg-bg-secondary border border-white/5 rounded-lg text-xs text-text-secondary space-y-3">
-                                    <strong className="text-white block text-sm mb-3">Understanding the C-Score</strong>
-                                    <p className="mb-3">The C-Score is a proprietary multi-factor model that ranks stocks based on three key dimensions:</p>
-                                    <div className="space-y-2">
-                                        <div>
-                                            <strong className="text-white">Quality:</strong> Measures business fundamentals including Return on Invested Capital (ROIC), profit margins, and operational efficiency. High-quality companies generate superior returns on capital.
-                                        </div>
-                                        <div>
-                                            <strong className="text-white">Value:</strong> Assesses valuation attractiveness through Free Cash Flow (FCF) Yield and Enterprise Value to EBIT (EV/EBIT) ratios. Identifies companies trading below intrinsic value.
-                                        </div>
-                                        <div>
-                                            <strong className="text-white">Momentum:</strong> Evaluates price strength and trend persistence. Captures stocks with positive momentum that may continue outperforming.
-                                        </div>
-                                    </div>
-                                    <p className="mt-3 pt-3 border-t border-white/5">A score above 80 indicates an "Investable" candidate with strong fundamentals, attractive valuation, and positive price momentum—a combination that historically outperforms the market.</p>
+                            
+                            <div className="h-[500px]">
+                                <ProtectedWidget featureName="Alpha Stock Picker">
+                                    <AlphaStockPicker />
+                                </ProtectedWidget>
+                                <div className="mt-4 p-4 bg-bg-secondary border border-white/5 rounded-lg text-xs text-text-secondary">
+                                    <strong className="text-white block mb-2">About the C-Score:</strong>
+                                    <p className="mb-2">The C-Score is a proprietary multi-factor model that ranks stocks based on three key dimensions:</p>
+                                    <ul className="list-disc list-inside space-y-1 ml-2">
+                                        <li><strong>Quality:</strong> Measures business fundamentals including Return on Invested Capital (ROIC), profit margins, and operational efficiency. High-quality companies generate superior returns on capital.</li>
+                                        <li><strong>Value:</strong> Assesses valuation attractiveness through Free Cash Flow (FCF) Yield and Enterprise Value to EBIT (EV/EBIT) ratios. Identifies companies trading below intrinsic value.</li>
+                                        <li><strong>Momentum:</strong> Evaluates price strength and trend persistence. Captures stocks with positive momentum that may continue outperforming.</li>
+                                    </ul>
+                                    <p className="mt-2">A score above 80 indicates an "Investable" candidate with strong fundamentals, attractive valuation, and positive price momentum—a combination that historically outperforms the market.</p>
                                 </div>
                             </div>
 
-                            <div className="min-h-[500px]">
+                            <div className="h-[500px]">
                                 <ProtectedWidget featureName="Hidden Gems Screener">
                                     <HiddenGemsScreener />
-                                </ProtectedWidget>
-                            </div>
-
-                            {/* Social Sentiment Screener */}
-                            <div className="mt-8">
-                                <ProtectedWidget featureName="Social Sentiment Screener">
-                                    <RedditSentiment />
                                 </ProtectedWidget>
                             </div>
                         </div>
@@ -394,24 +310,9 @@ export const AnalysisPage: React.FC = () => {
                         <div>
                             <div className="text-[10px] text-text-muted uppercase tracking-widest mb-2">Valuation Details</div>
                             <div className="space-y-2 text-sm text-text-secondary">
-                                <div className="flex justify-between">
-                                    <span>P/E Ratio</span> 
-                                    <span className="text-white">
-                                        {tickerMetrics?.pe ? tickerMetrics.pe.toFixed(2) : '--'}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>EV/EBITDA</span> 
-                                    <span className="text-white">
-                                        {tickerMetrics?.evEbitda ? tickerMetrics.evEbitda.toFixed(2) : '--'}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>FCF Yield</span> 
-                                    <span className="text-white">
-                                        {tickerMetrics?.fcfYield ? `${tickerMetrics.fcfYield.toFixed(2)}%` : '--'}
-                                    </span>
-                                </div>
+                                <div className="flex justify-between"><span>P/E Ratio</span> <span className="text-white">--</span></div>
+                                <div className="flex justify-between"><span>EV/EBITDA</span> <span className="text-white">--</span></div>
+                                <div className="flex justify-between"><span>FCF Yield</span> <span className="text-white">--</span></div>
                             </div>
                         </div>
 
@@ -429,41 +330,7 @@ export const AnalysisPage: React.FC = () => {
 
             {/* Main Content - Progressive Disclosure */}
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-8 pb-20">
-
-                {/* Mobile Context Summary (Replaces Sidebar) */}
-                <div className="lg:hidden bg-bg-secondary border border-white/10 rounded-lg p-4 mb-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xl font-display text-white">{ticker}</h3>
-                        <button onClick={() => setSearchParams({})} className="text-xs text-accent-primary hover:text-white">Change</button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-xs">
-                        <div>
-                            <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1">Valuation</div>
-                            <div className="space-y-1 text-text-secondary">
-                                <div className="flex justify-between">
-                                    <span>P/E</span> 
-                                    <span className="text-white">
-                                        {tickerMetrics?.pe ? tickerMetrics.pe.toFixed(2) : '--'}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>FCF Yield</span> 
-                                    <span className="text-white">
-                                        {tickerMetrics?.fcfYield ? `${tickerMetrics.fcfYield.toFixed(2)}%` : '--'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="text-[10px] text-text-muted uppercase tracking-widest mb-1">Risk</div>
-                            <div className="space-y-1 text-text-secondary">
-                                <div className="flex justify-between"><span>Vol</span> <span className="text-white">{(tsmomData?.annualized_volatility * 100)?.toFixed(1) || '--'}%</span></div>
-                                <div className="flex justify-between"><span>Drawdown</span> <span className="text-negative">--</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+                
                 {/* ZONE 1: The Synthesis (Immediate Value) */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 min-h-[400px]">
                     {/* Left: Caria Chat */}
@@ -483,26 +350,26 @@ export const AnalysisPage: React.FC = () => {
                             <Target className="w-4 h-4 text-accent-gold" />
                             <span className="text-xs font-bold text-white">Starter Position Scorecard</span>
                         </div>
-
+                        
                         {/* Pillars */}
                         <div className="flex border-b border-white/10">
-                            <ScorecardPillar
-                                label="Value"
-                                value="--"
+                            <ScorecardPillar 
+                                label="Value" 
+                                value="--" 
                                 subtext="Run Valuation Model"
-                                status="neutral"
+                                status="neutral" 
                             />
-                            <ScorecardPillar
-                                label="Risk"
-                                value="--"
+                            <ScorecardPillar 
+                                label="Risk" 
+                                value="--" 
                                 subtext="Check Risk Engine"
-                                status="neutral"
+                                status="neutral" 
                             />
-                            <ScorecardPillar
-                                label="Momentum (TSMOM)"
-                                value={tsmomData?.trend_direction || "Loading..."}
+                            <ScorecardPillar 
+                                label="Momentum (TSMOM)" 
+                                value={tsmomData?.trend_direction || "Loading..."} 
                                 subtext={tsmomData ? `12m Return: ${(tsmomData.trend_strength_12m * 100).toFixed(1)}%` : "Calculating..."}
-                                status={tsmomData?.trend_direction === 'Bullish' ? 'positive' : 'negative'}
+                                status={tsmomData?.trend_direction === 'Bullish' ? 'positive' : 'negative'} 
                             />
                         </div>
 
@@ -510,24 +377,24 @@ export const AnalysisPage: React.FC = () => {
                         <div className="p-6 flex-1 flex flex-col justify-center items-center text-center">
                             <div className="text-xs text-text-muted mb-2 uppercase tracking-widest">Algorithm Verdict</div>
                             <p className="text-lg text-white font-display leading-relaxed">
-                                {tsmomData
-                                    ? "TSMOM signal generated. Combine with Fundamental Valuation (DCF) and Risk Assessment below to form a complete thesis."
+                                {tsmomData 
+                                    ? "TSMOM signal generated. Combine with Fundamental Valuation (DCF) and Risk Assessment below to form a complete thesis." 
                                     : "Initializing TSMOM Engine..."}
                             </p>
                         </div>
                     </div>
                 </div>
 
-                {/* ZONE 2: The Evidence (Scroll for Details) - Using ValuationTool's Monte Carlo */}
+                {/* ZONE 2: The Evidence (Scroll for Details) */}
                 <div className="space-y-6">
                     <h4 className="text-sm font-display text-white border-b border-white/10 pb-2">Deep Dive Evidence</h4>
-
+                    
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="h-[400px]">
                             <RiskRewardWidget />
                         </div>
                         <div className="h-[400px]">
-                            <ValuationTool />
+                            <MonteCarloSimulation />
                         </div>
                     </div>
 
@@ -545,12 +412,12 @@ export const AnalysisPage: React.FC = () => {
 
                 {/* ZONE 3: The Engine Room (System Logs) */}
                 <div className="border border-white/10 rounded-lg bg-[#050912] overflow-hidden">
-                    <SectionHeader
-                        title="System Logs (Engine Room)"
-                        isOpen={showLogs}
-                        onToggle={() => setShowLogs(!showLogs)}
+                    <SectionHeader 
+                        title="System Logs (Engine Room)" 
+                        isOpen={showLogs} 
+                        onToggle={() => setShowLogs(!showLogs)} 
                     />
-
+                    
                     {showLogs && (
                         <div className="p-4 font-mono text-xs text-text-muted space-y-2">
                             <div className="flex items-center gap-2 text-accent-primary mb-2">

@@ -37,7 +37,7 @@ const CONNECTION_COLORS: Record<string, { color: string; glow: string }> = {
     'usa-link': { color: '#a855f7', glow: 'rgba(168, 85, 247, 0.5)' }
 };
 
-type InfoTab = 'guide' | 'analysis' | 'metrics' | 'caria';
+type InfoTab = 'guide' | 'analysis' | 'metrics';
 type ConnectionFilter = 'all' | 'strong' | 'medium' | 'usa';
 
 interface CountryWithPrediction extends CountryState {
@@ -105,10 +105,10 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                 }
             } catch (predErr) {
                 console.warn("Direction predictions not available:", predErr);
-            setData(jsonData);
+                setData(jsonData);
             }
 
-            // Fetch CARIA economic flows (V22 format)
+            // Fetch economic flows (V22 format)
             try {
                 const flowResponse = await fetch('/data/caria_flows.json');
                 if (flowResponse.ok) {
@@ -153,10 +153,10 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                     };
                     
                     setFlowData(flowJson);
-                    console.log(`🌐 CARIA V22: Loaded ${arcs.length} economic connections across ${flowJson.stats.totalCountries} countries`);
+                    console.log(`🌐 Economic Monitor: Loaded ${arcs.length} connections across ${flowJson.stats.totalCountries} countries`);
                 }
             } catch (flowErr) {
-                console.warn("CARIA flows not available:", flowErr);
+                console.warn("Economic flows not available:", flowErr);
             }
         } catch (err) {
             console.error("Failed to load world economies data:", err);
@@ -252,7 +252,7 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
         name: 'Economies'
     };
 
-    // 3. CARIA Economic Connections
+    // 3. Economic Connections
     const connectionTraces: Partial<Plotly.Data>[] = filteredArcs.map((arc) => {
         const colorConfig = CONNECTION_COLORS[arc.strength];
         const opacity = Math.min(0.4 + arc.weight * 2, 0.9);
@@ -281,7 +281,7 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
         <WidgetCard
             id={id}
             title="GLOBAL ECONOMIC MONITOR"
-            tooltip="CARIA V12 Economic Direction Predictions & Dependencies"
+            tooltip="Economic Direction Predictions & Dependencies"
             className="min-h-[600px]"
         >
             <div className="flex flex-col xl:flex-row gap-6 h-full">
@@ -365,11 +365,11 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                 )}
                             </div>
                             
-                            {/* CARIA Connection Controls */}
+                            {/* Connection Controls */}
                             {flowData && (
                                 <div className="mt-3 pt-3 border-t border-white/10">
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[10px] text-accent-cyan font-mono">{flowData.modelVersion}</span>
+                                        <span className="text-[10px] text-accent-cyan font-mono">V12 ENGINE</span>
                                         <button
                                             onClick={() => setShowConnections(!showConnections)}
                                             className={`text-[10px] px-2 py-0.5 rounded font-mono transition-all ${
@@ -450,12 +450,6 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                         <button onClick={() => setActiveTab('guide')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all ${activeTab === 'guide' ? 'bg-white/10 text-white shadow-glow-sm' : 'text-text-muted hover:text-white'}`}>Manual</button>
                         <button onClick={() => setActiveTab('analysis')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all ${activeTab === 'analysis' ? 'bg-white/10 text-white shadow-glow-sm' : 'text-text-muted hover:text-white'}`}>Analysis</button>
                         <button onClick={() => setActiveTab('metrics')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all ${activeTab === 'metrics' ? 'bg-white/10 text-white shadow-glow-sm' : 'text-text-muted hover:text-white'}`}>Metrics</button>
-                        <button onClick={() => setActiveTab('caria')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all ${activeTab === 'caria' ? 'bg-accent-cyan/20 text-accent-cyan shadow-glow-sm' : 'text-accent-cyan/60 hover:text-accent-cyan'}`}>
-                            <span className="flex items-center justify-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-accent-cyan animate-pulse"></span>
-                                CARIA
-                            </span>
-                        </button>
                     </div>
 
                     {/* Panel Content */}
@@ -719,182 +713,6 @@ export const WorldEconomiesHealth: React.FC<{ id?: string }> = ({ id }) => {
                                                 <span className="text-text-secondary">Version:</span>
                                                 <span className="text-accent-cyan font-mono">{flowData.modelVersion}</span>
                                             </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* CARIA TAB */}
-                        {activeTab === 'caria' && (
-                            <div className="p-6 space-y-6 animate-fade-in">
-                                {flowData ? (
-                                    <>
-                                        {/* Header */}
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-2 h-2 rounded-full bg-accent-cyan animate-pulse"></div>
-                                                <span className="text-xs font-mono text-accent-cyan">{flowData.modelVersion}</span>
-                                            </div>
-                                            <h3 className="text-xl font-display text-white mt-1">Economic Influence Graph</h3>
-                                            <p className="text-[11px] text-text-secondary mt-2 leading-relaxed">
-                                                Economic dependencies discovered through neural network analysis of macro indicators, 
-                                                market returns, and cross-border data across {flowData.stats.totalCountries} economies.
-                                            </p>
-                                            {flowData.directionAccuracy && (
-                                                <p className="text-[11px] text-text-muted mt-2 leading-relaxed italic">
-                                                    Interestingly, we also found that focusing on relationships between economies 
-                                                    predicts direction with ~{(flowData.directionAccuracy * 100).toFixed(0)}% accuracy 
-                                                    (+{((flowData.directionAccuracy - 0.5) * 100).toFixed(0)}pp over random).
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        {/* Explanation Box */}
-                                        <div className="p-3 bg-gradient-to-r from-accent-cyan/5 to-purple-500/5 rounded-lg border border-white/10">
-                                            <div className="flex items-start gap-2">
-                                                <span className="text-lg">🧠</span>
-                                                <div>
-                                                    <h4 className="text-xs font-bold text-white mb-1">How to read the connections</h4>
-                                                    <p className="text-[10px] text-text-muted leading-relaxed mb-2">
-                                                        Each line represents a <span className="text-white">predictive relationship</span> between two economies. 
-                                                        The direction (Country A → Country B) means changes in Country A's markets tend to 
-                                                        <span className="text-accent-cyan"> precede</span> changes in Country B's markets. 
-                                                        Line thickness indicates the strength of this predictive signal.
-                                                    </p>
-                                                    <p className="text-[10px] text-text-muted leading-relaxed">
-                                                        Connections can reveal two types of dynamics:
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Demand Pull Explanation */}
-                                        <div className="p-3 bg-green-500/5 rounded-lg border border-green-500/20">
-                                            <h4 className="text-xs font-bold text-white mb-2 flex items-center gap-2">
-                                                <span>📈</span>
-                                                <span>Demand Pull Signals</span>
-                                            </h4>
-                                            <p className="text-[10px] text-text-muted leading-relaxed">
-                                                When <span className="text-white">Country X → Country Y</span> appears, it often means 
-                                                <span className="text-green-300"> Country X (the Leader)</span> is a major consumer, and 
-                                                <span className="text-green-300"> Country Y (the Lagger)</span> is a supplier. 
-                                                Here's why: When a large economy accelerates, its financial markets react immediately, 
-                                                anticipating future commodity needs. The supplier's markets react later, when capital flows 
-                                                in to secure that supply. This creates a <span className="text-white">lead-lag relationship</span> 
-                                                where demand-side movements predict supply-side responses.
-                                            </p>
-                                        </div>
-
-                                        {/* Supply Shock Explanation */}
-                                        <div className="p-3 bg-red-500/5 rounded-lg border border-red-500/20">
-                                            <h4 className="text-xs font-bold text-white mb-2 flex items-center gap-2">
-                                                <span>⚡</span>
-                                                <span>Supply Shock Signals</span>
-                                            </h4>
-                                            <p className="text-[10px] text-text-muted leading-relaxed">
-                                                If the connection were reversed (<span className="text-white">Country Y → Country X</span>), 
-                                                it would indicate <span className="text-red-300">supply-side dynamics</span> — disruptions in 
-                                                production or export capacity affecting downstream consumers. Natural disasters, strikes, or 
-                                                policy changes in supplier nations would create this pattern. The model learns which type 
-                                                of dynamic is currently dominant based on historical market behavior.
-                                            </p>
-                                        </div>
-
-                                        {/* Stats Grid */}
-                                        <div className="grid grid-cols-4 gap-2">
-                                            <div className="p-2 bg-white/5 rounded border border-white/10 text-center">
-                                                <div className="text-lg font-mono font-bold text-white">{flowData.stats.totalCountries}</div>
-                                                <div className="text-[8px] text-text-muted uppercase tracking-wider">Countries</div>
-                                            </div>
-                                            <div className="p-2 bg-red-500/10 rounded border border-red-500/20 text-center">
-                                                <div className="text-lg font-mono font-bold text-red-400">{flowData.arcs?.filter(a => a.strength === 'strong').length || 0}</div>
-                                                <div className="text-[8px] text-red-400/70 uppercase tracking-wider">Strong</div>
-                                            </div>
-                                            <div className="p-2 bg-amber-500/10 rounded border border-amber-500/20 text-center">
-                                                <div className="text-lg font-mono font-bold text-amber-400">{flowData.arcs?.filter(a => a.strength === 'medium').length || 0}</div>
-                                                <div className="text-[8px] text-amber-400/70 uppercase tracking-wider">Medium</div>
-                                            </div>
-                                            <div className="p-2 bg-cyan-500/10 rounded border border-cyan-500/20 text-center">
-                                                <div className="text-lg font-mono font-bold text-cyan-400">{flowData.arcs?.filter(a => a.strength === 'weak').length || 0}</div>
-                                                <div className="text-[8px] text-cyan-400/70 uppercase tracking-wider">Weak</div>
-                                            </div>
-                                        </div>
-
-                                        {/* Key Discoveries */}
-                                        <div>
-                                            <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                <span>🔬 Top Connections Discovered</span>
-                                            </h4>
-                                            <div className="space-y-2 max-h-[320px] overflow-y-auto custom-scrollbar pr-2">
-                                                {flowData.arcs?.sort((a, b) => b.weight - a.weight)
-                                                    .slice(0, 12)
-                                                    .map((arc, idx) => (
-                                                        <div key={idx} className={`p-2.5 rounded bg-gradient-to-r ${
-                                                            arc.strength === 'strong' 
-                                                                ? 'from-red-500/10 to-transparent border-l-2 border-red-500' 
-                                                                : arc.strength === 'medium'
-                                                                    ? 'from-amber-500/10 to-transparent border-l-2 border-amber-500'
-                                                                    : 'from-cyan-500/10 to-transparent border-l-2 border-cyan-500'
-                                                        }`}>
-                                                            <div className="flex items-center justify-between mb-1">
-                                                                <span className="text-xs font-bold text-white">{arc.sourceName} → {arc.targetName}</span>
-                                                                <span className={`text-[10px] font-mono ${
-                                                                    arc.strength === 'strong' ? 'text-red-400' : arc.strength === 'medium' ? 'text-amber-400' : 'text-cyan-400'
-                                                                }`}>{(arc.weight * 100).toFixed(1)}%</span>
-                                                            </div>
-                                                </div>
-                                                    ))}
-                                            </div>
-                                        </div>
-
-                                        {/* USA Analysis */}
-                                        {flowData.usaAnalysis && (
-                                            <div className="border-t border-white/10 pt-4">
-                                                <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                    <span>🇺🇸</span>
-                                                    <span>USA Influence Profile</span>
-                                                </h4>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <div className="text-[10px] text-text-muted uppercase mb-2">Influenced By</div>
-                                                        <div className="space-y-1">
-                                                            {flowData.usaAnalysis.influencedBy.slice(0, 4).map((item, idx) => (
-                                                                <div key={idx} className="flex justify-between text-[10px]">
-                                                                    <span className="text-text-secondary">{item.country}</span>
-                                                                    <span className="text-white font-mono">{(item.weight * 100).toFixed(1)}%</span>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-[10px] text-text-muted uppercase mb-2">Influences</div>
-                                                        <div className="space-y-1">
-                                                            {flowData.usaAnalysis.influences.slice(0, 4).map((item, idx) => (
-                                                                <div key={idx} className="flex justify-between text-[10px]">
-                                                                    <span className="text-text-secondary">{item.country}</span>
-                                                                    <span className="text-white font-mono">{(item.weight * 100).toFixed(1)}%</span>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Updated timestamp */}
-                                        <div className="text-[10px] text-text-muted font-mono text-center pt-2 border-t border-white/5">
-                                            Generated: {flowData.generatedAt}
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-center text-text-muted space-y-4 opacity-60">
-                                        <div className="w-16 h-16 rounded-full border border-dashed border-accent-cyan/30 flex items-center justify-center">
-                                            <span className="text-2xl">🌐</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-mono text-white">CARIA MODEL LOADING...</p>
-                                            <p className="text-xs mt-1">Economic influence data not available</p>
                                         </div>
                                     </div>
                                 )}
